@@ -1,0 +1,22 @@
+# Caches et builds Flutter (doivent être reconstruits dans le conteneur)
+.dart_tool/
+.packages
+build/
+
+# Plateformes natives (inutiles pour le web)
+ios/
+android/
+linux/
+macos/
+windows/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Divers
+.DS_Store
+.metadata
+.flutter-plugins
+.flutter-plugins-dependencies

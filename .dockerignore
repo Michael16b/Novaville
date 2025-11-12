@@ -1,0 +1,46 @@
+# VCS
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+*.egg
+.build/
+.cache/
+.python-version
+.venv/
+venv/
+ENV/
+.env
+.env.*
+
+# Django
+staticfiles/
+media/
+
+# Flutter
+frontend/.dart_tool/
+frontend/.packages
+frontend/build/
+frontend/ios/Pods/
+frontend/ios/.symlinks/
+frontend/ios/Flutter/ephemeral/
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/macos/Flutter/ephemeral/
+frontend/web/.dart_tool/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Node
+node_modules/
