@@ -1,0 +1,76 @@
+services:
+  # Backend Django (MVT) + Gunicorn
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: novaville-backend
+    ports:
+      - "8000:8000"
+    environment:
+      # Django settings
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - DJANGO_WSGI_MODULE=config.wsgi
+      # CloudSQL / PostgreSQL
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_HOST=${DB_HOST:-postgres}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-novaville}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      # Options démarrage
+      - MIGRATE=1
+      - COLLECTSTATIC=1
+      - GUNICORN_WORKERS=3
+      - GUNICORN_TIMEOUT=120
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    networks:
+      - novaville-net
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: novaville-postgres
+    environment:
+      - POSTGRES_DB=${DB_NAME:-novaville}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - novaville-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Frontend Flutter Web (BLoC) + Nginx
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: DockerFile
+      args:
+        - API_URL=${API_URL:-http://localhost:8000}
+        - ENVIRONMENT=${ENVIRONMENT:-production}
+    container_name: novaville-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - postgres
+    networks:
+      - novaville-net
+    restart: unless-stopped
+
+volumes:
+  static_volume:
+  media_volume:
+  postgres_data:
+
+networks:
+  novaville-net:
+    driver: bridge
