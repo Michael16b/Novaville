@@ -39,3 +39,4 @@ EXPOSE ${PORT}
 # and then execute the final command as the non-root user when possible.
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]
+
