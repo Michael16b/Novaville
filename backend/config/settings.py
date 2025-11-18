@@ -13,6 +13,9 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
 
 INSTALLED_APPS = [
+    # Optional nicer admin UI (grappelli) - installed only when in requirements
+    # Put grappelli before admin to override admin templates
+    "grappelli",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -34,7 +37,11 @@ INSTALLED_APPS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MIDDLEWARE = [
+    # Admin IP restriction middleware (applies only if ADMIN_ALLOWED_IPS is set)
+    "config.middleware.AdminIPRestrictionMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    # WhiteNoise middleware serves static files efficiently from Gunicorn
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -67,21 +74,52 @@ TEMPLATES = [
 
 # Static files (URL)
 STATIC_URL = "/static/"
+# Directory where `collectstatic` will collect static files for production.
+# Must be a filesystem path when using the staticfiles app (and for collectstatic).
+STATIC_ROOT = os.environ.get("DJANGO_STATIC_ROOT", str(BASE_DIR / "staticfiles"))
 
-# Database: utilisez DATABASE_URL ou variables d'environnement
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.environ.get("POSTGRES_DB", "novaville"),
-        "USER": os.environ.get("POSTGRES_USER", "postgres"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", ""),
-        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+# Media files (user uploaded)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.environ.get("DJANGO_MEDIA_ROOT", str(BASE_DIR / "media"))
+
+# Optionally include an app-level `static/` directory during development
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# Database: prefer DATABASE_URL, else support DB_* or POSTGRES_* env vars
+DATABASE_URL = os.environ.get("DATABASE_URL")
+try:
+    import dj_database_url  # provided in requirements.txt
+except Exception:
+    dj_database_url = None
+
+if DATABASE_URL and dj_database_url:
+    DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
+else:
+    # Support both DB_* (used in docker-compose) and POSTGRES_* (common)
+    DB_ENGINE = os.environ.get("DB_ENGINE") or os.environ.get("POSTGRES_ENGINE") or "django.db.backends.postgresql_psycopg2"
+    DB_NAME = os.environ.get("DB_NAME") or os.environ.get("POSTGRES_DB") or "novaville"
+    DB_USER = os.environ.get("DB_USER") or os.environ.get("POSTGRES_USER") or "postgres"
+    DB_PASSWORD = os.environ.get("DB_PASSWORD") or os.environ.get("POSTGRES_PASSWORD") or ""
+    DB_HOST = os.environ.get("DB_HOST") or os.environ.get("POSTGRES_HOST") or "localhost"
+    DB_PORT = os.environ.get("DB_PORT") or os.environ.get("POSTGRES_PORT") or "5432"
+
+    DATABASES = {
+        "default": {
+            "ENGINE": DB_ENGINE,
+            "NAME": DB_NAME,
+            "USER": DB_USER,
+            "PASSWORD": DB_PASSWORD,
+            "HOST": DB_HOST,
+            "PORT": DB_PORT,
+        }
     }
-}
 
 # REST framework: JWT, pagination, throttling, filters
 REST_FRAMEWORK = {
+    # Force JSON responses only (no Browsable API / HTML) - frontend handles rendering
+    "DEFAULT_RENDERER_CLASSES": (
+        "rest_framework.renderers.JSONRenderer",
+    ),
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
@@ -105,8 +143,21 @@ REST_FRAMEWORK = {
     },
 }
 
+# Admin exposure & security
+# In production, prefer ENABLE_ADMIN="0" and place the admin behind VPN / auth-proxy.
+ENABLE_ADMIN = os.environ.get("ENABLE_ADMIN", "1").lower() in ("1", "true", "yes")
+# Comma separated list of allowed IPs (e.g. "127.0.0.1,10.0.0.0/8"). Empty means no IP restriction.
+ADMIN_ALLOWED_IPS = [ip.strip() for ip in os.environ.get("ADMIN_ALLOWED_IPS", "").split(",") if ip.strip()]
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.environ.get("JWT_ACCESS_MINUTES", 60))),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.environ.get("JWT_REFRESH_DAYS", 7))),
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+# WhiteNoise staticfiles storage: compressed + manifest for caching
+STATICFILES_STORAGE = os.environ.get(
+    "DJANGO_STATICFILES_STORAGE",
+    "whitenoise.storage.CompressedManifestStaticFilesStorage",
+)
+

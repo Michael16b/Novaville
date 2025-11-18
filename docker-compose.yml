@@ -1,9 +1,30 @@
 services:
-  # Backend Django (MVT) + Gunicorn
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: novaville-postgres
+    environment:
+      - POSTGRES_DB=${DB_NAME:-novaville}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - novaville-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Backend Django + Gunicorn
   backend:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: novaville-backend
     ports:
       - "8000:8000"
@@ -29,30 +50,15 @@ services:
     networks:
       - novaville-net
     restart: unless-stopped
-
-  postgres:
-    image: postgres:15-alpine
-    container_name: novaville-postgres
-    environment:
-      - POSTGRES_DB=${DB_NAME:-novaville}
-      - POSTGRES_USER=${DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - novaville-net
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   # Frontend Flutter Web (BLoC) + Nginx
   frontend:
     build:
       context: ./frontend
-      dockerfile: DockerFile
+      dockerfile: Dockerfile
       args:
         - API_URL=${API_URL:-http://localhost:8000}
         - ENVIRONMENT=${ENVIRONMENT:-production}
