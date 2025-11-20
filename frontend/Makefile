@@ -9,14 +9,14 @@ help: ## Affiche cette aide
 	@echo "$(GREEN)Commandes Flutter disponibles:$(NC)"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(YELLOW)%-20s$(NC) %s\n", $$1, $$2}'
 
-format: ## Formate le code Dart
-	@echo "$(GREEN)🔧 Formatage du code Dart...$(NC)"
-	dart format lib/ test/
+format: ## Formate le code Dart (via Docker)
+	@echo "$(GREEN)🔧 Formatage du code Dart (via Docker)...$(NC)"
+	@docker run --rm -v "$(CURDIR):/app" -w /app ghcr.io/cirruslabs/flutter:stable sh -c "flutter pub get && dart format ."
 	@echo "$(GREEN)✅ Code formaté$(NC)"
 
-fix: ## Applique les corrections automatiques
-	@echo "$(GREEN)🔧 Application des corrections Dart...$(NC)"
-	dart fix --apply
+fix: ## Applique les corrections automatiques (via Docker)
+	@echo "$(GREEN)🔧 Application des corrections Dart (via Docker)...$(NC)"
+	dart fix --apply && dart format .
 	@echo "$(GREEN)✅ Corrections appliquées$(NC)"
 
 lint: analyze ## Alias pour analyze

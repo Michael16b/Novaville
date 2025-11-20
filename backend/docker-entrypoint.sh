@@ -28,7 +28,7 @@ run_as_appuser() {
     fi
     # fallback to su
     if command -v su >/dev/null 2>&1; then
-      su appuser -s /bin/sh -c "\"$@\""
+      su appuser -s /bin/sh -c "$*"
       return $?
     fi
     # last resort: run as root (not ideal)

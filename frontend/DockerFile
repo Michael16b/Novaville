@@ -14,7 +14,7 @@ FROM ghcr.io/cirruslabs/flutter:stable AS flutter-builder
 WORKDIR /app
 
 # Pré-copie pour le cache des dépendances (pubspec.yaml/lock)
-COPY pubspec.yaml pubspec.lock ./
+COPY pubspec.yaml pubspec.lock ./ 
 RUN flutter pub get
 
 # Copie du code source (lib/, web/, assets/, etc.)
@@ -91,4 +91,3 @@ EOF
 EXPOSE 80
 
 # Nginx lance automatiquement (CMD par défaut de l'image nginx:alpine)
-

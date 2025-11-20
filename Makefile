@@ -11,10 +11,9 @@ help: ## Affiche cette aide
 
 up: ## Lance toute l'application (backend + frontend)
 	@echo "$(GREEN)🚀 Lancement de l'application Novaville...$(NC)"
-	docker compose up -d
-	@echo "$(GREEN)✅ Application démarrée!$(NC)"
 	@echo "  Frontend: http://localhost"
 	@echo "  Backend:  http://localhost:8000"
+	docker compose up --build
 
 down: ## Arrête toute l'application
 	@echo "$(YELLOW)🛑 Arrêt de l'application...$(NC)"
@@ -55,8 +54,8 @@ ps: ## Affiche l'état des conteneurs
 
 fix: ## Corrige et formate le code (frontend + backend)
 	@echo "$(GREEN)🔧 Formatage du code...$(NC)"
-	@$(MAKE) -C frontend format fix
-	@$(MAKE) -C backend format fix
+	@$(MAKE) -C frontend fix
+	@$(MAKE) -C backend fix
 	@echo "$(GREEN)✅ Code formaté et corrigé!$(NC)"
 
 frontend: ## Ouvre le Makefile du frontend (usage: make frontend <commande>)
