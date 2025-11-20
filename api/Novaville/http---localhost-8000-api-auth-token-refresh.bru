@@ -1,0 +1,15 @@
+meta {
+  name: http://localhost:8000/api/auth/token/refresh
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8000/api/auth/token/refresh
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

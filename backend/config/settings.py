@@ -24,6 +24,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # third-party
     "rest_framework",
+    # OpenAPI schema generation and Swagger UI
+    "drf_spectacular",
     "rest_framework_simplejwt",
     "django_filters",
     # local apps
@@ -120,6 +122,8 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
     ),
+    # Use drf-spectacular for OpenAPI schema generation
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
@@ -160,4 +164,31 @@ STATICFILES_STORAGE = os.environ.get(
     "DJANGO_STATICFILES_STORAGE",
     "whitenoise.storage.CompressedManifestStaticFilesStorage",
 )
+
+# drf-spectacular OpenAPI settings
+SPECTACULAR_SETTINGS = {
+    "TITLE": os.environ.get("PROJECT_TITLE", "Novaville API"),
+    "DESCRIPTION": "OpenAPI schema for Novaville backend API",
+    "VERSION": os.environ.get("PROJECT_VERSION", "1.0.0"),
+    # Optional: give the URL where Swagger UI will be served
+    "SERVE_INCLUDE_SCHEMA": False,
+}
+
+# Control whether API docs are exposed (useful to disable in production)
+ENABLE_API_DOCS = os.environ.get("ENABLE_API_DOCS", "1").lower() in ("1", "true", "yes")
+
+# Add JWT bearer security scheme for Swagger / OpenAPI (drf-spectacular)
+SPECTACULAR_SETTINGS.update({
+    "COMPONENTS": {
+        "securitySchemes": {
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+            }
+        }
+    },
+    # Apply BearerAuth globally to endpoints in the UI (can be overridden per-view)
+    "SECURITY": [{"BearerAuth": []}],
+})
 

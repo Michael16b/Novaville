@@ -119,3 +119,71 @@ Variables importantes : `DJANGO_SECRET_KEY`, `DATABASE_URL` (ou `DB_HOST/DB_USER
 ---
 
 Si tu veux, je peux ajouter un `docker-compose.override.yml.example` et un `.env.example` dans le repo pour faciliter la mise en place locale. Veux-tu que je les crée ?
+
+## Documentation API (OpenAPI / Swagger)
+
+Nous utilisons `drf-spectacular` pour générer automatiquement un schéma OpenAPI et exposer une interface Swagger.
+
+- Schéma OpenAPI (JSON) : `GET /api/schema/`
+- Swagger UI (navigateur interactif) : `GET /api/docs/`
+
+Ces routes sont activées si `drf-spectacular` est installé (inclus dans `requirements.txt`). Si tu préfères restreindre l'accès à la doc en prod, tu peux positionner ces routes derrière un proxy ou conditionner leur activation via une variable d'environnement.
+
+Exemple pour tester localement:
+
+```powershell
+curl http://localhost:8000/api/schema/ | jq .
+start http://localhost:8000/api/docs/
+```
+
+URLs utiles pour la documentation OpenAPI/Swagger:
+
+- Schema JSON OpenAPI : `http://localhost:8000/api/schema/`
+- Swagger UI interactive : `http://localhost:8000/api/docs/`
+
+Ces routes sont exposées uniquement si `ENABLE_API_DOCS` est activé (par défaut en dev). En production vous pouvez définir `ENABLE_API_DOCS=0` pour ne pas publier la documentation publique.
+
+## Authentification JWT (login)
+
+Nous utilisons `djangorestframework-simplejwt` pour l'authentification par JWT. Endpoints disponibles :
+
+- Obtenir tokens + info utilisateur : `POST /api/v1/auth/token/` (body: `username`, `password`)
+- Rafraîchir le token d'accès : `POST /api/v1/auth/token/refresh/` (body: `refresh`)
+
+Exemple `curl` pour obtenir un token :
+
+```powershell
+curl -X POST http://localhost:8000/api/v1/auth/token/ -H "Content-Type: application/json" -d '{"username":"admin","password":"ChangeMe123"}' | jq .
+```
+
+Réponse typique :
+
+```json
+{
+	"refresh": "<refresh_token>",
+	"access": "<access_token>",
+	"user": {
+		"id": 1,
+		"username": "admin",
+		"email": "admin@example.com",
+		"first_name": "",
+		"last_name": ""
+	}
+}
+```
+
+Utilisation du token pour appeler une API protégée :
+
+```powershell
+curl -H "Authorization: Bearer <access_token>" http://localhost:8000/api/v1/items/
+```
+
+Exemple de rafraîchissement :
+
+```powershell
+curl -X POST http://localhost:8000/api/v1/auth/token/refresh/ -H "Content-Type: application/json" -d '{"refresh":"<refresh_token>"}' | jq .
+```
+
+Si tu veux, je peux aussi :
+- Ajouter une route `me/` qui retourne les informations de l'utilisateur connecté.
+- Ajouter des tests d'intégration pour l'auth (tokens, accès aux endpoints protégés).
