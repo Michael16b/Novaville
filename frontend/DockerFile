@@ -1,7 +1,7 @@
 ###############################################
 # Dockerfile (frontend) - Flutter Web (BLoC) + Nginx
 # Usage:
-#  docker build -f frontend/DockerFile -t novaville-frontend \
+#  docker build -f frontend/Dockerfile -t novaville-frontend \
 #    --build-arg API_URL=https://api.novaville.com .
 #  docker run --rm -p 80:80 novaville-frontend
 ###############################################

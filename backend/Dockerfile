@@ -1,42 +1,91 @@
 ###############################################
-# Backend Dockerfile - single-stage clean
-# Build context: ./backend (docker-compose sets this)
+# Dockerfile (backend) - Django (MVT) + Gunicorn
+# Usage:
+#  docker build -f backend/Dockerfile -t novaville-backend .
+#  docker run --rm -p 8000:8000 \
+#    -e DB_ENGINE=django.db.backends.postgresql \
+#    -e DB_HOST=127.0.0.1 -e DB_PORT=5432 \
+#    -e DB_NAME=app -e DB_USER=app -e DB_PASSWORD=secret \
+#    -e MIGRATE=1 -e COLLECTSTATIC=1 \
+#    novaville-backend
 ###############################################
 
-FROM python:3.11-slim
+FROM python:3.12-slim AS backend
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PORT=8000
+		PYTHONUNBUFFERED=1 \
+		PIP_NO_CACHE_DIR=1 \
+		PORT=8000
 
+# Dépendances système (libpq pour PostgreSQL)
+RUN set -eux; \
+		apt-get update; \
+		apt-get install -y --no-install-recommends \
+			build-essential \
+			libpq-dev \
+			curl \
+		; \
+		rm -rf /var/lib/apt/lists/*
+
+# Utilisateur non-root
+RUN useradd -m -u 10001 app
+
+# Code Django attendu dans /app (manage.py, apps/, templates/ ...)
 WORKDIR /app
 
-# System deps (libpq for Postgres)
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential libpq-dev curl util-linux \
-    && rm -rf /var/lib/apt/lists/*
+# Copie du backend (inclut potentiellement requirements.txt ou pyproject.toml)
+COPY . /app/
 
-# Copy only requirements first for better caching
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r /app/requirements.txt
+# Installation des dépendances (support requirements.txt ou pyproject.toml)
+RUN set -eux; \
+		python -m pip install --upgrade pip; \
+		if [ -f requirements.txt ]; then \
+			pip install -r requirements.txt; \
+		elif [ -f pyproject.toml ]; then \
+			pip install .; \
+		else \
+			echo "Aucun fichier de dépendances détecté (requirements.txt/pyproject.toml). Installation minimale."; \
+			pip install 'Django>=4.2,<6' 'gunicorn>=22,<23' 'psycopg2-binary>=2.9'; \
+		fi
 
-# Copy project sources (context is ./backend)
-COPY . /app
+# Dossiers pour les assets MVT
+ENV DJANGO_STATIC_ROOT=/app/staticfiles \
+		DJANGO_MEDIA_ROOT=/app/media
+RUN mkdir -p "$DJANGO_STATIC_ROOT" "$DJANGO_MEDIA_ROOT" && chown -R app:app /app
 
-# Ensure the entrypoint script exists in context as ./docker-entrypoint.sh
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+# Variables DB CloudSQL (TCP ou Unix socket via /cloudsql/INSTANCE)
+ENV DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-config.settings} \
+		DB_ENGINE=${DB_ENGINE:-django.db.backends.postgresql} \
+		DB_HOST=${DB_HOST:-localhost} \
+		DB_PORT=${DB_PORT:-5432} \
+		DB_NAME=${DB_NAME:-app} \
+		DB_USER=${DB_USER:-app} \
+		DB_PASSWORD=${DB_PASSWORD:-password} \
+		INSTANCE_CONNECTION_NAME=${INSTANCE_CONNECTION_NAME:-}
 
-# Create non-root user and fix permissions (we'll run entrypoint as root to fix volume ownership)
-RUN useradd --create-home appuser && chown -R appuser:appuser /app
+# Si vous utilisez les sockets Cloud SQL dans Cloud Run/GKE:
+#   - Montez /cloudsql et définissez DB_HOST="/cloudsql/${INSTANCE_CONNECTION_NAME}"
+VOLUME ["/app/staticfiles", "/app/media"]
 
-ENV DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-config.settings}
+EXPOSE 8000
 
-EXPOSE ${PORT}
+# Lancement: migrations/statics optionnels, puis Gunicorn (MVT via module WSGI)
+ENV DJANGO_WSGI_MODULE=${DJANGO_WSGI_MODULE:-config.wsgi} \
+		GUNICORN_WORKERS=3 \
+		GUNICORN_TIMEOUT=120
 
-# Do not switch to non-root here: entrypoint will perform chown on mounted volumes
-# and then execute the final command as the non-root user when possible.
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]
+USER app
 
+CMD ["sh", "-c", "set -eux; \
+		if [ -f manage.py ] && [ \"${MIGRATE:-0}\" = \"1\" ]; then \
+			python manage.py migrate --noinput; \
+		fi; \
+		if [ -f manage.py ] && [ \"${COLLECTSTATIC:-0}\" = \"1\" ]; then \
+			python manage.py collectstatic --noinput; \
+		fi; \
+		exec gunicorn \"${DJANGO_WSGI_MODULE}:application\" \
+			--bind 0.0.0.0:${PORT} \
+			--workers ${GUNICORN_WORKERS} \
+			--timeout ${GUNICORN_TIMEOUT} \
+			--access-logfile - \
+			--error-logfile -"]

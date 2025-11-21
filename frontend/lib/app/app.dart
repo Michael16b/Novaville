@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/constantes/_colors.dart';
+import 'package:frontend/constants/colors.dart';
 
 class App extends StatelessWidget {
   const App({required this.home, super.key});

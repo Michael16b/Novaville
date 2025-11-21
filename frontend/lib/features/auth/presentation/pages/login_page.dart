@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/constants/form_labels.dart';
+import 'package:frontend/constants/texts.dart';
+import 'package:frontend/constants/validator_messages.dart';
 import 'package:frontend/design_systems/_custom_elevated_button.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
-import 'package:frontend/features/items/presentation/pages/items_page.dart';
+import 'package:frontend/ui/assets.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -38,12 +41,6 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state.status == AuthStatus.authenticated) {
-          // Navigate to items page or trigger rebuild at root
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const ItemsPage()),
-          );
-        }
         if (state.status == AuthStatus.failure && state.error != null) {
           ScaffoldMessenger.of(
             context,
@@ -66,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Image.asset(
-                        'assets/images/login_logo.png',
+                        AppAssets.login_logo,
                         height: 300,
                         fit: BoxFit.contain,
                       ),
@@ -74,26 +71,29 @@ class _LoginPageState extends State<LoginPage> {
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(labelText: 'Email'),
-                        validator: (v) =>
-                            (v == null || v.isEmpty) ? 'Email requis' : null,
+                        decoration: const InputDecoration(
+                          labelText: AppFormLabels.email,
+                        ),
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? AppValidatorMessages.email_required
+                            : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: true,
                         decoration: const InputDecoration(
-                          labelText: 'Mot de passe',
+                          labelText: AppFormLabels.password,
                         ),
                         validator: (v) => (v == null || v.isEmpty)
-                            ? 'Mot de passe requis'
+                            ? AppValidatorMessages.password_required
                             : null,
                       ),
                       const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
                         child: CustomElevatedButton(
-                          text: 'Se connecter',
+                          text: AppTexts.login,
                           isLoading: isLoading,
                           onPressed: _submit,
                         ),
