@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/form_labels.dart';
 import 'package:frontend/constants/texts.dart';
 import 'package:frontend/constants/validator_messages.dart';
-import 'package:frontend/design_systems/_custom_elevated_button.dart';
+import 'package:frontend/design_systems/custom_elevated_button.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/ui/assets.dart';
 
