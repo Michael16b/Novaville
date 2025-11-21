@@ -13,7 +13,7 @@ class AppColors {
   // Autres couleurs
   static const Color white = Color(0xFFFFFFFF);
 
-  static final Color highlight = primary.withValues(alpha: 0.3);
+  static const Color highlight = Color(0x4D2E6B55);
 
   static const Color error = Color(0xFFC94A4A);
   static const Color success = Color(0xFF5DB075);

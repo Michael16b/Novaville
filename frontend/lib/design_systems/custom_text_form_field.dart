@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 
 class CustomTextFormField extends StatefulWidget {
-  CustomTextFormField({
+  const CustomTextFormField({
     required this.controller,
     super.key,
     this.labelText,
@@ -19,15 +19,15 @@ class CustomTextFormField extends StatefulWidget {
   final FormFieldValidator<String>? validator;
 
   // Couleurs (valeurs par défaut : fond blanc, autres primary)
-  final Color fillColor = AppColors.white;
-  final Color focusedFillColor = AppColors.white;
-  final Color borderColor = AppColors.primary;
-  final Color focusedBorderColor = AppColors.primary;
-  final Color textColor = AppColors.primaryText;
-  final Color focusedTextColor = AppColors.primaryText;
-  final Color cursorColor = AppColors.primary;
-  final Color selectionColor = AppColors.highlight;
-  final Color errorColor = AppColors.error;
+  static const Color fillColor = AppColors.white;
+  static const Color focusedFillColor = AppColors.white;
+  static const Color borderColor = AppColors.primary;
+  static const Color focusedBorderColor = AppColors.primary;
+  static const Color textColor = AppColors.primaryText;
+  static const Color focusedTextColor = AppColors.primaryText;
+  static const Color cursorColor = AppColors.primary;
+  static const Color selectionColor = AppColors.highlight;
+  static const Color errorColor = AppColors.error;
 
   @override
   State<CustomTextFormField> createState() => _CustomTextFormFieldState();
@@ -57,15 +57,15 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   @override
   Widget build(BuildContext context) {
     final effectiveTextColor = _isFocused
-        ? widget.focusedTextColor
-        : widget.textColor;
-    final effectiveCursorColor = widget.cursorColor;
+        ? CustomTextFormField.focusedTextColor
+        : CustomTextFormField.textColor;
+    final effectiveCursorColor = CustomTextFormField.cursorColor;
     final effectiveFillColor = _isFocused
-        ? widget.focusedFillColor
-        : widget.fillColor;
+        ? CustomTextFormField.focusedFillColor
+        : CustomTextFormField.fillColor;
     final effectiveBorderColor = _isFocused
-        ? widget.focusedBorderColor
-        : widget.borderColor;
+        ? CustomTextFormField.focusedBorderColor
+        : CustomTextFormField.borderColor;
 
     final enabled = OutlineInputBorder(
       borderRadius: BorderRadius.circular(4),
@@ -78,24 +78,24 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     // Bordures à utiliser lorsque le champ est en état d'erreur
     final error = OutlineInputBorder(
       borderRadius: BorderRadius.circular(4),
-      borderSide: BorderSide(color: widget.errorColor),
+      borderSide: BorderSide(color: CustomTextFormField.errorColor),
     );
     final focusedError = OutlineInputBorder(
       borderRadius: BorderRadius.circular(4),
-      borderSide: BorderSide(color: widget.errorColor, width: 2),
+      borderSide: BorderSide(color: CustomTextFormField.errorColor, width: 2),
     );
 
     return Theme(
       data: Theme.of(context).copyWith(
-        primaryColor: widget.cursorColor,
+        primaryColor: CustomTextFormField.cursorColor,
         colorScheme: Theme.of(context).colorScheme.copyWith(
-          primary: widget.cursorColor,
-          error: widget.cursorColor,
+          primary: CustomTextFormField.cursorColor,
+          error: CustomTextFormField.errorColor,
         ),
         textSelectionTheme: TextSelectionThemeData(
-          selectionColor: widget.selectionColor,
-          selectionHandleColor: widget.cursorColor,
-          cursorColor: widget.cursorColor,
+          selectionColor: CustomTextFormField.selectionColor,
+          selectionHandleColor: CustomTextFormField.cursorColor,
+          cursorColor: CustomTextFormField.cursorColor,
         ),
       ),
       child: TextFormField(
@@ -115,9 +115,9 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           errorBorder: error,
           focusedErrorBorder: focusedError,
           // Garder l'apparence du texte d'erreur similaire (ou ajuster si besoin)
-          errorStyle: TextStyle(color: widget.errorColor),
-          labelStyle: TextStyle(color: widget.textColor),
-          floatingLabelStyle: TextStyle(color: widget.focusedTextColor),
+          errorStyle: TextStyle(color: CustomTextFormField.errorColor),
+          labelStyle: TextStyle(color: CustomTextFormField.textColor),
+          floatingLabelStyle: TextStyle(color: CustomTextFormField.focusedTextColor),
         ),
         validator: widget.validator,
       ),
