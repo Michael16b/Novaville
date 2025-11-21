@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/constants/texts.dart';
 
 import 'package:frontend/features/items/application/bloc/item_bloc.dart';
 
@@ -28,11 +29,11 @@ class _ItemsPageState extends State<ItemsPage> {
               return const Center(child: CircularProgressIndicator());
             case ItemStatus.failure:
               return Center(
-                child: Text(state.error ?? 'Une erreur est survenue'),
+                child: Text(state.error ?? AppTexts.error_occurred),
               );
             case ItemStatus.success:
               if (state.items.isEmpty) {
-                return const Center(child: Text('Aucun item'));
+                return const Center();
               }
               return ListView.separated(
                 itemCount: state.items.length,
