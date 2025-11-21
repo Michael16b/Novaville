@@ -1,7 +1,7 @@
 ###############################################
 # Dockerfile (frontend) - Flutter Web (BLoC) + Nginx
 # Usage:
-#  docker build -f frontend/DockerFile -t novaville-frontend \
+#  docker build -f frontend/Dockerfile -t novaville-frontend \
 #    --build-arg API_URL=https://api.novaville.com .
 #  docker run --rm -p 80:80 novaville-frontend
 ###############################################
@@ -14,7 +14,7 @@ FROM ghcr.io/cirruslabs/flutter:stable AS flutter-builder
 WORKDIR /app
 
 # Pré-copie pour le cache des dépendances (pubspec.yaml/lock)
-COPY pubspec.yaml pubspec.lock ./
+COPY pubspec.yaml pubspec.lock ./ 
 RUN flutter pub get
 
 # Copie du code source (lib/, web/, assets/, etc.)
@@ -91,4 +91,3 @@ EOF
 EXPOSE 80
 
 # Nginx lance automatiquement (CMD par défaut de l'image nginx:alpine)
-
