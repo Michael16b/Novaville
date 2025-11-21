@@ -67,6 +67,20 @@ server {
     add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
   }
 
+  # Ne pas mettre en cache le service worker Flutter : s'il est mis en cache,
+  # le navigateur peut continuer à servir une ancienne version contrôlant les assets.
+  location = /flutter_service_worker.js {
+    try_files $uri =404;
+    expires -1;
+    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+  }
+  # Eviter aussi la mise en cache de la map si présente
+  location = /flutter_service_worker.js.map {
+    try_files $uri =404;
+    expires -1;
+    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+  }
+
   # Cache long terme pour assets JS/CSS (hash dans le nom)
   location ~* \.(css|js)$ {
     try_files $uri =404;

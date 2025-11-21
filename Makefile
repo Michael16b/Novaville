@@ -13,7 +13,8 @@ up: ## Lance toute l'application (backend + frontend)
 	@echo "$(GREEN)🚀 Lancement de l'application Novaville...$(NC)"
 	@echo "  Frontend: http://localhost"
 	@echo "  Backend:  http://localhost:8000"
-	docker compose up --build
+	docker compose build --no-cache frontend
+	docker compose up
 
 down: ## Arrête toute l'application
 	@echo "$(YELLOW)🛑 Arrêt de l'application...$(NC)"

@@ -1,4 +1,4 @@
 class AppValidatorMessages {
-  static const String email_required = 'Email requis';
-  static const String password_required = 'Mot de passe requis';
+  static const String emailRequired = 'Email requis';
+  static const String passwordRequired = 'Mot de passe requis';
 }
