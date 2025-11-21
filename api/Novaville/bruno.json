@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Novaville",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
