@@ -11,4 +11,7 @@ class AppColors {
 
   // Autres couleurs
   static const Color white = Color(0xFFFFFFFF);
+
+  // Couleur d'erreur standard
+  static const Color error = Color(0xFFE53935);
 }

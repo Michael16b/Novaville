@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/app/app.dart';
+import 'package:frontend/core/api_config.dart';
 import 'package:frontend/core/bloc/app_bloc_observer.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
+import 'package:frontend/features/auth/data/auth_repository_factory.dart';
 import 'package:frontend/features/auth/presentation/widgets/auth_gate.dart';
 import 'package:frontend/features/items/application/bloc/item_bloc.dart';
 import 'package:frontend/features/items/data/item_repository.dart';
@@ -17,7 +19,7 @@ void main() {
           create: (_) => FakeItemRepository(),
         ),
         RepositoryProvider<IAuthRepository>(
-          create: (_) => FakeAuthRepository(),
+          create: (_) => createRemoteAuthRepository(baseUrl: apiBaseUrl),
         ),
       ],
       child: MultiBlocProvider(

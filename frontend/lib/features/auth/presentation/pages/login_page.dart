@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/form_labels.dart';
 import 'package:frontend/constants/texts.dart';
 import 'package:frontend/constants/validator_messages.dart';
+import 'package:frontend/constants/colors.dart';
 import 'package:frontend/design_systems/custom_elevated_button.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/ui/assets.dart';
@@ -41,11 +42,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state.status == AuthStatus.failure && state.error != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.error!)));
-        }
+        // Nous affichons maintenant l'erreur inline dans le builder (pas de SnackBar ici)
       },
       builder: (context, state) {
         final isLoading =
@@ -89,6 +86,16 @@ class _LoginPageState extends State<LoginPage> {
                             ? AppValidatorMessages.password_required
                             : null,
                       ),
+                      const SizedBox(height: 12),
+                      // Affiche l'erreur d'authentification si elle existe
+                      if (state.status == AuthStatus.failure && state.error != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            state.error!,
+                            style: const TextStyle(color: AppColors.error),
+                          ),
+                        ),
                       const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,

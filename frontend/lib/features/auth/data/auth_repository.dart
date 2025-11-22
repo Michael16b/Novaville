@@ -37,8 +37,10 @@ class FakeAuthRepository implements IAuthRepository {
 
   @override
   Future<bool> hasValidSession() async {
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future<void>.delayed(const Duration(milliseconds: 200));
     // Forcer la déconnexion au démarrage pour le développement
     return false;
   }
 }
+
+// Removed factory/import to avoid circular imports and directive order issues.
