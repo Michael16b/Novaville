@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 
-// Utilisez 'class' pour la définir. Elle est automatiquement "exportée".
 class AppColors {
-  // Astuce : constructeur privé pour empêcher d'instancier cette classe (ex: new AppColors())
   AppColors._();
 
   static const Color page = Color(0xFFEEEEEE);
 
   static const Color primary = Color(0xFF2E6B55);
+  static const Color secondary = Color(0xFFF9C846);
+  static const Color primaryText = Color(0xFF333333);
+  static const Color secondaryText = Color(0xFF757575);
 
   // Autres couleurs
   static const Color white = Color(0xFFFFFFFF);
 
-  // Couleur d'erreur standard
-  static const Color error = Color(0xFFE53935);
+  static const Color highlight = Color(0x4D2E6B55);
+
+  static const Color error = Color(0xFFC94A4A);
+  static const Color success = Color(0xFF5DB075);
 }
