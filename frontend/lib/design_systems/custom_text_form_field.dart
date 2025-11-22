@@ -1,4 +1,3 @@
-// dart
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 
@@ -59,7 +58,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     final effectiveTextColor = _isFocused
         ? CustomTextFormField.focusedTextColor
         : CustomTextFormField.textColor;
-    final effectiveCursorColor = CustomTextFormField.cursorColor;
+    const effectiveCursorColor = CustomTextFormField.cursorColor;
     final effectiveFillColor = _isFocused
         ? CustomTextFormField.focusedFillColor
         : CustomTextFormField.fillColor;
@@ -78,48 +77,53 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     // Bordures à utiliser lorsque le champ est en état d'erreur
     final error = OutlineInputBorder(
       borderRadius: BorderRadius.circular(4),
-      borderSide: BorderSide(color: CustomTextFormField.errorColor),
+      borderSide: const BorderSide(color: CustomTextFormField.errorColor),
     );
     final focusedError = OutlineInputBorder(
       borderRadius: BorderRadius.circular(4),
-      borderSide: BorderSide(color: CustomTextFormField.errorColor, width: 2),
+      borderSide: const BorderSide(
+        color: CustomTextFormField.errorColor,
+        width: 2,
+      ),
     );
 
     return Theme(
       data: Theme.of(context).copyWith(
-        primaryColor: CustomTextFormField.cursorColor,
-        colorScheme: Theme.of(context).colorScheme.copyWith(
-          primary: CustomTextFormField.cursorColor,
-          error: CustomTextFormField.errorColor,
-        ),
-        textSelectionTheme: TextSelectionThemeData(
+        colorScheme: Theme.of(context)
+            .colorScheme
+            .copyWith(error: CustomTextFormField.errorColor),
+      ),
+      child: TextSelectionTheme(
+        data: const TextSelectionThemeData(
           selectionColor: CustomTextFormField.selectionColor,
           selectionHandleColor: CustomTextFormField.cursorColor,
           cursorColor: CustomTextFormField.cursorColor,
         ),
-      ),
-      child: TextFormField(
-        focusNode: _focusNode,
-        style: TextStyle(color: effectiveTextColor),
-        cursorColor: effectiveCursorColor,
-        controller: widget.controller,
-        obscureText: widget.obscureText,
-        keyboardType: widget.keyboardType,
-        decoration: InputDecoration(
-          labelText: widget.labelText,
-          filled: true,
-          fillColor: effectiveFillColor,
-          enabledBorder: enabled,
-          focusedBorder: focused,
-          // Utiliser des bordures spécifiques pour l'état d'erreur
-          errorBorder: error,
-          focusedErrorBorder: focusedError,
-          // Garder l'apparence du texte d'erreur similaire (ou ajuster si besoin)
-          errorStyle: TextStyle(color: CustomTextFormField.errorColor),
-          labelStyle: TextStyle(color: CustomTextFormField.textColor),
-          floatingLabelStyle: TextStyle(color: CustomTextFormField.focusedTextColor),
+        child: TextFormField(
+          focusNode: _focusNode,
+          style: TextStyle(color: effectiveTextColor),
+          cursorColor: effectiveCursorColor,
+          controller: widget.controller,
+          obscureText: widget.obscureText,
+          keyboardType: widget.keyboardType,
+          decoration: InputDecoration(
+            labelText: widget.labelText,
+            filled: true,
+            fillColor: effectiveFillColor,
+            enabledBorder: enabled,
+            focusedBorder: focused,
+            // Utiliser des bordures spécifiques pour l'état d'erreur
+            errorBorder: error,
+            focusedErrorBorder: focusedError,
+            // Garder l'apparence du texte d'erreur similaire (ou ajuster si besoin)
+            errorStyle: const TextStyle(color: CustomTextFormField.errorColor),
+            labelStyle: const TextStyle(color: CustomTextFormField.textColor),
+            floatingLabelStyle: const TextStyle(
+              color: CustomTextFormField.focusedTextColor,
+            ),
+          ),
+          validator: widget.validator,
         ),
-        validator: widget.validator,
       ),
     );
   }
