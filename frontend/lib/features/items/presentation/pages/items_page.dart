@@ -28,9 +28,7 @@ class _ItemsPageState extends State<ItemsPage> {
             case ItemStatus.loading:
               return const Center(child: CircularProgressIndicator());
             case ItemStatus.failure:
-              return Center(
-                child: Text(state.error ?? AppTexts.error_occurred),
-              );
+              return Center(child: Text(state.error ?? AppTexts.errorOccurred));
             case ItemStatus.success:
               if (state.items.isEmpty) {
                 return const Center();

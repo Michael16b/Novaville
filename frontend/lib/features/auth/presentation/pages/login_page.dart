@@ -4,6 +4,7 @@ import 'package:frontend/constants/form_labels.dart';
 import 'package:frontend/constants/texts.dart';
 import 'package:frontend/constants/validator_messages.dart';
 import 'package:frontend/design_systems/custom_elevated_button.dart';
+import 'package:frontend/design_systems/custom_text_form_field.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/ui/assets.dart';
 
@@ -68,25 +69,21 @@ class _LoginPageState extends State<LoginPage> {
                         fit: BoxFit.contain,
                       ),
                       const SizedBox(height: 24),
-                      TextFormField(
+                      CustomTextFormField(
+                        labelText: AppFormLabels.email,
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
-                          labelText: AppFormLabels.email,
-                        ),
                         validator: (v) => (v == null || v.isEmpty)
-                            ? AppValidatorMessages.email_required
+                            ? AppValidatorMessages.emailRequired
                             : null,
                       ),
-                      const SizedBox(height: 12),
-                      TextFormField(
+                      const SizedBox(height: 24),
+                      CustomTextFormField(
+                        labelText: AppFormLabels.password,
                         controller: _passwordController,
                         obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: AppFormLabels.password,
-                        ),
                         validator: (v) => (v == null || v.isEmpty)
-                            ? AppValidatorMessages.password_required
+                            ? AppValidatorMessages.passwordRequired
                             : null,
                       ),
                       const SizedBox(height: 24),
