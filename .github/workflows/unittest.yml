@@ -30,4 +30,4 @@ jobs:
       # 4. Lancer les tests
       - name: Run tests
         run: |
-          pytest backend/tests
+          pytest backend/tests/*.py
