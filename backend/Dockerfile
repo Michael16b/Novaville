@@ -77,15 +77,15 @@ ENV DJANGO_WSGI_MODULE=${DJANGO_WSGI_MODULE:-config.wsgi} \
 USER app
 
 CMD ["sh", "-c", "set -eux; \
-		if [ -f manage.py ] && [ \"${MIGRATE:-0}\" = \"1\" ]; then \
-			python manage.py migrate --noinput; \
-		fi; \
-		if [ -f manage.py ] && [ \"${COLLECTSTATIC:-0}\" = \"1\" ]; then \
-			python manage.py collectstatic --noinput; \
-		fi; \
-		exec gunicorn \"${DJANGO_WSGI_MODULE}:application\" \
-			--bind 0.0.0.0:${PORT} \
-			--workers ${GUNICORN_WORKERS} \
-			--timeout ${GUNICORN_TIMEOUT} \
-			--access-logfile - \
-			--error-logfile -"]
+    if [ -f manage.py ] && [ \"${MIGRATE:-0}\" = \"1\" ]; then \
+        python manage.py migrate --noinput; \
+    fi; \
+    if [ -f manage.py ] && [ \"${COLLECTSTATIC:-0}\" = \"1\" ]; then \
+        python manage.py collectstatic --noinput; \
+    fi; \
+    exec gunicorn \"${DJANGO_WSGI_MODULE}:application\" \
+        --bind 0.0.0.0:${PORT} \
+        --workers ${GUNICORN_WORKERS} \
+        --timeout ${GUNICORN_TIMEOUT} \
+        --access-logfile - \
+        --error-logfile -"]
