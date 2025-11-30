@@ -49,8 +49,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(const AuthState.authenticated());
     } catch (e) {
       emit(AuthState.failure(e.toString()));
-      // Retourner à l'état non authentifié après un échec
-      emit(const AuthState.unauthenticated());
     }
   }
 

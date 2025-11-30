@@ -2,10 +2,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/features/auth/data/auth_repository_impl.dart';
 
 class SecureTokenStorage implements TokenStorage {
+  SecureTokenStorage({FlutterSecureStorage? storage})
+    : _storage = storage ?? const FlutterSecureStorage();
   final FlutterSecureStorage _storage;
-
-  SecureTokenStorage({FlutterSecureStorage? storage}) :
-    _storage = storage ?? const FlutterSecureStorage();
 
   @override
   Future<void> write({required String key, required String? value}) async {
@@ -26,4 +25,3 @@ class SecureTokenStorage implements TokenStorage {
     await _storage.delete(key: key);
   }
 }
-

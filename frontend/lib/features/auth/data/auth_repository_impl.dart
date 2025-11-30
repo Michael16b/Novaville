@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-
+import 'package:frontend/constants/texts.dart';
 import 'package:frontend/features/auth/data/auth_api.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
 
@@ -33,24 +33,26 @@ class InMemoryTokenStorage implements TokenStorage {
 }
 
 class AuthRepositoryImpl implements IAuthRepository {
+  AuthRepositoryImpl({required AuthApi api, TokenStorage? storage})
+    : _api = api,
+      _storage = storage ?? InMemoryTokenStorage();
   final AuthApi _api;
   final TokenStorage _storage;
 
   static const _keyAccess = 'access_token';
   static const _keyRefresh = 'refresh_token';
 
-  AuthRepositoryImpl({required AuthApi api, TokenStorage? storage}) :
-    _api = api,
-    _storage = storage ?? InMemoryTokenStorage();
-
   @override
-  Future<String> login({required String email, required String password}) async {
+  Future<String> login({
+    required String email,
+    required String password,
+  }) async {
     try {
       final data = await _api.login(email: email, password: password);
       final access = data['access'] as String?;
       final refresh = data['refresh'] as String?;
       if (access == null || refresh == null) {
-        throw AuthFailure('Réponse invalide du serveur');
+        throw AuthFailure(AppTexts.serverInvalidResponse);
       }
 
       await _storage.write(key: _keyAccess, value: access);
@@ -59,6 +61,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       return access;
     } catch (e) {
       debugPrint('AuthRepositoryImpl.login error: $e');
+      if (e is AuthFailure) rethrow;
+      // Convertir d'autres exceptions en AuthFailure pour message clair
       throw AuthFailure(e.toString());
     }
   }

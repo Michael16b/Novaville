@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:frontend/constants/texts.dart';
 
 class AuthFailure implements Exception {
   AuthFailure(this.message);
@@ -23,7 +24,7 @@ class FakeAuthRepository implements IAuthRepository {
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 600));
     if (email.isEmpty || password.isEmpty) {
-      throw AuthFailure('Email ou mot de passe vide');
+      throw AuthFailure(AppTexts.emptyEmailOrPassword);
     }
     // Stub: accepter tout et générer un token factice
     _token = 'fake-token-for:$email';
