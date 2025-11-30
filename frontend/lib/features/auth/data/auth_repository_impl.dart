@@ -92,4 +92,31 @@ class AuthRepositoryImpl implements IAuthRepository {
       return false;
     }
   }
+
+  @override
+  Future<String?> getAccessToken() async {
+    return await _storage.read(key: _keyAccess);
+  }
+
+  @override
+  Future<bool> tryRefresh() async {
+    final refresh = await _storage.read(key: _keyRefresh);
+    if (refresh == null) return false;
+    try {
+      final res = await _api.refresh(refreshToken: refresh);
+      final newAccess = res['access'] as String?;
+      final newRefresh = res['refresh'] as String?;
+      if (newAccess == null) return false;
+      await _storage.write(key: _keyAccess, value: newAccess);
+      if (newRefresh != null) {
+        await _storage.write(key: _keyRefresh, value: newRefresh);
+      }
+      return true;
+    } catch (e) {
+      debugPrint('AuthRepositoryImpl.tryRefresh error: $e');
+      await logout();
+      return false;
+    }
+  }
+
 }
