@@ -95,7 +95,7 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<String?> getAccessToken() async {
-    return await _storage.read(key: _keyAccess);
+    return _storage.read(key: _keyAccess);
   }
 
   @override
@@ -118,5 +118,4 @@ class AuthRepositoryImpl implements IAuthRepository {
       return false;
     }
   }
-
 }

@@ -1,14 +1,16 @@
 import 'dart:async';
 
-import 'package:http/http.dart' as http;
 import 'package:frontend/features/auth/data/auth_repository.dart';
+import 'package:http/http.dart' as http;
 
 /// Client HTTP qui ajoute automatiquement le header Authorization
 /// et tente un refresh du token si la réponse est 401.
 class AuthenticatedClient extends http.BaseClient {
-  AuthenticatedClient({required http.Client inner, required IAuthRepository authRepository})
-    : _inner = inner,
-      _authRepository = authRepository;
+  AuthenticatedClient({
+    required http.Client inner,
+    required IAuthRepository authRepository,
+  }) : _inner = inner,
+       _authRepository = authRepository;
 
   final http.Client _inner;
   final IAuthRepository _authRepository;
@@ -47,7 +49,7 @@ class AuthenticatedClient extends http.BaseClient {
     }
 
     final refreshed = await _refreshInProgress;
-    if (refreshed == true) {
+    if (refreshed ?? false) {
       // Reprendre le corps de la requête si possible. Pour simplicity, on re-crée
       // une nouvelle requête de même type sans body si body non-replayable.
       final newRequest = _rebuildRequest(request);
@@ -74,4 +76,3 @@ class AuthenticatedClient extends http.BaseClient {
   @override
   void close() => _inner.close();
 }
-
