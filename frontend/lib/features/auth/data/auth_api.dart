@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:frontend/constants/texts.dart';
+import 'package:frontend/features/auth/data/auth_repository.dart';
 import 'package:http/http.dart' as http;
 
 class AuthApi {
@@ -52,11 +53,11 @@ class AuthApi {
       }
     } catch (_) {}
 
-    throw Exception(message);
+    throw AuthFailure(message);
   }
 
   Future<Map<String, dynamic>> refresh({required String refreshToken}) async {
-    final url = Uri.parse('$baseUrl/api/auth/token/');
+    final url = Uri.parse('$baseUrl/api/auth/token/refresh');
     final resp = await _client.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -67,6 +68,6 @@ class AuthApi {
       return jsonDecode(resp.body) as Map<String, dynamic>;
     }
 
-    throw Exception(AppTexts.tokenRefreshFailed);
+    throw AuthFailure(AppTexts.tokenRefreshFailed);
   }
 }
