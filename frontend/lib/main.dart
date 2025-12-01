@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/app/app.dart';
 import 'package:frontend/core/api_config.dart';
 import 'package:frontend/core/bloc/app_bloc_observer.dart';
@@ -10,7 +11,11 @@ import 'package:frontend/features/auth/presentation/widgets/auth_gate.dart';
 import 'package:frontend/features/items/application/bloc/item_bloc.dart';
 import 'package:frontend/features/items/data/item_repository.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load();
+
   Bloc.observer = AppBlocObserver();
   runApp(
     MultiRepositoryProvider(

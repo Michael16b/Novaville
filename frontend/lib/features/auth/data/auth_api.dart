@@ -1,26 +1,27 @@
 import 'dart:convert';
 
+import 'package:frontend/constants/api_routes.dart';
 import 'package:frontend/constants/texts.dart';
+import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
-import 'package:http/http.dart' as http;
 
-class AuthApi {
-  AuthApi({required this.baseUrl, http.Client? client})
-    : _client = client ?? http.Client();
-  // baseUrl example: http://localhost:8000
-  final String baseUrl;
-  final http.Client _client;
+/// Client API pour les opérations d'authentification
+class AuthApi extends ApiClient {
+  /// Constructeur du client d'authentification
+  AuthApi({required super.baseUrl, super.client});
 
+  /// Authentifie un utilisateur avec son email et mot de passe
+  ///
+  /// Retourne un Map contenant les tokens et les infos utilisateur
+  /// Lance [AuthFailure] en cas d'erreur
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
   }) async {
-    // Backend uses /api/v1/auth/token/ and expects 'username' + 'password'
-    final url = Uri.parse('$baseUrl/api/auth/token/');
-    final resp = await _client.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'username': email, 'password': password}),
+    // Backend uses /api/auth/token/ and expects 'username' + 'password'
+    final resp = await post(
+      ApiRoutes.authToken,
+      body: {'username': email, 'password': password},
     );
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -56,12 +57,14 @@ class AuthApi {
     throw AuthFailure(message);
   }
 
+  /// Rafraîchit le token d'accès avec un refresh token
+  ///
+  /// Retourne un Map contenant le nouveau token d'accès
+  /// Lance [AuthFailure] en cas d'erreur
   Future<Map<String, dynamic>> refresh({required String refreshToken}) async {
-    final url = Uri.parse('$baseUrl/api/auth/token/refresh');
-    final resp = await _client.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'refresh': refreshToken}),
+    final resp = await post(
+      ApiRoutes.authTokenRefresh,
+      body: {'refresh': refreshToken},
     );
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
