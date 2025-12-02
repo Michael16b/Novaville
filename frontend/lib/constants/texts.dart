@@ -7,4 +7,5 @@ class AppTexts {
   static const String tokenRefreshFailed = 'Impossible de rafraîchir le token';
   static const String serverInvalidResponse = 'Réponse invalide du serveur';
   static const String emptyEmailOrPassword = 'Email ou mot de passe vide';
+  static const String emptyUsernameOrPassword = "Nom d'utilisateur ou mot de passe vide";
 }
