@@ -14,7 +14,7 @@ import 'package:frontend/features/items/data/item_repository.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load();
+  await dotenv.load(fileName: '.env');
 
   Bloc.observer = AppBlocObserver();
   runApp(
