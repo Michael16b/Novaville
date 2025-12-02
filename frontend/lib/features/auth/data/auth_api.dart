@@ -10,18 +10,18 @@ class AuthApi extends ApiClient {
   /// Constructeur du client d'authentification
   AuthApi({required super.baseUrl, super.client});
 
-  /// Authentifie un utilisateur avec son email et mot de passe
+  /// Authentifie un utilisateur avec son username et mot de passe
   ///
   /// Retourne un Map contenant les tokens et les infos utilisateur
   /// Lance [AuthFailure] en cas d'erreur
   Future<Map<String, dynamic>> login({
-    required String email,
+    required String username,
     required String password,
   }) async {
     // Backend uses /api/auth/token/ and expects 'username' + 'password'
     final resp = await post(
       ApiRoutes.authToken,
-      body: {'username': email, 'password': password},
+      body: {'username': username, 'password': password},
     );
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {

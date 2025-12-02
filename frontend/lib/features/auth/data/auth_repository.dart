@@ -9,7 +9,7 @@ class AuthFailure implements Exception {
 }
 
 abstract class IAuthRepository {
-  Future<String> login({required String email, required String password});
+  Future<String> login({required String username, required String password});
   Future<void> logout();
   Future<bool> hasValidSession();
 }
@@ -19,15 +19,15 @@ class FakeAuthRepository implements IAuthRepository {
 
   @override
   Future<String> login({
-    required String email,
+    required String username,
     required String password,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 600));
-    if (email.isEmpty || password.isEmpty) {
-      throw AuthFailure(AppTexts.emptyEmailOrPassword);
+    if (username.isEmpty || password.isEmpty) {
+      throw AuthFailure(AppTexts.emptyUsernameOrPassword);
     }
     // Stub: accepter tout et générer un token factice
-    _token = 'fake-token-for:$email';
+    _token = 'fake-token-for:$username';
     return _token!;
   }
 

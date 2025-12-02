@@ -31,7 +31,7 @@ void main() {
       final authApi = AuthApi(baseUrl: baseUrl, client: mockClient);
 
       final result = await authApi.login(
-        email: 'admin',
+        username: 'admin',
         password: 'ChangeMe123',
       );
 
@@ -48,7 +48,7 @@ void main() {
       final authApi = AuthApi(baseUrl: baseUrl, client: mockClient);
 
       expect(
-        () => authApi.login(email: 'wrong', password: 'wrong'),
+        () => authApi.login(username: 'wrong', password: 'wrong'),
         throwsA(
           isA<AuthFailure>().having(
             (e) => e.message,
@@ -69,7 +69,7 @@ void main() {
         final authApi = AuthApi(baseUrl: baseUrl, client: mockClient);
 
         expect(
-          () => authApi.login(email: 'wrong', password: 'wrong'),
+          () => authApi.login(username: 'wrong', password: 'wrong'),
           throwsA(
             isA<AuthFailure>().having(
               (e) => e.message,
@@ -89,7 +89,7 @@ void main() {
       final authApi = AuthApi(baseUrl: baseUrl, client: mockClient);
 
       expect(
-        () => authApi.login(email: 'admin', password: 'test'),
+        () => authApi.login(username: 'admin', password: 'test'),
         throwsA(
           isA<AuthFailure>().having(
             (e) => e.message,
@@ -108,7 +108,7 @@ void main() {
       final authApi = AuthApi(baseUrl: baseUrl, client: mockClient);
 
       expect(
-        () => authApi.login(email: 'admin', password: 'test'),
+        () => authApi.login(username: 'admin', password: 'test'),
         throwsA(
           isA<AuthFailure>().having(
             (e) => e.message,
@@ -169,7 +169,7 @@ void main() {
       final authApi = AuthApi(baseUrl: baseUrl, client: mockClient);
 
       expect(
-        () => authApi.login(email: 'admin', password: ''),
+        () => authApi.login(username: 'admin', password: ''),
         throwsA(
           isA<AuthFailure>().having(
             (e) => e.message,

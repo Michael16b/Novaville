@@ -44,11 +44,11 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<String> login({
-    required String email,
+    required String username,
     required String password,
   }) async {
     try {
-      final data = await _api.login(email: email, password: password);
+      final data = await _api.login(username: username, password: password);
       final access = data['access'] as String?;
       final refresh = data['refresh'] as String?;
       if (access == null || refresh == null) {
