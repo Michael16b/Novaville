@@ -13,8 +13,8 @@ FROM ghcr.io/cirruslabs/flutter:stable AS flutter-builder
 
 WORKDIR /app
 
-# Pré-copie pour le cache des dépendances (pubspec.yaml/lock)
-COPY pubspec.yaml pubspec.lock ./ 
+# Pré-copie pour le cache des dépendances (pubspec.yaml)
+COPY pubspec.yaml ./
 RUN flutter pub get
 
 # Copie du code source (lib/, web/, assets/, etc.)
@@ -24,6 +24,10 @@ COPY . /app/
 # Build args pour variables d'environnement injectées au build
 ARG API_URL=http://localhost:8000
 ARG ENVIRONMENT=production
+
+# Configuration et build web release
+RUN echo "API_URL=${API_URL}" > .env && \
+    echo "ENVIRONMENT=${ENVIRONMENT}" >> .env
 
 # Configuration et build web release
 RUN flutter config --enable-web && \
