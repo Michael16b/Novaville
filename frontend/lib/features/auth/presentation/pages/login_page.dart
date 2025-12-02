@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/form_labels.dart';
 import 'package:frontend/constants/texts.dart';
 import 'package:frontend/constants/validator_messages.dart';
@@ -17,12 +18,12 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -31,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
         AuthLoginSubmitted(
-          email: _emailController.text.trim(),
+          username: _usernameController.text.trim(),
           password: _passwordController.text,
         ),
       );
@@ -42,11 +43,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state.status == AuthStatus.failure && state.error != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.error!)));
-        }
+        // Nous affichons maintenant l'erreur inline dans le builder (pas de SnackBar ici)
       },
       builder: (context, state) {
         final isLoading =
@@ -70,11 +67,11 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 24),
                       CustomTextFormField(
-                        labelText: AppFormLabels.email,
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
+                        labelText: AppFormLabels.username,
+                        controller: _usernameController,
+                        keyboardType: TextInputType.name,
                         validator: (v) => (v == null || v.isEmpty)
-                            ? AppValidatorMessages.emailRequired
+                            ? AppValidatorMessages.usernameRequired
                             : null,
                       ),
                       const SizedBox(height: 24),
@@ -86,6 +83,17 @@ class _LoginPageState extends State<LoginPage> {
                             ? AppValidatorMessages.passwordRequired
                             : null,
                       ),
+                      const SizedBox(height: 12),
+                      // Affiche l'erreur d'authentification si elle existe
+                      if (state.status == AuthStatus.failure &&
+                          state.error != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            state.error!,
+                            style: const TextStyle(color: AppColors.error),
+                          ),
+                        ),
                       const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,

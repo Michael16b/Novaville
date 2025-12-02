@@ -13,6 +13,8 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
 
 INSTALLED_APPS = [
+    # Add corsheaders for cross-origin requests from the frontend (dev)
+    'corsheaders',
     # Optional nicer admin UI (grappelli) - installed only when in requirements
     # Put grappelli before admin to override admin templates
     "grappelli",
@@ -39,6 +41,8 @@ INSTALLED_APPS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MIDDLEWARE = [
+    # corsheaders middleware should be placed as high as possible
+    'corsheaders.middleware.CorsMiddleware',
     # Admin IP restriction middleware (applies only if ADMIN_ALLOWED_IPS is set)
     "config.middleware.AdminIPRestrictionMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -192,3 +196,13 @@ SPECTACULAR_SETTINGS.update({
     "SECURITY": [{"BearerAuth": []}],
 })
 
+# Development-friendly CORS settings
+# For development only: allow all origins so flutter web / other frontends can access the API.
+# In production, prefer setting CORS_ALLOWED_ORIGINS to a strict list instead of allowing all.
+CORS_ALLOW_ALL_ORIGINS = True
+# Example for a stricter configuration:
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:8080',
+#     'http://localhost:8000',
+#     'http://127.0.0.1:8080',
+# ]

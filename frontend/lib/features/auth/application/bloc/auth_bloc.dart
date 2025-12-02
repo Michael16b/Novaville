@@ -45,12 +45,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthState.authenticating());
     try {
-      await _repository.login(email: event.email, password: event.password);
+      await _repository.login(username: event.username, password: event.password);
       emit(const AuthState.authenticated());
     } catch (e) {
       emit(AuthState.failure(e.toString()));
-      // Retourner à l'état non authentifié après un échec
-      emit(const AuthState.unauthenticated());
     }
   }
 

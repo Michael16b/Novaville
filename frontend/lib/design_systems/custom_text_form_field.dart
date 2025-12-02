@@ -89,9 +89,9 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
 
     return Theme(
       data: Theme.of(context).copyWith(
-        colorScheme: Theme.of(context)
-            .colorScheme
-            .copyWith(error: CustomTextFormField.errorColor),
+        colorScheme: Theme.of(
+          context,
+        ).colorScheme.copyWith(error: CustomTextFormField.errorColor),
       ),
       child: TextSelectionTheme(
         data: const TextSelectionThemeData(
