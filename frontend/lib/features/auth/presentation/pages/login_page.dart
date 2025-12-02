@@ -18,12 +18,12 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -32,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
         AuthLoginSubmitted(
-          email: _emailController.text.trim(),
+          username: _usernameController.text.trim(),
           password: _passwordController.text,
         ),
       );
@@ -67,11 +67,11 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 24),
                       CustomTextFormField(
-                        labelText: AppFormLabels.email,
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
+                        labelText: AppFormLabels.username,
+                        controller: _usernameController,
+                        keyboardType: TextInputType.name,
                         validator: (v) => (v == null || v.isEmpty)
-                            ? AppValidatorMessages.emailRequired
+                            ? AppValidatorMessages.usernameRequired
                             : null,
                       ),
                       const SizedBox(height: 24),
