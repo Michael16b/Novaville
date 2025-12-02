@@ -26,8 +26,8 @@ ARG API_URL=http://localhost:8000
 ARG ENVIRONMENT=production
 
 # Configuration et build web release
-RUN echo "API_URL=${API_URL}" > .env && \
-    echo "ENVIRONMENT=${ENVIRONMENT}" >> .env
+RUN echo "API_URL=${API_URL}" && \
+    echo "ENVIRONMENT=${ENVIRONMENT}"
 
 # Configuration et build web release
 RUN flutter config --enable-web && \
