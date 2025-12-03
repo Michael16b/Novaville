@@ -22,6 +22,14 @@ jobs:
         with:
           flutter-version: "3.38.3"   # Mets ta version si différente
 
+      - name: Create .env file for tests
+        working-directory: frontend
+        run: |
+          cat << 'EOF' > .env
+          API_BASE_URL=https://example.com
+          SOME_KEY=dummy
+          EOF
+
       # 3. Installation des dépendances
       - name: Pub get
         working-directory: frontend
@@ -32,10 +40,4 @@ jobs:
         working-directory: frontend
         run: flutter test test/core/network/api_client_test.dart
 
-      - name: Create .env file for tests
-        working-directory: frontend
-        run: |
-          cat << 'EOF' > .env
-          API_BASE_URL=https://example.com
-          SOME_KEY=dummy
-          EOF
+      
