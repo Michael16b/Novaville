@@ -20,7 +20,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.24.0"   # Mets ta version si différente
+          flutter-version: "3.38.3"   # Mets ta version si différente
 
       # 3. Installation des dépendances
       - name: Pub get
