@@ -31,3 +31,11 @@ jobs:
       - name: Run specific test
         working-directory: frontend
         run: flutter test test/core/network/api_client_test.dart
+
+      - name: Create .env file for tests
+        working-directory: frontend
+        run: |
+          cat << 'EOF' > .env
+          API_BASE_URL=https://example.com
+          SOME_KEY=dummy
+          EOF
