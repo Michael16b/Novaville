@@ -30,8 +30,8 @@ RUN echo "API_URL=${API_URL}" && \
     echo "ENVIRONMENT=${ENVIRONMENT}"
 
 # Configuration et build web release
-RUN flutter config --enable-web && \
-    flutter build web --release \
+RUN flutter config --enable-web  && \
+    flutter build web --release --verbose \
       --dart-define=API_URL=${API_URL} \
       --dart-define=ENVIRONMENT=${ENVIRONMENT}
 
