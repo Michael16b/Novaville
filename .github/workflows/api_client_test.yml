@@ -1,0 +1,33 @@
+name: Tests Front api Client
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Récupération du code du repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Installation de Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.0"   # Mets ta version si différente
+
+      # 3. Installation des dépendances
+      - name: Pub get
+        working-directory: frontend
+        run: flutter pub get
+
+      # 4. Exécuter UNIQUEMENT ton test ciblé
+      - name: Run specific test
+        working-directory: frontend
+        run: flutter test test/core/network/api_client_test.dart
