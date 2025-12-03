@@ -1,4 +1,4 @@
-name: Tests Front api Client
+name: Widget Tests
 
 on:
   push:

@@ -33,7 +33,7 @@ RUN echo "API_URL=${API_URL}" && \
 RUN flutter config --enable-web  && \
     flutter build web --release --verbose \
       --dart-define=API_URL=${API_URL} \
-      --dart-define=ENVIRONMENT=${ENVIRONMENT} 
+      --dart-define=ENVIRONMENT=${ENVIRONMENT}
 
 ##########
 # STAGE 2: Serveur Nginx pour SPA Flutter

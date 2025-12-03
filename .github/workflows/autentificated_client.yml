@@ -1,4 +1,4 @@
-name: Tests Front api Client
+name: Authenticated Client Tests
 
 on:
   push:
