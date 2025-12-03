@@ -38,6 +38,6 @@ jobs:
       # 4. Exécuter UNIQUEMENT ton test ciblé
       - name: Run specific test
         working-directory: frontend
-        run: flutter test test/core/features/auth_api_test.dart
+        run: flutter test test/features/auth_api_test.dart
 
       
