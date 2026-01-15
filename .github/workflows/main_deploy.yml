@@ -18,13 +18,13 @@ jobs:
           username: ${{ secrets.AZURE_ACR_USERNAME }}
           password: ${{ secrets.AZURE_ACR_PASSWORD }}
 
-      # Build du Backend
+      # Build and push Backend
       - name: Build and push Backend
         run: |
           docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:latest ./backend
           docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:latest
 
-      # Build du Frontend
+      # Build and push Frontend
       - name: Build and push Frontend
         run: |
           docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-frontend:latest ./frontend
