@@ -1,0 +1,31 @@
+name: Build and Push Images to Azure Container Registry
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to ACR
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+          username: ${{ secrets.AZURE_ACR_USERNAME }}
+          password: ${{ secrets.AZURE_ACR_PASSWORD }}
+
+      # Build du Backend
+      - name: Build and push Backend
+        run: |
+          docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:latest ./backend
+          docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:latest
+
+      # Build du Frontend
+      - name: Build and push Frontend
+        run: |
+          docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-frontend:latest ./frontend
+          docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-frontend:latest
