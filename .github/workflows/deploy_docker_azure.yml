@@ -20,13 +20,11 @@ jobs:
           username: ${{ secrets.AZURE_ACR_USERNAME }}
           password: ${{ secrets.AZURE_ACR_PASSWORD }}
 
-      # Build du Backend
       - name: Build and push Backend
         run: |
           docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:latest ./backend
           docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:latest
 
-      # Build du Frontend (On garde tes build-args indispensables !)
       - name: Build and push Frontend
         run: |
           docker build \
@@ -43,19 +41,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Connexion à Azure pour lancer les commandes CLI
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_XXXXX }} # Utilise le nom exact créé par Azure
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_XXXXX }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_XXXXX }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
 
-      # Forcer Azure à utiliser le fichier Docker Compose (Contourne le mode Sidecar)
-      - name: Deploy Docker Compose configuration
+      - name: Deploy Docker Compose
         run: |
           az webapp config container set \
             --name NovavilleApp \
             --resource-group Novaville \
             --multicontainer-config-type COMPOSE \
-            --multicontainer-config-file docker-compose-azure.yml
+            --multicontainer-config-file docker-compose-azure.yml \
+            --docker-registry-server-url https://${{ secrets.AZURE_ACR_NAME }}.azurecr.io \
+            --docker-registry-server-user ${{ secrets.AZURE_ACR_USERNAME }} \
+            --docker-registry-server-password ${{ secrets.AZURE_ACR_PASSWORD }}
