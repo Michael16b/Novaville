@@ -26,7 +26,7 @@ jobs:
           docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:latest
 
       # Build and push Frontend
-     - name: Build and Push Frontend
+      - name: Build and Push Frontend
         run: |
           docker build \
             --build-arg API_URL="https://novaville.azurewebsites.net" \
