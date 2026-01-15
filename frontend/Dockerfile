@@ -49,7 +49,7 @@ server {
     try_files $uri $uri/ /index.html;
   }
 
-  # Sécurité et Cache (config inchangée)
+  # Sécurité et Cache
   location ~* \.(manifest|appcache|html?|xml|json)$ {
     expires -1;
     add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
