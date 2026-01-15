@@ -27,7 +27,7 @@ RUN touch .env && \
 # On utilise --dart-define pour injecter les variables directement dans le code
 RUN flutter config --enable-web && \
     flutter build web --release --verbose \
-      --dart-define=API_URL=${API_URL} \
+      --dart-define=API_BASE_URL=${API_URL} \
       --dart-define=ENVIRONMENT=${ENVIRONMENT}
 
 ##########
