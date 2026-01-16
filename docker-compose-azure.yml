@@ -28,6 +28,10 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=ton_password_securise
       - MIGRATE=1
+      - COLLECTSTATIC=1
+      - DJANGO_SUPERUSER_USERNAME=admin #à changer
+      - DJANGO_SUPERUSER_EMAIL=admin@example.com #à changer
+      - DJANGO_SUPERUSER_PASSWORD=ChangeMe123 #à changer
     depends_on:
       postgres:
         condition: service_healthy
