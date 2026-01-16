@@ -67,10 +67,6 @@ ENV DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-config.settings} \
 #   - Montez /cloudsql et définissez DB_HOST="/cloudsql/${INSTANCE_CONNECTION_NAME}"
 VOLUME ["/app/staticfiles", "/app/media"]
 
-# Création des dossiers nécessaires et correction des permissions
-RUN mkdir -p /app/static /app/staticfiles /app/media && \
-    chown -R app:app /app
-	
 EXPOSE 8000
 
 # Lancement: migrations/statics optionnels, puis Gunicorn (MVT via module WSGI)
@@ -81,21 +77,12 @@ ENV DJANGO_WSGI_MODULE=${DJANGO_WSGI_MODULE:-config.wsgi} \
 USER app
 
 CMD ["sh", "-c", "set -eux; \
-    if [ \"${MIGRATE:-0}\" = \"1\" ]; then \
+    if [ -f manage.py ] && [ \"${MIGRATE:-0}\" = \"1\" ]; then \
         python manage.py migrate --noinput; \
     fi; \
-    if [ \"$DJANGO_SUPERUSER_USERNAME\" ]; then \
-        python manage.py shell -c \"from django.contrib.auth import get_user_model; \
-User = get_user_model(); \
-if not User.objects.filter(username='$DJANGO_SUPERUSER_USERNAME').exists(): \
-    User.objects.create_superuser('$DJANGO_SUPERUSER_USERNAME', '$DJANGO_SUPERUSER_EMAIL', '$DJANGO_SUPERUSER_PASSWORD'); \
-    print('Superuser created successfully')\"; \
-    fi; \
-    # 3. Collecte des statiques
-    if [ \"${COLLECTSTATIC:-0}\" = \"1\" ]; then \
+    if [ -f manage.py ] && [ \"${COLLECTSTATIC:-0}\" = \"1\" ]; then \
         python manage.py collectstatic --noinput; \
     fi; \
-    # 4. Lancement Gunicorn
     exec gunicorn \"${DJANGO_WSGI_MODULE}:application\" \
         --bind 0.0.0.0:${PORT} \
         --workers ${GUNICORN_WORKERS} \

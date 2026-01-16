@@ -53,27 +53,19 @@ if [ "${COLLECTSTATIC:-0}" = "1" ] || [ "${COLLECTSTATIC:-false}" = "true" ]; th
 fi
 
 echo "[entrypoint] executing: $@"
+
+
+# Création auto du superuser si variables présentes
+if [ "${DJANGO_SUPERUSER_USERNAME:-}" != "" ]; then
+  python manage.py shell -c "
+from django.contrib.auth import get_user_model
+User = get_user_model()
+u='${DJANGO_SUPERUSER_USERNAME}'
+e='${DJANGO_SUPERUSER_EMAIL:-admin@example.com}'
+p='${DJANGO_SUPERUSER_PASSWORD:-}'
+if p and not User.objects.filter(username=u).exists():
+    User.objects.create_superuser(u, e, p)
+"
+fi
+
 exec "$@"
-
-# Optionally create a Django superuser in development.
-# Set DJANGO_CREATE_SUPERUSER=1 and optionally DJANGO_ADMIN_USER, DJANGO_ADMIN_EMAIL, DJANGO_ADMIN_PASSWORD
-# This block is idempotent and will NOT overwrite an existing user.
-
-# if [ "${DJANGO_CREATE_SUPERUSER:-0}" = "1" ] || [ "${DJANGO_CREATE_SUPERUSER:-false}" = "true" ]; then
-#   ADMIN_USER=${DJANGO_ADMIN_USER:-admin}
-#   ADMIN_EMAIL=${DJANGO_ADMIN_EMAIL:-admin@example.com}
-#   ADMIN_PASS=${DJANGO_ADMIN_PASSWORD:-ChangeMe123}
-#   echo "[entrypoint] ensure superuser exists: ${ADMIN_USER}"
-#   run_as_appuser python - <<PY
-# from django.contrib.auth import get_user_model
-# User = get_user_model()
-# username = "${ADMIN_USER}"
-# email = "${ADMIN_EMAIL}"
-# password = "${ADMIN_PASS}"
-# if not User.objects.filter(username=username).exists():
-#     User.objects.create_superuser(username, email, password)
-#     print('Superuser created: {}'.format(username))
-# else:
-#     print('Superuser already exists: {}'.format(username))
-# PY
-# fi
