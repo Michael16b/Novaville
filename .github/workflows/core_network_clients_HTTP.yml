@@ -38,6 +38,9 @@ jobs:
       # 4. Exécuter UNIQUEMENT ton test ciblé
       - name: Run specific test
         working-directory: frontend
-        run: flutter test test/core/network/api_client_test.dart
+        run: |
+          flutter test test/core/network/api_client_test.dart
+          flutter test test/core/network/authenticated_client_test.dart
+          flutter test test/core/network/authenticated_client_factory_test.dart
 
       
