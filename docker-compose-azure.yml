@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3'
 
 services:
   postgres:
@@ -8,18 +8,14 @@ services:
       - POSTGRES_DB=novaville
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=ton_password_securise
-      - PGDATA=/var/lib/postgresql/data/pgdata
-    volumes:
-      - db-volume:/var/lib/postgresql/data
+    # VOLUMES DÉSACTIVÉS POUR LE TEST
     networks:
-      - novaville-bridge
-    restart: always
+      - novaville-net
 
   backend:
-    image: novaville.azurecr.io/novaville-backend:latest
+    image: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:latest
     container_name: backend
     environment:
-      - DJANGO_SETTINGS_MODULE=config.settings
       - DB_ENGINE=django.db.backends.postgresql
       - DB_HOST=postgres
       - DB_PORT=5432
@@ -27,20 +23,11 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=ton_password_securise
       - MIGRATE=1
-      - COLLECTSTATIC=1
-      - DJANGO_SUPERUSER_USERNAME=admin
-      - DJANGO_SUPERUSER_EMAIL=admin@example.com
-      - DJANGO_SUPERUSER_PASSWORD=ChangeMe123
     depends_on:
       - postgres
+    networks:
+      - novaville-net
 
-  frontend:
-    image: novaville.azurecr.io/novaville-frontend:latest
-    container_name: frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-
-volumes:
-  db-volume: # Le lien avec ton Path Mapping Azure
+networks:
+  novaville-net:
+    driver: bridge
