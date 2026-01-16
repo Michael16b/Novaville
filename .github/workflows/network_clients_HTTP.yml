@@ -6,21 +6,30 @@ on:
   pull_request:
     branches: ["main"]
 
-
 jobs:
-  run-tests:
+  network-tests:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api_client_test
+            file: test/core/network/api_client_test.dart
+          - name: authenticated_client_test
+            file: test/core/network/authenticated_client_test.dart
+          - name: authenticated_client_factory_test
+            file: test/core/network/authenticated_client_factory_test.dart
+
     steps:
-      # 1. Récupération du code du repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Installation de Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.38.3"   # Mets ta version si différente
+          flutter-version: "3.38.3"
 
       - name: Create .env file for tests
         working-directory: frontend
@@ -30,23 +39,10 @@ jobs:
           SOME_KEY=dummy
           EOF
 
-      # 3. Installation des dépendances
       - name: Pub get
         working-directory: frontend
         run: flutter pub get
 
-      # 4. Exécuter les tests un par un (visibles séparément dans l'UI)
-      - name: Run api_client_test
+      - name: Run test
         working-directory: frontend
-        run: flutter test test/core/network/api_client_test.dart
-
-      - name: Run authenticated_client_test
-        working-directory: frontend
-        run: flutter test test/core/network/authenticated_client_test.dart
-
-      - name: Run authenticated_client_factory_test
-        working-directory: frontend
-        run: flutter test test/core/network/authenticated_client_factory_test.dart
-
-
-      
+        run: flutter test ${{ matrix.file }}
