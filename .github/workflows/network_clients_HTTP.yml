@@ -1,4 +1,4 @@
-name: Testent la couche client réseau
+name: Tests Réseaux
 
 on:
   push:
@@ -35,12 +35,18 @@ jobs:
         working-directory: frontend
         run: flutter pub get
 
-      # 4. Exécuter UNIQUEMENT ton test ciblé
-      - name: Run specific test
+      # 4. Exécuter les tests un par un (visibles séparément dans l'UI)
+      - name: Run api_client_test
         working-directory: frontend
-        run: |
-          flutter test test/core/network/api_client_test.dart
-          flutter test test/core/network/authenticated_client_test.dart
-          flutter test test/core/network/authenticated_client_factory_test.dart
+        run: flutter test test/core/network/api_client_test.dart
+
+      - name: Run authenticated_client_test
+        working-directory: frontend
+        run: flutter test test/core/network/authenticated_client_test.dart
+
+      - name: Run authenticated_client_factory_test
+        working-directory: frontend
+        run: flutter test test/core/network/authenticated_client_factory_test.dart
+
 
       
