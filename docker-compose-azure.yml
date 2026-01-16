@@ -3,6 +3,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
+    container_name: postgres
     environment:
       - POSTGRES_DB=novaville
       - POSTGRES_USER=postgres
@@ -11,14 +12,10 @@ services:
     volumes:
       - db-volume:/var/lib/postgresql/data
     restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   backend:
     image: novaville.azurecr.io/novaville-backend:latest
+    container_name: backend
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings
       - DB_ENGINE=django.db.backends.postgresql
@@ -29,16 +26,19 @@ services:
       - DB_PASSWORD=ton_password_securise
       - MIGRATE=1
       - COLLECTSTATIC=1
-      - DJANGO_SUPERUSER_USERNAME=admin #à changer
-      - DJANGO_SUPERUSER_EMAIL=admin@example.com #à changer
-      - DJANGO_SUPERUSER_PASSWORD=ChangeMe123 #à changer
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@example.com
+      - DJANGO_SUPERUSER_PASSWORD=ChangeMe123
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
 
   frontend:
     image: novaville.azurecr.io/novaville-frontend:latest
+    container_name: frontend
     ports:
       - "80:80"
     depends_on:
       - backend
+
+volumes:
+  db-volume: # Le lien avec ton Path Mapping Azure
