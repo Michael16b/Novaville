@@ -4,7 +4,7 @@ services:
     image: postgres:15-alpine
     container_name: novaville-postgres
     environment:
-      - POSTGRES_DB=${DB_NAME:-novaville}
+      - POSTGRES_DB=${DB_NAME:-novaville_user}
       - POSTGRES_USER=${DB_USER:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
     ports:
