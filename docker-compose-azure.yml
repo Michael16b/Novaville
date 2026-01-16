@@ -11,6 +11,8 @@ services:
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - db-volume:/var/lib/postgresql/data
+    networks:
+      - novaville-bridge
     restart: always
 
   backend:
