@@ -1,15 +1,14 @@
 version: '3.8'
 
 services:
-  # Base de données
   postgres:
     image: postgres:15-alpine
     environment:
       - POSTGRES_DB=novaville
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=ton_password_securise # À changer
+      - POSTGRES_PASSWORD=ton_password_securise
+      - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
-      # 'db-volume' est le nom que tu donneras dans "Path Mappings" sur Azure
       - db-volume:/var/lib/postgresql/data
     restart: always
     healthcheck:
@@ -18,12 +17,10 @@ services:
       timeout: 5s
       retries: 5
 
-  # Backend Django
   backend:
     image: novaville.azurecr.io/novaville-backend:latest
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings
-      - DJANGO_WSGI_MODULE=config.wsgi
       - DB_ENGINE=django.db.backends.postgresql
       - DB_HOST=postgres
       - DB_PORT=5432
@@ -31,19 +28,13 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=ton_password_securise
       - MIGRATE=1
-      - COLLECTSTATIC=1
     depends_on:
       postgres:
         condition: service_healthy
 
-  # Frontend Flutter Web
   frontend:
     image: novaville.azurecr.io/novaville-frontend:latest
     ports:
-      - "80:80" # Azure redirige le trafic externe vers le premier port 80 trouvé
+      - "80:80"
     depends_on:
       - backend
-      - postgres
-
-volumes:
-  db-volume: # Ce nom doit correspondre au mount Azure
