@@ -7,21 +7,8 @@ on:
     branches: ["main"]
 
 jobs:
-  network-tests:
-    name: ${{ matrix.name }}
+  run-tests:
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: api_client_test
-            file: test/core/network/api_client_test.dart
-          - name: authenticated_client_test
-            file: test/core/network/authenticated_client_test.dart
-          - name: authenticated_client_factory_test
-            file: test/core/network/authenticated_client_factory_test.dart
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,6 +30,14 @@ jobs:
         working-directory: frontend
         run: flutter pub get
 
-      - name: Run test
+      - name: Test api_client
         working-directory: frontend
-        run: flutter test ${{ matrix.file }}
+        run: flutter test test/core/network/api_client_test.dart
+
+      - name: Test authenticated_client
+        working-directory: frontend
+        run: flutter test test/core/network/authenticated_client_test.dart
+
+      - name: Test authenticated_client_factory
+        working-directory: frontend
+        run: flutter test test/core/network/authenticated_client_factory_test.dart
