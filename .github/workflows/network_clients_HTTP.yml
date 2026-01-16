@@ -1,4 +1,4 @@
-name: Tests Front api Client
+name: Testent la couche client réseau
 
 on:
   push:
