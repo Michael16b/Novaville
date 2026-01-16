@@ -11,15 +11,13 @@ jobs:
   run-tests:
     runs-on: ubuntu-latest
     steps:
-      # 1. Récupération du code du repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Installation de Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.38.3"   # Mets ta version si différente
+          flutter-version: "3.38.3"
 
       - name: Create .env file for tests
         working-directory: frontend
@@ -29,47 +27,18 @@ jobs:
           SOME_KEY=dummy
           EOF
 
-      # 3. Installation des dépendances
       - name: Pub get
         working-directory: frontend
         run: flutter pub get
 
-      # 4. Exécuter UNIQUEMENT ton test ciblé
-      - name: Run specific test
+      - name: Test api_client
         working-directory: frontend
-        run: |
-          flutter test test/core/network/api_client_test.dart
-          
+        run: flutter test test/core/network/api_client_test.dart
 
-  run-tests2:
-    runs-on: ubuntu-latest
-    steps:
-      # 1. Récupération du code du repo
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # 2. Installation de Flutter
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.38.3"   # Mets ta version si différente
-
-      - name: Create .env file for tests
+      - name: Test authenticated_client
         working-directory: frontend
-        run: |
-          cat << 'EOF' > .env
-          API_BASE_URL=https://example.com
-          SOME_KEY=dummy
-          EOF
+        run: flutter test test/core/network/authenticated_client_test.dart
 
-      # 3. Installation des dépendances
-      - name: Pub get
+      - name: Test authenticated_client_factory
         working-directory: frontend
-        run: flutter pub get
-
-      # 4. Exécuter UNIQUEMENT ton test ciblé
-      - name: Run specific test
-        working-directory: frontend
-        run: |
-          flutter test test/core/network/authenticated_client_test.dart
-          
+        run: flutter test test/core/network/authenticated_client_factory_test.dart
