@@ -4,9 +4,9 @@ services:
     image: postgres:15-alpine
     container_name: novaville-postgres
     environment:
-      - POSTGRES_DB=${DB_NAME:-novaville_user}
-      - POSTGRES_USER=${DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_USER=novaville_user
+      - POSTGRES_DB=novaville_db
+      - POSTGRES_PASSWORD=YOUR_SECURE_PASSWORD
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
@@ -15,7 +15,7 @@ services:
       - novaville-net
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -d postgres -U novaville_user"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -36,9 +36,9 @@ services:
       - DB_ENGINE=django.db.backends.postgresql
       - DB_HOST=${DB_HOST:-postgres}
       - DB_PORT=${DB_PORT:-5432}
-      - DB_NAME=${DB_NAME:-novaville}
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-novaville_db}
+      - DB_USER=${DB_USER:-novaville_user}
+      - DB_PASSWORD=${DB_PASSWORD:-YOUR_SECURE_PASSWORD}
       # Options démarrage
       - MIGRATE=1
       - COLLECTSTATIC=1

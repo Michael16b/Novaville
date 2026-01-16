@@ -58,9 +58,9 @@ ENV DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-config.settings} \
 		DB_ENGINE=${DB_ENGINE:-django.db.backends.postgresql} \
 		DB_HOST=${DB_HOST:-localhost} \
 		DB_PORT=${DB_PORT:-5432} \
-		DB_NAME=${DB_NAME:-app} \
-		DB_USER=${DB_USER:-app} \
-		DB_PASSWORD=${DB_PASSWORD:-password} \
+		DB_NAME=${DB_NAME:-novaville_db} \
+		DB_USER=${DB_USER:-novaville_user} \
+		DB_PASSWORD=${DB_PASSWORD:-YOUR_SECURE_PASSWORD} \
 		INSTANCE_CONNECTION_NAME=${INSTANCE_CONNECTION_NAME:-}
 
 # Si vous utilisez les sockets Cloud SQL dans Cloud Run/GKE:
