@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 services:
   postgres:
@@ -8,12 +8,15 @@ services:
       - POSTGRES_DB=novaville
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=ton_password_securise
-    # VOLUMES DÉSACTIVÉS POUR LE TEST
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - db-volume:/var/lib/postgresql/data
     networks:
-      - novaville-net
+      - novaville-net # On force l'appartenance au réseau
+    restart: always
 
   backend:
-    image: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:latest
+    image: novaville.azurecr.io/novaville-backend:latest
     container_name: backend
     environment:
       - DB_ENGINE=django.db.backends.postgresql
@@ -30,4 +33,7 @@ services:
 
 networks:
   novaville-net:
-    driver: bridge
+    driver: bridge # Ce bloc à la fin est indispensable pour lier les services
+
+volumes:
+  db-volume:
