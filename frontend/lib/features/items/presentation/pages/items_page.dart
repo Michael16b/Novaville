@@ -21,7 +21,6 @@ class _ItemsPageState extends State<ItemsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Items')),
       body: BlocBuilder<ItemBloc, ItemState>(
         builder: (context, state) {
           switch (state.status) {
