@@ -10,5 +10,5 @@ class AppTexts {
   static const String serverInvalidResponse = 'Réponse invalide du serveur';
   static const String emptyEmailOrPassword = 'Email ou mot de passe vide';
   static const String emptyUsernameOrPassword = "Nom d'utilisateur ou mot de passe vide";
-  static const String personalInfo= "Mes infos personnelles";
+  static const String personalInfo = "Mes infos personnelles";
 }
