@@ -18,7 +18,7 @@ INSTALLED_APPS = [
     # Optional nicer admin UI (grappelli) - installed only when in requirements
     # Put grappelli before admin to override admin templates and static files
     # Note: Grappelli overrides Django admin static files intentionally.
-    # collectstatic is run with --verbosity 1 to suppress duplicate file warnings.
+    # collectstatic uses grep to filter out duplicate file warnings in logs.
     "grappelli",
     "django.contrib.admin",
     "django.contrib.auth",
