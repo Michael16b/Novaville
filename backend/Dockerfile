@@ -39,7 +39,7 @@ RUN set -eux; \
 # Dossiers pour les assets MVT
 ENV DJANGO_STATIC_ROOT=/app/staticfiles \
 		DJANGO_MEDIA_ROOT=/app/media
-RUN mkdir -p "$DJANGO_STATIC_ROOT" "$DJANGO_MEDIA_ROOT" /app/static && chown -R app:app /app
+RUN mkdir -p "$DJANGO_STATIC_ROOT" "$DJANGO_MEDIA_ROOT" && chown -R app:app /app
 
 # Variables DB CloudSQL (TCP ou Unix socket via /cloudsql/INSTANCE)
 ENV DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-config.settings} \

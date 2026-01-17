@@ -88,15 +88,10 @@ STATIC_ROOT = os.environ.get("DJANGO_STATIC_ROOT", str(BASE_DIR / "staticfiles")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.environ.get("DJANGO_MEDIA_ROOT", str(BASE_DIR / "media"))
 
-# Optionally include an app-level `static/` directory during development
-# NOTE: This directory must exist in the filesystem (created in Dockerfile).
-# It can be used to add custom static files (CSS, JS, images) that are not part of any Django app.
-STATICFILES_DIRS = [BASE_DIR / "static"]
-
-# NOTE: Grappelli is placed before django.contrib.admin in INSTALLED_APPS to override
-# Django's default admin static files (CSS/JS). This is intentional behavior.
-# During collectstatic, you may see warnings like "Found another file with the destination path"
-# for admin/js/actions.js and similar files. This is expected and safe to ignore.
+# STATICFILES_DIRS: Not configured because all static files come from installed apps.
+# Django will automatically collect static files from each app's static/ directory.
+# If you need custom static files not part of any app, add them here:
+# STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Database: prefer DATABASE_URL, else support DB_* or POSTGRES_* env vars
 DATABASE_URL = os.environ.get("DATABASE_URL")
