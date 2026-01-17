@@ -1,15 +1,3 @@
-###############################################
-# Dockerfile (backend) - Django (MVT) + Gunicorn
-# Usage:
-#  docker build -f backend/Dockerfile -t novaville-backend .
-#  docker run --rm -p 8000:8000 \
-#    -e DB_ENGINE=django.db.backends.postgresql \
-#    -e DB_HOST=127.0.0.1 -e DB_PORT=5432 \
-#    -e DB_NAME=app -e DB_USER=app -e DB_PASSWORD=secret \
-#    -e MIGRATE=1 -e COLLECTSTATIC=1 \
-#    novaville-backend
-###############################################
-
 FROM python:3.12-slim AS backend
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -58,9 +46,9 @@ ENV DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-config.settings} \
 		DB_ENGINE=${DB_ENGINE:-django.db.backends.postgresql} \
 		DB_HOST=${DB_HOST:-localhost} \
 		DB_PORT=${DB_PORT:-5432} \
-		DB_NAME=${DB_NAME:-app} \
-		DB_USER=${DB_USER:-app} \
-		DB_PASSWORD=${DB_PASSWORD:-password} \
+		DB_NAME=${DB_NAME:-novaville_db} \
+		DB_USER=${DB_USER:-novaville_user} \
+		DB_PASSWORD=${DB_PASSWORD:-YOUR_SECURE_PASSWORD} \
 		INSTANCE_CONNECTION_NAME=${INSTANCE_CONNECTION_NAME:-}
 
 # Si vous utilisez les sockets Cloud SQL dans Cloud Run/GKE:
@@ -69,6 +57,7 @@ VOLUME ["/app/staticfiles", "/app/media"]
 
 EXPOSE 8000
 
+
 # Lancement: migrations/statics optionnels, puis Gunicorn (MVT via module WSGI)
 ENV DJANGO_WSGI_MODULE=${DJANGO_WSGI_MODULE:-config.wsgi} \
 		GUNICORN_WORKERS=3 \
@@ -76,16 +65,31 @@ ENV DJANGO_WSGI_MODULE=${DJANGO_WSGI_MODULE:-config.wsgi} \
 
 USER app
 
-CMD ["sh", "-c", "set -eux; \
-    if [ -f manage.py ] && [ \"${MIGRATE:-0}\" = \"1\" ]; then \
-        python manage.py migrate --noinput; \
-    fi; \
-    if [ -f manage.py ] && [ \"${COLLECTSTATIC:-0}\" = \"1\" ]; then \
-        python manage.py collectstatic --noinput; \
-    fi; \
-    exec gunicorn \"${DJANGO_WSGI_MODULE}:application\" \
+CMD ["sh", "-c", " \
+    python manage.py migrate --noinput && \
+    python manage.py createsuperuser --noinput \
+        --username \"$DJANGO_SUPERUSER_USERNAME\" \
+        --email \"$DJANGO_SUPERUSER_EMAIL\" || echo 'Création ignorée (existe déjà ou variables manquantes)' && \
+    python manage.py collectstatic --noinput && \
+    exec gunicorn ${DJANGO_WSGI_MODULE}:application \
         --bind 0.0.0.0:${PORT} \
         --workers ${GUNICORN_WORKERS} \
         --timeout ${GUNICORN_TIMEOUT} \
         --access-logfile - \
-        --error-logfile -"]
+        --error-logfile - \
+    "]
+
+
+# CMD ["sh", "-c", "set -eux; \
+#     if [ -f manage.py ] && [ \"${MIGRATE:-0}\" = \"1\" ]; then \
+#         python manage.py migrate --noinput; \
+#     fi; \
+#     if [ -f manage.py ] && [ \"${COLLECTSTATIC:-0}\" = \"1\" ]; then \
+#         python manage.py collectstatic --noinput; \
+#     fi; \
+#     exec gunicorn \"${DJANGO_WSGI_MODULE}:application\" \
+#         --bind 0.0.0.0:${PORT} \
+#         --workers ${GUNICORN_WORKERS} \
+#         --timeout ${GUNICORN_TIMEOUT} \
+#         --access-logfile - \
+#         --error-logfile -"]
