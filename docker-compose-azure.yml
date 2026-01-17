@@ -14,6 +14,11 @@ services:
     networks:
       - novaville-net # On force l'appartenance au réseau
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d novaville -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     image: novaville.azurecr.io/novaville-backend:latest
@@ -26,10 +31,15 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=ton_password_securise
       - MIGRATE=1
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@example.com
+      - DJANGO_SUPERUSER_PASSWORD=ChangeMe123
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - novaville-net
+    restart: always
 
 networks:
   novaville-net:
