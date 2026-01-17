@@ -14,3 +14,4 @@
 
 /frontend/ios/Flutter/
 frontend/linux/flutter/*
+.DS_Store
