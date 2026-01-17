@@ -70,7 +70,7 @@ CMD ["sh", "-c", " \
     python manage.py createsuperuser --noinput \
         --username \"$DJANGO_SUPERUSER_USERNAME\" \
         --email \"$DJANGO_SUPERUSER_EMAIL\" || echo 'Création ignorée (existe déjà ou variables manquantes)' && \
-    python manage.py collectstatic --noinput && \
+    python manage.py collectstatic --noinput --verbosity 1 && \
     exec gunicorn ${DJANGO_WSGI_MODULE}:application \
         --bind 0.0.0.0:${PORT} \
         --workers ${GUNICORN_WORKERS} \
