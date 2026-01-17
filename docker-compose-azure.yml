@@ -31,6 +31,7 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=ton_password_securise
       - MIGRATE=1
+      # SECURITY: Replace these default credentials with Azure secrets/env vars in production
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=admin@example.com
       - DJANGO_SUPERUSER_PASSWORD=ChangeMe123

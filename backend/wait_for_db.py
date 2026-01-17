@@ -24,7 +24,7 @@ def wait_for_db(max_retries=30, retry_interval=2):
     db_config = {
         'dbname': os.environ.get('DB_NAME', 'novaville'),
         'user': os.environ.get('DB_USER', 'postgres'),
-        'password': os.environ.get('DB_PASSWORD', ''),
+        'password': os.environ.get('DB_PASSWORD', 'ton_password_securise'),
         'host': os.environ.get('DB_HOST', 'localhost'),
         'port': os.environ.get('DB_PORT', '5432'),
     }
