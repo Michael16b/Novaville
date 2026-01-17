@@ -143,6 +143,40 @@ URLs utiles pour la documentation OpenAPI/Swagger:
 
 Ces routes sont exposées uniquement si `ENABLE_API_DOCS` est activé (par défaut en dev). En production vous pouvez définir `ENABLE_API_DOCS=0` pour ne pas publier la documentation publique.
 
+## Déploiement Azure
+
+### Fix de connexion Postgres
+
+Le déploiement Azure utilise `docker-compose-azure.yml` qui inclut des mécanismes de résilience pour la connexion à la base de données:
+
+1. **Healthcheck Postgres**: Le service postgres a un healthcheck qui vérifie que la base de données accepte les connexions avant de démarrer les autres services.
+   ```yaml
+   healthcheck:
+     test: ["CMD-SHELL", "pg_isready -d novaville -U postgres"]
+     interval: 5s
+     timeout: 5s
+     retries: 10
+   ```
+
+2. **Dépendances avec condition**: Le backend attend que postgres soit "healthy" avant de démarrer:
+   ```yaml
+   depends_on:
+     postgres:
+       condition: service_healthy
+   ```
+
+3. **Script de retry**: Le script `wait_for_db.py` ajoute une couche supplémentaire de résilience en tentant de se connecter à la base de données avec des retries (30 tentatives par défaut, espacées de 2 secondes).
+
+4. **Restart policy**: Le service backend redémarre automatiquement en cas d'échec.
+
+### Variables d'environnement Azure
+
+Pour le déploiement Azure, assurez-vous de configurer les secrets dans Azure App Service:
+- `DB_PASSWORD`: Mot de passe sécurisé pour PostgreSQL
+- `DJANGO_SECRET_KEY`: Clé secrète Django
+- `DJANGO_SUPERUSER_PASSWORD`: Mot de passe pour le compte admin
+- `ALLOWED_HOSTS`: Domaine Azure (ex: `novavilleapp.azurewebsites.net`)
+
 ## Authentification JWT (login)
 
 Nous utilisons `djangorestframework-simplejwt` pour l'authentification par JWT. Endpoints disponibles :

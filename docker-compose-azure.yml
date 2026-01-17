@@ -1,5 +1,12 @@
 version: '3.8'
 
+# Azure deployment configuration
+# IMPORTANT: Replace hardcoded credentials with Azure environment variables/secrets
+# Set these in Azure App Service Configuration:
+#   - POSTGRES_PASSWORD
+#   - DJANGO_SUPERUSER_PASSWORD
+#   - DB_PASSWORD (should match POSTGRES_PASSWORD)
+
 services:
   postgres:
     image: postgres:15-alpine
@@ -7,6 +14,7 @@ services:
     environment:
       - POSTGRES_DB=novaville
       - POSTGRES_USER=postgres
+      # SECURITY: Set this via Azure App Service environment variables
       - POSTGRES_PASSWORD=ton_password_securise
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
@@ -29,9 +37,9 @@ services:
       - DB_PORT=5432
       - DB_NAME=novaville
       - DB_USER=postgres
+      # SECURITY: Set these via Azure App Service environment variables
       - DB_PASSWORD=ton_password_securise
       - MIGRATE=1
-      # SECURITY: Replace these default credentials with Azure secrets/env vars in production
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=admin@example.com
       - DJANGO_SUPERUSER_PASSWORD=ChangeMe123
