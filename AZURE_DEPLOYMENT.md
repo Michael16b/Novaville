@@ -194,7 +194,7 @@ Raisons:
 
 ## Dépannage
 
-### Erreur: "Connection refused"
+### Erreur: "Connection refused" (Base de données)
 - Vérifiez les règles de firewall Azure Database
 - Confirmez que les variables d'environnement sont correctement définies
 - Vérifiez le format du username: `username@servername`
@@ -202,6 +202,25 @@ Raisons:
 ### Erreur: "SSL required"
 - Azure Database for PostgreSQL nécessite SSL
 - Django/psycopg2 gère automatiquement SSL dans la plupart des cas
+
+### Erreur: "NetworkError" ou "ClientException" depuis le Frontend
+**Symptôme**: Le frontend Flutter ne peut pas joindre l'API backend
+```
+AuthRepositoryImpl.login error: ClientException: NetworkError when attempting to fetch resource., 
+uri=https://novavilleapp.azurewebsites.net/api/auth/token/
+```
+
+**Cause**: Le nginx dans le container frontend ne route pas les requêtes `/api/` vers le backend
+
+**Solution**: ✅ Déjà corrigé dans la dernière version
+- Le `frontend/Dockerfile` configure maintenant nginx pour proxifier `/api/` vers `backend:8000`
+- Les containers doivent être sur le même réseau Docker (`novaville-net`)
+- Le backend doit exposer le port 8000 en interne (pas publiquement)
+
+**Vérification**:
+1. Les containers frontend et backend sont sur le même réseau
+2. Le frontend nginx a la configuration proxy pour `/api/`
+3. `DJANGO_ALLOWED_HOSTS` inclut `backend` et `novavilleapp.azurewebsites.net`
 
 ### Logs pour Debugging
 ```bash

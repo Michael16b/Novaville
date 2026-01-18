@@ -1,6 +1,6 @@
 # Comparaison des Architectures Azure
 
-## Architecture Actuelle (docker-compose-azure.yml) ❌
+## Architecture Actuelle (docker-compose-azure.yml) ✅
 
 ```
 ┌─────────────────────────────────────────┐
@@ -9,15 +9,26 @@
 │  ┌──────────────┐    ┌──────────────┐  │
 │  │   Postgres   │◄───│   Backend    │  │
 │  │  Container   │    │  Container   │  │
-│  │              │    │              │  │
+│  │              │    │  :8000       │  │
 │  │ novaville_db │    │ Django+Wait  │  │
-│  └──────────────┘    └──────────────┘  │
+│  └──────────────┘    └──────┬───────┘  │
 │         ▲                    ▲          │
 │         │                    │          │
-│    [Volume]            [Logs visibles]  │
+│    [Volume]            [Internal]       │
+│                              │          │
+│  ┌──────────────────────────┘          │
+│  │   Frontend (Nginx)                  │
+│  │   :80 (Public)                      │
+│  │   Proxy: /api/ → backend:8000       │
+│  └─────────────────────────────────────┤
+│                                         │
 └─────────────────────────────────────────┘
+         ▲
+         │ Port 80 (HTTPS)
+         │
+   [novavilleapp.azurewebsites.net]
 
-Problème: Configuration ne correspond pas à votre setup Azure
+Solution: Nginx dans frontend proxy les requêtes /api/ vers backend
 ```
 
 ## Architecture Recommandée (docker-compose-azure-managed-db.yml) ✅
@@ -26,17 +37,21 @@ Problème: Configuration ne correspond pas à votre setup Azure
 ┌─────────────────────────────────────────┐
 │   Azure Web App for Containers         │
 │                                         │
-│  ┌──────────────┐    ┌──────────────┐  │
-│  │   Frontend   │    │   Backend    │  │
-│  │  Container   │◄───│  Container   │  │
-│  │              │    │              │  │
-│  │  Nginx       │    │ Django+Wait  │  │
-│  └──────────────┘    └──────┬───────┘  │
-│                              │          │
-└──────────────────────────────┼──────────┘
-                               │ Port 5432
-                               │ SSL
-                               ▼
+│  ┌──────────────────────────┐          │
+│  │   Frontend (Nginx)       │          │
+│  │   :80 (Public)           │          │
+│  │   Proxy: /api/ → backend │          │
+│  └──────────┬───────────────┘          │
+│             │                           │
+│  ┌──────────▼───────────┐              │
+│  │   Backend            │              │
+│  │   :8000 (Internal)   │              │
+│  │   Django+Wait        │              │
+│  └──────────┬───────────┘              │
+│             │                           │
+└─────────────┼───────────────────────────┘
+              │ Port 5432 + SSL
+              ▼
 ┌──────────────────────────────────────────┐
 │  Azure Database for PostgreSQL          │
 │                                          │
@@ -49,7 +64,7 @@ Problème: Configuration ne correspond pas à votre setup Azure
 │  ✓ Firewall géré                        │
 └──────────────────────────────────────────┘
 
-Avantage: Service géré, production-ready
+Avantage: Service géré + Routing correct via Nginx
 ```
 
 ## Configuration Rapide

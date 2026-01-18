@@ -37,13 +37,15 @@ services:
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=admin@example.com
       - DJANGO_SUPERUSER_PASSWORD=ChangeMe123
+      - DJANGO_ALLOWED_HOSTS=novavilleapp.azurewebsites.net,backend,localhost
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - novaville-net
     restart: always
-    # Note : Pas de section 'ports' ici pour éviter les erreurs de routing Azure
+    expose:
+      - "8000"
 
   # --- FRONTEND (Point d'entrée) ---
   frontend:

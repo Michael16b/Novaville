@@ -28,7 +28,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       # Django configuration
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-novavilleapp.azurewebsites.net}
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-novavilleapp.azurewebsites.net},backend,localhost
       - DJANGO_DEBUG=False
       # Superuser creation
       - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME:-admin}
@@ -41,8 +41,10 @@ services:
       - DB_WAIT_MAX_RETRIES=60
       - DB_WAIT_RETRY_INTERVAL=3
     restart: always
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
+    networks:
+      - novaville-net
 
   frontend:
     image: novaville.azurecr.io/novaville-frontend:latest
@@ -52,3 +54,9 @@ services:
     depends_on:
       - backend
     restart: always
+    networks:
+      - novaville-net
+
+networks:
+  novaville-net:
+    driver: bridge
