@@ -4,8 +4,14 @@ import 'package:frontend/ui/widgets/app_banner.dart';
 
 /// Layout sécurisé avec bannière affichée sur tous les écrans authentifiés
 class SecuredLayout extends StatelessWidget {
-  const SecuredLayout({required this.child, super.key});
+  const SecuredLayout({
+    required this.child,
+    this.isHomePage = false,
+    super.key,
+  });
+
   final Widget child;
+  final bool isHomePage;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +23,7 @@ class SecuredLayout extends StatelessWidget {
           color: AppColors.page,
           elevation: 6,
           shadowColor: Colors.black54,
-          child: const AppBanner(),
+          child: AppBanner(isHomePage: isHomePage),
         ),
       ),
       body: child,

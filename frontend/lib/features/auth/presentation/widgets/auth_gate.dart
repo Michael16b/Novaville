@@ -20,7 +20,7 @@ class AuthGate extends StatelessWidget {
               body: Center(child: CircularProgressIndicator()),
             );
           case AuthStatus.authenticated:
-            return const SecuredLayout(child: HomePage());
+            return const SecuredLayout(isHomePage: true, child: HomePage());
           case AuthStatus.failure:
           case AuthStatus.unauthenticated:
             return const LoginPage();

@@ -9,16 +9,15 @@ import 'package:frontend/ui/widgets/app_banner.dart';
 
 class MockAuthRepository implements IAuthRepository {
   @override
-  Future<void> login({required String username, required String password}) async {}
+  Future<String> login({required String username, required String password}) async {
+    return 'mock-token';
+  }
 
   @override
   Future<void> logout() async {}
 
   @override
   Future<bool> hasValidSession() async => true;
-
-  @override
-  Future<String> getAccessToken() async => 'mock-token';
 }
 
 void main() {
