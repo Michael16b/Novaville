@@ -66,6 +66,7 @@ ENV DJANGO_WSGI_MODULE=${DJANGO_WSGI_MODULE:-config.wsgi} \
 USER app
 
 CMD ["sh", "-c", " \
+    python wait_for_db.py && \
     python manage.py migrate --noinput && \
     python manage.py createsuperuser --noinput \
         --username \"$DJANGO_SUPERUSER_USERNAME\" \
