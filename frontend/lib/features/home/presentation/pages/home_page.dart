@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts.dart';
+import 'package:frontend/features/account/presentation/pages/my_account_page.dart';
+import 'package:frontend/features/agenda/presentation/pages/agenda_page.dart';
 import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
+import 'package:frontend/features/news/presentation/pages/news_page.dart';
+import 'package:frontend/features/reports/presentation/pages/reports_page.dart';
+import 'package:frontend/features/surveys/presentation/pages/surveys_page.dart';
+import 'package:frontend/features/useful_info/presentation/pages/useful_info_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -44,42 +50,66 @@ class HomePage extends StatelessWidget {
                     icon: Icons.report_problem_outlined,
                     title: AppTexts.reports,
                     onTap: () {
-                      // TODO: Navigation vers Signalements
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const ReportsPage(),
+                        ),
+                      );
                     },
                   ),
                   MenuCard(
-                    icon: Icons.poll_outlined,
+                    icon: Icons.how_to_vote,
                     title: AppTexts.surveys,
                     onTap: () {
-                      // TODO: Navigation vers Sondages
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const SurveysPage(),
+                        ),
+                      );
                     },
                   ),
                   MenuCard(
-                    icon: Icons.calendar_today_outlined,
+                    icon: Icons.calendar_month,
                     title: AppTexts.agenda,
                     onTap: () {
-                      // TODO: Navigation vers Agenda
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const AgendaPage(),
+                        ),
+                      );
                     },
                   ),
                   MenuCard(
-                    icon: Icons.article_outlined,
+                    icon: Icons.newspaper,
                     title: AppTexts.news,
                     onTap: () {
-                      // TODO: Navigation vers Actualités
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const NewsPage(),
+                        ),
+                      );
                     },
                   ),
                   MenuCard(
                     icon: Icons.account_circle_outlined,
                     title: AppTexts.myAccount,
                     onTap: () {
-                      // TODO: Navigation vers Mon compte
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const MyAccountPage(),
+                        ),
+                      );
                     },
                   ),
                   MenuCard(
                     icon: Icons.info_outlined,
                     title: AppTexts.usefulInfo,
                     onTap: () {
-                      // TODO: Navigation vers Infos utiles
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const UsefulInfoPage(),
+                        ),
+                      );
                     },
                   ),
                 ],
