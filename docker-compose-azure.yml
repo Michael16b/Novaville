@@ -5,14 +5,17 @@ services:
   postgres:
     image: novaville.azurecr.io/bitnami-postgresql:15
     container_name: postgres
-    user: root 
+    # Utiliser l'UID Bitnami pour que les fichiers créés lui appartiennent
+    user: "1001"
     environment:
       - POSTGRESQL_DATABASE=novaville_db
       - POSTGRESQL_USERNAME=novaville_user
       - POSTGRESQL_PASSWORD=YOUR_SECURE_PASSWORD
+      # On monte le volume sur /bitnami pour que Postgres crée son propre 
+      # sous-dossier 'postgresql' avec les bons droits à l'intérieur.
       - POSTGRESQL_VOLUME_DIR=/bitnami/postgresql
     volumes:
-      - db-volume:/bitnami/postgresql/data
+      - db-volume:/bitnami
     networks:
       - novaville-net
     restart: always
@@ -37,7 +40,7 @@ services:
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=admin@example.com
       - DJANGO_SUPERUSER_PASSWORD=ChangeMe123
-      - DJANGO_ALLOWED_HOSTS=novavilleapp.azurewebsites.net,backend,localhost
+      - DJANGO_ALLOWED_HOSTS=novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net,novavilleapp.azurewebsites.net,backend,localhost
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,14 +50,12 @@ services:
     expose:
       - "8000"
 
-  # --- FRONTEND (Point d'entrée) ---
+  # --- FRONTEND ---
   frontend:
     image: novaville.azurecr.io/novaville-frontend:latest
     container_name: frontend
     ports:
-      - "80:80" # C'est le SEUL port exposé vers l'extérieur
-    # depends_on:
-    #   - backend
+      - "80:80"
     networks:
       - novaville-net
     restart: always
