@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 
+/// A customizable elevated button with a primary-colored stroke and optional icon.
+///
+/// Displays either a text label or a combination of icon and text, and can
+/// show a loading spinner when [isLoading] is true.
 class CustomElevatedStrokedButton extends StatelessWidget {
   const CustomElevatedStrokedButton({
     required this.text,

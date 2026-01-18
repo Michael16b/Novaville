@@ -9,6 +9,9 @@ import 'package:frontend/features/reports/presentation/pages/reports_page.dart';
 import 'package:frontend/features/surveys/presentation/pages/surveys_page.dart';
 import 'package:frontend/features/useful_info/presentation/pages/useful_info_page.dart';
 
+/// Home screen of the app that displays a grid of navigation cards
+/// linking to core features such as reports, surveys, agenda, news,
+/// account, and useful information pages.
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
