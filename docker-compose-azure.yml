@@ -12,9 +12,9 @@ services:
       - POSTGRESQL_PASSWORD=YOUR_SECURE_PASSWORD
       # Cette variable désactive le check strict de propriété du dossier
       - POSTGRESQL_VOLUME_DIR=/bitnami/postgresql
-    volumes:
-      # Bitnami utilise ce chemin interne pour les données
-      - db-volume:/bitnami/postgresql/data
+    # volumes:
+    #   # Bitnami utilise ce chemin interne pour les données
+    #   - db-volume:/bitnami/postgresql/data
     networks:
       - novaville-net
     restart: always
