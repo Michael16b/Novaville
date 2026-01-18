@@ -10,7 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "change-me")
 DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
+# ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",") ## à remettre pour prod
+ALLOWED_HOSTS = ['novavilleapp.azurewebsites.net', 'localhost', '127.0.0.1']
+
 
 INSTALLED_APPS = [
     # Add corsheaders for cross-origin requests from the frontend (dev)
