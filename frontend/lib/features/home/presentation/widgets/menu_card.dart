@@ -11,6 +11,7 @@ class MenuCard extends StatelessWidget {
     super.key,
   });
 
+
   /// Icône affichée sur la carte
   final IconData icon;
 
@@ -22,25 +23,23 @@ class MenuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const borderRadius = BorderRadius.only(
+      topLeft: Radius.circular(30),
+      topRight: Radius.circular(15),
+      bottomLeft: Radius.circular(15),
+      bottomRight: Radius.circular(50),
+    );
+
     return Card(
       color: AppColors.primary,
-      elevation: 2,
+      elevation: 8,
+      shadowColor: Colors.black.withValues(alpha: 0.3),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(15),
-          bottomLeft: Radius.circular(15),
-          bottomRight: Radius.circular(50),
-        ),
+        borderRadius: borderRadius,
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(15),
-          bottomLeft: Radius.circular(15),
-          bottomRight: Radius.circular(50),
-        ),
+        borderRadius: borderRadius,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
