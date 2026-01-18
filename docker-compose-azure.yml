@@ -12,10 +12,10 @@ services:
     image: postgres:15-alpine
     container_name: postgres
     environment:
-      - POSTGRES_DB=novaville
-      - POSTGRES_USER=postgres
+      - POSTGRES_DB=novaville_db
+      - POSTGRES_USER=novaville_user
       # SECURITY: Set this via Azure App Service environment variables
-      - POSTGRES_PASSWORD=ton_password_securise
+      - POSTGRES_PASSWORD=YOUR_SECURE_PASSWORD
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - db-volume:/var/lib/postgresql/data
@@ -23,7 +23,7 @@ services:
       - novaville-net # On force l'appartenance au réseau
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d novaville -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -d novaville_db -U novaville_user"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -35,10 +35,10 @@ services:
       - DB_ENGINE=django.db.backends.postgresql
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_NAME=novaville
-      - DB_USER=postgres
+      - DB_NAME=novaville_db
+      - DB_USER=novaville_user
       # SECURITY: Set these via Azure App Service environment variables
-      - DB_PASSWORD=ton_password_securise
+      - DB_PASSWORD=YOUR_SECURE_PASSWORD
       - MIGRATE=1
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=admin@example.com
