@@ -30,7 +30,7 @@ class AppBanner extends StatelessWidget {
                 CustomElevatedButton(
                   text: AppTexts.homeButton,
                   onPressed: () {
-                    // TODO(new item): Implémenter la redirection vers la page d'accueil
+                    Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   iconData: Icons.home_outlined,
                 ),
