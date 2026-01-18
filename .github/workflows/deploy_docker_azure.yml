@@ -19,6 +19,12 @@ jobs:
           login-server: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
           username: ${{ secrets.AZURE_ACR_USERNAME }}
           password: ${{ secrets.AZURE_ACR_PASSWORD }}
+          
+      - name: Pull and Push Bitnami Postgres to ACR
+        run: |
+          docker pull bitnami/postgresql:15
+          docker tag bitnami/postgresql:15 ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/bitnami-postgresql:15
+          docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/bitnami-postgresql:15
 
       - name: Build and push Backend
         run: |
