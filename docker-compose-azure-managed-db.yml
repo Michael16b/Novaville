@@ -28,7 +28,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       # Django configuration
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-novavilleapp.azurewebsites.net},backend,localhost
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-novavilleapp.azurewebsites.net,novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net},backend,localhost
       - DJANGO_DEBUG=False
       # Superuser creation
       - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME:-admin}
