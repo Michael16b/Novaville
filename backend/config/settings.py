@@ -16,7 +16,8 @@ INSTALLED_APPS = [
     # Add corsheaders for cross-origin requests from the frontend (dev)
     'corsheaders',
     # Optional nicer admin UI (grappelli) - installed only when in requirements
-    # Put grappelli before admin to override admin templates
+    # Put grappelli before admin to override admin templates and static files.
+    # Grappelli intentionally overrides some Django admin templates and static assets.
     "grappelli",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -88,8 +89,10 @@ STATIC_ROOT = os.environ.get("DJANGO_STATIC_ROOT", str(BASE_DIR / "staticfiles")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.environ.get("DJANGO_MEDIA_ROOT", str(BASE_DIR / "media"))
 
-# Optionally include an app-level `static/` directory during development
-STATICFILES_DIRS = [BASE_DIR / "static"]
+# STATICFILES_DIRS: Not configured because all static files come from installed apps.
+# Django will automatically collect static files from each app's static/ directory.
+# If you need custom static files not part of any app, add them here:
+# STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Database: prefer DATABASE_URL, else support DB_* or POSTGRES_* env vars
 DATABASE_URL = os.environ.get("DATABASE_URL")
