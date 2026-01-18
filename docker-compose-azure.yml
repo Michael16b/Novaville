@@ -51,8 +51,8 @@ services:
     container_name: frontend
     ports:
       - "80:80" # C'est le SEUL port exposé vers l'extérieur
-    depends_on:
-      - backend
+    # depends_on:
+    #   - backend
     networks:
       - novaville-net
     restart: always
