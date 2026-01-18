@@ -11,7 +11,6 @@ class MenuCard extends StatelessWidget {
     super.key,
   });
 
-
   /// Icône affichée sur la carte
   final IconData icon;
 
