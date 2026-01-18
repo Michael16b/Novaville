@@ -6,12 +6,14 @@ class CustomElevatedButton extends StatelessWidget {
     required this.text,
     required this.onPressed,
     super.key,
-    this.icon,
+    this.iconAsset,
+    this.iconData,
     this.isLoading = false,
   });
 
   final String text;
-  final String? icon;
+  final String? iconAsset;
+  final IconData? iconData;
   final bool isLoading;
   final VoidCallback onPressed;
 
@@ -21,8 +23,11 @@ class CustomElevatedButton extends StatelessWidget {
       onPressed: isLoading ? null : onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.white,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        elevation: 2,
+        overlayColor: AppColors.white.withValues(alpha: 0.2),
       ),
       child: isLoading
           ? const SizedBox(
@@ -33,7 +38,7 @@ class CustomElevatedButton extends StatelessWidget {
                 color: AppColors.white,
               ),
             )
-          : (icon == null || icon!.isEmpty)
+          : (iconAsset == null && iconData == null)
           ? Text(
               text,
               style: const TextStyle(
@@ -45,7 +50,10 @@ class CustomElevatedButton extends StatelessWidget {
           : Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset(icon!, height: 18, width: 18),
+                if (iconData != null)
+                  Icon(iconData, size: 18, color: AppColors.white)
+                else if (iconAsset != null && iconAsset!.isNotEmpty)
+                  Image.asset(iconAsset!, height: 18, width: 18),
                 if (text.isNotEmpty) const SizedBox(width: 8),
                 if (text.isNotEmpty)
                   Text(
