@@ -13,10 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. On télécharge l'image publique AVANT de se connecter à l'ACR
-      # On utilise le tag '15' qui est le plus stable (rolling tag)
-      - name: Pull Bitnami Postgres from Docker Hub
-        run: docker pull bitnami/postgresql:15
+      # 1. On utilise le miroir AWS Public ECR (beaucoup plus stable pour le CI)
+      # On le fait AVANT de se connecter à l'ACR pour éviter les conflits d'auth
+      - name: Pull Bitnami Postgres from Public ECR
+        run: docker pull public.ecr.aws/bitnami/postgresql:15
 
       # 2. Connexion à votre Azure Container Registry
       - name: Log in to ACR
@@ -26,10 +26,10 @@ jobs:
           username: ${{ secrets.AZURE_ACR_USERNAME }}
           password: ${{ secrets.AZURE_ACR_PASSWORD }}
           
-      # 3. On pousse l'image Postgres vers VOTRE ACR
+      # 3. On tague et on pousse vers VOTRE ACR
       - name: Push Bitnami Postgres to ACR
         run: |
-          docker tag bitnami/postgresql:15 ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/bitnami-postgresql:15
+          docker tag public.ecr.aws/bitnami/postgresql:15 ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/bitnami-postgresql:15
           docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/bitnami-postgresql:15
 
       # 4. Build et Push du Backend
