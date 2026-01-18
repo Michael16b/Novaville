@@ -1,20 +1,31 @@
 version: '3.8'
 
 services:
+  # --- BASE DE DONNÉES ---
   postgres:
-    image: postgres:15-alpine
+    image: novaville.azurecr.io/bitnami-postgresql:15
     container_name: postgres
+    # Utiliser l'UID Bitnami pour que les fichiers créés lui appartiennent
+    user: "1001"
     environment:
-      - POSTGRES_DB=novaville
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=ton_password_securise
-      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRESQL_DATABASE=novaville_db
+      - POSTGRESQL_USERNAME=novaville_user
+      - POSTGRESQL_PASSWORD=YOUR_SECURE_PASSWORD
+      # On monte le volume sur /bitnami pour que Postgres crée son propre 
+      # sous-dossier 'postgresql' avec les bons droits à l'intérieur.
+      - POSTGRESQL_VOLUME_DIR=/bitnami/postgresql
     volumes:
-      - db-volume:/var/lib/postgresql/data
+      - db-volume:/bitnami
     networks:
-      - novaville-net # On force l'appartenance au réseau
+      - novaville-net
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U novaville_user -d novaville_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # --- DJANGO BACKEND ---
   backend:
     image: novaville.azurecr.io/novaville-backend:latest
     container_name: backend
@@ -22,18 +33,38 @@ services:
       - DB_ENGINE=django.db.backends.postgresql
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_NAME=novaville
-      - DB_USER=postgres
-      - DB_PASSWORD=ton_password_securise
+      - DB_NAME=novaville_db
+      - DB_USER=novaville_user
+      - DB_PASSWORD=YOUR_SECURE_PASSWORD
       - MIGRATE=1
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@example.com
+      - DJANGO_SUPERUSER_PASSWORD=ChangeMe123
+      - DJANGO_ALLOWED_HOSTS=novavilleapp.azurewebsites.net,novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net,backend,localhost
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - novaville-net
+    restart: always
+    expose:
+      - "8000"
+
+  # --- FRONTEND ---
+  frontend:
+    image: novaville.azurecr.io/novaville-frontend:latest
+    container_name: frontend
+    environment:
+      - FLUTTER_BACKEND_API=https://novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net
+    ports:
+      - "80:80"
+    networks:
+      - novaville-net
+    restart: always
 
 networks:
   novaville-net:
-    driver: bridge # Ce bloc à la fin est indispensable pour lier les services
+    driver: bridge
 
 volumes:
   db-volume:

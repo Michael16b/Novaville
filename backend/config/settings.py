@@ -10,13 +10,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "change-me")
 DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
+
+# ALLOWED_HOSTS configuration
+# Support for Azure Web App URLs with random subdomains
+ALLOWED_HOSTS_ENV = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_ENV.split(",") if host.strip()]
+
+# Add Azure wildcard patterns for Web Apps
+ALLOWED_HOSTS.extend([
+    'novavilleapp.azurewebsites.net',
+    'novavilleapp-*.azurewebsites.net',  # Support for Azure random subdomains
+    '*.francecentral-01.azurewebsites.net',  # Support for region-specific subdomains
+    'localhost',
+    '127.0.0.1',
+    'backend',  # For internal Docker network calls
+])
+
 
 INSTALLED_APPS = [
     # Add corsheaders for cross-origin requests from the frontend (dev)
     'corsheaders',
     # Optional nicer admin UI (grappelli) - installed only when in requirements
-    # Put grappelli before admin to override admin templates
+    # Put grappelli before admin to override admin templates and static files.
+    # Grappelli intentionally overrides some Django admin templates and static assets.
     "grappelli",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -88,8 +104,10 @@ STATIC_ROOT = os.environ.get("DJANGO_STATIC_ROOT", str(BASE_DIR / "staticfiles")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.environ.get("DJANGO_MEDIA_ROOT", str(BASE_DIR / "media"))
 
-# Optionally include an app-level `static/` directory during development
-STATICFILES_DIRS = [BASE_DIR / "static"]
+# STATICFILES_DIRS: Not configured because all static files come from installed apps.
+# Django will automatically collect static files from each app's static/ directory.
+# If you need custom static files not part of any app, add them here:
+# STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Database: prefer DATABASE_URL, else support DB_* or POSTGRES_* env vars
 DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -200,8 +218,34 @@ SPECTACULAR_SETTINGS.update({
 # For development only: allow all origins so flutter web / other frontends can access the API.
 # In production, prefer setting CORS_ALLOWED_ORIGINS to a strict list instead of allowing all.
 CORS_ALLOW_ALL_ORIGINS = True
-# Example for a stricter configuration:
+
+# Additional CORS configuration for better browser compatibility
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Example for a stricter configuration in production:
+# CORS_ALLOW_ALL_ORIGINS = False
 # CORS_ALLOWED_ORIGINS = [
+#     'https://novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net',
+#     'https://novavilleapp.azurewebsites.net',
 #     'http://localhost:8080',
 #     'http://localhost:8000',
 #     'http://127.0.0.1:8080',

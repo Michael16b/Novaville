@@ -12,22 +12,22 @@ RUN flutter pub get
 # Copie du code source
 COPY . /app/
 
-# Build args (injectés depuis GitHub Actions)
-ARG API_URL=http://localhost:8000
+# Build args (injectés depuis docker-compose ou GitHub Actions)
+# ARG FLUTTER_BACKEND_API=http://localhost:8000
 ARG ENVIRONMENT=production
 
 # --- SOLUTION AU PROBLÈME .ENV ---
 # On crée un fichier .env minimaliste pour satisfaire le compilateur Flutter
 # même si le fichier physique est absent du repo.
 RUN touch .env && \
-    echo "API_URL=${API_URL}" > .env && \
+    echo "FLUTTER_BACKEND_API=${FLUTTER_BACKEND_API}" > .env && \
     echo "ENVIRONMENT=${ENVIRONMENT}" >> .env
 
 # Configuration et build web release
 # On utilise --dart-define pour injecter les variables directement dans le code
 RUN flutter config --enable-web && \
     flutter build web --release --verbose \
-      --dart-define=API_BASE_URL=${API_URL} \
+      --dart-define=FLUTTER_BACKEND_API=${FLUTTER_BACKEND_API} \
       --dart-define=ENVIRONMENT=${ENVIRONMENT}
 
 ##########
@@ -37,7 +37,7 @@ FROM nginx:alpine AS frontend-web
 
 COPY --from=flutter-builder /app/build/web/ /usr/share/nginx/html/
 
-# Configuration Nginx SPA (On garde ta config qui est excellente)
+# Configuration Nginx SPA avec proxy API pour Azure multi-container
 RUN cat > /etc/nginx/conf.d/default.conf <<'EOF'
 server {
   listen 80;
@@ -45,11 +45,55 @@ server {
   root /usr/share/nginx/html;
   index index.html;
 
+  # Proxy pour les requêtes API vers le backend Django
+  location /api/ {
+    proxy_pass http://backend:8000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Port $server_port;
+    
+    # Timeout settings for long-running requests
+    proxy_connect_timeout 60s;
+    proxy_send_timeout 60s;
+    proxy_read_timeout 60s;
+  }
+
+  # Proxy pour l'admin Django (optionnel, peut être désactivé en prod)
+  location /admin/ {
+    proxy_pass http://backend:8000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Port $server_port;
+  }
+
+  # Proxy pour les fichiers statiques Django
+  location /static/ {
+    proxy_pass http://backend:8000;
+    proxy_set_header Host $host;
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+  }
+
+  # Proxy pour les fichiers media Django
+  location /media/ {
+    proxy_pass http://backend:8000;
+    proxy_set_header Host $host;
+    expires 1y;
+    add_header Cache-Control "public, max-age=31536000";
+  }
+
+  # Flutter Web App (doit être après les locations spécifiques)
   location / {
     try_files $uri $uri/ /index.html;
   }
 
-  # Sécurité et Cache
+  # Sécurité et Cache pour fichiers Flutter
   location ~* \.(manifest|appcache|html?|xml|json)$ {
     expires -1;
     add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";

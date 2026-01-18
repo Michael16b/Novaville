@@ -66,11 +66,12 @@ ENV DJANGO_WSGI_MODULE=${DJANGO_WSGI_MODULE:-config.wsgi} \
 USER app
 
 CMD ["sh", "-c", " \
+    python wait_for_db.py && \
     python manage.py migrate --noinput && \
     python manage.py createsuperuser --noinput \
         --username \"$DJANGO_SUPERUSER_USERNAME\" \
         --email \"$DJANGO_SUPERUSER_EMAIL\" || echo 'Création ignorée (existe déjà ou variables manquantes)' && \
-    python manage.py collectstatic --noinput && \
+    python manage.py collectstatic --noinput 2>&1 | grep -v -E '(Found another file with the destination path|It will be ignored since only the first encountered file is collected)' || true && \
     exec gunicorn ${DJANGO_WSGI_MODULE}:application \
         --bind 0.0.0.0:${PORT} \
         --workers ${GUNICORN_WORKERS} \

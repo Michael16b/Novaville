@@ -143,6 +143,44 @@ URLs utiles pour la documentation OpenAPI/Swagger:
 
 Ces routes sont exposées uniquement si `ENABLE_API_DOCS` est activé (par défaut en dev). En production vous pouvez définir `ENABLE_API_DOCS=0` pour ne pas publier la documentation publique.
 
+## Déploiement Azure
+
+### 📘 Guide Complet de Déploiement
+
+Consultez **[AZURE_DEPLOYMENT.md](../AZURE_DEPLOYMENT.md)** à la racine du projet pour un guide détaillé des options de déploiement:
+
+- **Option 1**: Azure Web App avec conteneurs multi-containers (PostgreSQL + Backend conteneurisés)
+- **Option 2**: Azure Database for PostgreSQL (service géré) + Backend conteneurisé ✅ **Recommandé**
+
+Le guide inclut:
+- Instructions pas-à-pas pour chaque option
+- Configuration des variables d'environnement
+- Règles de firewall et sécurité
+- Dépannage et vérification
+
+### Résumé Rapide - Option 2 (Recommandé)
+
+Si vous utilisez **Azure Database for PostgreSQL** (service géré):
+
+1. Utilisez `docker-compose-azure-managed-db.yml` au lieu de `docker-compose-azure.yml`
+2. Configurez ces variables dans Azure App Service Configuration:
+   ```
+   DB_HOST=novavillesql.postgres.database.azure.com
+   DB_PORT=5432
+   DB_NAME=novavilledb
+   DB_USER=novaville_admin@novavillesql
+   DB_PASSWORD=votre_mot_de_passe
+   DJANGO_SECRET_KEY=votre_cle_secrete
+   ```
+
+### Mécanismes de Résilience
+
+Le déploiement inclut des protections multi-niveaux contre les erreurs de connexion:
+
+1. **Script de retry `wait_for_db.py`**: Tente de se connecter avec des retries configurables (60 tentatives × 3s par défaut pour Azure)
+2. **Restart policy**: Le service redémarre automatiquement en cas d'échec
+3. **Logging détaillé**: Pour faciliter le debugging des problèmes de connexion
+
 ## Authentification JWT (login)
 
 Nous utilisons `djangorestframework-simplejwt` pour l'authentification par JWT. Endpoints disponibles :
