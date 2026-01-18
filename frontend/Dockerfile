@@ -13,7 +13,7 @@ RUN flutter pub get
 COPY . /app/
 
 # Build args (injectés depuis docker-compose ou GitHub Actions)
-ARG FLUTTER_BACKEND_API=http://localhost:8000
+# ARG FLUTTER_BACKEND_API=http://localhost:8000
 ARG ENVIRONMENT=production
 
 # --- SOLUTION AU PROBLÈME .ENV ---

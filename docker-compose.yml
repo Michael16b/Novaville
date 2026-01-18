@@ -67,7 +67,7 @@ services:
         - ENVIRONMENT=${ENVIRONMENT:-production}
     container_name: novaville-frontend
     environment:
-      - FLUTTER_BACKEND_API=${FLUTTER_BACKEND_API:-http://localhost:8000}
+      - FLUTTER_BACKEND_API=http://localhost:8000
     ports:
       - "80:80"
     depends_on:

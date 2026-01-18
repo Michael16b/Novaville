@@ -55,7 +55,7 @@ services:
     image: novaville.azurecr.io/novaville-frontend:latest
     container_name: frontend
     environment:
-      - FLUTTER_BACKEND_API=${FLUTTER_BACKEND_API:-https://novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net/}
+      - FLUTTER_BACKEND_API=https://novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net
     ports:
       - "80:80"
     networks:
