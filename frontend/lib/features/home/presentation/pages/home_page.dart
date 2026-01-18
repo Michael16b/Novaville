@@ -27,62 +27,80 @@ class HomePage extends StatelessWidget {
             const Text(
               AppTexts.homeSubtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 24,
-                color: AppColors.secondaryText,
-              ),
+              style: TextStyle(fontSize: 24, color: AppColors.secondaryText),
             ),
             const SizedBox(height: 24),
             Expanded(
-              child: GridView.count(
-                crossAxisCount: 3,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 2,
-                children: [
-                  MenuCard(
-                    icon: Icons.report_problem_outlined,
-                    title: AppTexts.reports,
-                    onTap: () {
-                      // TODO: Navigation vers Signalements
-                    },
-                  ),
-                  MenuCard(
-                    icon: Icons.poll_outlined,
-                    title: AppTexts.surveys,
-                    onTap: () {
-                      // TODO: Navigation vers Sondages
-                    },
-                  ),
-                  MenuCard(
-                    icon: Icons.calendar_today_outlined,
-                    title: AppTexts.agenda,
-                    onTap: () {
-                      // TODO: Navigation vers Agenda
-                    },
-                  ),
-                  MenuCard(
-                    icon: Icons.article_outlined,
-                    title: AppTexts.news,
-                    onTap: () {
-                      // TODO: Navigation vers Actualités
-                    },
-                  ),
-                  MenuCard(
-                    icon: Icons.account_circle_outlined,
-                    title: AppTexts.myAccount,
-                    onTap: () {
-                      // TODO: Navigation vers Mon compte
-                    },
-                  ),
-                  MenuCard(
-                    icon: Icons.info_outlined,
-                    title: AppTexts.usefulInfo,
-                    onTap: () {
-                      // TODO: Navigation vers Infos utiles
-                    },
-                  ),
-                ],
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  const itemWidth = 550.0;
+                  const spacing = 16.0;
+                  final availableColumns =
+                      (constraints.maxWidth / (itemWidth + spacing)).floor();
+                  final crossAxisCount = availableColumns
+                      .clamp(1, 3)
+                      .toInt(); // max 3 colonnes
+                  final gridWidth =
+                      crossAxisCount * itemWidth +
+                      (crossAxisCount - 1) * spacing;
+
+                  return Align(
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      width: gridWidth,
+                      child: GridView.count(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: spacing,
+                        mainAxisSpacing: spacing,
+                        childAspectRatio: 1.4,
+                        children: [
+                          MenuCard(
+                            icon: Icons.report_problem_outlined,
+                            title: AppTexts.reports,
+                            onTap: () {
+                              // TODO: Navigation vers Signalements
+                            },
+                          ),
+                          MenuCard(
+                            icon: Icons.poll_outlined,
+                            title: AppTexts.surveys,
+                            onTap: () {
+                              // TODO: Navigation vers Sondages
+                            },
+                          ),
+                          MenuCard(
+                            icon: Icons.calendar_today_outlined,
+                            title: AppTexts.agenda,
+                            onTap: () {
+                              // TODO: Navigation vers Agenda
+                            },
+                          ),
+                          MenuCard(
+                            icon: Icons.article_outlined,
+                            title: AppTexts.news,
+                            onTap: () {
+                              // TODO: Navigation vers Actualités
+                            },
+                          ),
+                          MenuCard(
+                            icon: Icons.account_circle_outlined,
+                            title: AppTexts.myAccount,
+                            onTap: () {
+                              // TODO: Navigation vers Mon compte
+                            },
+                          ),
+                          MenuCard(
+                            icon: Icons.info_outlined,
+                            title: AppTexts.usefulInfo,
+                            onTap: () {
+                              // TODO: Navigation vers Infos utiles
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ],
