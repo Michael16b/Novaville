@@ -13,6 +13,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 1. On télécharge l'image publique AVANT de se connecter à l'ACR
+      # On utilise le tag '15' qui est le plus stable (rolling tag)
+      - name: Pull Bitnami Postgres from Docker Hub
+        run: docker pull bitnami/postgresql:15
+
+      # 2. Connexion à votre Azure Container Registry
       - name: Log in to ACR
         uses: azure/docker-login@v1
         with:
@@ -20,17 +26,19 @@ jobs:
           username: ${{ secrets.AZURE_ACR_USERNAME }}
           password: ${{ secrets.AZURE_ACR_PASSWORD }}
           
-      - name: Pull and Push Bitnami Postgres to ACR
+      # 3. On pousse l'image Postgres vers VOTRE ACR
+      - name: Push Bitnami Postgres to ACR
         run: |
-          docker pull docker.io/bitnami/postgresql:15-debian-12
-          docker tag docker.io/bitnami/postgresql:15-debian-12 ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/bitnami-postgresql:15
+          docker tag bitnami/postgresql:15 ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/bitnami-postgresql:15
           docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/bitnami-postgresql:15
 
+      # 4. Build et Push du Backend
       - name: Build and push Backend
         run: |
           docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:latest ./backend
           docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:latest
 
+      # 5. Build et Push du Frontend
       - name: Build and push Frontend
         run: |
           docker build \
@@ -45,7 +53,7 @@ jobs:
     environment: Azure Cloud
     permissions:
       contents: read
-      id-token: write # Recommandé pour les outils CLI Azure récents
+      id-token: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -53,7 +61,6 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          # On utilise l'entrée 'creds' qui est valide pour v2
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Docker Compose
