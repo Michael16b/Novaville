@@ -1,0 +1,62 @@
+version: '3.8'
+
+# Azure deployment configuration with Azure Database for PostgreSQL (Managed Service)
+# This configuration is for when you're using Azure Database for PostgreSQL instead of a containerized database
+# 
+# IMPORTANT: Configure these in Azure App Service Configuration:
+#   - DB_HOST: Your Azure PostgreSQL server hostname (e.g., novavillesql.postgres.database.azure.com)
+#   - DB_PORT: Usually 5432 for Azure Database for PostgreSQL
+#   - DB_NAME: Your database name (e.g., novavilledb)
+#   - DB_USER: Your PostgreSQL user (format: username@servername)
+#   - DB_PASSWORD: Your database password
+#   - DJANGO_SECRET_KEY: Django secret key
+#   - DJANGO_SUPERUSER_USERNAME: Admin username
+#   - DJANGO_SUPERUSER_EMAIL: Admin email
+#   - DJANGO_SUPERUSER_PASSWORD: Admin password
+
+services:
+  backend:
+    image: novaville.azurecr.io/novaville-backend:latest
+    container_name: backend
+    environment:
+      # Database connection - These should be set in Azure App Service Configuration
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_HOST=${DB_HOST:-novavillesql.postgres.database.azure.com}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-novavilledb}
+      - DB_USER=${DB_USER:-novaville_user@novavillesql}
+      - DB_PASSWORD=${DB_PASSWORD}
+      # Django configuration
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-novavilleapp.azurewebsites.net,novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net},backend,localhost
+      - DJANGO_DEBUG=False
+      # Superuser creation
+      - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME:-admin}
+      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL:-admin@example.com}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
+      # Startup options
+      - MIGRATE=1
+      - COLLECTSTATIC=1
+      # Connection retry settings (Azure Database for PostgreSQL may need longer initialization)
+      - DB_WAIT_MAX_RETRIES=60
+      - DB_WAIT_RETRY_INTERVAL=3
+    restart: always
+    expose:
+      - "8000"
+    networks:
+      - novaville-net
+
+  frontend:
+    image: novaville.azurecr.io/novaville-frontend:latest
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - novaville-net
+
+networks:
+  novaville-net:
+    driver: bridge
