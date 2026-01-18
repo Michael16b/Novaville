@@ -1,32 +1,29 @@
 version: '3.8'
 
-# Azure deployment configuration
-# IMPORTANT: Replace hardcoded credentials with Azure environment variables/secrets
-# Set these in Azure App Service Configuration:
-#   - POSTGRES_PASSWORD
-#   - DJANGO_SUPERUSER_PASSWORD
-#   - DB_PASSWORD (should match POSTGRES_PASSWORD)
-
 services:
   postgres:
-    image: postgres:15-alpine
+    # L'image Bitnami est beaucoup plus tolérante sur les permissions de volumes
+    image: bitnami/postgresql:15
     container_name: postgres
+    user: root  # Nécessaire sur Azure pour initialiser le volume
     environment:
-      - POSTGRES_DB=novaville_db
-      - POSTGRES_USER=novaville_user
-      # SECURITY: Set this via Azure App Service environment variables
-      - POSTGRES_PASSWORD=YOUR_SECURE_PASSWORD
-      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRESQL_DATABASE=novaville_db
+      - POSTGRESQL_USERNAME=novaville_user
+      - POSTGRESQL_PASSWORD=YOUR_SECURE_PASSWORD
+      # Cette variable désactive le check strict de propriété du dossier
+      - POSTGRESQL_VOLUME_DIR=/bitnami/postgresql
     volumes:
-      - db-volume:/var/lib/postgresql/data
+      # Bitnami utilise ce chemin interne pour les données
+      - db-volume:/bitnami/postgresql/data
     networks:
-      - novaville-net # On force l'appartenance au réseau
+      - novaville-net
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d novaville_db -U novaville_user"]
-      interval: 5s
+      # Commande spécifique à Bitnami pour vérifier la santé
+      test: ["CMD-SHELL", "pg_isready -U novaville_user -d novaville_db"]
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
 
   backend:
     image: novaville.azurecr.io/novaville-backend:latest
@@ -37,7 +34,6 @@ services:
       - DB_PORT=5432
       - DB_NAME=novaville_db
       - DB_USER=novaville_user
-      # SECURITY: Set these via Azure App Service environment variables
       - DB_PASSWORD=YOUR_SECURE_PASSWORD
       - MIGRATE=1
       - DJANGO_SUPERUSER_USERNAME=admin
@@ -52,7 +48,7 @@ services:
 
 networks:
   novaville-net:
-    driver: bridge # Ce bloc à la fin est indispensable pour lier les services
+    driver: bridge
 
 volumes:
   db-volume:
