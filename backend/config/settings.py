@@ -16,9 +16,8 @@ INSTALLED_APPS = [
     # Add corsheaders for cross-origin requests from the frontend (dev)
     'corsheaders',
     # Optional nicer admin UI (grappelli) - installed only when in requirements
-    # Put grappelli before admin to override admin templates and static files
-    # Note: Grappelli overrides Django admin static files intentionally.
-    # collectstatic uses grep to filter out duplicate file warnings in logs.
+    # Put grappelli before admin to override admin templates and static files.
+    # Grappelli intentionally overrides some Django admin templates and static assets.
     "grappelli",
     "django.contrib.admin",
     "django.contrib.auth",
