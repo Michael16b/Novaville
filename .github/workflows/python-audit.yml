@@ -1,0 +1,32 @@
+name: Python dependency audit
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install pip-audit
+        run: python -m pip install --upgrade pip pip-audit
+
+      # Cas 1 : tu as un requirements.txt
+      - name: Audit requirements.txt
+        run: pip-audit -r requirements.txt
+
+      # Cas 2 (optionnel) : tu veux auditer l'env installé
+      # - name: Install deps then audit environment
+      #   run: |
+      #     pip install -r requirements.txt
+      #     pip-audit
