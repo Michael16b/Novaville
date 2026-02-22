@@ -396,8 +396,8 @@ In production, use:
 
 1. **Clone the project**
 ```bash
-git clone <repository-url> NewCity
-cd NewCity
+git clone https://github.com/Michael16b/Novaville.git <your_city_name>
+cd <your_city_name>
 ```
 
 2. **Customize branding**
@@ -706,7 +706,7 @@ For any questions about the project:
 **Instructor:** Nicolas MERCEREAU  
 **Email:** nicolas.mercereau3@gmail.com
 
-**Development Team:** BESILY MichaËl, CRONIER Romain, JAN Charlène
+**Development Team:** BESILY Michaël, CRONIER Romain, JAN Charlène
 
 ---
 

@@ -34,6 +34,8 @@ INSTALLED_APPS = [
     # Put grappelli before admin to override admin templates and static files.
     # Grappelli intentionally overrides some Django admin templates and static assets.
     "grappelli",
+    # IMPORTANT: core app must be before django.contrib.auth when using custom User model
+    "core.apps.CoreConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -47,7 +49,6 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "django_filters",
     # local apps
-    "core",
     "api",
     "application",
     "infrastructure",
@@ -55,6 +56,9 @@ INSTALLED_APPS = [
 
 # Par défaut pour les nouvelles apps (évite le warning sur AutoField)
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Custom user model
+AUTH_USER_MODEL = 'core.User'
 
 MIDDLEWARE = [
     # corsheaders middleware should be placed as high as possible
