@@ -67,15 +67,17 @@ git clone https://github.com/Michael16b/Novaville.git
 cd Novaville
 ```
 
-2. **Configure environment variables** (optional)
+2. **Configure environment variables**
 
-Create a `.env` file at the root if you want to customize ports or credentials:
+Create a `.env` file at the root. The secrets below are required:
 ```env
 DB_PORT=5432
 DB_HOST=postgres
 DB_NAME=novaville_db
 DB_USER=novaville_user
 DB_PASSWORD=YOUR_SECURE_PASSWORD
+DJANGO_SECRET_KEY=CHANGE_ME_TO_AT_LEAST_32_CHARS
+JWT_SIGNING_KEY=CHANGE_ME_TO_AT_LEAST_32_CHARS
 API_URL=http://localhost:8000
 ```
 
@@ -115,6 +117,17 @@ docker compose down
 # With volume removal (data deleted)
 docker compose down --volumes
 ```
+
+### GitHub Secrets (CI/CD)
+
+If you deploy from GitHub Actions, add these secrets in the repository settings:
+
+- `DJANGO_SECRET_KEY`
+- `JWT_SIGNING_KEY`
+
+Keep your existing Azure secrets (`AZURE_*`) as they are.
+
+If you use the "Azure Cloud" GitHub Environment, store these secrets there and make sure the workflow targets that environment so the secrets are injected at deploy time.
 
 ---
 

@@ -40,6 +40,8 @@ services:
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=admin@example.com
       - DJANGO_SUPERUSER_PASSWORD=ChangeMe123
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:?set_in_env}
+      - JWT_SIGNING_KEY=${JWT_SIGNING_KEY:?set_in_env}
       - DJANGO_ALLOWED_HOSTS=novavilleapp.azurewebsites.net,novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net,backend,localhost
     depends_on:
       postgres:

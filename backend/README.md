@@ -114,7 +114,9 @@ docker compose up -d --build
 ### Exemple : variables d'environnement pour la production
 Stockez les variables sensibles dans votre système de secrets et veillez à ne pas exposer l'admin.
 
-Variables importantes : `DJANGO_SECRET_KEY`, `DATABASE_URL` (ou `DB_HOST/DB_USER/DB_PASSWORD`), `ENABLE_ADMIN=0`, `DJANGO_DEBUG=False`, `ALLOWED_HOSTS`.
+Variables importantes : `DJANGO_SECRET_KEY`, `JWT_SIGNING_KEY`, `DATABASE_URL` (ou `DB_HOST/DB_USER/DB_PASSWORD`), `ENABLE_ADMIN=0`, `DJANGO_DEBUG=False`, `ALLOWED_HOSTS`.
+
+Pour le dev local, vous pouvez partir du fichier [.env.example](../.env.example).
 
 ---
 
