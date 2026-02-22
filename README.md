@@ -706,7 +706,7 @@ For any questions about the project:
 **Instructor:** Nicolas MERCEREAU  
 **Email:** nicolas.mercereau3@gmail.com
 
-**Development Team:** [To be completed]
+**Development Team:** BESILY MichaËl, CRONIER Romain, JAN Charlène
 
 ---
 
