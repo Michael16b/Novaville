@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.db import IntegrityError
 from core.db.models import Vote
 from api.v1.serializers.vote_serializer import VoteSerializer, VoteCreateSerializer
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -59,10 +60,8 @@ class VoteViewSet(viewsets.ModelViewSet):
         """Create a vote with duplicate check"""
         try:
             return super().create(request, *args, **kwargs)
-        except Exception as e:
-            if 'unique constraint' in str(e).lower():
-                return Response(
-                    {'error': 'You have already voted on this survey'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            raise
+        except IntegrityError:
+            return Response(
+                {'error': 'You have already voted on this survey'},
+                status=status.HTTP_400_BAD_REQUEST
+            )

@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from core.db.models import Report, User, Neighborhood, RoleEnum
+from core.db.models import Report, User, Neighborhood, RoleEnum, ReportStatusEnum
 from api.v1.serializers.report_serializer import ReportSerializer, ReportCreateSerializer
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 from django_filters.rest_framework import DjangoFilterBackend
@@ -102,6 +102,12 @@ class ReportViewSet(viewsets.ModelViewSet):
         if not new_status:
             return Response(
                 {'error': 'Status is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if new_status not in ReportStatusEnum.values:
+            return Response(
+                {'error': f'Invalid status. Valid choices: {list(ReportStatusEnum.values)}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         

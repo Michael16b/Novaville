@@ -50,6 +50,12 @@ class SurveyCreateSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'start_date', 'end_date', 'options']
         read_only_fields = ['id']
     
+    def validate_options(self, value):
+        """Ensure at least one option is provided"""
+        if not value:
+            raise serializers.ValidationError("At least one option is required.")
+        return value
+
     def create(self, validated_data):
         """Create survey with options"""
         options_data = validated_data.pop('options')

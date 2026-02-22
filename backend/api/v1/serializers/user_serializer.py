@@ -18,13 +18,23 @@ class UserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True}
         }
     
+    def validate_role(self, value):
+        """Prevent non-admin users from changing their role"""
+        request = self.context.get('request')
+        if request and (not request.user.is_authenticated or not request.user.is_staff):
+            if self.instance:
+                return self.instance.role
+            return RoleEnum.CITIZEN
+        return value
+
     def create(self, validated_data):
         """Create a new user with hashed password"""
         password = validated_data.pop('password', None)
+        if not password:
+            raise serializers.ValidationError({"password": "This field is required."})
         user = User.objects.create(**validated_data)
-        if password:
-            user.set_password(password)
-            user.save()
+        user.set_password(password)
+        user.save()
         return user
     
     def update(self, instance, validated_data):

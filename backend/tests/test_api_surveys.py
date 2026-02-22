@@ -195,6 +195,7 @@ class TestVotesAPI:
 
     def test_vote_unique_constraint_exception(self, citizen_user, monkeypatch):
         """Test viewset handles unique constraint exception"""
+        from django.db import IntegrityError
         factory = APIRequestFactory()
         request = factory.post(
             "/api/v1/votes/",
@@ -204,7 +205,7 @@ class TestVotesAPI:
         force_authenticate(request, user=citizen_user)
 
         def raise_unique(*args, **kwargs):
-            raise Exception("UNIQUE constraint failed: votes.user_id, votes.survey_id")
+            raise IntegrityError("UNIQUE constraint failed: votes.user_id, votes.survey_id")
 
         monkeypatch.setattr(ModelViewSet, "create", raise_unique)
 
