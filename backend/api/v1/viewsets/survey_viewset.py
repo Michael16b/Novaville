@@ -1,13 +1,14 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 from core.db.models import Survey, SurveyOption, RoleEnum
 from api.v1.serializers.survey_serializer import (
     SurveySerializer,
     SurveyCreateSerializer,
     SurveyOptionSerializer
 )
+from api.v1.permissions import IsStaffOrReadOnly
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from django.utils import timezone
 
@@ -53,7 +54,7 @@ class SurveyViewSet(viewsets.ModelViewSet):
     """
     queryset = Survey.objects.prefetch_related('options', 'votes').all()
     serializer_class = SurveySerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsStaffOrReadOnly]
     
     def get_serializer_class(self):
         """Use different serializers for different actions"""
@@ -125,4 +126,11 @@ class SurveyOptionViewSet(viewsets.ModelViewSet):
     """ViewSet for managing survey options"""
     queryset = SurveyOption.objects.all()
     serializer_class = SurveyOptionSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    def get_permissions(self):
+        """Allow read for authenticated, write for staff only"""
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [IsStaffOrReadOnly]
+        return [permission() for permission in permission_classes]

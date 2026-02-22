@@ -157,3 +157,10 @@ def elected_client(api_client, elected_user):
     """API client authenticated as elected official"""
     api_client.force_authenticate(user=elected_user)
     return api_client
+
+
+def get_response_data(response):
+    """Helper to extract data from paginated or non-paginated response"""
+    if isinstance(response.data, dict) and 'results' in response.data:
+        return response.data['results']
+    return response.data

@@ -47,7 +47,8 @@ class SurveyCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Survey
-        fields = ['title', 'description', 'start_date', 'end_date', 'options']
+        fields = ['id', 'title', 'description', 'start_date', 'end_date', 'options']
+        read_only_fields = ['id']
     
     def create(self, validated_data):
         """Create survey with options"""

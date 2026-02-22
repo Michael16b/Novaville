@@ -23,4 +23,5 @@ class ReportCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Report
-        fields = ['problem_type', 'description', 'neighborhood', 'citizen_target']
+        fields = ['id', 'problem_type', 'description', 'neighborhood', 'citizen_target']
+        read_only_fields = ['id']

@@ -56,11 +56,14 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             # Anyone can register
             permission_classes = [AllowAny]
-        elif self.action in ['retrieve']:
-            # Authenticated users can view their own profile
+        elif self.action in ['list', 'retrieve', 'me']:
+            # Authenticated users can view users
+            permission_classes = [IsAuthenticated]
+        elif self.action in ['update', 'partial_update']:
+            # Users can update their own profile, admins can update anyone
             permission_classes = [IsAuthenticated]
         else:
-            # List, update, delete: admin only
+            # Delete: admin only
             permission_classes = [IsAdminUser]
         return [permission() for permission in permission_classes]
     
@@ -70,9 +73,29 @@ class UserViewSet(viewsets.ModelViewSet):
         if user.is_staff or user.is_superuser:
             return User.objects.all()
         elif user.is_authenticated:
-            # Regular users can only see their own profile
-            return User.objects.filter(id=user.id)
+            # Regular users can see all users (public directory)
+            return User.objects.all()
         return User.objects.none()
+    
+    def update(self, request, *args, **kwargs):
+        """Allow users to update their own profile, admins can update anyone"""
+        instance = self.get_object()
+        if not request.user.is_staff and instance != request.user:
+            return Response(
+                {'error': 'You can only update your own profile'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().update(request, *args, **kwargs)
+    
+    def partial_update(self, request, *args, **kwargs):
+        """Allow users to update their own profile, admins can update anyone"""
+        instance = self.get_object()
+        if not request.user.is_staff and instance != request.user:
+            return Response(
+                {'error': 'You can only update your own profile'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().partial_update(request, *args, **kwargs)
     
     @extend_schema(
         summary="Get current user profile",

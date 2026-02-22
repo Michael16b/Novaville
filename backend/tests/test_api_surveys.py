@@ -14,7 +14,8 @@ class TestSurveysAPI:
         """Test listing surveys"""
         response = authenticated_client.get("/api/v1/surveys/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) >= 1
+        results = response.data.get('results', response.data)
+        assert len(results) >= 1
     
     def test_create_survey_by_elected(self, elected_client):
         """Test elected official can create survey with options"""
@@ -23,16 +24,16 @@ class TestSurveysAPI:
             "description": "Survey description",
             "start_date": timezone.now().isoformat(),
             "end_date": (timezone.now() + timedelta(days=7)).isoformat(),
-            "options": [
-                {"text": "Option A"},
-                {"text": "Option B"},
-                {"text": "Option C"}
-            ]
+            "options": ["Option A", "Option B", "Option C"]
         }
         response = elected_client.post("/api/v1/surveys/", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["title"] == "New Survey"
-        assert len(response.data["options"]) == 3
+        
+        # Get the survey to check options
+        survey_id = response.data["id"]
+        survey_response = elected_client.get(f"/api/v1/surveys/{survey_id}/")
+        assert len(survey_response.data["options"]) == 3
     
     def test_create_survey_by_citizen_forbidden(self, authenticated_client):
         """Test citizen cannot create survey"""
@@ -158,4 +159,5 @@ class TestVotesAPI:
         
         response = authenticated_client.get("/api/v1/votes/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) >= 1
+        results = response.data.get('results', response.data)
+        assert len(results) >= 1

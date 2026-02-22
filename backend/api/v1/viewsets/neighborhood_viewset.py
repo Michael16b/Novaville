@@ -1,7 +1,8 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 from core.db.models import Neighborhood
 from api.v1.serializers.neighborhood_serializer import NeighborhoodSerializer
+from api.v1.permissions import IsAdminOrReadOnly
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
@@ -42,8 +43,15 @@ class NeighborhoodViewSet(viewsets.ModelViewSet):
     ViewSet for managing neighborhoods.
     
     Read access for all authenticated users.
-    Write access for staff only.
+    Write access for admin only.
     """
     queryset = Neighborhood.objects.all()
     serializer_class = NeighborhoodSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    def get_permissions(self):
+        """Allow read for authenticated, write for admin only"""
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [IsAdminOrReadOnly]
+        return [permission() for permission in permission_classes]

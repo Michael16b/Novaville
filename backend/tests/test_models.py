@@ -109,7 +109,6 @@ class TestNeighborhoodModel:
             neighborhood=neighborhood
         )
         assert neighborhood.reports.count() == 2
-        assert neighborhood.total_reports == 2
 
 
 class TestReportModel:

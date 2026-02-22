@@ -121,10 +121,7 @@ class TestPermissions:
                 "description": "Test description",
                 "start_date": timezone.now().isoformat(),
                 "end_date": (timezone.now() + timedelta(days=7)).isoformat(),
-                "options": [
-                    {"text": "Option 1"},
-                    {"text": "Option 2"}
-                ]
+                "options": ["Option 1", "Option 2"]
             },
             format="json"
         )

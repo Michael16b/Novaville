@@ -12,7 +12,8 @@ class TestUsersAPI:
         """Test listing users"""
         response = authenticated_client.get("/api/v1/users/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) >= 1
+        results = response.data.get('results', response.data)
+        assert len(results) >= 1
     
     def test_create_user(self, api_client, neighborhood):
         """Test creating a new user (registration)"""
@@ -82,7 +83,8 @@ class TestNeighborhoodsAPI:
         """Test listing neighborhoods"""
         response = authenticated_client.get("/api/v1/neighborhoods/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) >= 1
+        results = response.data.get('results', response.data)
+        assert len(results) >= 1
     
     def test_create_neighborhood(self, admin_client):
         """Test admin can create neighborhood"""

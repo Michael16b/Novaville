@@ -86,9 +86,16 @@ class ReportViewSet(viewsets.ModelViewSet):
         tags=["Reports"],
         request={"application/json": {"example": {"status": "IN_PROGRESS"}}}
     )
-    @action(detail=True, methods=['patch'])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def update_status(self, request, pk=None):
         """Update report status (staff only)"""
+        # Check if user is staff
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only staff members can update report status'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
         report = self.get_object()
         new_status = request.data.get('status')
         

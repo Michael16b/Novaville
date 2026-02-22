@@ -1,13 +1,14 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 from core.db.models import Event, ThemeEvent, RoleEnum
 from api.v1.serializers.event_serializer import (
     EventSerializer,
     EventCreateSerializer,
     ThemeEventSerializer
 )
+from api.v1.permissions import IsStaffOrReadOnly, IsAdminOrReadOnly
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
@@ -55,16 +56,23 @@ class EventViewSet(viewsets.ModelViewSet):
     ViewSet for managing events.
     
     All authenticated users can view events.
-    Authenticated users can create events.
+    Only staff can create events.
     Only creator or staff can update/delete events.
     """
     queryset = Event.objects.select_related('created_by', 'theme').all()
     serializer_class = EventSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ['theme']
     ordering_fields = ['start_date', 'end_date']
     ordering = ['start_date']
+    
+    def get_permissions(self):
+        """Allow read for authenticated, write for staff only"""
+        if self.action in ['list', 'retrieve', 'upcoming']:
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [IsStaffOrReadOnly]
+        return [permission() for permission in permission_classes]
     
     def get_serializer_class(self):
         """Use different serializers for different actions"""
@@ -121,4 +129,11 @@ class ThemeEventViewSet(viewsets.ModelViewSet):
     """ViewSet for managing event themes"""
     queryset = ThemeEvent.objects.all()
     serializer_class = ThemeEventSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    def get_permissions(self):
+        """Allow read for authenticated, write for admin only"""
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [IsAdminOrReadOnly]
+        return [permission() for permission in permission_classes]

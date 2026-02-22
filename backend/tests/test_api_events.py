@@ -14,7 +14,8 @@ class TestEventsAPI:
         """Test listing events"""
         response = authenticated_client.get("/api/v1/events/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) >= 1
+        results = response.data.get('results', response.data)
+        assert len(results) >= 1
     
     def test_create_event(self, elected_client, theme):
         """Test creating an event"""
@@ -110,7 +111,8 @@ class TestEventsAPI:
         
         response = authenticated_client.get(f"/api/v1/events/?theme={theme.id}")
         assert response.status_code == status.HTTP_200_OK
-        event_ids = [e["id"] for e in response.data]
+        results = response.data.get('results', response.data)
+        event_ids = [e["id"] for e in results]
         assert event1.id in event_ids
         assert event2.id not in event_ids
 
@@ -122,7 +124,8 @@ class TestEventThemesAPI:
         """Test listing event themes"""
         response = authenticated_client.get("/api/v1/event-themes/")
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) >= 1
+        results = response.data.get('results', response.data)
+        assert len(results) >= 1
     
     def test_create_theme(self, admin_client):
         """Test admin can create theme"""
