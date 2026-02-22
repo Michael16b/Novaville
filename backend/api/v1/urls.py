@@ -3,7 +3,6 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 # Import viewsets
-from api.v1.viewsets.item_viewset import ItemViewSet
 from api.v1.viewsets.user_viewset import UserViewSet
 from api.v1.viewsets.neighborhood_viewset import NeighborhoodViewSet
 from api.v1.viewsets.report_viewset import ReportViewSet
@@ -16,9 +15,6 @@ from api.v1.auth import LoginView
 
 # Create router and register viewsets
 router = DefaultRouter()
-
-# Legacy
-router.register(r"items", ItemViewSet, basename="item")
 
 # Core models
 router.register(r"users", UserViewSet, basename="user")
