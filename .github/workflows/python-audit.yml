@@ -28,14 +28,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install pip-audit
 
-      # Vérification utile en debug CI
       - name: Check files in backend
         run: ls -la
 
       - name: Run dependency audit
         run: pip-audit -r requirements.txt
 
-      # Rapport JSON (optionnel mais recommandé)
       - name: Generate JSON report
         if: always()
         run: pip-audit -r requirements.txt -f json -o pip-audit.json || true
