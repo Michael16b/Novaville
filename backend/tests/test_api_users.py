@@ -1,6 +1,9 @@
 """Tests for Users and Neighborhoods API endpoints"""
 import pytest
 from rest_framework import status
+from rest_framework.test import APIRequestFactory
+from unittest.mock import Mock
+from api.v1.viewsets.user_viewset import UserViewSet
 
 pytestmark = pytest.mark.django_db
 
@@ -54,10 +57,33 @@ class TestUsersAPI:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["first_name"] == "Updated"
     
+    def test_update_password(self, authenticated_client, citizen_user):
+        """Test user can update their password"""
+        data = {"password": "newpassword123"}
+        response = authenticated_client.patch(
+            f"/api/v1/users/{citizen_user.id}/",
+            data,
+            format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        # Refresh from DB to get updated password
+        citizen_user.refresh_from_db()
+        assert citizen_user.check_password("newpassword123")
+    
     def test_cannot_update_other_user(self, authenticated_client, elected_user):
         """Test user cannot update another user's profile"""
         data = {"first_name": "Hacked"}
         response = authenticated_client.patch(
+            f"/api/v1/users/{elected_user.id}/",
+            data,
+            format="json"
+        )
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_cannot_update_other_user_put(self, authenticated_client, elected_user):
+        """Test user cannot update another user's profile via PUT"""
+        data = {"first_name": "Hacked"}
+        response = authenticated_client.put(
             f"/api/v1/users/{elected_user.id}/",
             data,
             format="json"
@@ -74,6 +100,34 @@ class TestUsersAPI:
         )
         assert response.status_code == status.HTTP_200_OK
         assert response.data["first_name"] == "AdminUpdated"
+
+
+class TestUserViewSetQueryset:
+    """Tests for UserViewSet.get_queryset branches"""
+
+    def test_get_queryset_for_staff(self, admin_user):
+        """Test staff can see all users"""
+        factory = APIRequestFactory()
+        request = factory.get("/api/v1/users/")
+        request.user = admin_user
+
+        view = UserViewSet()
+        view.request = request
+
+        queryset = view.get_queryset()
+        assert queryset.count() >= 1
+
+    def test_get_queryset_for_unauthenticated(self):
+        """Test unauthenticated user gets empty queryset"""
+        factory = APIRequestFactory()
+        request = factory.get("/api/v1/users/")
+        request.user = Mock(is_authenticated=False, is_staff=False, is_superuser=False)
+
+        view = UserViewSet()
+        view.request = request
+
+        queryset = view.get_queryset()
+        assert queryset.count() == 0
 
 
 class TestNeighborhoodsAPI:

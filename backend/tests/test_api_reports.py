@@ -62,6 +62,16 @@ class TestReportsAPI:
         
         report.refresh_from_db()
         assert report.status == ReportStatusEnum.IN_PROGRESS
+
+    def test_update_report_status_requires_status(self, elected_client, report):
+        """Test staff must provide status when updating"""
+        response = elected_client.post(
+            f"/api/v1/reports/{report.id}/update_status/",
+            {},
+            format="json"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Status is required" in str(response.data)
     
     def test_citizen_cannot_update_status(self, authenticated_client, report):
         """Test citizen cannot update report status"""

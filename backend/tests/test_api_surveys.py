@@ -1,8 +1,14 @@
 """Tests for Surveys API endpoints"""
 import pytest
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.test import APIRequestFactory, force_authenticate
+from rest_framework.viewsets import ModelViewSet
 from datetime import timedelta
 from django.utils import timezone
+from api.v1.viewsets.vote_viewset import VoteViewSet
+from api.v1.viewsets.survey_viewset import SurveyOptionViewSet
+from api.v1.permissions import IsStaffOrReadOnly
 
 pytestmark = pytest.mark.django_db
 
@@ -148,6 +154,31 @@ class TestVotesAPI:
         )
         assert response2.status_code == status.HTTP_400_BAD_REQUEST
     
+    def test_vote_option_mismatch(self, authenticated_client, survey_with_options, elected_user):
+        """Test voting with option from different survey"""
+        # Create another survey
+        from core.db.models import Survey, SurveyOption
+        other_survey = Survey.objects.create(
+            title="Other Survey",
+            description="Different",
+            start_date="2026-01-01T00:00:00Z",
+            end_date="2026-12-31T23:59:59Z",
+            created_by=elected_user
+        )
+        other_option = SurveyOption.objects.create(
+            survey=other_survey,
+            text="Other Option"
+        )
+        
+        # Try to vote on survey_with_options using option from other_survey
+        response = authenticated_client.post(
+            "/api/v1/votes/",
+            {"survey": survey_with_options.id, "option": other_option.id},
+            format="json"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "does not belong to this survey" in str(response.data)
+    
     def test_list_user_votes(self, authenticated_client, survey_with_options):
         """Test listing user's own votes"""
         option = survey_with_options.options.first()
@@ -161,3 +192,48 @@ class TestVotesAPI:
         assert response.status_code == status.HTTP_200_OK
         results = response.data.get('results', response.data)
         assert len(results) >= 1
+
+    def test_vote_unique_constraint_exception(self, citizen_user, monkeypatch):
+        """Test viewset handles unique constraint exception"""
+        factory = APIRequestFactory()
+        request = factory.post(
+            "/api/v1/votes/",
+            {"survey": 1, "option": 1},
+            format="json"
+        )
+        force_authenticate(request, user=citizen_user)
+
+        def raise_unique(*args, **kwargs):
+            raise Exception("UNIQUE constraint failed: votes.user_id, votes.survey_id")
+
+        monkeypatch.setattr(ModelViewSet, "create", raise_unique)
+
+        view = VoteViewSet.as_view({"post": "create"})
+        response = view(request)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data["error"] == "You have already voted on this survey"
+
+
+class TestSurveyOptionsAPI:
+    """Tests for survey options endpoints"""
+
+    def test_list_survey_options(self, authenticated_client, survey_with_options):
+        """Test listing survey options"""
+        response = authenticated_client.get("/api/v1/survey-options/")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get("results", response.data)
+        assert len(results) >= 2
+
+    def test_survey_option_permissions_list(self):
+        """Test list uses authenticated permission"""
+        view = SurveyOptionViewSet()
+        view.action = "list"
+        permissions = view.get_permissions()
+        assert any(isinstance(p, IsAuthenticated) for p in permissions)
+
+    def test_survey_option_permissions_write(self):
+        """Test write uses staff-only permission"""
+        view = SurveyOptionViewSet()
+        view.action = "create"
+        permissions = view.get_permissions()
+        assert any(isinstance(p, IsStaffOrReadOnly) for p in permissions)

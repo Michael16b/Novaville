@@ -271,3 +271,66 @@ class TestEventModel:
         events = Event.objects.all()
         assert events[0] == event2
         assert events[1] == event1
+
+
+class TestModelStrMethods:
+    """Test string representations for all models"""
+    
+    def test_user_str(self, citizen_user):
+        """Test User __str__ method"""
+        expected = f"{citizen_user.get_full_name() or citizen_user.username} ({citizen_user.get_role_display()})"
+        assert str(citizen_user) == expected
+    
+    def test_neighborhood_str(self, neighborhood):
+        """Test Neighborhood __str__ method"""
+        expected = f"{neighborhood.name} ({neighborhood.postal_code})"
+        assert str(neighborhood) == expected
+    
+    def test_report_str(self, citizen_user, neighborhood):
+        """Test Report __str__ method"""
+        report = Report.objects.create(
+            user=citizen_user,
+            problem_type='ROADS',
+            status='RECORDED',
+            description='Test',
+            neighborhood=neighborhood
+        )
+        expected = f"Report #{report.id} - Roads ({report.get_status_display()})"
+        assert str(report) == expected
+    
+    def test_survey_str(self, survey_with_options):
+        """Test Survey __str__ method"""
+        assert str(survey_with_options) == survey_with_options.title
+    
+    def test_survey_option_str(self, survey_with_options):
+        """Test SurveyOption __str__ method"""
+        option = survey_with_options.options.first()
+        expected = f"{survey_with_options.title} - {option.text}"
+        assert str(option) == expected
+    
+    def test_vote_str(self, citizen_user, survey_with_options):
+        """Test Vote __str__ method"""
+        option = survey_with_options.options.first()
+        vote = Vote.objects.create(
+            user=citizen_user,
+            survey=survey_with_options,
+            option=option
+        )
+        expected = f"{citizen_user.username} voted on {survey_with_options.title}"
+        assert str(vote) == expected
+    
+    def test_theme_event_str(self, theme):
+        """Test ThemeEvent __str__ method"""
+        assert str(theme) == theme.title
+    
+    def test_event_str(self, elected_user, theme):
+        """Test Event __str__ method"""
+        event = Event.objects.create(
+            title="Test Event",
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(hours=2),
+            theme=theme,
+            created_by=elected_user
+        )
+        expected = f"{event.title} ({event.start_date.strftime('%Y-%m-%d')})"
+        assert str(event) == expected
