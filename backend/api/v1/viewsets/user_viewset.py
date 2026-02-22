@@ -43,7 +43,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing users.
     
-    list: Admin only
+    list: Authenticated users (public directory)
     retrieve: Authenticated users can view their own profile, admins can view all
     create: Anyone can register (returns minimal info)
     update/destroy: Admin only
