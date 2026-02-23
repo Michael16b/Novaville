@@ -3,10 +3,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 try:
-    from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+    from drf_spectacular.views import (
+        SpectacularAPIView,
+        SpectacularSwaggerView,
+        SpectacularRedocView,
+    )
 except Exception:
     SpectacularAPIView = None
     SpectacularSwaggerView = None
+    SpectacularRedocView = None
 
 urlpatterns = [
     path("api/v1/", include("api.v1.urls")),
@@ -42,5 +47,14 @@ if SpectacularAPIView is not None:
                     "api/docs/",
                     SpectacularSwaggerView.as_view(url_name="schema"),
                     name="swagger-ui",
+                ),
+            ]
+        # Provide ReDoc UI at /api/redoc/
+        if SpectacularRedocView is not None:
+            urlpatterns += [
+                path(
+                    "api/redoc/",
+                    SpectacularRedocView.as_view(url_name="schema"),
+                    name="redoc",
                 ),
             ]

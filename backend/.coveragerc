@@ -1,0 +1,7 @@
+[run]
+omit =
+    */config/*
+    */manage.py
+    */core/migrations/*
+    */wait_for_db.py
+    */tests/*

@@ -33,6 +33,9 @@ services:
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=admin@example.com
       - DJANGO_SUPERUSER_PASSWORD=ChangeMe123
+      # WARNING: The following keys use development-only defaults. MUST be changed for any deployment beyond local development.
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-dev-only-unsafe-key-change-me-32chars}
+      - JWT_SIGNING_KEY=${JWT_SIGNING_KEY:-dev-only-unsafe-key-change-me-32chars}
       - DJANGO_SETTINGS_MODULE=config.settings
       - DJANGO_WSGI_MODULE=config.wsgi
       # CloudSQL / PostgreSQL

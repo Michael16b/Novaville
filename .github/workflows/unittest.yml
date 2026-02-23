@@ -1,4 +1,4 @@
-name: Test unitaire backend
+name: Tests unitaires backend
 
 on:
   push:
@@ -9,6 +9,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DJANGO_DEBUG: "1"
+      DJANGO_SECRET_KEY: "ci-only-unsafe-key-change-me-32chars"
+      JWT_SIGNING_KEY: "ci-only-unsafe-key-change-me-32chars"
+      DB_ENGINE: "django.db.backends.sqlite3"
+      DB_NAME: ":memory:"
 
     steps:
       # 1. Récupération du code

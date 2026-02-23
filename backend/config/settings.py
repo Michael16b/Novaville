@@ -8,7 +8,7 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "change-me")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "")
 DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
 
 # ALLOWED_HOSTS configuration
@@ -34,6 +34,8 @@ INSTALLED_APPS = [
     # Put grappelli before admin to override admin templates and static files.
     # Grappelli intentionally overrides some Django admin templates and static assets.
     "grappelli",
+    # IMPORTANT: core app must be before django.contrib.auth when using custom User model
+    "core.apps.CoreConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -47,7 +49,6 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "django_filters",
     # local apps
-    "core",
     "api",
     "application",
     "infrastructure",
@@ -55,6 +56,9 @@ INSTALLED_APPS = [
 
 # Par défaut pour les nouvelles apps (évite le warning sur AutoField)
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Custom user model
+AUTH_USER_MODEL = 'core.User'
 
 MIDDLEWARE = [
     # corsheaders middleware should be placed as high as possible
@@ -175,10 +179,19 @@ ENABLE_ADMIN = os.environ.get("ENABLE_ADMIN", "1").lower() in ("1", "true", "yes
 # Comma separated list of allowed IPs (e.g. "127.0.0.1,10.0.0.0/8"). Empty means no IP restriction.
 ADMIN_ALLOWED_IPS = [ip.strip() for ip in os.environ.get("ADMIN_ALLOWED_IPS", "").split(",") if ip.strip()]
 
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "dev-only-unsafe-key-change-me"
+    else:
+        raise RuntimeError("DJANGO_SECRET_KEY is required when DEBUG is false")
+
+JWT_SIGNING_KEY = os.environ.get("JWT_SIGNING_KEY", SECRET_KEY)
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.environ.get("JWT_ACCESS_MINUTES", 60))),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.environ.get("JWT_REFRESH_DAYS", 7))),
     "AUTH_HEADER_TYPES": ("Bearer",),
+    "SIGNING_KEY": JWT_SIGNING_KEY,
 }
 
 # WhiteNoise staticfiles storage: compressed + manifest for caching
