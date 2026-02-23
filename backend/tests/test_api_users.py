@@ -101,6 +101,32 @@ class TestUsersAPI:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["first_name"] == "AdminUpdated"
 
+    def test_citizen_cannot_escalate_own_role(self, authenticated_client, citizen_user):
+        """Test citizen cannot change their own role to a privileged role"""
+        from core.db.models import RoleEnum
+        data = {"role": RoleEnum.GLOBAL_ADMIN}
+        response = authenticated_client.patch(
+            f"/api/v1/users/{citizen_user.id}/",
+            data,
+            format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        citizen_user.refresh_from_db()
+        assert citizen_user.role == RoleEnum.CITIZEN
+
+    def test_admin_can_change_user_role(self, admin_client, citizen_user):
+        """Test admin can change a user's role"""
+        from core.db.models import RoleEnum
+        data = {"role": RoleEnum.AGENT}
+        response = admin_client.patch(
+            f"/api/v1/users/{citizen_user.id}/",
+            data,
+            format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        citizen_user.refresh_from_db()
+        assert citizen_user.role == RoleEnum.AGENT
+
 
 class TestUserViewSetQueryset:
     """Tests for UserViewSet.get_queryset branches"""
