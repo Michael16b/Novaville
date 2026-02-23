@@ -81,6 +81,16 @@ class TestReportsAPI:
             format="json"
         )
         assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_update_report_status_invalid_value(self, elected_client, report):
+        """Test elected official cannot set an invalid status value"""
+        response = elected_client.post(
+            f"/api/v1/reports/{report.id}/update_status/",
+            {"status": "NOT_A_VALID_STATUS"},
+            format="json"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Invalid status" in str(response.data)
     
     def test_filter_reports_by_status(self, authenticated_client, citizen_user, neighborhood):
         """Test filtering reports by status"""
