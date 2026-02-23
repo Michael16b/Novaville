@@ -15,3 +15,7 @@
 /frontend/ios/Flutter/
 frontend/linux/flutter/*
 .DS_Store
+backend/.coverage
+backend/coverage.xml
+backend/htmlcov/
+backend/test.db
