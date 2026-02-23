@@ -41,6 +41,19 @@ class TestSurveysAPI:
         survey_response = elected_client.get(f"/api/v1/surveys/{survey_id}/")
         assert len(survey_response.data["options"]) == 3
     
+    def test_create_survey_without_options(self, elected_client):
+        """Test creating a survey with no options returns validation error"""
+        data = {
+            "title": "Survey Without Options",
+            "description": "Should fail",
+            "start_date": timezone.now().isoformat(),
+            "end_date": (timezone.now() + timedelta(days=7)).isoformat(),
+            "options": []
+        }
+        response = elected_client.post("/api/v1/surveys/", data, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "options" in response.data
+
     def test_create_survey_by_citizen_forbidden(self, authenticated_client):
         """Test citizen cannot create survey"""
         data = {
