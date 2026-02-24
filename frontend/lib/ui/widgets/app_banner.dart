@@ -70,11 +70,10 @@ class AppBanner extends StatelessWidget {
                     if (value == 'logout') {
                       context.read<AuthBloc>().add(const AuthLogoutRequested());
                     } else if (value == 'personal_info') {
-                      Navigator.of(context).pushAndRemoveUntil(
+                      Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (context) => const MyAccountPage(),
                         ),
-                        (route) => route.isFirst,
                       );
                     }
                   },
