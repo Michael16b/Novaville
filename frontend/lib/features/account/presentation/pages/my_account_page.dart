@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts.dart';
+import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/design_systems/custom_outlined_button.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
@@ -221,8 +222,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                                 if (value == null || value.isEmpty) {
                                   return AppTexts.emailRequired;
                                 }
-                                final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-                                if (!emailRegex.hasMatch(value)) {
+                                if (!ValidationPatterns.email.hasMatch(value)) {
                                   return AppTexts.emailInvalid;
                                 }
                                 return null;
@@ -326,4 +326,3 @@ class _MyAccountViewState extends State<_MyAccountView> {
       );
   }
 }
-
