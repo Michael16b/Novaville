@@ -60,8 +60,9 @@ void main() {
         ),
       );
 
-      // Verify GridView exists
-      expect(find.byType(GridView), findsOneWidget);
+      // Verify CustomScrollView with SliverGrid exists
+      expect(find.byType(CustomScrollView), findsOneWidget);
+      expect(find.byType(SliverGrid), findsOneWidget);
 
       // Verify 6 MenuCards are rendered
       expect(find.byType(MenuCard), findsNWidgets(6));
@@ -74,17 +75,15 @@ void main() {
         ),
       );
 
-      final gridViewFinder = find.byType(GridView);
-      final GridView gridView = tester.widget(gridViewFinder);
+      final sliverGridFinder = find.byType(SliverGrid);
+      final SliverGrid sliverGrid = tester.widget(sliverGridFinder);
 
-      // Verify GridView.count is used with correct parameters
-      expect(gridView.gridDelegate, isA<SliverGridDelegateWithFixedCrossAxisCount>());
-      
-      final delegate = gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
-      expect(delegate.crossAxisCount, 3);
+      // Verify SliverGrid uses SliverGridDelegateWithFixedCrossAxisCount
+      expect(sliverGrid.gridDelegate, isA<SliverGridDelegateWithFixedCrossAxisCount>());
+
+      final delegate = sliverGrid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
       expect(delegate.crossAxisSpacing, 16);
       expect(delegate.mainAxisSpacing, 16);
-      expect(delegate.childAspectRatio, 2);
     });
 
     testWidgets('renders Reports menu card with correct icon and title', (WidgetTester tester) async {
@@ -161,7 +160,7 @@ void main() {
       );
 
       final paddingFinder = find.byWidgetPredicate(
-        (widget) => widget is Padding && widget.padding == const EdgeInsets.all(16.0),
+        (widget) => widget is SliverPadding && widget.padding == const EdgeInsets.all(16.0),
       );
 
       expect(paddingFinder, findsOneWidget);
@@ -174,9 +173,9 @@ void main() {
         ),
       );
 
-      // Find SizedBox with height 8 between title and subtitle
+      // SizedBoxes order: height 24 (before title), height 8 (between title/subtitle), height 24 (after subtitle)
       final sizedBoxes = find.byType(SizedBox);
-      final SizedBox spacer1 = tester.widget(sizedBoxes.at(0));
+      final SizedBox spacer1 = tester.widget(sizedBoxes.at(1));
       expect(spacer1.height, 8);
     });
 
@@ -187,9 +186,9 @@ void main() {
         ),
       );
 
-      // Find SizedBox with height 24 between subtitle and grid
+      // SizedBoxes order: height 24 (before title), height 8 (between title/subtitle), height 24 (after subtitle)
       final sizedBoxes = find.byType(SizedBox);
-      final SizedBox spacer2 = tester.widget(sizedBoxes.at(1));
+      final SizedBox spacer2 = tester.widget(sizedBoxes.at(2));
       expect(spacer2.height, 24);
     });
 

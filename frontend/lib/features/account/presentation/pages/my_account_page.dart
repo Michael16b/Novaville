@@ -84,7 +84,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
               AppTexts.profileUpdateSuccess,
             );
           }
-        } else if (state.status == UserProfileStatus.failure) {
+        } else if (state.status == UserProfileStatus.failure && state.isUpdate) {
           CustomSnackBar.showError(
             context,
             state.error ?? AppTexts.profileUpdateError,
@@ -105,7 +105,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
             );
           }
 
-          if (state.status == UserProfileStatus.failure) {
+          if (state.status == UserProfileStatus.failure && !state.isUpdate) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -295,9 +295,9 @@ class _MyAccountViewState extends State<_MyAccountView> {
                             text: AppTexts.cancel,
                           ),
                           CustomElevatedFlatButton(
-                            onPressed: state.status == UserProfileStatus.updating
-                                ? () {}
-                                : () {
+                            isLoading:
+                                state.status == UserProfileStatus.updating,
+                            onPressed: () {
                               if (_formKey.currentState!.validate()) {
                                 context.read<UserProfileBloc>().add(
                                   UserProfileUpdateRequested(
@@ -310,9 +310,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                                 );
                               }
                             },
-                            text: state.status == UserProfileStatus.updating
-                                ? AppTexts.saving
-                                : AppTexts.save,
+                            text: AppTexts.save,
                           ),
                         ],
                       ),

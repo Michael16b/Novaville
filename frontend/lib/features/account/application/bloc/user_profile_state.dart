@@ -41,11 +41,14 @@ class UserProfileState extends Equatable {
         error = null,
         isUpdate = false;
 
-  const UserProfileState.failure(String message)
-      : status = UserProfileStatus.failure,
-        user = null,
+  const UserProfileState.failure(
+    String message, {
+    User? user,
+    bool isUpdate = false,
+  })  : status = UserProfileStatus.failure,
+        user = user,
         error = message,
-        isUpdate = false;
+        isUpdate = isUpdate;
 
   final UserProfileStatus status;
   final User? user;

@@ -74,7 +74,7 @@ class AppBanner extends StatelessWidget {
                         MaterialPageRoute<void>(
                           builder: (context) => const MyAccountPage(),
                         ),
-                        (route) => false,
+                        (route) => route.isFirst,
                       );
                     }
                   },

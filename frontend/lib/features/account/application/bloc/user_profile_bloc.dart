@@ -26,7 +26,8 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
       final user = await _repository.getCurrentUser();
       emit(UserProfileState.loaded(user));
     } catch (e) {
-      emit(UserProfileState.failure(e.toString()));
+      final message = e.toString().replaceFirst('Exception: ', '');
+      emit(UserProfileState.failure(message));
     }
   }
 
@@ -47,7 +48,8 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
       );
       emit(UserProfileState.loaded(updatedUser, isUpdate: true));
     } catch (e) {
-      emit(UserProfileState.failure(e.toString()));
+      final message = e.toString().replaceFirst('Exception: ', '');
+      emit(UserProfileState.failure(message, user: currentUser, isUpdate: true));
     }
   }
 }
