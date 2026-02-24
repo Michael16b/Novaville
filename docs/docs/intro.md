@@ -5,38 +5,40 @@ slug: /
 
 # Bienvenue sur la documentation Novaville
 
-Bienvenue sur la documentation complète de **Novaville**, une plateforme de gestion citoyenne intelligente.
+Bienvenue sur la documentation complète de **Novaville**, plateforme de participation citoyenne. Cette doc suit l’UI du frontend (logo Novaville, palette, sections claires) et vous guide du premier lancement aux intégrations avancées.
 
-## 📚 À propos de cette documentation
+## 📚 À propos
 
-Cette documentation est destinée à tous les acteurs du projet Novaville :
+Pour chaque profil :
 
-- **Développeurs** : Documentation technique, architecture, API
-- **Administrateurs** : Guide d'installation et de déploiement
-- **Utilisateurs finaux** : Manuel d'utilisation complet
-- **Clients** : Documentation fonctionnelle et spécifications
+- **Développeurs** : architecture, API, exemples, sécurité
+- **Ops** : déploiement Docker/Compose, variables d’environnement, supervision
+- **Utilisateurs** : parcours UI aligné frontend, captures et étapes clés
+- **Clients** : périmètre fonctionnel, roadmap, SLA indicatifs
 
 ## 🚀 Par où commencer ?
 
 ### Pour les développeurs
 
-Consultez le [Guide de démarrage](getting-started/introduction) pour configurer votre environnement de développement local.
+- [Guide de démarrage](getting-started/introduction) : setup local
+- [Architecture](technical/architecture) : backend Django, frontend Flutter, PostgreSQL, auth JWT
+- [API Overview](api/overview) : schémas, codes retour, pagination
 
 ### Pour les utilisateurs
 
-Accédez au [Manuel utilisateur](user-manual/intro) pour apprendre à utiliser la plateforme.
+- [Manuel utilisateur](user-manual/intro) : connexion, navigation, rapports
+- UI cohérente avec le frontend : même logo, couleurs, wording
 
-### Pour l'intégration API
+### Pour l’intégration API
 
-Explorez la [Documentation API](api/overview) pour intégrer Novaville à vos systèmes.
+- [Auth](api/auth/login) / [Refresh](api/auth/refresh-token) : exemples cURL, JS, Python, Dart
 
-## 🏗️ Architecture du projet
+## 🏗️ Architecture
 
-Novaville est composé de trois composants principaux :
-
-- **Backend** : API REST développée en Python/Django
-- **Frontend** : Application mobile développée en Flutter
-- **Base de données** : PostgreSQL
+- **Backend** : Django REST + JWT, PostgreSQL
+- **Frontend** : Flutter (mobile/web), thèmes alignés Novaville
+- **Infra** : Docker/Compose (services api, front, docs, db)
+- **Sécurité** : JWT, CORS, headers Nginx durcis
 
 ## 📖 Structure de la documentation
 
@@ -50,7 +52,7 @@ Novaville est composé de trois composants principaux :
 
 ## 🤝 Contribution
 
-Cette documentation est maintenue et mise à jour régulièrement. Pour toute question ou suggestion, n'hésitez pas à ouvrir une issue sur le [dépôt GitHub](https://github.com/YOUR_GITHUB_USERNAME/Novaville).
+Cette documentation est maintenue et mise à jour régulièrement. Pour toute question ou suggestion, n'hésitez pas à ouvrir une issue sur le [dépôt GitHub](https://github.com/Michael16b/Novaville).
 
 ## 📝 Versions
 

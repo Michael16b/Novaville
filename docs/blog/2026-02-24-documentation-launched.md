@@ -55,7 +55,7 @@ La documentation est construite avec **Docusaurus**, ce qui nous permet de :
 
 ## Comment y accéder ?
 
-La documentation est accessible à : **https://YOUR_GITHUB_USERNAME.github.io/Novaville/**
+La documentation est accessible à : **https://Michael16b.github.io/Novaville/**
 
 Vous pouvez également l'exécuter localement :
 
@@ -94,7 +94,7 @@ Dans les prochaines versions, nous prévoyons d'ajouter :
 
 Vos retours sont précieux ! Si vous avez des suggestions ou remarques sur la documentation :
 
-- Ouvrez une [issue sur GitHub](https://github.com/YOUR_GITHUB_USERNAME/Novaville/issues)
+- Ouvrez une [issue sur GitHub](https://github.com/Michael16b/Novaville/issues)
 - Contactez-nous via l'application
 - Proposez directement des améliorations via Pull Request
 

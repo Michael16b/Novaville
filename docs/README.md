@@ -194,7 +194,7 @@ Contenu...
 
 Le déploiement est automatique via GitHub Actions à chaque push sur `main` qui modifie le dossier `docs/`.
 
-URL : `https://YOUR_GITHUB_USERNAME.github.io/Novaville/`
+URL : `https://Michael16b.github.io/Novaville/`
 
 ### Déploiement manuel
 
@@ -210,9 +210,9 @@ npm run build
 Dans `docusaurus.config.js` :
 
 ```javascript
-url: 'https://YOUR_GITHUB_USERNAME.github.io',
+url: 'https://Michael16b.github.io',
 baseUrl: '/Novaville/',
-organizationName: 'YOUR_GITHUB_USERNAME',
+organizationName: 'Michael16b',
 projectName: 'Novaville',
 ```
 
@@ -237,7 +237,7 @@ Modifiez `src/css/custom.css` :
 ## 🆘 Support
 
 - [Documentation Docusaurus](https://docusaurus.io/)
-- [Ouvrir une issue](https://github.com/YOUR_GITHUB_USERNAME/Novaville/issues)
+- [Ouvrir une issue](https://github.com/Michael16b/Novaville/issues)
 
 ## 📄 Licence
 
