@@ -9,6 +9,7 @@ class CustomTextFormField extends StatefulWidget {
     this.keyboardType,
     this.obscureText = false,
     this.validator,
+    this.isRequired = false,
   });
 
   final String? labelText;
@@ -16,6 +17,7 @@ class CustomTextFormField extends StatefulWidget {
   final TextInputType? keyboardType;
   final bool obscureText;
   final FormFieldValidator<String>? validator;
+  final bool isRequired;
 
   // Couleurs (valeurs par défaut : fond blanc, autres primary)
   static const Color fillColor = AppColors.white;
@@ -107,7 +109,20 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           obscureText: widget.obscureText,
           keyboardType: widget.keyboardType,
           decoration: InputDecoration(
-            labelText: widget.labelText,
+            label: widget.labelText != null && widget.isRequired
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(widget.labelText!),
+                      const Text(
+                        ' *',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ],
+                  )
+                : widget.labelText != null
+                    ? Text(widget.labelText!)
+                    : null,
             filled: true,
             fillColor: effectiveFillColor,
             enabledBorder: enabled,

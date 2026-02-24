@@ -4,6 +4,7 @@ import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/design_systems/custom_elevated_stroked_button.dart';
+import 'package:frontend/features/account/presentation/pages/my_account_page.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/home/presentation/pages/home_page.dart';
 import 'package:frontend/ui/assets.dart';
@@ -69,7 +70,15 @@ class AppBanner extends StatelessWidget {
                     if (value == 'logout') {
                       context.read<AuthBloc>().add(const AuthLogoutRequested());
                     } else if (value == 'personal_info') {
-                      // TODO(personal_info): Implémenter la navigation vers la page d'informations personnelles
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const SecuredLayout(
+                            isHomePage: false,
+                            child: MyAccountPage(),
+                          ),
+                        ),
+                        (route) => route.isFirst,
+                      );
                     }
                   },
                   itemBuilder: (BuildContext context) => [
