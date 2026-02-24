@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:frontend/features/account/data/models/user_role.dart';
 
 /// Modèle représentant un utilisateur
 class User extends Equatable {
@@ -17,7 +18,7 @@ class User extends Equatable {
   final String email;
   final String firstName;
   final String lastName;
-  final String? role;
+  final UserRole? role;
   final int? neighborhoodId;
 
   /// Crée un User à partir d'un JSON
@@ -28,7 +29,9 @@ class User extends Equatable {
       email: json['email'] as String,
       firstName: json['first_name'] as String,
       lastName: json['last_name'] as String,
-      role: json['role'] as String?,
+      role: json['role'] != null
+          ? UserRole.fromString(json['role'] as String)
+          : null,
       neighborhoodId: json['neighborhood'] as int?,
     );
   }
@@ -41,7 +44,7 @@ class User extends Equatable {
       'email': email,
       'first_name': firstName,
       'last_name': lastName,
-      if (role != null) 'role': role,
+      if (role != null) 'role': role!.toJson(),
       if (neighborhoodId != null) 'neighborhood': neighborhoodId,
     };
   }
@@ -53,7 +56,7 @@ class User extends Equatable {
     String? email,
     String? firstName,
     String? lastName,
-    String? role,
+    UserRole? role,
     int? neighborhoodId,
   }) {
     return User(
