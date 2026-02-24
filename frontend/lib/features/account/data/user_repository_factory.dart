@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:frontend/config/app_config.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/core/network/authenticated_client_factory.dart';
@@ -25,9 +27,8 @@ IUserRepository createUserRepository({http.Client? client}) {
         );
 
         if (response.statusCode == 200) {
-          final json = response.body;
-          final accessMatch = RegExp(r'"access":"([^"]+)"').firstMatch(json);
-          return accessMatch?.group(1);
+          final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+          return decoded['access'] as String?;
         }
         return null;
       } catch (e) {

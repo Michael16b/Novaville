@@ -19,7 +19,7 @@ class CustomOutlinedButton extends StatelessWidget {
   final String? iconAsset;
   final IconData? iconData;
   final bool isLoading;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {

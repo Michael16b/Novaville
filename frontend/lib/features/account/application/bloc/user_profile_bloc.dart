@@ -34,7 +34,9 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     UserProfileUpdateRequested event,
     Emitter<UserProfileState> emit,
   ) async {
-    emit(const UserProfileState.updating());
+    final currentUser = state.user;
+    if (currentUser == null) return;
+    emit(UserProfileState.updating(currentUser));
     try {
       final updatedUser = await _repository.updateUser(
         userId: event.userId,

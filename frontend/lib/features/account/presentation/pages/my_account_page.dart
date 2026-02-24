@@ -8,6 +8,7 @@ import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/design_systems/custom_text_form_field.dart';
 import 'package:frontend/features/account/application/bloc/user_profile_bloc.dart';
 import 'package:frontend/features/account/data/user_repository_factory.dart';
+import 'package:frontend/ui/layouts/secured_layout.dart';
 
 /// Page du compte utilisateur avec formulaire de modification
 class MyAccountPage extends StatelessWidget {
@@ -16,11 +17,14 @@ class MyAccountPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => UserProfileBloc(
-        repository: createUserRepository(),
-      )..add(const UserProfileLoadRequested()),
-      child: const _MyAccountView(),
+    return SecuredLayout(
+      isHomePage: false,
+      child: BlocProvider(
+        create: (context) => UserProfileBloc(
+          repository: createUserRepository(),
+        )..add(const UserProfileLoadRequested()),
+        child: const _MyAccountView(),
+      ),
     );
   }
 }
@@ -38,6 +42,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
   late TextEditingController _lastNameController;
   late TextEditingController _usernameController;
   late TextEditingController _emailController;
+  bool _initialized = false;
 
   @override
   void initState() {
@@ -59,30 +64,32 @@ class _MyAccountViewState extends State<_MyAccountView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: BlocConsumer<UserProfileBloc, UserProfileState>(
-        listener: (context, state) {
-          if (state.status == UserProfileStatus.loaded && state.user != null) {
-            // Remplir les champs du formulaire avec les données de l'utilisateur
+    return BlocConsumer<UserProfileBloc, UserProfileState>(
+      listener: (context, state) {
+        if (state.status == UserProfileStatus.loaded && state.user != null) {
+          // Remplir les champs du formulaire uniquement au chargement initial
+          if (!_initialized) {
             _firstNameController.text = state.user!.firstName;
             _lastNameController.text = state.user!.lastName;
             _usernameController.text = state.user!.username;
             _emailController.text = state.user!.email;
+            _initialized = true;
+          }
 
-            // Afficher le message de succès uniquement après une mise à jour
-            if (state.isUpdate) {
-              CustomSnackBar.showSuccess(
-                context,
-                AppTexts.profileUpdateSuccess,
-              );
-            }
-          } else if (state.status == UserProfileStatus.failure) {
-            CustomSnackBar.showError(
+          // Afficher le message de succès uniquement après une mise à jour
+          if (state.isUpdate) {
+            CustomSnackBar.showSuccess(
               context,
-              state.error ?? AppTexts.profileUpdateError,
+              AppTexts.profileUpdateSuccess,
             );
           }
-        },
+        } else if (state.status == UserProfileStatus.failure) {
+          CustomSnackBar.showError(
+            context,
+            state.error ?? AppTexts.profileUpdateError,
+          );
+        }
+      },
         builder: (context, state) {
           if (state.status == UserProfileStatus.loading) {
             return const Center(
@@ -214,7 +221,8 @@ class _MyAccountViewState extends State<_MyAccountView> {
                                 if (value == null || value.isEmpty) {
                                   return AppTexts.emailRequired;
                                 }
-                                if (!value.contains('@')) {
+                                final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                                if (!emailRegex.hasMatch(value)) {
                                   return AppTexts.emailInvalid;
                                 }
                                 return null;
@@ -275,7 +283,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                         children: [
                           CustomOutlinedButton(
                             onPressed: state.status == UserProfileStatus.updating
-                                ? () {}
+                                ? null
                                 : () {
                                     // Réinitialiser les champs avec les valeurs d'origine
                                     _firstNameController.text =
@@ -315,8 +323,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
             ),
           );
         },
-      ),
-    );
+      );
   }
 }
 

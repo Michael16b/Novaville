@@ -72,12 +72,9 @@ class AppBanner extends StatelessWidget {
                     } else if (value == 'personal_info') {
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute<void>(
-                          builder: (context) => const SecuredLayout(
-                            isHomePage: false,
-                            child: MyAccountPage(),
-                          ),
+                          builder: (context) => const MyAccountPage(),
                         ),
-                        (route) => route.isFirst,
+                        (route) => false,
                       );
                     }
                   },

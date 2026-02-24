@@ -35,9 +35,9 @@ class UserProfileState extends Equatable {
         error = null,
         isUpdate = isUpdate;
 
-  const UserProfileState.updating()
+  const UserProfileState.updating(User currentUser)
       : status = UserProfileStatus.updating,
-        user = null,
+        user = currentUser,
         error = null,
         isUpdate = false;
 
