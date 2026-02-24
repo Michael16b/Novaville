@@ -6,7 +6,7 @@ import 'package:frontend/features/account/data/user_repository.dart';
 part 'user_profile_event.dart';
 part 'user_profile_state.dart';
 
-/// Bloc pour gérer le profil utilisateur
+/// Bloc that manages the user profile.
 class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
   UserProfileBloc({required IUserRepository repository})
       : _repository = repository,
@@ -53,4 +53,3 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     }
   }
 }
-

@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'package:frontend/constants/texts/texts_profile.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/account/data/models/user.dart';
 import 'package:frontend/features/account/data/user_repository.dart';
 
-/// Implémentation du repository utilisateur utilisant l'API HTTP
+/// HTTP-based implementation of [IUserRepository].
 class UserRepositoryImpl implements IUserRepository {
   UserRepositoryImpl({required ApiClient apiClient}) : _apiClient = apiClient;
 
@@ -18,7 +19,7 @@ class UserRepositoryImpl implements IUserRepository {
       return User.fromJson(json);
     } else {
       throw Exception(
-        'Erreur lors de la récupération du profil: ${response.statusCode}',
+        '${AppTextsProfile.fetchProfileError}: ${response.statusCode}',
       );
     }
   }
@@ -47,7 +48,7 @@ class UserRepositoryImpl implements IUserRepository {
       return User.fromJson(json);
     } else {
       throw Exception(
-        'Erreur lors de la mise à jour du profil: ${response.statusCode}',
+        '${AppTextsProfile.updateProfileError}: ${response.statusCode}',
       );
     }
   }

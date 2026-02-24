@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
-import 'package:frontend/constants/texts.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
+import 'package:frontend/constants/texts/texts_profile.dart';
 import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/design_systems/custom_outlined_button.dart';
@@ -11,9 +12,9 @@ import 'package:frontend/features/account/application/bloc/user_profile_bloc.dar
 import 'package:frontend/features/account/data/user_repository_factory.dart';
 import 'package:frontend/ui/layouts/secured_layout.dart';
 
-/// Page du compte utilisateur avec formulaire de modification
+/// User account page with a profile edit form.
 class MyAccountPage extends StatelessWidget {
-  /// Crée la page du compte
+  /// Creates the account page.
   const MyAccountPage({super.key});
 
   @override
@@ -68,7 +69,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
     return BlocConsumer<UserProfileBloc, UserProfileState>(
       listener: (context, state) {
         if (state.status == UserProfileStatus.loaded && state.user != null) {
-          // Remplir les champs du formulaire uniquement au chargement initial
+          // Populate form fields only on the initial load
           if (!_initialized) {
             _firstNameController.text = state.user!.firstName;
             _lastNameController.text = state.user!.lastName;
@@ -77,17 +78,17 @@ class _MyAccountViewState extends State<_MyAccountView> {
             _initialized = true;
           }
 
-          // Afficher le message de succès uniquement après une mise à jour
+          // Show success message only after an update
           if (state.isUpdate) {
             CustomSnackBar.showSuccess(
               context,
-              AppTexts.profileUpdateSuccess,
+              AppTextsProfile.profileUpdateSuccess,
             );
           }
         } else if (state.status == UserProfileStatus.failure && state.isUpdate) {
           CustomSnackBar.showError(
             context,
-            state.error ?? AppTexts.profileUpdateError,
+            state.error ?? AppTextsProfile.profileUpdateError,
           );
         }
       },
@@ -99,7 +100,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                 children: [
                   CircularProgressIndicator(),
                   SizedBox(height: 16),
-                  Text(AppTexts.loadingProfile),
+                  Text(AppTextsProfile.loadingProfile),
                 ],
               ),
             );
@@ -113,7 +114,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                   const Icon(Icons.error_outline, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
                   Text(
-                    state.error ?? AppTexts.errorOccurred,
+                    state.error ?? AppTextsGeneral.errorOccurred,
                     style: const TextStyle(color: Colors.red),
                   ),
                   const SizedBox(height: 16),
@@ -123,7 +124,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                             const UserProfileLoadRequested(),
                           );
                     },
-                    text: AppTexts.retry,
+                    text: AppTextsGeneral.retry,
                   ),
                 ],
               ),
@@ -131,7 +132,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
           }
 
           if (state.user == null) {
-            return const Center(child: Text(AppTexts.noUser));
+            return const Center(child: Text(AppTextsProfile.noUser));
           }
 
           return SingleChildScrollView(
@@ -151,7 +152,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                         color: AppColors.primary,
                       ),
                       const Text(
-                        AppTexts.myProfile,
+                        AppTextsProfile.myProfile,
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -160,7 +161,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                         textAlign: TextAlign.center,
                       ),
 
-                      // Section Informations personnelles
+                      // Personal information section
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -182,7 +183,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  AppTexts.personalInformation,
+                                  AppTextsProfile.personalInformation,
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -193,37 +194,37 @@ class _MyAccountViewState extends State<_MyAccountView> {
                             ),
                             CustomTextFormField(
                               controller: _firstNameController,
-                              labelText: AppTexts.firstName,
+                              labelText: AppTextsProfile.firstName,
                               isRequired: true,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return AppTexts.firstNameRequired;
+                                  return AppTextsProfile.firstNameRequired;
                                 }
                                 return null;
                               },
                             ),
                             CustomTextFormField(
                               controller: _lastNameController,
-                              labelText: AppTexts.lastName,
+                              labelText: AppTextsProfile.lastName,
                               isRequired: true,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return AppTexts.lastNameRequired;
+                                  return AppTextsProfile.lastNameRequired;
                                 }
                                 return null;
                               },
                             ),
                             CustomTextFormField(
                               controller: _emailController,
-                              labelText: AppTexts.email,
+                              labelText: AppTextsProfile.email,
                               keyboardType: TextInputType.emailAddress,
                               isRequired: true,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return AppTexts.emailRequired;
+                                  return AppTextsProfile.emailRequired;
                                 }
                                 if (!ValidationPatterns.email.hasMatch(value)) {
-                                  return AppTexts.emailInvalid;
+                                  return AppTextsProfile.emailInvalid;
                                 }
                                 return null;
                               },
@@ -232,7 +233,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                         ),
                       ),
 
-                      // Section Informations de connexion
+                      // Login information section
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -254,7 +255,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  AppTexts.connectionInformation,
+                                  AppTextsProfile.connectionInformation,
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -265,11 +266,11 @@ class _MyAccountViewState extends State<_MyAccountView> {
                             ),
                             CustomTextFormField(
                               controller: _usernameController,
-                              labelText: AppTexts.username,
+                              labelText: AppTextsProfile.username,
                               isRequired: true,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return AppTexts.usernameRequired;
+                                  return AppTextsProfile.usernameRequired;
                                 }
                                 return null;
                               },
@@ -285,14 +286,14 @@ class _MyAccountViewState extends State<_MyAccountView> {
                             onPressed: state.status == UserProfileStatus.updating
                                 ? null
                                 : () {
-                                    // Réinitialiser les champs avec les valeurs d'origine
+                                    // Reset fields to their original values
                                     _firstNameController.text =
                                         state.user!.firstName;
                                     _lastNameController.text = state.user!.lastName;
                                     _usernameController.text = state.user!.username;
                                     _emailController.text = state.user!.email;
                                   },
-                            text: AppTexts.cancel,
+                            text: AppTextsGeneral.cancel,
                           ),
                           CustomElevatedFlatButton(
                             isLoading:
@@ -310,7 +311,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                                 );
                               }
                             },
-                            text: AppTexts.save,
+                            text: AppTextsGeneral.save,
                           ),
                         ],
                       ),

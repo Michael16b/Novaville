@@ -18,7 +18,7 @@ void main() {
 }
 ''';
 
-    test('getCurrentUser retourne un User en cas de succès (200)', () async {
+    test('getCurrentUser returns a User on success (200)', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, 'GET');
         expect(request.url.path, '/api/v1/users/me/');
@@ -38,9 +38,9 @@ void main() {
       expect(user.lastName, 'Doe');
     });
 
-    test('getCurrentUser lance une exception en cas d\'erreur (401)', () async {
+    test('getCurrentUser throws an exception on error (401)', () async {
       final mockClient = MockClient((request) async {
-        return http.Response('{"detail":"Non authentifié"}', 401);
+        return http.Response('{"detail":"Unauthorized"}', 401);
       });
 
       final repo = UserRepositoryImpl(
@@ -53,13 +53,13 @@ void main() {
       );
     });
 
-    test('updateUser envoie PATCH avec les bons champs et retourne l\'utilisateur mis à jour', () async {
+    test('updateUser sends PATCH with the correct fields and returns the updated user', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, 'PATCH');
         expect(request.url.path, '/api/v1/users/1/');
         expect(request.headers['Content-Type'], contains('application/json'));
 
-        // Vérifier que le body contient les bons champs
+        // Verify the body contains the correct fields
         expect(request.body, contains('"first_name":"Jane"'));
         expect(request.body, contains('"email":"jane.doe@example.com"'));
 
@@ -90,9 +90,9 @@ void main() {
       expect(user.email, 'jane.doe@example.com');
     });
 
-    test('updateUser n\'envoie que les champs non nuls', () async {
+    test('updateUser only sends non-null fields', () async {
       final mockClient = MockClient((request) async {
-        // Seul le username doit être dans le body
+        // Only username should be in the body
         expect(request.body, contains('"username":"newuser"'));
         expect(request.body, isNot(contains('first_name')));
         expect(request.body, isNot(contains('last_name')));
@@ -108,9 +108,9 @@ void main() {
       await repo.updateUser(userId: 1, username: 'newuser');
     });
 
-    test('updateUser lance une exception en cas d\'erreur (400)', () async {
+    test('updateUser throws an exception on error (400)', () async {
       final mockClient = MockClient((request) async {
-        return http.Response('{"email":["Ce champ est invalide."]}', 400);
+        return http.Response('{"email":["This field is invalid."]}', 400);
       });
 
       final repo = UserRepositoryImpl(

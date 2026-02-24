@@ -5,9 +5,9 @@ import 'package:http/testing.dart';
 
 void main() {
   group('AuthenticatedClient', () {
-    test('ajoute le header Authorization avec le token', () async {
+    test('adds the Authorization header with the token', () async {
       final mockClient = MockClient((request) async {
-        // Vérifier que le header Authorization est présent
+        // Verify the Authorization header is present
         expect(
           request.headers['Authorization'],
           'Bearer test-access-token-123',
@@ -29,9 +29,9 @@ void main() {
       expect(response.body, '{"data":"success"}');
     });
 
-    test("n'ajoute pas le header Authorization si le token est null", () async {
+    test("does not add the Authorization header when the token is null", () async {
       final mockClient = MockClient((request) async {
-        // Vérifier que le header Authorization n'est PAS présent
+        // Verify the Authorization header is NOT present
         expect(request.headers.containsKey('Authorization'), false);
 
         return http.Response('{"data":"public"}', 200);
@@ -49,9 +49,9 @@ void main() {
       expect(response.statusCode, 200);
     });
 
-    test("n'ajoute pas le header Authorization si le token est vide", () async {
+    test("does not add the Authorization header when the token is empty", () async {
       final mockClient = MockClient((request) async {
-        // Vérifier que le header Authorization n'est PAS présent
+        // Verify the Authorization header is NOT present
         expect(request.headers.containsKey('Authorization'), false);
 
         return http.Response('{"data":"public"}', 200);
@@ -70,13 +70,13 @@ void main() {
     });
 
     test(
-      'fonctionne avec différentes méthodes HTTP (POST, PUT, DELETE)',
+      'works with different HTTP methods (POST, PUT, DELETE)',
       () async {
         var requestCount = 0;
         final mockClient = MockClient((request) async {
           requestCount++;
 
-          // Vérifier que chaque requête a le header Authorization
+          // Verify each request has the Authorization header
           expect(request.headers['Authorization'], 'Bearer my-token');
 
           return http.Response('{}', 200);
@@ -109,7 +109,7 @@ void main() {
     );
 
     test(
-      'appelle le tokenProvider à chaque requête pour obtenir le token actuel',
+      'calls tokenProvider on every request to get the current token',
       () async {
         var tokenProviderCallCount = 0;
         var currentToken = 'token-1';
@@ -126,38 +126,38 @@ void main() {
           inner: mockClient,
         );
 
-        // Première requête avec token-1
+        // First request with token-1
         await authenticatedClient.get(
           Uri.parse('http://localhost:8000/api/test1/'),
         );
 
-        // Changer le token
+        // Change the token
         currentToken = 'token-2';
 
-        // Deuxième requête avec token-2
+        // Second request with token-2
         await authenticatedClient.get(
           Uri.parse('http://localhost:8000/api/test2/'),
         );
 
-        // Vérifier que le tokenProvider a été appelé deux fois
+        // Verify tokenProvider was called twice
         expect(tokenProviderCallCount, 2);
       },
     );
 
-    group('Refresh automatique du token', () {
-      test('détecte un 401 et rafraîchit automatiquement le token', () async {
+    group('Automatic token refresh', () {
+      test('detects a 401 and automatically refreshes the token', () async {
         var requestCount = 0;
         var refreshCalled = false;
 
         final mockClient = MockClient((request) async {
           requestCount++;
 
-          // Premier appel : retourner 401
+          // First call: return 401
           if (requestCount == 1) {
             return http.Response('{"detail":"Token expired"}', 401);
           }
 
-          // Deuxième appel (après refresh) : vérifier le nouveau token
+          // Second call (after refresh): verify the new token
           expect(request.headers['Authorization'], 'Bearer new-token-456');
           return http.Response('{"data":"success"}', 200);
         });
@@ -176,12 +176,12 @@ void main() {
         );
 
         expect(refreshCalled, true);
-        expect(requestCount, 2); // Requête initiale + retry
+        expect(requestCount, 2); // Initial request + retry
         expect(response.statusCode, 200);
         expect(response.body, '{"data":"success"}');
       });
 
-      test('ne réessaie pas la requête si le refresh échoue', () async {
+      test('does not retry the request if the refresh fails', () async {
         var requestCount = 0;
 
         final mockClient = MockClient((request) async {
@@ -192,7 +192,7 @@ void main() {
         final authenticatedClient = AuthenticatedClient(
           tokenProvider: () async => 'old-token-123',
           onTokenRefreshNeeded: () async {
-            // Simuler un échec du refresh
+            // Simulate a failed refresh
             return null;
           },
           inner: mockClient,
@@ -202,12 +202,12 @@ void main() {
           Uri.parse('http://localhost:8000/api/protected/'),
         );
 
-        expect(requestCount, 1); // Seulement la requête initiale
+        expect(requestCount, 1); // Only the initial request
         expect(response.statusCode, 401);
       });
 
       test(
-        'ne tente pas de refresh si onTokenRefreshNeeded est null',
+        'does not attempt a refresh if onTokenRefreshNeeded is null',
         () async {
           var requestCount = 0;
 
@@ -218,7 +218,7 @@ void main() {
 
           final authenticatedClient = AuthenticatedClient(
             tokenProvider: () async => 'token-123',
-            // Pas de callback de refresh
+            // No refresh callback provided
             inner: mockClient,
           );
 
@@ -226,12 +226,12 @@ void main() {
             Uri.parse('http://localhost:8000/api/protected/'),
           );
 
-          expect(requestCount, 1); // Seulement la requête initiale
+          expect(requestCount, 1); // Only the initial request
           expect(response.statusCode, 401);
         },
       );
 
-      test('gère les refresh multiples simultanés avec un verrou', () async {
+      test('handles multiple simultaneous refresh calls with a lock', () async {
         var requestCount = 0;
         var refreshCallCount = 0;
         var isRefreshing = false;
@@ -239,19 +239,18 @@ void main() {
         final mockClient = MockClient((request) async {
           requestCount++;
 
-          // Si le token est l'ancien token : retourner 401
+          // Old token: return 401
           if (request.headers['Authorization'] == 'Bearer old-token') {
-            // Simuler un petit délai
+            // Simulate a small delay
             await Future.delayed(const Duration(milliseconds: 10));
             return http.Response('{"detail":"Token expired"}', 401);
           }
 
-          // Si le token est le nouveau token : succès
+          // New token: success
           if (request.headers['Authorization'] == 'Bearer new-token') {
             return http.Response('{"data":"success"}', 200);
           }
 
-          // Pas de token
           return http.Response('{"detail":"Unauthorized"}', 401);
         });
 
@@ -260,7 +259,7 @@ void main() {
           onTokenRefreshNeeded: () async {
             refreshCallCount++;
 
-            // Vérifier qu'on ne refresh qu'une fois à la fois
+            // Verify only one refresh runs at a time
             expect(
               isRefreshing,
               false,
@@ -268,7 +267,7 @@ void main() {
             );
             isRefreshing = true;
 
-            // Simuler un délai de refresh
+            // Simulate a refresh delay
             await Future.delayed(const Duration(milliseconds: 50));
 
             isRefreshing = false;
@@ -277,28 +276,20 @@ void main() {
           inner: mockClient,
         );
 
-        // Lancer 3 requêtes simultanées
+        // Launch 3 simultaneous requests
         final futures = [
-          authenticatedClient.get(
-            Uri.parse('http://localhost:8000/api/test1/'),
-          ),
-          authenticatedClient.get(
-            Uri.parse('http://localhost:8000/api/test2/'),
-          ),
-          authenticatedClient.get(
-            Uri.parse('http://localhost:8000/api/test3/'),
-          ),
+          authenticatedClient.get(Uri.parse('http://localhost:8000/api/test1/')),
+          authenticatedClient.get(Uri.parse('http://localhost:8000/api/test2/')),
+          authenticatedClient.get(Uri.parse('http://localhost:8000/api/test3/')),
         ];
 
         final responses = await Future.wait(futures);
 
-        // Le refresh devrait être appelé 3 fois (une fois par requête)
-        // car chaque requête gère son propre cycle de vie
-        // Note: le comportement actuel ne partage pas le verrou entre requêtes
-        // différentes lancées simultanément - c'est acceptable
+        // Refresh may be called multiple times (once per request) since
+        // the lock is not shared across independently launched requests — this is acceptable.
         expect(refreshCallCount >= 1, true);
 
-        // Au moins une requête devrait avoir réussi
+        // At least one request should have succeeded
         final successCount = responses.where((r) => r.statusCode == 200).length;
         expect(successCount >= 1, true);
       });

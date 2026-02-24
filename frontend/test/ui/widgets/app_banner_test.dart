@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/constants/texts.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
+import 'package:frontend/constants/texts/texts_navigation.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
 import 'package:frontend/ui/assets.dart';
@@ -61,7 +62,7 @@ void main() {
     testWidgets('renders home button with correct text', (WidgetTester tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
-      expect(find.text(AppTexts.homeButton), findsOneWidget);
+      expect(find.text(AppTextsNavigation.homeButton), findsOneWidget);
       expect(find.byIcon(Icons.home_outlined), findsOneWidget);
     });
 
@@ -79,8 +80,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify menu items are displayed
-      expect(find.text(AppTexts.personalInfo), findsOneWidget);
-      expect(find.text(AppTexts.logout), findsOneWidget);
+      expect(find.text(AppTextsNavigation.personalInfo), findsOneWidget);
+      expect(find.text(AppTextsAuth.logout), findsOneWidget);
     });
 
     testWidgets('menu displays personal info option with correct icon', (WidgetTester tester) async {
@@ -92,7 +93,7 @@ void main() {
 
       // Verify personal info menu item has the correct icon
       expect(find.byIcon(Icons.person_outline), findsOneWidget);
-      expect(find.text(AppTexts.personalInfo), findsOneWidget);
+      expect(find.text(AppTextsNavigation.personalInfo), findsOneWidget);
     });
 
     testWidgets('menu displays logout option with correct icon', (WidgetTester tester) async {
@@ -104,7 +105,7 @@ void main() {
 
       // Verify logout menu item has the correct icon
       expect(find.byIcon(Icons.logout), findsOneWidget);
-      expect(find.text(AppTexts.logout), findsOneWidget);
+      expect(find.text(AppTextsAuth.logout), findsOneWidget);
     });
 
     testWidgets('triggers logout when logout menu item is tapped', (WidgetTester tester) async {
@@ -115,7 +116,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap the logout option
-      await tester.tap(find.text(AppTexts.logout));
+      await tester.tap(find.text(AppTextsAuth.logout));
       await tester.pumpAndSettle();
 
       // Verify that AuthLogoutRequested event was added to the bloc
@@ -125,7 +126,7 @@ void main() {
     testWidgets('home button is tappable', (WidgetTester tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
-      final homeButtonFinder = find.text(AppTexts.homeButton);
+      final homeButtonFinder = find.text(AppTextsNavigation.homeButton);
       expect(homeButtonFinder, findsOneWidget);
 
       // Verify the button can be tapped (no exception should be thrown)

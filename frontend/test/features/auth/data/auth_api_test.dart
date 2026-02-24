@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/constants/texts.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/features/auth/data/auth_api.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
 import 'package:http/http.dart' as http;
@@ -9,19 +9,19 @@ void main() {
   group('AuthApi', () {
     const baseUrl = 'http://localhost:8000';
 
-    test('login envoie username et password au bon endpoint', () async {
+    test('login sends username and password to the correct endpoint', () async {
       final mockClient = MockClient((request) async {
-        // Vérifier la méthode et le path
+        // Verify the method and path
         expect(request.method, 'POST');
         expect(request.url.toString(), 'http://localhost:8000/api/auth/token/');
 
-        // Vérifier les headers
+        // Verify the headers
         expect(request.headers['Content-Type'], 'application/json');
 
-        // Vérifier le body
+        // Verify the body
         expect(request.body, '{"username":"admin","password":"ChangeMe123"}');
 
-        // Retourner une réponse de succès
+        // Return a success response
         return http.Response(
           '{"access":"test-access-token","refresh":"test-refresh-token","user":{"id":1,"username":"admin","email":"admin@example.com"}}',
           200,
@@ -40,7 +40,7 @@ void main() {
       expect(result['user']['username'], 'admin');
     });
 
-    test('login lance AuthFailure avec message en cas de 401', () async {
+    test('login throws AuthFailure with message on 401', () async {
       final mockClient = MockClient((request) async {
         return http.Response('{"detail":"Invalid credentials"}', 401);
       });
@@ -60,7 +60,7 @@ void main() {
     });
 
     test(
-      'login lance AuthFailure avec message par défaut si 401 sans detail',
+      'login throws AuthFailure with default message on 401 without detail',
       () async {
         final mockClient = MockClient((request) async {
           return http.Response('{}', 401);
@@ -74,14 +74,14 @@ void main() {
             isA<AuthFailure>().having(
               (e) => e.message,
               'message',
-              AppTexts.invalidCredentials,
+              AppTextsAuth.invalidCredentials,
             ),
           ),
         );
       },
     );
 
-    test("login lance AuthFailure en cas d'erreur serveur 500", () async {
+    test("login throws AuthFailure on 500 server error", () async {
       final mockClient = MockClient((request) async {
         return http.Response('{"detail":"Internal server error"}', 500);
       });
@@ -100,7 +100,7 @@ void main() {
       );
     });
 
-    test('login gère les erreurs de parsing JSON', () async {
+    test('login handles JSON parsing errors', () async {
       final mockClient = MockClient((request) async {
         return http.Response('invalid json', 400);
       });
@@ -113,25 +113,25 @@ void main() {
           isA<AuthFailure>().having(
             (e) => e.message,
             'message',
-            AppTexts.genericConnectionError,
+            AppTextsAuth.genericConnectionError,
           ),
         ),
       );
     });
 
-    test('refresh envoie le refresh token au bon endpoint', () async {
+    test('refresh sends the refresh token to the correct endpoint', () async {
       final mockClient = MockClient((request) async {
-        // Vérifier la méthode et le path
+        // Verify the method and path
         expect(request.method, 'POST');
         expect(
           request.url.toString(),
           'http://localhost:8000/api/auth/token/refresh/',
         );
 
-        // Vérifier le body
+        // Verify the body
         expect(request.body, '{"refresh":"old-refresh-token"}');
 
-        // Retourner un nouveau access token
+        // Return a new access token
         return http.Response('{"access":"new-access-token"}', 200);
       });
 
@@ -142,7 +142,7 @@ void main() {
       expect(result['access'], 'new-access-token');
     });
 
-    test("refresh lance AuthFailure en cas d'erreur", () async {
+    test("refresh throws AuthFailure on error", () async {
       final mockClient = MockClient((request) async {
         return http.Response('{"detail":"Token expired"}', 401);
       });
@@ -155,13 +155,13 @@ void main() {
           isA<AuthFailure>().having(
             (e) => e.message,
             'message',
-            AppTexts.tokenRefreshFailed,
+            AppTextsAuth.tokenRefreshFailed,
           ),
         ),
       );
     });
 
-    test("login extrait le message d'erreur depuis un champ list", () async {
+    test("login extracts the error message from a list field", () async {
       final mockClient = MockClient((request) async {
         return http.Response('{"password":["This field is required"]}', 400);
       });

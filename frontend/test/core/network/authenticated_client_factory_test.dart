@@ -6,7 +6,7 @@ import 'package:http/testing.dart';
 
 void main() {
   group('AuthenticatedClientFactory', () {
-    test('crée un client qui utilise le token du storage', () async {
+    test('creates a client that uses the token from storage', () async {
       final storage = InMemoryTokenStorage();
       await storage.write(key: 'access_token', value: 'test-token-123');
 
@@ -28,7 +28,7 @@ void main() {
       expect(response.statusCode, 200);
     });
 
-    test('rafraîchit automatiquement le token en cas de 401', () async {
+    test('automatically refreshes the token on a 401', () async {
       final storage = InMemoryTokenStorage();
       await storage.write(key: 'access_token', value: 'old-token');
       await storage.write(key: 'refresh_token', value: 'refresh-token-xyz');
@@ -40,12 +40,12 @@ void main() {
       final mockClient = MockClient((request) async {
         requestCount++;
 
-        // Premier appel : 401
+        // First call: 401
         if (requestCount == 1) {
           return http.Response('{"detail":"Token expired"}', 401);
         }
 
-        // Deuxième appel : vérifier le nouveau token
+        // Second call: verify the new token
         expect(request.headers['Authorization'], 'Bearer new-access-token');
         return http.Response('{"data":"success"}', 200);
       });
@@ -69,12 +69,12 @@ void main() {
       expect(requestCount, 2);
       expect(response.statusCode, 200);
 
-      // Vérifier que le nouveau token a été sauvegardé
+      // Verify the new token was saved
       final savedToken = await storage.read(key: 'access_token');
       expect(savedToken, 'new-access-token');
     });
 
-    test('supprime les tokens si le refresh échoue', () async {
+    test('deletes tokens if the refresh fails', () async {
       final storage = InMemoryTokenStorage();
       await storage.write(key: 'access_token', value: 'old-token');
       await storage.write(key: 'refresh_token', value: 'refresh-token-xyz');
@@ -86,7 +86,7 @@ void main() {
       final client = AuthenticatedClientFactory.create(
         storage: storage,
         onRefresh: (refreshToken) async {
-          // Simuler un échec du refresh
+          // Simulate a failed refresh
           throw Exception('Refresh failed');
         },
         inner: mockClient,
@@ -98,17 +98,17 @@ void main() {
 
       expect(response.statusCode, 401);
 
-      // Vérifier que les tokens ont été supprimés
+      // Verify the tokens were deleted
       final accessToken = await storage.read(key: 'access_token');
       final refreshToken = await storage.read(key: 'refresh_token');
       expect(accessToken, null);
       expect(refreshToken, null);
     });
 
-    test('ne tente pas de refresh si le refresh token est absent', () async {
+    test('does not attempt a refresh if the refresh token is missing', () async {
       final storage = InMemoryTokenStorage();
       await storage.write(key: 'access_token', value: 'old-token');
-      // Pas de refresh token
+      // No refresh token
 
       var onRefreshCalled = false;
 

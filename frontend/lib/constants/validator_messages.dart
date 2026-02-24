@@ -1,5 +1,8 @@
+/// Validation error messages shown below form fields.
 class AppValidatorMessages {
-  static const String emailRequired = 'Email requis';
-  static const String usernameRequired = "Nom d'utilisateur requis";
-  static const String passwordRequired = 'Mot de passe requis';
+  AppValidatorMessages._();
+
+  static const String emailRequired = 'Email is required';
+  static const String usernameRequired = 'Username is required';
+  static const String passwordRequired = 'Password is required';
 }

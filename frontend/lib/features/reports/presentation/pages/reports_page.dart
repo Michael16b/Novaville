@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/constants/texts.dart';
+import 'package:frontend/constants/texts/texts_features.dart';
+import 'package:frontend/constants/texts/texts_home.dart';
 import 'package:frontend/ui/widgets/base_feature_page.dart';
 
-/// Page des signalements
+/// Reports feature page.
 class ReportsPage extends StatelessWidget {
-  /// Crée la page des signalements
+  /// Creates the reports page.
   const ReportsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const BaseFeaturePage(
       icon: Icons.report_problem_outlined,
-      title: AppTexts.reports,
-      description: 'Page des signalements',
+      title: AppTextsHome.reports,
+      description: AppTextsFeatures.reportsDescription,
     );
   }
 }

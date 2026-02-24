@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:frontend/features/account/data/models/user_role.dart';
 
-/// Modèle représentant un utilisateur
+/// Model representing a user.
 class User extends Equatable {
   const User({
     required this.id,
@@ -21,7 +21,7 @@ class User extends Equatable {
   final UserRole? role;
   final int? neighborhoodId;
 
-  /// Crée un User à partir d'un JSON
+  /// Creates a [User] from a JSON map.
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'] as int,
@@ -36,7 +36,7 @@ class User extends Equatable {
     );
   }
 
-  /// Convertit le User en JSON
+  /// Converts this [User] to a JSON map.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -49,7 +49,7 @@ class User extends Equatable {
     };
   }
 
-  /// Crée une copie du User avec les champs modifiés
+  /// Returns a copy of this [User] with the given fields replaced.
   User copyWith({
     int? id,
     String? username,

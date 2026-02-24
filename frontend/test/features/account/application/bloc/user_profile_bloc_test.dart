@@ -3,13 +3,13 @@ import 'package:frontend/features/account/application/bloc/user_profile_bloc.dar
 import 'package:frontend/features/account/data/models/user.dart';
 import 'package:frontend/features/account/data/user_repository.dart';
 
-/// Fausse implémentation du repository pour les tests
+/// Fake repository implementation for tests.
 class _FakeUserRepository implements IUserRepository {
   _FakeUserRepository({
     this.userToReturn,
     this.shouldThrow = false,
     this.shouldThrowOnUpdate = false,
-    this.errorMessage = 'Erreur réseau',
+    this.errorMessage = 'Network error',
   });
 
   final User? userToReturn;
@@ -60,7 +60,7 @@ void main() {
       lastName: 'Doe',
     );
 
-    test('état initial est UserProfileStatus.initial', () {
+    test('initial state is UserProfileStatus.initial', () {
       final bloc = UserProfileBloc(repository: _FakeUserRepository());
       expect(bloc.state.status, UserProfileStatus.initial);
       expect(bloc.state.user, isNull);
@@ -68,7 +68,7 @@ void main() {
       bloc.close();
     });
 
-    test('UserProfileLoadRequested émet loading puis loaded avec l\'utilisateur', () async {
+    test('UserProfileLoadRequested emits loading then loaded with the user', () async {
       final bloc = UserProfileBloc(
         repository: _FakeUserRepository(userToReturn: testUser),
       );
@@ -91,9 +91,9 @@ void main() {
       await bloc.close();
     });
 
-    test('UserProfileLoadRequested émet loading puis failure en cas d\'erreur', () async {
+    test('UserProfileLoadRequested emits loading then failure on error', () async {
       final bloc = UserProfileBloc(
-        repository: _FakeUserRepository(shouldThrow: true, errorMessage: 'Erreur serveur'),
+        repository: _FakeUserRepository(shouldThrow: true, errorMessage: 'Server error'),
       );
 
       final expectation = expectLater(
@@ -103,7 +103,7 @@ void main() {
               .having((s) => s.status, 'status', UserProfileStatus.loading),
           isA<UserProfileState>()
               .having((s) => s.status, 'status', UserProfileStatus.failure)
-              .having((s) => s.error, 'error', contains('Erreur serveur')),
+              .having((s) => s.error, 'error', contains('Server error')),
         ]),
       );
 
@@ -113,12 +113,12 @@ void main() {
       await bloc.close();
     });
 
-    test('UserProfileUpdateRequested émet updating avec utilisateur courant puis loaded avec isUpdate=true', () async {
+    test('UserProfileUpdateRequested emits updating with current user then loaded with isUpdate=true', () async {
       final bloc = UserProfileBloc(
         repository: _FakeUserRepository(userToReturn: testUser),
       );
 
-      // D'abord charger l'utilisateur
+      // First load the user
       final loadExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
@@ -131,7 +131,7 @@ void main() {
       bloc.add(const UserProfileLoadRequested());
       await loadExpectation;
 
-      // Puis mettre à jour
+      // Then update
       final updateExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
@@ -160,12 +160,12 @@ void main() {
       await bloc.close();
     });
 
-    test('UserProfileUpdateRequested sans utilisateur courant n\'émet aucun état', () async {
+    test('UserProfileUpdateRequested without a current user emits no state', () async {
       final bloc = UserProfileBloc(
         repository: _FakeUserRepository(userToReturn: testUser),
       );
 
-      // Ne pas charger l'utilisateur, l'état initial a user=null
+      // Do not load the user — initial state has user=null
       final expectation = expectLater(bloc.stream, emitsDone);
 
       bloc.add(
@@ -181,16 +181,16 @@ void main() {
       await expectation;
     });
 
-    test('UserProfileUpdateRequested émet updating puis failure en cas d\'erreur', () async {
+    test('UserProfileUpdateRequested emits updating then failure on error', () async {
       final bloc = UserProfileBloc(
         repository: _FakeUserRepository(
           userToReturn: testUser,
           shouldThrowOnUpdate: true,
-          errorMessage: 'Mise à jour impossible',
+          errorMessage: 'Update failed',
         ),
       );
 
-      // Charger l'utilisateur avec succès
+      // Load the user successfully
       final loadExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
@@ -203,7 +203,7 @@ void main() {
       bloc.add(const UserProfileLoadRequested());
       await loadExpectation;
 
-      // La mise à jour échoue
+      // The update fails
       final updateExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
@@ -212,7 +212,7 @@ void main() {
               .having((s) => s.user, 'user', testUser),
           isA<UserProfileState>()
               .having((s) => s.status, 'status', UserProfileStatus.failure)
-              .having((s) => s.error, 'error', contains('Mise à jour impossible'))
+              .having((s) => s.error, 'error', contains('Update failed'))
               .having((s) => s.user, 'user', testUser)
               .having((s) => s.isUpdate, 'isUpdate', true),
         ]),
@@ -232,7 +232,7 @@ void main() {
       await bloc.close();
     });
 
-    test('UserProfileState.updating préserve l\'utilisateur courant', () {
+    test('UserProfileState.updating preserves the current user', () {
       const user = User(
         id: 42,
         username: 'tester',

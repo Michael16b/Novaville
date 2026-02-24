@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:frontend/constants/texts.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
 
 class AuthFailure implements Exception {
   AuthFailure(this.message);
@@ -24,9 +24,9 @@ class FakeAuthRepository implements IAuthRepository {
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 600));
     if (username.isEmpty || password.isEmpty) {
-      throw AuthFailure(AppTexts.emptyUsernameOrPassword);
+      throw AuthFailure(AppTextsAuth.emptyUsernameOrPassword);
     }
-    // Stub: accepter tout et générer un token factice
+    // Stub: accept any credentials and generate a fake token
     _token = 'fake-token-for:$username';
     return _token!;
   }
@@ -39,7 +39,7 @@ class FakeAuthRepository implements IAuthRepository {
   @override
   Future<bool> hasValidSession() async {
     await Future<void>.delayed(const Duration(milliseconds: 200));
-    // Forcer la déconnexion au démarrage pour le développement
+    // Force logout on startup during development
     return false;
   }
 }

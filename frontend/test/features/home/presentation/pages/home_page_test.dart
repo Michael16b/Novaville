@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/constants/colors.dart';
-import 'package:frontend/constants/texts.dart';
+import 'package:frontend/constants/texts/texts_home.dart';
 import 'package:frontend/features/home/presentation/pages/home_page.dart';
 import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
 
@@ -15,10 +15,10 @@ void main() {
       );
 
       // Verify title is rendered
-      expect(find.text(AppTexts.homeTitle), findsOneWidget);
+      expect(find.text(AppTextsHome.homeTitle), findsOneWidget);
 
       // Verify subtitle is rendered
-      expect(find.text(AppTexts.homeSubtitle), findsOneWidget);
+      expect(find.text(AppTextsHome.homeSubtitle), findsOneWidget);
     });
 
     testWidgets('title has correct styling', (WidgetTester tester) async {
@@ -28,7 +28,7 @@ void main() {
         ),
       );
 
-      final titleFinder = find.text(AppTexts.homeTitle);
+      final titleFinder = find.text(AppTextsHome.homeTitle);
       final Text titleWidget = tester.widget(titleFinder);
 
       expect(titleWidget.textAlign, TextAlign.center);
@@ -45,7 +45,7 @@ void main() {
         ),
       );
 
-      final subtitleFinder = find.text(AppTexts.homeSubtitle);
+      final subtitleFinder = find.text(AppTextsHome.homeSubtitle);
       final Text subtitleWidget = tester.widget(subtitleFinder);
 
       expect(subtitleWidget.textAlign, TextAlign.center);
@@ -93,7 +93,7 @@ void main() {
         ),
       );
 
-      expect(find.text(AppTexts.reports), findsOneWidget);
+      expect(find.text(AppTextsHome.reports), findsOneWidget);
       expect(find.byIcon(Icons.report_problem_outlined), findsOneWidget);
     });
 
@@ -104,7 +104,7 @@ void main() {
         ),
       );
 
-      expect(find.text(AppTexts.surveys), findsOneWidget);
+      expect(find.text(AppTextsHome.surveys), findsOneWidget);
       expect(find.byIcon(Icons.poll_outlined), findsOneWidget);
     });
 
@@ -115,7 +115,7 @@ void main() {
         ),
       );
 
-      expect(find.text(AppTexts.agenda), findsOneWidget);
+      expect(find.text(AppTextsHome.agenda), findsOneWidget);
       expect(find.byIcon(Icons.calendar_today_outlined), findsOneWidget);
     });
 
@@ -126,7 +126,7 @@ void main() {
         ),
       );
 
-      expect(find.text(AppTexts.news), findsOneWidget);
+      expect(find.text(AppTextsHome.news), findsOneWidget);
       expect(find.byIcon(Icons.article_outlined), findsOneWidget);
     });
 
@@ -137,7 +137,7 @@ void main() {
         ),
       );
 
-      expect(find.text(AppTexts.myAccount), findsOneWidget);
+      expect(find.text(AppTextsHome.myAccount), findsOneWidget);
       expect(find.byIcon(Icons.account_circle_outlined), findsOneWidget);
     });
 
@@ -148,7 +148,7 @@ void main() {
         ),
       );
 
-      expect(find.text(AppTexts.usefulInfo), findsOneWidget);
+      expect(find.text(AppTextsHome.usefulInfo), findsOneWidget);
       expect(find.byIcon(Icons.info_outlined), findsOneWidget);
     });
 

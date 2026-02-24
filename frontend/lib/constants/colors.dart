@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Application color palette constants.
 class AppColors {
   AppColors._();
 
@@ -10,7 +11,7 @@ class AppColors {
   static const Color primaryText = Color(0xFF333333);
   static const Color secondaryText = Color(0xFF757575);
 
-  // Autres couleurs
+  // Miscellaneous colors
   static const Color white = Color(0xFFFFFFFF);
 
   static const Color highlight = Color(0x4D2E6B55);

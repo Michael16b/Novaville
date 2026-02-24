@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
-import 'package:frontend/constants/texts.dart';
+import 'package:frontend/constants/texts/texts_home.dart';
 import 'package:frontend/features/account/presentation/pages/my_account_page.dart';
 import 'package:frontend/features/agenda/presentation/pages/agenda_page.dart';
 import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
@@ -25,7 +25,7 @@ class HomePage extends StatelessWidget {
             (constraints.maxWidth / (itemWidth + spacing)).floor();
         final crossAxisCount = availableColumns
             .clamp(1, 3)
-            .toInt(); // max 3 colonnes
+            .toInt(); // max 3 columns
         final gridWidth =
             crossAxisCount * itemWidth +
             (crossAxisCount - 1) * spacing;
@@ -41,7 +41,7 @@ class HomePage extends StatelessWidget {
                     children: const [
                       SizedBox(height: 24),
                       Text(
-                        AppTexts.homeTitle,
+                        AppTextsHome.homeTitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 24,
@@ -52,7 +52,7 @@ class HomePage extends StatelessWidget {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        AppTexts.homeSubtitle,
+                        AppTextsHome.homeSubtitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 24, color: AppColors.secondaryText),
                       ),
@@ -72,7 +72,7 @@ class HomePage extends StatelessWidget {
                     delegate: SliverChildListDelegate([
                       MenuCard(
                         icon: Icons.report_problem_outlined,
-                        title: AppTexts.reports,
+                        title: AppTextsHome.reports,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
@@ -83,7 +83,7 @@ class HomePage extends StatelessWidget {
                       ),
                       MenuCard(
                         icon: Icons.poll_outlined,
-                        title: AppTexts.surveys,
+                        title: AppTextsHome.surveys,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
@@ -94,7 +94,7 @@ class HomePage extends StatelessWidget {
                       ),
                       MenuCard(
                         icon: Icons.calendar_today_outlined,
-                        title: AppTexts.agenda,
+                        title: AppTextsHome.agenda,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
@@ -105,7 +105,7 @@ class HomePage extends StatelessWidget {
                       ),
                       MenuCard(
                         icon: Icons.article_outlined,
-                        title: AppTexts.news,
+                        title: AppTextsHome.news,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
@@ -116,7 +116,7 @@ class HomePage extends StatelessWidget {
                       ),
                       MenuCard(
                         icon: Icons.info_outlined,
-                        title: AppTexts.usefulInfo,
+                        title: AppTextsHome.usefulInfo,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
@@ -127,7 +127,7 @@ class HomePage extends StatelessWidget {
                       ),
                       MenuCard(
                         icon: Icons.account_circle_outlined,
-                        title: AppTexts.myAccount,
+                        title: AppTextsHome.myAccount,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(

@@ -19,7 +19,7 @@ class CustomTextFormField extends StatefulWidget {
   final FormFieldValidator<String>? validator;
   final bool isRequired;
 
-  // Couleurs (valeurs par défaut : fond blanc, autres primary)
+  // Colors (defaults: white background, primary for others)
   static const Color fillColor = AppColors.white;
   static const Color focusedFillColor = AppColors.white;
   static const Color borderColor = AppColors.primary;
@@ -76,7 +76,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
       borderRadius: BorderRadius.circular(4),
       borderSide: BorderSide(color: effectiveBorderColor, width: 2),
     );
-    // Bordures à utiliser lorsque le champ est en état d'erreur
+    // Borders used when the field is in error state
     final error = OutlineInputBorder(
       borderRadius: BorderRadius.circular(4),
       borderSide: const BorderSide(color: CustomTextFormField.errorColor),
@@ -127,10 +127,9 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             fillColor: effectiveFillColor,
             enabledBorder: enabled,
             focusedBorder: focused,
-            // Utiliser des bordures spécifiques pour l'état d'erreur
+            // Use specific borders for the error state
             errorBorder: error,
             focusedErrorBorder: focusedError,
-            // Garder l'apparence du texte d'erreur similaire (ou ajuster si besoin)
             errorStyle: const TextStyle(color: CustomTextFormField.errorColor),
             labelStyle: const TextStyle(color: CustomTextFormField.textColor),
             floatingLabelStyle: const TextStyle(

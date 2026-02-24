@@ -5,7 +5,7 @@ import 'package:http/testing.dart';
 
 void main() {
   group('ApiClient', () {
-    test('buildUri construit correctement une URI avec baseUrl et path', () {
+    test('buildUri correctly builds a URI from baseUrl and path', () {
       final client = ApiClient(baseUrl: 'http://localhost:8000');
 
       final uri = client.buildUri('/api/auth/token/');
@@ -13,7 +13,7 @@ void main() {
       expect(uri.toString(), 'http://localhost:8000/api/auth/token/');
     });
 
-    test('buildUri gère les slashs correctement', () {
+    test('buildUri handles trailing and leading slashes correctly', () {
       final client = ApiClient(baseUrl: 'http://localhost:8000/');
 
       final uri = client.buildUri('api/auth/token/');
@@ -21,7 +21,7 @@ void main() {
       expect(uri.toString(), 'http://localhost:8000/api/auth/token/');
     });
 
-    test('buildUri ajoute les paramètres de requête', () {
+    test('buildUri appends query parameters', () {
       final client = ApiClient(baseUrl: 'http://localhost:8000');
 
       final uri = client.buildUri('/api/items/', {'page': '1', 'limit': '10'});
@@ -32,7 +32,7 @@ void main() {
       );
     });
 
-    test('buildUri filtre les paramètres null', () {
+    test('buildUri filters out null query parameters', () {
       final client = ApiClient(baseUrl: 'http://localhost:8000');
 
       final uri = client.buildUri('/api/items/', {'page': '1', 'limit': null});
@@ -40,7 +40,7 @@ void main() {
       expect(uri.toString(), 'http://localhost:8000/api/items/?page=1');
     });
 
-    test('post envoie une requête POST avec body JSON', () async {
+    test('post sends a POST request with a JSON body', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, 'POST');
         expect(request.url.path, '/api/auth/token/');
@@ -64,7 +64,7 @@ void main() {
       expect(response.body, '{"token":"abc123"}');
     });
 
-    test('get envoie une requête GET avec headers par défaut', () async {
+    test('get sends a GET request with default headers', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, 'GET');
         expect(request.url.path, '/api/items/');
@@ -84,7 +84,7 @@ void main() {
       expect(response.body, '[]');
     });
 
-    test('put envoie une requête PUT avec body JSON', () async {
+    test('put sends a PUT request with a JSON body', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, 'PUT');
         expect(request.url.path, '/api/items/1/');
@@ -106,7 +106,7 @@ void main() {
       expect(response.statusCode, 200);
     });
 
-    test('delete envoie une requête DELETE', () async {
+    test('delete sends a DELETE request', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, 'DELETE');
         expect(request.url.path, '/api/items/1/');

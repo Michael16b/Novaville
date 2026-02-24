@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/presentation/pages/login_page.dart';
 import 'package:frontend/features/home/presentation/pages/home_page.dart';
@@ -11,7 +12,7 @@ class App extends StatelessWidget {
 
   final Widget home;
 
-  // Clé globale pour la navigation
+  // Global key used for navigation
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
@@ -19,7 +20,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        // Quand l'utilisateur se connecte, rediriger vers la page d'accueil
+        // When the user logs in, redirect to the home page
         if (state.status == AuthStatus.authenticated) {
           navigatorKey.currentState?.pushAndRemoveUntil(
             MaterialPageRoute<void>(
@@ -28,22 +29,22 @@ class App extends StatelessWidget {
                 child: HomePage(),
               ),
             ),
-            (route) => false, // Supprimer toutes les routes précédentes
+            (route) => false, // Remove all previous routes
           );
         }
-        // Quand l'utilisateur se déconnecte, rediriger vers la page de login
+        // When the user logs out, redirect to the login page
         else if (state.status == AuthStatus.unauthenticated) {
           navigatorKey.currentState?.pushAndRemoveUntil(
             MaterialPageRoute<void>(
               builder: (context) => const LoginPage(),
             ),
-            (route) => false, // Supprimer toutes les routes précédentes
+            (route) => false, // Remove all previous routes
           );
         }
       },
       child: MaterialApp(
         navigatorKey: navigatorKey,
-        title: 'Novaville',
+        title: AppTextsGeneral.appName,
         theme: ThemeData(
           fontFamily: 'Montserrat',
           useMaterial3: true,

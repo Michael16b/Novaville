@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 
-/// Wrapper qui vérifie que l'utilisateur est authentifié avant d'afficher le contenu.
-/// Suit si l'utilisateur a déjà été authentifié pour éviter un flash de loader
-/// lors de la redirection (gérée par le BlocListener dans App).
+/// Wrapper that verifies the user is authenticated before displaying content.
+/// Tracks whether the user has already been authenticated to avoid a loader
+/// flash during navigation (handled by the BlocListener in App).
 class AuthenticatedWrapper extends StatefulWidget {
   const AuthenticatedWrapper({required this.child, super.key});
 
@@ -15,9 +15,9 @@ class AuthenticatedWrapper extends StatefulWidget {
 }
 
 class _AuthenticatedWrapperState extends State<AuthenticatedWrapper> {
-  /// Indique si l'utilisateur a déjà été authentifié au cours de cette session.
-  /// Permet d'éviter un flash de loader si le token expire alors qu'il est sur une page sécurisée :
-  /// on continue d'afficher le contenu actuel pendant que l'App gère la redirection.
+  /// Whether the user has already been authenticated during this session.
+  /// Prevents a loader flash if the token expires while on a secured page:
+  /// the current content stays visible while App handles the redirect.
   bool _hadAuthenticatedSession = false;
 
   @override
@@ -29,13 +29,13 @@ class _AuthenticatedWrapperState extends State<AuthenticatedWrapper> {
           return widget.child;
         }
 
-        // Si l'utilisateur a déjà été authentifié, on garde le contenu pendant
-        // que l'App gère la redirection, évitant ainsi un flash de loader.
+        // If the user was previously authenticated, keep the content visible
+        // while App handles the redirect, avoiding a loader flash.
         if (_hadAuthenticatedSession) {
           return widget.child;
         }
 
-        // Pendant la vérification initiale ou si non authentifié, afficher un loader.
+        // Show a loader during the initial check or when unauthenticated.
         return const Scaffold(
           body: Center(child: CircularProgressIndicator()),
         );
@@ -43,5 +43,3 @@ class _AuthenticatedWrapperState extends State<AuthenticatedWrapper> {
     );
   }
 }
-
-

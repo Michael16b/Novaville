@@ -1,26 +1,26 @@
-/// Énumération des rôles utilisateur dans le système
+/// Enumeration of user roles in the system.
 enum UserRole {
-  /// Citoyen
+  /// Citizen
   citizen('CITIZEN', 'Citizen'),
 
-  /// Élu
+  /// Elected official
   elected('ELECTED', 'Elected Official'),
 
-  /// Agent municipal
+  /// Municipal agent
   agent('AGENT', 'Municipal Agent'),
 
-  /// Administrateur global
+  /// Global administrator
   globalAdmin('GLOBAL_ADMIN', 'Global Administrator');
 
   const UserRole(this.value, this.label);
 
-  /// Valeur de l'enum côté backend
+  /// Backend-side enum value.
   final String value;
 
-  /// Label d'affichage
+  /// Display label.
   final String label;
 
-  /// Crée un UserRole à partir de la valeur string du backend
+  /// Creates a [UserRole] from the backend string value.
   static UserRole fromString(String value) {
     switch (value) {
       case 'CITIZEN':
@@ -36,7 +36,6 @@ enum UserRole {
     }
   }
 
-  /// Convertit l'enum en string pour le backend
+  /// Converts the enum to a string for the backend.
   String toJson() => value;
 }
-

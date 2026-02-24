@@ -1,19 +1,19 @@
 import 'dart:convert';
 
 import 'package:frontend/constants/api_routes.dart';
-import 'package:frontend/constants/texts.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
 
-/// Client API pour les opérations d'authentification
+/// API client for authentication operations.
 class AuthApi extends ApiClient {
-  /// Constructeur du client d'authentification
+  /// Creates an authentication API client.
   AuthApi({required super.baseUrl, super.client});
 
-  /// Authentifie un utilisateur avec son username et mot de passe
+  /// Authenticates a user with their username and password.
   ///
-  /// Retourne un Map contenant les tokens et les infos utilisateur
-  /// Lance [AuthFailure] en cas d'erreur
+  /// Returns a [Map] containing the tokens and user information.
+  /// Throws [AuthFailure] on error.
   Future<Map<String, dynamic>> login({
     required String username,
     required String password,
@@ -28,22 +28,22 @@ class AuthApi extends ApiClient {
       return jsonDecode(resp.body) as Map<String, dynamic>;
     }
 
-    // Propager l'erreur avec un message utilisateur clair si possible
-    var message = AppTexts.genericConnectionError;
+    // Propagate the error with a user-friendly message when possible
+    var message = AppTextsAuth.genericConnectionError;
     try {
       final body = jsonDecode(resp.body);
       if (resp.statusCode == 401) {
-        // 401 -> identifiants invalides
+        // 401 -> invalid credentials
         if (body is Map && body['detail'] != null) {
           message = body['detail'] as String;
         } else {
-          message = AppTexts.invalidCredentials;
+          message = AppTextsAuth.invalidCredentials;
         }
       } else {
         if (body is Map && body['detail'] != null) {
           message = body['detail'] as String;
         } else if (body is Map && body.values.isNotEmpty) {
-          // essayer d'extraire un message depuis le premier champ
+          // Try to extract a message from the first field
           final first = body.values.first;
           if (first is List && first.isNotEmpty) {
             message = first.first.toString();
@@ -57,10 +57,10 @@ class AuthApi extends ApiClient {
     throw AuthFailure(message);
   }
 
-  /// Rafraîchit le token d'accès avec un refresh token
+  /// Refreshes the access token using a refresh token.
   ///
-  /// Retourne un Map contenant le nouveau token d'accès
-  /// Lance [AuthFailure] en cas d'erreur
+  /// Returns a [Map] containing the new access token.
+  /// Throws [AuthFailure] on error.
   Future<Map<String, dynamic>> refresh({required String refreshToken}) async {
     final resp = await post(
       ApiRoutes.authTokenRefresh,
@@ -71,6 +71,6 @@ class AuthApi extends ApiClient {
       return jsonDecode(resp.body) as Map<String, dynamic>;
     }
 
-    throw AuthFailure(AppTexts.tokenRefreshFailed);
+    throw AuthFailure(AppTextsAuth.tokenRefreshFailed);
   }
 }

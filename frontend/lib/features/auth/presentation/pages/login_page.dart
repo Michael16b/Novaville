@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/form_labels.dart';
-import 'package:frontend/constants/texts.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/constants/validator_messages.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/design_systems/custom_text_form_field.dart';
@@ -43,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
-        // Nous affichons maintenant l'erreur inline dans le builder (pas de SnackBar ici)
+        // Errors are displayed inline in the builder (no SnackBar here)
       },
       builder: (context, state) {
         final isLoading =
@@ -84,7 +84,7 @@ class _LoginPageState extends State<LoginPage> {
                             : null,
                       ),
                       const SizedBox(height: 12),
-                      // Affiche l'erreur d'authentification si elle existe
+                      // Display the authentication error if present
                       if (state.status == AuthStatus.failure &&
                           state.error != null)
                         Padding(
@@ -98,7 +98,7 @@ class _LoginPageState extends State<LoginPage> {
                       SizedBox(
                         width: double.infinity,
                         child: CustomElevatedFlatButton(
-                          text: AppTexts.login,
+                          text: AppTextsAuth.login,
                           isLoading: isLoading,
                           onPressed: _submit,
                         ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Widget personnalisé pour afficher des SnackBar centrés et stylisés
+/// Custom widget for displaying centered and styled SnackBars.
 class CustomSnackBar {
-  /// Affiche un SnackBar de succès (vert)
+  /// Displays a success SnackBar (green).
   static void showSuccess(BuildContext context, String message) {
     _show(
       context: context,
@@ -12,7 +12,7 @@ class CustomSnackBar {
     );
   }
 
-  /// Affiche un SnackBar d'erreur (rouge)
+  /// Displays an error SnackBar (red).
   static void showError(BuildContext context, String message) {
     _show(
       context: context,
@@ -22,7 +22,7 @@ class CustomSnackBar {
     );
   }
 
-  /// Affiche un SnackBar d'information (bleu)
+  /// Displays an info SnackBar (blue).
   static void showInfo(BuildContext context, String message) {
     _show(
       context: context,
@@ -32,7 +32,7 @@ class CustomSnackBar {
     );
   }
 
-  /// Affiche un SnackBar d'avertissement (orange)
+  /// Displays a warning SnackBar (orange).
   static void showWarning(BuildContext context, String message) {
     _show(
       context: context,
@@ -42,7 +42,7 @@ class CustomSnackBar {
     );
   }
 
-  /// Méthode privée pour afficher le SnackBar
+  /// Private method that renders the SnackBar.
   static void _show({
     required BuildContext context,
     required String message,
@@ -86,4 +86,3 @@ class CustomSnackBar {
     );
   }
 }
-

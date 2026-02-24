@@ -1,6 +1,6 @@
 part of 'user_profile_bloc.dart';
 
-/// États du UserProfileBloc
+/// States for the UserProfileBloc.
 enum UserProfileStatus {
   initial,
   loading,
@@ -58,4 +58,3 @@ class UserProfileState extends Equatable {
   @override
   List<Object?> get props => [status, user, error, isUpdate];
 }
-

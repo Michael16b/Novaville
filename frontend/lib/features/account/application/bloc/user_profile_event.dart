@@ -1,6 +1,6 @@
 part of 'user_profile_bloc.dart';
 
-/// Événements du UserProfileBloc
+/// Events for the UserProfileBloc.
 abstract class UserProfileEvent extends Equatable {
   const UserProfileEvent();
 
@@ -8,12 +8,12 @@ abstract class UserProfileEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Événement pour charger le profil utilisateur
+/// Event to load the user profile.
 class UserProfileLoadRequested extends UserProfileEvent {
   const UserProfileLoadRequested();
 }
 
-/// Événement pour mettre à jour le profil utilisateur
+/// Event to update the user profile.
 class UserProfileUpdateRequested extends UserProfileEvent {
   const UserProfileUpdateRequested({
     required this.userId,
@@ -32,4 +32,3 @@ class UserProfileUpdateRequested extends UserProfileEvent {
   @override
   List<Object?> get props => [userId, firstName, lastName, username, email];
 }
-

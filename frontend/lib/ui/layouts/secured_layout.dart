@@ -3,7 +3,7 @@ import 'package:frontend/constants/colors.dart';
 import 'package:frontend/features/auth/presentation/widgets/authenticated_wrapper.dart';
 import 'package:frontend/ui/widgets/app_banner.dart';
 
-/// Layout sécurisé avec bannière affichée sur tous les écrans authentifiés
+/// Secured layout with a banner displayed on all authenticated screens.
 class SecuredLayout extends StatelessWidget {
   const SecuredLayout({
     required this.child,

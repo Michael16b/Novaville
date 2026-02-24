@@ -1,11 +1,11 @@
 import 'package:frontend/features/account/data/models/user.dart';
 
-/// Interface du repository pour les opérations utilisateur
+/// Repository interface for user operations.
 abstract class IUserRepository {
-  /// Récupère les informations de l'utilisateur connecté
+  /// Retrieves the currently logged-in user's information.
   Future<User> getCurrentUser();
 
-  /// Met à jour les informations de l'utilisateur
+  /// Updates the user's information.
   Future<User> updateUser({
     required int userId,
     String? firstName,
@@ -14,4 +14,3 @@ abstract class IUserRepository {
     String? email,
   });
 }
-
