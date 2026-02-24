@@ -2,14 +2,14 @@ import 'package:frontend/core/network/authenticated_client.dart';
 import 'package:frontend/features/auth/data/auth_repository_impl.dart';
 import 'package:http/http.dart' as http;
 
-/// Factory pour créer un AuthenticatedClient configuré avec
-/// la gestion automatique du refresh token
+/// Factory for creating an [AuthenticatedClient] configured with
+/// automatic token refresh support.
 class AuthenticatedClientFactory {
-  /// Crée un client authentifié avec gestion automatique du refresh token
+  /// Creates an authenticated client with automatic token refresh handling.
   ///
-  /// [storage] : le storage contenant les tokens
-  /// [onRefresh] : callback appelé pour rafraîchir le token
-  /// (doit retourner le nouveau access token ou null si échec)
+  /// [storage]: the storage holding the tokens.
+  /// [onRefresh]: callback invoked to refresh the token
+  /// (must return the new access token or null on failure).
   static AuthenticatedClient create({
     required TokenStorage storage,
     required Future<String?> Function(String refreshToken) onRefresh,
@@ -20,22 +20,22 @@ class AuthenticatedClientFactory {
         return storage.read(key: 'access_token');
       },
       onTokenRefreshNeeded: () async {
-        // Récupérer le refresh token
+        // Retrieve the refresh token
         final refreshToken = await storage.read(key: 'refresh_token');
         if (refreshToken == null) return null;
 
         try {
-          // Appeler le callback de refresh
+          // Invoke the refresh callback
           final newAccessToken = await onRefresh(refreshToken);
 
           if (newAccessToken != null) {
-            // Sauvegarder le nouveau token
+            // Persist the new access token
             await storage.write(key: 'access_token', value: newAccessToken);
           }
 
           return newAccessToken;
         } catch (e) {
-          // En cas d'erreur, supprimer les tokens (déconnexion)
+          // On error, delete tokens to force logout
           await storage.delete(key: 'access_token');
           await storage.delete(key: 'refresh_token');
           return null;

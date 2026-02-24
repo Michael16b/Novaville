@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 
-/// Card du menu principal affichant une icône et un titre
+/// Main menu card displaying an icon and a title.
 class MenuCard extends StatelessWidget {
-  /// Crée une carte de menu
+  /// Creates a menu card.
   const MenuCard({
     required this.icon,
     required this.title,
@@ -11,13 +11,13 @@ class MenuCard extends StatelessWidget {
     super.key,
   });
 
-  /// Icône affichée sur la carte
+  /// Icon displayed on the card.
   final IconData icon;
 
-  /// Titre de la carte
+  /// Title of the card.
   final String title;
 
-  /// Callback appelé lors du tap sur la carte
+  /// Callback invoked when the card is tapped.
   final VoidCallback onTap;
 
   @override

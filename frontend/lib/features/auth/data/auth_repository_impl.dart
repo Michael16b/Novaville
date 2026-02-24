@@ -1,20 +1,20 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:frontend/constants/texts.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/features/auth/data/auth_api.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
 
-/// Petit wrapper d'abstraction pour éviter un import direct de packages
-/// de plateforme dans ce fichier. Fournir une implémentation basée sur
-/// `FlutterSecureStorage` dans `auth_storage_impl.dart`.
+/// Thin abstraction wrapper to avoid direct platform package imports in this
+/// file. Provide a [FlutterSecureStorage]-based implementation in
+/// `auth_storage_impl.dart`.
 abstract class TokenStorage {
   Future<void> write({required String key, required String? value});
   Future<String?> read({required String key});
   Future<void> delete({required String key});
 }
 
-/// Implémentation en mémoire (fallback / tests)
+/// In-memory token storage (fallback / tests).
 class InMemoryTokenStorage implements TokenStorage {
   final Map<String, String?> _map = {};
 
@@ -52,7 +52,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       final access = data['access'] as String?;
       final refresh = data['refresh'] as String?;
       if (access == null || refresh == null) {
-        throw AuthFailure(AppTexts.serverInvalidResponse);
+        throw AuthFailure(AppTextsAuth.serverInvalidResponse);
       }
 
       await _storage.write(key: _keyAccess, value: access);
@@ -62,7 +62,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } catch (e) {
       debugPrint('AuthRepositoryImpl.login error: $e');
       if (e is AuthFailure) rethrow;
-      // Convertir d'autres exceptions en AuthFailure pour message clair
+      // Convert other exceptions into AuthFailure for a clear error message
       throw AuthFailure(e.toString());
     }
   }

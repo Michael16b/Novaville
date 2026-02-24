@@ -1,15 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
+import 'package:frontend/features/auth/data/auth_repository.dart';
 import 'package:frontend/ui/layouts/secured_layout.dart';
 import 'package:frontend/ui/widgets/app_banner.dart';
 
+class _MockAuthRepository implements IAuthRepository {
+  @override
+  Future<String> login({required String username, required String password}) async => 'token';
+
+  @override
+  Future<void> logout() async {}
+
+  @override
+  Future<bool> hasValidSession() async => true;
+}
+
 void main() {
   group('SecuredLayout', () {
+    late AuthBloc authBloc;
+
+    setUp(() {
+      authBloc = AuthBloc(repository: _MockAuthRepository());
+    });
+
+    tearDown(() {
+      authBloc.close();
+    });
+
     Widget createWidgetUnderTest({Widget? child}) {
       return MaterialApp(
-        home: SecuredLayout(
-          child: child ?? const Center(child: Text('Test Child')),
+        home: BlocProvider<AuthBloc>.value(
+          value: authBloc,
+          child: SecuredLayout(
+            child: child ?? const Center(child: Text('Test Child')),
+          ),
         ),
       );
     }
@@ -132,8 +159,11 @@ void main() {
       final key = GlobalKey<_TestStatefulWidgetState>();
       await tester.pumpWidget(
         MaterialApp(
-          home: SecuredLayout(
-            child: _TestStatefulWidget(key: key),
+          home: BlocProvider<AuthBloc>.value(
+            value: authBloc,
+            child: SecuredLayout(
+              child: _TestStatefulWidget(key: key),
+            ),
           ),
         ),
       );

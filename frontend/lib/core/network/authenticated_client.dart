@@ -2,18 +2,18 @@ import 'dart:async';
 
 import 'package:http/http.dart' as http;
 
-/// Client HTTP qui ajoute automatiquement un token d'authentification
-/// dans les headers de toutes les requêtes sortantes.
+/// HTTP client that automatically injects an authentication token
+/// into the headers of all outgoing requests.
 ///
-/// Supporte également le refresh automatique du token en cas de 401.
+/// Also supports automatic token refresh on 401 responses.
 class AuthenticatedClient extends http.BaseClient {
-  /// Constructeur du client authentifié
+  /// Creates an authenticated HTTP client.
   ///
-  /// [tokenProvider] : fonction qui retourne le token d'accès actuel
-  /// (ou null si non connecté)
-  /// [onTokenRefreshNeeded] : callback optionnel appelé quand le token
-  /// doit être rafraîchi (retourne le nouveau token ou null si échec)
-  /// [inner] : client HTTP interne à utiliser (par défaut http.Client())
+  /// [tokenProvider]: function that returns the current access token
+  /// (or null if not authenticated).
+  /// [onTokenRefreshNeeded]: optional callback invoked when the token
+  /// needs to be refreshed (returns the new token or null on failure).
+  /// [inner]: underlying HTTP client to use (defaults to http.Client()).
   AuthenticatedClient({
     required Future<String?> Function() tokenProvider,
     Future<String?> Function()? onTokenRefreshNeeded,
@@ -26,37 +26,37 @@ class AuthenticatedClient extends http.BaseClient {
   final Future<String?> Function() _tokenProvider;
   final Future<String?> Function()? _onTokenRefreshNeeded;
 
-  // Verrou pour éviter les appels multiples simultanés au refresh
+  // Lock to prevent multiple simultaneous refresh calls
   Completer<String?>? _refreshCompleter;
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    // Récupérer le token actuel
+    // Retrieve the current token
     final token = await _tokenProvider();
 
-    // Ajouter le header Authorization si un token est disponible
+    // Add the Authorization header if a token is available
     if (token != null && token.isNotEmpty) {
       request.headers['Authorization'] = 'Bearer $token';
     }
 
-    // Effectuer la requête
+    // Perform the request
     var response = await _inner.send(request);
 
-    // Si 401 et qu'un callback de refresh est disponible, tenter le refresh
+    // If 401 and a refresh callback is available, attempt a token refresh
     if (response.statusCode == 401 && _onTokenRefreshNeeded != null) {
-      // Utiliser un verrou pour éviter plusieurs refresh simultanés
+      // Use a lock to avoid multiple simultaneous refreshes
       if (_refreshCompleter != null) {
-        // Un refresh est déjà en cours, attendre sa fin
+        // A refresh is already in progress — wait for it to complete
         await _refreshCompleter!.future;
       } else {
-        // Démarrer un nouveau refresh
+        // Start a new refresh
         _refreshCompleter = Completer<String?>();
         try {
           final newToken = await _onTokenRefreshNeeded();
           _refreshCompleter!.complete(newToken);
 
           if (newToken != null && newToken.isNotEmpty) {
-            // Réessayer la requête originale avec le nouveau token
+            // Retry the original request with the new token
             final newRequest = _copyRequest(request);
             newRequest.headers['Authorization'] = 'Bearer $newToken';
             response = await _inner.send(newRequest);
@@ -72,7 +72,7 @@ class AuthenticatedClient extends http.BaseClient {
     return response;
   }
 
-  /// Copie une requête HTTP pour pouvoir la réessayer
+  /// Copies an HTTP request so it can be retried after a token refresh.
   http.BaseRequest _copyRequest(http.BaseRequest request) {
     http.BaseRequest newRequest;
 

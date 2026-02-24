@@ -2,25 +2,23 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-/// Classe de base pour tous les clients API
-/// Fournit des méthodes communes pour construire les URLs
-/// et gérer les requêtes HTTP
+/// Base class for all API clients.
+/// Provides common methods to build URLs and handle HTTP requests.
 class ApiClient {
-  /// Constructeur du client API
+  /// Creates an API client.
   ApiClient({required this.baseUrl, http.Client? client})
     : client = client ?? http.Client();
 
-  /// URL de base de l'API (ex: http://localhost:8000)
+  /// Base URL of the API (e.g. http://localhost:8000)
   final String baseUrl;
 
-  /// Client HTTP utilisé pour effectuer les requêtes
+  /// HTTP client used to perform requests.
   final http.Client client;
 
-  /// Construit une URI complète à partir du baseUrl et d'un path
-  /// Gère automatiquement les slashs et les paramètres de requête
+  /// Builds a full URI from [baseUrl] and a [path].
+  /// Automatically handles trailing/leading slashes and query parameters.
   Uri buildUri(String path, [Map<String, String?>? queryParameters]) {
-    // Assurer que baseUrl ne se termine pas par /
-    // et que path commence par /
+    // Ensure baseUrl does not end with / and path starts with /
     final cleanBase = baseUrl.endsWith('/')
         ? baseUrl.substring(0, baseUrl.length - 1)
         : baseUrl;
@@ -29,9 +27,9 @@ class ApiClient {
 
     final uri = Uri.parse(fullUrl);
 
-    // Ajouter les paramètres de requête si présents
+    // Append query parameters if present
     if (queryParameters != null && queryParameters.isNotEmpty) {
-      // Filtrer les valeurs null
+      // Filter out null values
       final filteredParams = Map<String, String>.fromEntries(
         queryParameters.entries
             .where((e) => e.value != null)
@@ -43,13 +41,13 @@ class ApiClient {
     return uri;
   }
 
-  /// Headers par défaut pour les requêtes JSON
+  /// Default headers for JSON requests.
   Map<String, String> get defaultHeaders => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
 
-  /// Effectue une requête GET
+  /// Performs a GET request.
   Future<http.Response> get(
     String path, {
     Map<String, String?>? queryParameters,
@@ -60,7 +58,7 @@ class ApiClient {
     return client.get(uri, headers: mergedHeaders);
   }
 
-  /// Effectue une requête POST
+  /// Performs a POST request.
   Future<http.Response> post(
     String path, {
     required Map<String, dynamic> body,
@@ -72,7 +70,7 @@ class ApiClient {
     return client.post(uri, headers: mergedHeaders, body: jsonEncode(body));
   }
 
-  /// Effectue une requête PUT
+  /// Performs a PUT request.
   Future<http.Response> put(
     String path, {
     required Map<String, dynamic> body,
@@ -84,7 +82,7 @@ class ApiClient {
     return client.put(uri, headers: mergedHeaders, body: jsonEncode(body));
   }
 
-  /// Effectue une requête DELETE
+  /// Performs a DELETE request.
   Future<http.Response> delete(
     String path, {
     Map<String, String?>? queryParameters,
@@ -95,7 +93,19 @@ class ApiClient {
     return client.delete(uri, headers: mergedHeaders);
   }
 
-  /// Ferme le client HTTP
+  /// Performs a PATCH request.
+  Future<http.Response> patch(
+    String path, {
+    required Map<String, dynamic> body,
+    Map<String, String?>? queryParameters,
+    Map<String, String>? headers,
+  }) {
+    final uri = buildUri(path, queryParameters);
+    final mergedHeaders = {...defaultHeaders, ...?headers};
+    return client.patch(uri, headers: mergedHeaders, body: jsonEncode(body));
+  }
+
+  /// Closes the HTTP client.
   void close() {
     client.close();
   }

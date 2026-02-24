@@ -7,12 +7,11 @@ part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  // L'état initial doit être 'checking' pour forcer l'AuthGate à afficher un
-  // indicateur de chargement pendant que l'événement AuthStarted vérifie la session.
+  // The initial state must be 'checking' so that AuthGate shows a loading
+  // indicator while AuthStarted verifies the session.
   AuthBloc({required IAuthRepository repository})
     : _repository = repository,
       super(const AuthState.checking()) {
-    // CHANGEMENT: Démarrer en 'checking'
     on<AuthStarted>(_onStarted);
     on<AuthLoginSubmitted>(_onLoginSubmitted);
     on<AuthLogoutRequested>(_onLogoutRequested);
@@ -21,19 +20,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final IAuthRepository _repository;
 
   Future<void> _onStarted(AuthStarted event, Emitter<AuthState> emit) async {
-    // Note: Pas besoin d'émettre 'checking' à nouveau si c'est l'état initial,
-    // mais si le Bloc pouvait être réinitialisé, cette ligne serait utile.
-    // Pour l'instant, on procède directement à la vérification.
+    // Note: emitting 'checking' again is not strictly necessary since it is
+    // the initial state, but would be useful if the Bloc could be re-created.
     try {
       final hasSession = await _repository.hasValidSession();
       if (hasSession) {
         emit(const AuthState.authenticated());
       } else {
-        // Si la session n'est pas valide, émettre l'état non authentifié.
+        // Session is invalid — emit unauthenticated state.
         emit(const AuthState.unauthenticated());
       }
     } catch (e) {
-      // En cas d'erreur de vérification, on assume qu'il n'y a pas de session.
+      // On verification error, assume there is no valid session.
       emit(AuthState.failure(e.toString()));
       emit(const AuthState.unauthenticated());
     }

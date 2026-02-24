@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
-import 'package:frontend/constants/texts.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
+import 'package:frontend/constants/texts/texts_navigation.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/design_systems/custom_elevated_stroked_button.dart';
+import 'package:frontend/features/account/presentation/pages/my_account_page.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/home/presentation/pages/home_page.dart';
 import 'package:frontend/ui/assets.dart';
@@ -33,16 +35,16 @@ class AppBanner extends StatelessWidget {
                 ),
                 const SizedBox(width: 16),
                 if (isHomePage)
-                  // Bouton désactivé sur la HomePage
+                  // Button disabled on the HomePage
                   CustomElevatedFlatButton(
-                  text: AppTexts.homeButton,
-                  onPressed: () {},
-                  iconData: Icons.home_outlined,
-                )
+                    text: AppTextsNavigation.homeButton,
+                    onPressed: () {},
+                    iconData: Icons.home_outlined,
+                  )
                 else
-                  // Bouton actif sur les autres pages
+                  // Active button on other pages
                   CustomElevatedStrokedButton(
-                    text: AppTexts.homeButton,
+                    text: AppTextsNavigation.homeButton,
                     onPressed: () {
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute<void>(
@@ -69,7 +71,11 @@ class AppBanner extends StatelessWidget {
                     if (value == 'logout') {
                       context.read<AuthBloc>().add(const AuthLogoutRequested());
                     } else if (value == 'personal_info') {
-                      // TODO(personal_info): Implémenter la navigation vers la page d'informations personnelles
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const MyAccountPage(),
+                        ),
+                      );
                     }
                   },
                   itemBuilder: (BuildContext context) => [
@@ -80,7 +86,7 @@ class AppBanner extends StatelessWidget {
                           Icon(Icons.person_outline, color: AppColors.primary),
                           SizedBox(width: 12),
                           Text(
-                            AppTexts.personalInfo,
+                            AppTextsNavigation.personalInfo,
                             style: TextStyle(color: AppColors.primaryText),
                           ),
                         ],
@@ -93,7 +99,7 @@ class AppBanner extends StatelessWidget {
                           Icon(Icons.logout, color: AppColors.error),
                           SizedBox(width: 12),
                           Text(
-                            AppTexts.logout,
+                            AppTextsAuth.logout,
                             style: TextStyle(color: AppColors.error),
                           ),
                         ],
