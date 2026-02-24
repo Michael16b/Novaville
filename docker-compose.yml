@@ -80,6 +80,18 @@ services:
       - novaville-net
     restart: unless-stopped
 
+  # Docusaurus Docs
+  docs:
+    build:
+      context: ./docs
+      dockerfile: Dockerfile
+    container_name: novaville-docs
+    ports:
+      - "3000:80"
+    networks:
+      - novaville-net
+    restart: unless-stopped
+
 volumes:
   static_volume:
   media_volume:
