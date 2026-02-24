@@ -10,7 +10,6 @@ import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/design_systems/custom_text_form_field.dart';
 import 'package:frontend/features/account/application/bloc/user_profile_bloc.dart';
 import 'package:frontend/features/account/data/user_repository_factory.dart';
-import 'package:frontend/ui/layouts/secured_layout.dart';
 
 /// User account page with a profile edit form.
 class MyAccountPage extends StatelessWidget {
@@ -19,14 +18,11 @@ class MyAccountPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SecuredLayout(
-      isHomePage: false,
-      child: BlocProvider(
-        create: (context) => UserProfileBloc(
-          repository: createUserRepository(),
-        )..add(const UserProfileLoadRequested()),
-        child: const _MyAccountView(),
-      ),
+    return BlocProvider(
+      create: (context) => UserProfileBloc(
+        repository: createUserRepository(),
+      )..add(const UserProfileLoadRequested()),
+      child: const _MyAccountView(),
     );
   }
 }
