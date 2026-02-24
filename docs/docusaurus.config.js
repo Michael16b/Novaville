@@ -11,10 +11,9 @@ const config = {
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://Michael16b.github.io',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, change to: '/Novaville/'
-  baseUrl: '/',
+  url: 'https://michael16b.github.io',
+  // GitHub Pages is served under https://<user>.github.io/<project>/
+  baseUrl: '/Novaville/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.

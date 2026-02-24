@@ -47,6 +47,36 @@ const sidebars = {
         'api/auth/refresh-token',
       ],
     },
+    {
+      type: 'category',
+      label: 'Utilisateurs',
+      items: [
+        'api/users/list',
+        'api/users/create',
+        'api/users/update',
+        'api/users/delete',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Événements',
+      items: [
+        'api/events/list',
+        'api/events/create',
+        'api/events/update',
+        'api/events/delete',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Rapports',
+      items: [
+        'api/reports/list',
+        'api/reports/create',
+        'api/reports/update',
+        'api/reports/delete',
+      ],
+    },
   ],
 
   // User Manual
@@ -57,6 +87,15 @@ const sidebars = {
       label: 'Premiers pas',
       items: [
         'user-manual/first-steps/login',
+        'user-manual/first-steps/dashboard',
+        'user-manual/first-steps/navigation',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Événements',
+      items: [
+        'user-manual/events/participate',
       ],
     },
     {
@@ -64,6 +103,14 @@ const sidebars = {
       label: 'Rapports',
       items: [
         'user-manual/reports/create',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'FAQ',
+      items: [
+        'user-manual/faq/general',
+        'user-manual/faq/troubleshooting',
       ],
     },
   ],
