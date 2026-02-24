@@ -13,7 +13,7 @@ La méthode la plus simple est d'utiliser Docker Compose :
 ### 1. Cloner le dépôt
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/Novaville.git
+git clone https://github.com/Michael16b/Novaville.git
 cd Novaville
 ```
 

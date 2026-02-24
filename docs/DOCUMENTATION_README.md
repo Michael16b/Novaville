@@ -165,9 +165,9 @@ Pour configurer GitHub Pages dans votre dépôt :
 N'oubliez pas de remplacer dans `docusaurus.config.js` :
 
 ```javascript
-url: 'https://YOUR_GITHUB_USERNAME.github.io',
+url: 'https://Michael16b.github.io',
 baseUrl: '/Novaville/',
-organizationName: 'YOUR_GITHUB_USERNAME',
+organizationName: 'Michael16b',
 projectName: 'Novaville',
 ```
 
@@ -210,7 +210,7 @@ npm run lint
 Pour toute question ou problème :
 
 1. Consultez la [documentation Docusaurus](https://docusaurus.io/docs)
-2. Ouvrez une issue sur [GitHub](https://github.com/YOUR_GITHUB_USERNAME/Novaville/issues)
+2. Ouvrez une issue sur [GitHub](https://github.com/Michael16b/Novaville/issues)
 
 ## 📄 Licence
 

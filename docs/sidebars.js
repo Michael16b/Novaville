@@ -19,7 +19,7 @@ const sidebars = {
     'intro',
     {
       type: 'category',
-      label: 'Getting Started',
+      label: 'Prise en main',
       items: [
         'getting-started/introduction',
         'getting-started/installation',
@@ -28,7 +28,7 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Technical Documentation',
+      label: 'Documentation technique',
       items: [
         'technical/architecture',
         'technical/backend',
@@ -41,7 +41,7 @@ const sidebars = {
     'api/overview',
     {
       type: 'category',
-      label: 'Authentication',
+      label: 'Authentification',
       items: [
         'api/auth/login',
         'api/auth/refresh-token',
@@ -54,14 +54,14 @@ const sidebars = {
     'user-manual/intro',
     {
       type: 'category',
-      label: 'First Steps',
+      label: 'Premiers pas',
       items: [
         'user-manual/first-steps/login',
       ],
     },
     {
       type: 'category',
-      label: 'Reports',
+      label: 'Rapports',
       items: [
         'user-manual/reports/create',
       ],

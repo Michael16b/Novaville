@@ -166,7 +166,7 @@ A comprehensive documentation site built with **Docusaurus** is available, cover
 
 #### Accessing the Documentation
 
-- **Online**: `https://YOUR_GITHUB_USERNAME.github.io/Novaville/` (after deployment)
+- **Online**: `https://Michael16b.github.io/Novaville/` (after deployment)
 - **Locally with npm**:
   ```bash
   cd docs

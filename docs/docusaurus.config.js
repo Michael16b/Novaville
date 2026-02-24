@@ -11,14 +11,14 @@ const config = {
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://YOUR_GITHUB_USERNAME.github.io',
+  url: 'https://Michael16b.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, change to: '/Novaville/'
   baseUrl: '/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'YOUR_GITHUB_USERNAME', // Usually your GitHub org/user name.
+  organizationName: 'Michael16b', // Usually your GitHub org/user name.
   projectName: 'Novaville', // Usually your repo name.
 
   onBrokenLinks: 'warn',
@@ -59,7 +59,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/YOUR_GITHUB_USERNAME/Novaville/tree/main/docs/',
+            'https://github.com/Michael16b/Novaville/tree/main/docs/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

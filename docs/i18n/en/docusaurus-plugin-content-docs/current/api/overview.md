@@ -223,8 +223,8 @@ Les anciennes versions seront maintenues pendant au moins 12 mois après la sort
 Pour toute question ou problème avec l'API :
 
 1. Consultez la documentation complète
-2. Vérifiez les [exemples de code](https://github.com/YOUR_GITHUB_USERNAME/Novaville/tree/main/examples)
-3. Ouvrez une issue sur [GitHub](https://github.com/YOUR_GITHUB_USERNAME/Novaville/issues)
+2. Vérifiez les [exemples de code](https://github.com/Michael16b/Novaville/tree/main/examples)
+3. Ouvrez une issue sur [GitHub](https://github.com/YOUR_GITHUBMichael16b_USERNAME/Novaville/issues)
 
 ## Outils recommandés
 
