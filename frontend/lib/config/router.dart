@@ -24,30 +24,57 @@ Page<T> _buildPage<T>({
   }
   return MaterialPage<T>(key: state.pageKey, child: child);
 }
+/// Pure function containing the authentication redirect logic.
+///
+/// Returns the path to redirect to, or [null] if no redirect is needed.
+/// Extracted as a standalone function so it can be unit-tested independently
+/// of [GoRouter].
+String? authRedirect({
+  required AuthStatus authStatus,
+  required String currentLocation,
+}) {
+  final isOnLoading = currentLocation == AppRoutes.loading;
+  final isLoggingIn = currentLocation == AppRoutes.login;
+  // While checking / authenticating, show a dedicated loading screen.
+  if (authStatus == AuthStatus.checking ||
+      authStatus == AuthStatus.authenticating) {
+    return isOnLoading ? null : AppRoutes.loading;
+  }
+  final isAuthenticated = authStatus == AuthStatus.authenticated;
+  // Not authenticated → send to login (and away from loading).
+  if (!isAuthenticated) {
+    return isLoggingIn ? null : AppRoutes.login;
+  }
+  // Authenticated → leave login / loading pages.
+  if (isLoggingIn || isOnLoading) {
+    return AppRoutes.home;
+  }
+  return null;
+}
+
 /// Builds and returns the application [GoRouter].
 ///
 /// Receives the [AuthBloc] directly so the router can be created once in
-/// [State.initState] without needing a [BuildContext].
+/// [State.didChangeDependencies] without needing a [BuildContext] at build time.
 GoRouter buildRouter(AuthBloc authBloc) {
   return GoRouter(
     initialLocation: AppRoutes.home,
     refreshListenable: _AuthBlocListenable(authBloc),
-    redirect: (context, state) {
-      final authStatus = authBloc.state.status;
-      final isLoggingIn = state.matchedLocation == AppRoutes.login;
-      // Still checking / authenticating — keep current location, show loader
-      if (authStatus == AuthStatus.checking ||
-          authStatus == AuthStatus.authenticating) {
-        return null;
-      }
-      final isAuthenticated = authStatus == AuthStatus.authenticated;
-      // Not authenticated and not already on login page → redirect to login
-      if (!isAuthenticated && !isLoggingIn) return AppRoutes.login;
-      // Authenticated but on the login page → redirect to home
-      if (isAuthenticated && isLoggingIn) return AppRoutes.home;
-      return null;
-    },
+    redirect: (context, state) => authRedirect(
+      authStatus: authBloc.state.status,
+      currentLocation: state.matchedLocation,
+    ),
     routes: [
+      // ── Loading route (shown while auth status is being checked) ──────────
+      GoRoute(
+        path: AppRoutes.loading,
+        pageBuilder: (context, state) => _buildPage(
+          state: state,
+          child: const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          ),
+        ),
+      ),
       // ── Public route ──────────────────────────────────────────────────────
       GoRoute(
         path: AppRoutes.login,

@@ -14,20 +14,33 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  late final GoRouter _router;
+  GoRouter? _router;
+  bool _initialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    // AuthBloc is available via context.read because App is a child of BlocProvider
-    final authBloc = context.read<AuthBloc>();
-    _router = buildRouter(authBloc);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _router = buildRouter(context.read<AuthBloc>());
+      _initialized = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    _router?.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_router == null) {
+      return const MaterialApp(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      );
+    }
     return MaterialApp.router(
-      routerConfig: _router,
+      routerConfig: _router!,
       title: AppTextsGeneral.appName,
       theme: ThemeData(
         fontFamily: 'Montserrat',

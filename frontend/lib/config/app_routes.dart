@@ -11,5 +11,6 @@ class AppRoutes {
   static const String news = '/news';
   static const String usefulInfo = '/useful-info';
   static const String myAccount = '/account';
+  static const String loading = '/loading';
 }
 
