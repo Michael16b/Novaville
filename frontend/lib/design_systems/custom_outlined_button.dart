@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 
 /// A customizable outlined button with transparent background and primary-colored border.
-///
+
 /// Displays either a text label or a combination of icon and text, and can
 /// show a loading spinner when [isLoading] is true.
 class CustomOutlinedButton extends StatelessWidget {
