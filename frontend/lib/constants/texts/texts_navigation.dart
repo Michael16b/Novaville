@@ -2,7 +2,6 @@
 class AppTextsNavigation {
   AppTextsNavigation._();
 
-  static const String homeButton = 'Home';
-  static const String personalInfo = 'My personal information';
+  static const String homeButton = 'Accueil';
+  static const String personalInfo = 'Mes informations personnelles';
 }
-

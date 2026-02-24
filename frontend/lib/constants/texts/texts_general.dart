@@ -3,11 +3,10 @@ class AppTextsGeneral {
   AppTextsGeneral._();
 
   static const String appName = 'Novaville';
-  static const String welcome = "Welcome to the application";
-  static const String errorOccurred = 'An error occurred';
-  static const String retry = 'Retry';
-  static const String save = 'Save';
-  static const String saving = 'Saving...';
-  static const String cancel = 'Cancel';
+  static const String welcome = "Bienvenue sur l'application";
+  static const String errorOccurred = 'Une erreur est survenue';
+  static const String retry = 'Réessayer';
+  static const String save = 'Enregistrer';
+  static const String saving = 'Enregistrement...';
+  static const String cancel = 'Annuler';
 }
-
