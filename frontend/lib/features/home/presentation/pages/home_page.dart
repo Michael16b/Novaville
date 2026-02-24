@@ -8,7 +8,6 @@ import 'package:frontend/features/news/presentation/pages/news_page.dart';
 import 'package:frontend/features/reports/presentation/pages/reports_page.dart';
 import 'package:frontend/features/surveys/presentation/pages/surveys_page.dart';
 import 'package:frontend/features/useful_info/presentation/pages/useful_info_page.dart';
-import 'package:frontend/ui/layouts/secured_layout.dart';
 
 /// Home screen of the app that displays a grid of navigation cards
 /// linking to core features such as reports, surveys, agenda, news,
@@ -132,10 +131,7 @@ class HomePage extends StatelessWidget {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
-                              builder: (context) => const SecuredLayout(
-                                isHomePage: false,
-                                child: MyAccountPage(),
-                              ),
+                              builder: (context) => const MyAccountPage(),
                             ),
                           );
                         },
