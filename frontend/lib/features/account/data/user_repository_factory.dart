@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 IUserRepository createUserRepository({http.Client? client}) {
   final storage = SecureTokenStorage();
   final baseUrl = AppConfig.apiBaseUrl;
+  final httpClient = client ?? http.Client();
 
   // Créer le client authentifié avec gestion auto du refresh token
   final authenticatedClient = AuthenticatedClientFactory.create(
@@ -20,10 +21,10 @@ IUserRepository createUserRepository({http.Client? client}) {
       // Logique de refresh token
       try {
         final url = Uri.parse('$baseUrl/api/v1/auth/token/refresh/');
-        final response = await http.post(
+        final response = await httpClient.post(
           url,
           headers: {'Content-Type': 'application/json'},
-          body: '{"refresh":"$refreshToken"}',
+          body: jsonEncode({'refresh': refreshToken}),
         );
 
         if (response.statusCode == 200) {
@@ -35,7 +36,7 @@ IUserRepository createUserRepository({http.Client? client}) {
         return null;
       }
     },
-    inner: client,
+    inner: httpClient,
   );
 
   // Créer l'ApiClient avec le client authentifié

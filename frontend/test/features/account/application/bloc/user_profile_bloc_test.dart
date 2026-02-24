@@ -8,11 +8,13 @@ class _FakeUserRepository implements IUserRepository {
   _FakeUserRepository({
     this.userToReturn,
     this.shouldThrow = false,
+    this.shouldThrowOnUpdate = false,
     this.errorMessage = 'Erreur réseau',
   });
 
   final User? userToReturn;
   final bool shouldThrow;
+  final bool shouldThrowOnUpdate;
   final String errorMessage;
 
   static const _defaultUser = User(
@@ -37,7 +39,7 @@ class _FakeUserRepository implements IUserRepository {
     String? username,
     String? email,
   }) async {
-    if (shouldThrow) throw Exception(errorMessage);
+    if (shouldThrow || shouldThrowOnUpdate) throw Exception(errorMessage);
     return User(
       id: userId,
       username: username ?? 'jdoe',
@@ -71,17 +73,20 @@ void main() {
         repository: _FakeUserRepository(userToReturn: testUser),
       );
 
-      final states = <UserProfileState>[];
-      bloc.stream.listen(states.add);
+      final expectation = expectLater(
+        bloc.stream,
+        emitsInOrder([
+          isA<UserProfileState>()
+              .having((s) => s.status, 'status', UserProfileStatus.loading),
+          isA<UserProfileState>()
+              .having((s) => s.status, 'status', UserProfileStatus.loaded)
+              .having((s) => s.user, 'user', testUser)
+              .having((s) => s.isUpdate, 'isUpdate', false),
+        ]),
+      );
 
       bloc.add(const UserProfileLoadRequested());
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-
-      expect(states.length, 2);
-      expect(states[0].status, UserProfileStatus.loading);
-      expect(states[1].status, UserProfileStatus.loaded);
-      expect(states[1].user, testUser);
-      expect(states[1].isUpdate, isFalse);
+      await expectation;
 
       await bloc.close();
     });
@@ -91,31 +96,55 @@ void main() {
         repository: _FakeUserRepository(shouldThrow: true, errorMessage: 'Erreur serveur'),
       );
 
-      final states = <UserProfileState>[];
-      bloc.stream.listen(states.add);
+      final expectation = expectLater(
+        bloc.stream,
+        emitsInOrder([
+          isA<UserProfileState>()
+              .having((s) => s.status, 'status', UserProfileStatus.loading),
+          isA<UserProfileState>()
+              .having((s) => s.status, 'status', UserProfileStatus.failure)
+              .having((s) => s.error, 'error', contains('Erreur serveur')),
+        ]),
+      );
 
       bloc.add(const UserProfileLoadRequested());
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-
-      expect(states.length, 2);
-      expect(states[0].status, UserProfileStatus.loading);
-      expect(states[1].status, UserProfileStatus.failure);
-      expect(states[1].error, contains('Erreur serveur'));
+      await expectation;
 
       await bloc.close();
     });
 
     test('UserProfileUpdateRequested émet updating avec utilisateur courant puis loaded avec isUpdate=true', () async {
-      // D'abord charger l'utilisateur
       final bloc = UserProfileBloc(
         repository: _FakeUserRepository(userToReturn: testUser),
       );
 
+      // D'abord charger l'utilisateur
+      final loadExpectation = expectLater(
+        bloc.stream,
+        emitsInOrder([
+          isA<UserProfileState>()
+              .having((s) => s.status, 'status', UserProfileStatus.loading),
+          isA<UserProfileState>()
+              .having((s) => s.status, 'status', UserProfileStatus.loaded),
+        ]),
+      );
       bloc.add(const UserProfileLoadRequested());
-      await Future<void>.delayed(const Duration(milliseconds: 100));
+      await loadExpectation;
 
-      final states = <UserProfileState>[];
-      bloc.stream.listen(states.add);
+      // Puis mettre à jour
+      final updateExpectation = expectLater(
+        bloc.stream,
+        emitsInOrder([
+          isA<UserProfileState>()
+              .having((s) => s.status, 'status', UserProfileStatus.updating)
+              .having((s) => s.user, 'user', testUser),
+          isA<UserProfileState>()
+              .having((s) => s.status, 'status', UserProfileStatus.loaded)
+              .having((s) => s.isUpdate, 'isUpdate', true)
+              .having((s) => s.user?.firstName, 'firstName', 'Jane')
+              .having((s) => s.user?.email, 'email', 'jane.doe@example.com'),
+        ]),
+      );
 
       bloc.add(
         const UserProfileUpdateRequested(
@@ -126,17 +155,7 @@ void main() {
           email: 'jane.doe@example.com',
         ),
       );
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-
-      expect(states.length, 2);
-      // L'état updating doit préserver l'utilisateur courant
-      expect(states[0].status, UserProfileStatus.updating);
-      expect(states[0].user, testUser);
-      // L'état loaded doit avoir isUpdate=true
-      expect(states[1].status, UserProfileStatus.loaded);
-      expect(states[1].isUpdate, isTrue);
-      expect(states[1].user?.firstName, 'Jane');
-      expect(states[1].user?.email, 'jane.doe@example.com');
+      await updateExpectation;
 
       await bloc.close();
     });
@@ -147,8 +166,7 @@ void main() {
       );
 
       // Ne pas charger l'utilisateur, l'état initial a user=null
-      final states = <UserProfileState>[];
-      bloc.stream.listen(states.add);
+      final expectation = expectLater(bloc.stream, emitsDone);
 
       bloc.add(
         const UserProfileUpdateRequested(
@@ -159,35 +177,48 @@ void main() {
           email: 'jane.doe@example.com',
         ),
       );
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-
-      expect(states, isEmpty);
-
       await bloc.close();
+      await expectation;
     });
 
     test('UserProfileUpdateRequested émet updating puis failure en cas d\'erreur', () async {
-      final successRepo = _FakeUserRepository(userToReturn: testUser);
-      final failingRepo = _FakeUserRepository(
-        userToReturn: testUser,
-        shouldThrow: true,
-        errorMessage: 'Mise à jour impossible',
+      final bloc = UserProfileBloc(
+        repository: _FakeUserRepository(
+          userToReturn: testUser,
+          shouldThrowOnUpdate: true,
+          errorMessage: 'Mise à jour impossible',
+        ),
       );
 
-      // Charger avec un repo qui réussit
-      final bloc = UserProfileBloc(repository: successRepo);
+      // Charger l'utilisateur avec succès
+      final loadExpectation = expectLater(
+        bloc.stream,
+        emitsInOrder([
+          isA<UserProfileState>()
+              .having((s) => s.status, 'status', UserProfileStatus.loading),
+          isA<UserProfileState>()
+              .having((s) => s.status, 'status', UserProfileStatus.loaded),
+        ]),
+      );
       bloc.add(const UserProfileLoadRequested());
-      await Future<void>.delayed(const Duration(milliseconds: 100));
+      await loadExpectation;
 
-      // Créer un nouveau bloc qui échoue lors de la mise à jour
-      final bloc2 = UserProfileBloc(repository: failingRepo);
-      bloc2.add(const UserProfileLoadRequested());
-      await Future<void>.delayed(const Duration(milliseconds: 100));
+      // La mise à jour échoue
+      final updateExpectation = expectLater(
+        bloc.stream,
+        emitsInOrder([
+          isA<UserProfileState>()
+              .having((s) => s.status, 'status', UserProfileStatus.updating)
+              .having((s) => s.user, 'user', testUser),
+          isA<UserProfileState>()
+              .having((s) => s.status, 'status', UserProfileStatus.failure)
+              .having((s) => s.error, 'error', contains('Mise à jour impossible'))
+              .having((s) => s.user, 'user', testUser)
+              .having((s) => s.isUpdate, 'isUpdate', true),
+        ]),
+      );
 
-      final states = <UserProfileState>[];
-      bloc2.stream.listen(states.add);
-
-      bloc2.add(
+      bloc.add(
         const UserProfileUpdateRequested(
           userId: 1,
           firstName: 'Jane',
@@ -196,15 +227,9 @@ void main() {
           email: 'jane.doe@example.com',
         ),
       );
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-
-      expect(states.length, 2);
-      expect(states[0].status, UserProfileStatus.updating);
-      expect(states[1].status, UserProfileStatus.failure);
-      expect(states[1].error, contains('Mise à jour impossible'));
+      await updateExpectation;
 
       await bloc.close();
-      await bloc2.close();
     });
 
     test('UserProfileState.updating préserve l\'utilisateur courant', () {
