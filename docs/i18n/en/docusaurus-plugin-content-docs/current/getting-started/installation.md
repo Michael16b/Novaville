@@ -4,29 +4,29 @@ sidebar_position: 2
 
 # Installation
 
-Ce guide vous accompagnera dans l'installation et la configuration de l'environnement de développement Novaville.
+This guide walks you through installing and configuring the Novaville development environment.
 
-## Installation avec Docker (Recommandé)
+## Install with Docker (Recommended)
 
-La méthode la plus simple est d'utiliser Docker Compose :
+The simplest path is via Docker Compose:
 
-### 1. Cloner le dépôt
+### 1. Clone the repo
 
 ```bash
 git clone https://github.com/Michael16b/Novaville.git
 cd Novaville
 ```
 
-### 2. Configurer les variables d'environnement
+### 2. Set environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-Éditez le fichier `.env` et configurez les variables nécessaires :
+Edit `.env` and set the required variables:
 
 ```env
-# Base de données
+# Database
 POSTGRES_DB=novaville
 POSTGRES_USER=novaville
 POSTGRES_PASSWORD=your_secure_password
@@ -40,35 +40,35 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 API_URL=http://localhost:8000
 ```
 
-### 3. Lancer les services
+### 3. Start services
 
 ```bash
 docker-compose up -d
 ```
 
-### 4. Appliquer les migrations
+### 4. Run migrations
 
 ```bash
 docker-compose exec backend python manage.py migrate
 ```
 
-### 5. Créer un superutilisateur
+### 5. Create a superuser
 
 ```bash
 docker-compose exec backend python manage.py createsuperuser
 ```
 
-### 6. Accéder à l'application
+### 6. Access the app
 
-- **Backend API** : http://localhost:8000
-- **Admin Django** : http://localhost:8000/admin
-- **Frontend** : http://localhost:3000 (si configuré)
+- **Backend API**: http://localhost:8000
+- **Django Admin**: http://localhost:8000/admin
+- **Frontend**: http://localhost:3000 (if enabled)
 
-## Installation manuelle
+## Manual install
 
 ### Backend
 
-#### 1. Créer un environnement virtuel
+#### 1. Create a virtualenv
 
 ```bash
 cd backend
@@ -76,23 +76,23 @@ python -m venv venv
 source venv/bin/activate  # Sur Windows: venv\Scripts\activate
 ```
 
-#### 2. Installer les dépendances
+#### 2. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-#### 3. Configurer la base de données
+#### 3. Configure the database
 
-Créez une base PostgreSQL et configurez les variables d'environnement.
+Create a PostgreSQL database and set your env variables.
 
-#### 4. Appliquer les migrations
+#### 4. Run migrations
 
 ```bash
 python manage.py migrate
 ```
 
-#### 5. Lancer le serveur de développement
+#### 5. Start the dev server
 
 ```bash
 python manage.py runserver
@@ -100,16 +100,16 @@ python manage.py runserver
 
 ### Frontend
 
-#### 1. Installer les dépendances Flutter
+#### 1. Install Flutter dependencies
 
 ```bash
 cd frontend
 flutter pub get
 ```
 
-#### 2. Configurer l'URL de l'API
+#### 2. Set the API URL
 
-Éditez `lib/config/environment.dart` :
+Edit `lib/config/environment.dart`:
 
 ```dart
 class Environment {
@@ -117,55 +117,55 @@ class Environment {
 }
 ```
 
-#### 3. Lancer l'application
+#### 3. Run the app
 
 ```bash
-# Pour Android
+# Android
 flutter run
 
-# Pour iOS
+# iOS
 flutter run -d ios
 
-# Pour Web
+# Web
 flutter run -d chrome
 ```
 
-## Vérification de l'installation
+## Verify the install
 
-Une fois l'installation terminée, vérifiez que tout fonctionne :
+After install, verify everything works:
 
-1. Accédez à http://localhost:8000/api/ - vous devriez voir la page d'accueil de l'API
-2. Accédez à http://localhost:8000/admin - vous devriez pouvoir vous connecter
-3. Testez l'API avec :
+1. Go to http://localhost:8000/api/ — API landing should load
+2. Go to http://localhost:8000/admin — you should be able to sign in
+3. Test the API:
 
 ```bash
 curl http://localhost:8000/api/health/
 ```
 
-## Problèmes courants
+## Common issues
 
-### Port déjà utilisé
+### Port already in use
 
-Si le port 8000 est déjà utilisé :
+If port 8000 is taken:
 
 ```bash
 # Modifier le port dans docker-compose.yml ou
 python manage.py runserver 8080
 ```
 
-### Erreur de connexion à la base de données
+### Database connection error
 
-Vérifiez que PostgreSQL est bien démarré et que les identifiants sont corrects.
+Ensure PostgreSQL is running and credentials are correct.
 
-### Problèmes avec Flutter
+### Flutter issues
 
-Assurez-vous d'avoir la dernière version du SDK :
+Make sure you have the latest SDK:
 
 ```bash
 flutter upgrade
 flutter doctor
 ```
 
-## Prochaines étapes
+## Next steps
 
-Continuez avec le guide de [Configuration](./configuration) pour personnaliser votre environnement.
+Continue with [Configuration](./configuration) to tailor your environment.

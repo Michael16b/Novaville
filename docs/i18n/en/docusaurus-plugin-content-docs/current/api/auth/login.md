@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Login
 
-Authentifiez un utilisateur et obtenez un JWT token.
+Authenticate a user and obtain a JWT token.
 
 ## Endpoint
 
@@ -12,29 +12,29 @@ Authentifiez un utilisateur et obtenez un JWT token.
 POST /api/v1/auth/login/
 ```
 
-## Authentification
+## Authentication
 
-Aucune authentification requise.
+Not required.
 
-## Corps de la requête
+## Request body
 
-| Champ | Type | Requis | Description |
-|-------|------|--------|-------------|
-| `email` | string | ✅ | Email de l'utilisateur |
-| `password` | string | ✅ | Mot de passe |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | ✅ | User email |
+| `password` | string | ✅ | Password |
 
-### Exemple
+### Example
 
 ```json
 {
-  "email": "jean.dupont@example.com",
-  "password": "MonMotDePasse123!"
+  "email": "jane.doe@example.com",
+  "password": "MyStrongPassword123!"
 }
 ```
 
-## Réponse
+## Response
 
-### Succès (200 OK)
+### Success (200 OK)
 
 ```json
 {
@@ -42,9 +42,9 @@ Aucune authentification requise.
   "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
   "user": {
     "id": 1,
-    "email": "jean.dupont@example.com",
-    "first_name": "Jean",
-    "last_name": "Dupont",
+    "email": "jane.doe@example.com",
+    "first_name": "Jane",
+    "last_name": "Doe",
     "role": "citizen",
     "avatar": "https://api.novaville.com/media/avatars/user1.jpg",
     "created_at": "2024-01-15T10:30:00Z"
@@ -52,70 +52,70 @@ Aucune authentification requise.
 }
 ```
 
-### Erreur (400 Bad Request) - Identifiants invalides
+### Error (400 Bad Request) - Invalid credentials
 
 ```json
 {
   "error": {
     "code": "invalid_credentials",
-    "message": "Email ou mot de passe incorrect"
+    "message": "Email or password is incorrect"
   }
 }
 ```
 
-### Erreur (400 Bad Request) - Données manquantes
+### Error (400 Bad Request) - Missing data
 
 ```json
 {
   "error": {
     "code": "validation_error",
-    "message": "Données invalides",
+    "message": "Invalid data",
     "details": {
-      "email": ["Ce champ est requis."],
-      "password": ["Ce champ est requis."]
+      "email": ["This field is required."],
+      "password": ["This field is required."]
     }
   }
 }
 ```
 
-### Erreur (429 Too Many Requests) - Trop de tentatives
+### Error (429 Too Many Requests) - Too many attempts
 
 ```json
 {
   "error": {
     "code": "rate_limit_exceeded",
-    "message": "Trop de tentatives de connexion. Réessayez dans 15 minutes."
+    "message": "Too many login attempts. Please try again in 15 minutes."
   }
 }
 ```
 
-## Schema de réponse
+## Response schema
 
-### User Object
+### User object
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
-| `id` | integer | Identifiant unique de l'utilisateur |
-| `email` | string | Adresse email |
-| `first_name` | string | Prénom |
-| `last_name` | string | Nom de famille |
-| `role` | string | Rôle : `citizen`, `admin`, `agent` |
-| `avatar` | string \| null | URL de l'avatar |
-| `created_at` | string (ISO 8601) | Date de création du compte |
+| `id` | integer | Unique user id |
+| `email` | string | Email address |
+| `first_name` | string | First name |
+| `last_name` | string | Last name |
+| `role` | string | Role: `citizen`, `admin`, `agent` |
+| `avatar` | string \| null | Avatar URL |
+| `created_at` | string (ISO 8601) | Account creation date |
 
-## Tokens JWT
+## JWT tokens
 
-### Access Token
+### Access token
 
-- **Durée de vie** : 60 minutes
-- **Usage** : À inclure dans l'en-tête `Authorization: Bearer <token>` pour toutes les requêtes authentifiées
+- **Lifetime**: 60 minutes
+- **Usage**: Include in `Authorization: Bearer <token>` for authenticated requests
 
-### Refresh Token
+### Refresh token
 
-- **Durée de vie** : 24 heures
-- **Usage** : Utilisé pour obtenir un nouveau access token via `/api/v1/auth/token/refresh/`
+- **Lifetime**: 24 hours
+- **Usage**: Obtain a new access token via `/api/v1/auth/token/refresh/`
 
-## Exemples de code
+## Code examples
 
 ### cURL
 
@@ -123,8 +123,8 @@ Aucune authentification requise.
 curl -X POST https://api.novaville.com/api/v1/auth/login/ \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "jean.dupont@example.com",
-    "password": "MonMotDePasse123!"
+    "email": "jane.doe@example.com",
+    "password": "MyStrongPassword123!"
   }'
 ```
 
@@ -137,8 +137,8 @@ const response = await fetch('https://api.novaville.com/api/v1/auth/login/', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    email: 'jean.dupont@example.com',
-    password: 'MonMotDePasse123!',
+    email: 'jane.doe@example.com',
+    password: 'MyStrongPassword123!',
   }),
 });
 
@@ -153,8 +153,8 @@ import requests
 
 url = 'https://api.novaville.com/api/v1/auth/login/'
 payload = {
-    'email': 'jean.dupont@example.com',
-    'password': 'MonMotDePasse123!'
+    'email': 'jane.doe@example.com',
+    'password': 'MyStrongPassword123!'
 }
 
 response = requests.post(url, json=payload)
@@ -173,8 +173,8 @@ try {
   final response = await dio.post(
     'https://api.novaville.com/api/v1/auth/login/',
     data: {
-      'email': 'jean.dupont@example.com',
-      'password': 'MonMotDePasse123!',
+      'email': 'jane.doe@example.com',
+      'password': 'MyStrongPassword123!',
     },
   );
   
@@ -185,21 +185,21 @@ try {
 }
 ```
 
-## Sécurité
+## Security
 
-### Bonnes pratiques
+### Good practices
 
-1. **Stockage sécurisé** : Stockez les tokens de manière sécurisée (Keychain sur iOS, KeyStore sur Android)
-2. **HTTPS uniquement** : N'envoyez jamais les identifiants sur une connexion non sécurisée
-3. **Pas de stockage en clair** : Ne stockez jamais le mot de passe en clair
-4. **Gestion des erreurs** : Gérez correctement les erreurs sans exposer d'informations sensibles
+1. **Secure storage**: Store tokens securely (Keychain on iOS, Keystore on Android)
+2. **HTTPS only**: Never send credentials over insecure transport
+3. **No cleartext storage**: Never store the password in plain text
+4. **Error handling**: Handle errors without leaking sensitive details
 
-### Rate Limiting
+### Rate limiting
 
-- **Maximum** : 5 tentatives par IP toutes les 15 minutes
-- **Après 5 échecs** : Le compte est temporairement bloqué pendant 15 minutes
+- **Maximum**: 5 attempts per IP every 15 minutes
+- **After 5 failures**: The account is temporarily locked for 15 minutes
 
-## Flux d'authentification
+## Authentication flow
 
 ```
 ┌─────────┐                      ┌─────────┐
@@ -208,24 +208,24 @@ try {
      │                                │
      ├─── POST /auth/login/ ─────────>│
      │    {email, password}            │
-     │                                 │
+     │                                │
      │                          ┌──────┴──────┐
      │                          │ Verify       │
      │                          │ credentials  │
      │                          └──────┬──────┘
-     │                                 │
+     │                                │
      │<─── 200 OK ────────────────────┤
      │    {access, refresh, user}     │
-     │                                 │
+     │                                │
      ├─── GET /events/ ───────────────>│
      │    Authorization: Bearer <token>│
-     │                                 │
+     │                                │
      │<─── 200 OK ────────────────────┤
-     │    {events}                     │
-     │                                 │
+     │    {events}                    │
+     │                                │
 ```
 
-## Voir aussi
+## See also
 
-- [Refresh Token](./refresh-token) - Rafraîchir le token d'accès
-- [Authentification](../../getting-started/configuration#jwt) - Configuration JWT
+- [Refresh Token](./refresh-token) — Refresh the access token
+- [Authentication](../../getting-started/configuration#jwt) — JWT configuration

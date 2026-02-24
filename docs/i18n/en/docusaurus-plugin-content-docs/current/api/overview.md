@@ -2,20 +2,20 @@
 sidebar_position: 1
 ---
 
-# Aperçu de l'API
+# API Overview
 
-L'API REST de Novaville permet d'interagir avec la plateforme de manière programmatique.
+The Novaville REST API lets you interact with the platform programmatically.
 
-## URL de base
+## Base URL
 
-- **Développement** : `http://localhost:8000/api/v1/`
-- **Production** : `https://api.novaville.com/api/v1/`
+- **Development**: `http://localhost:8000/api/v1/`
+- **Production**: `https://api.novaville.com/api/v1/`
 
-## Authentification
+## Authentication
 
-L'API utilise **JWT (JSON Web Tokens)** pour l'authentification.
+The API uses **JWT (JSON Web Tokens)**.
 
-### Obtenir un token
+### Get a token
 
 ```http
 POST /api/v1/auth/login/
@@ -27,7 +27,7 @@ Content-Type: application/json
 }
 ```
 
-**Réponse :**
+**Response:**
 
 ```json
 {
@@ -43,18 +43,18 @@ Content-Type: application/json
 }
 ```
 
-### Utiliser le token
+### Use the token
 
-Incluez le token d'accès dans l'en-tête `Authorization` de chaque requête :
+Include the access token in the `Authorization` header:
 
 ```http
 GET /api/v1/events/
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGc...
 ```
 
-### Rafraîchir le token
+### Refresh the token
 
-Les tokens d'accès expirent après 60 minutes. Utilisez le token de rafraîchissement pour en obtenir un nouveau :
+Access tokens expire after 60 minutes. Use the refresh token to get a new one:
 
 ```http
 POST /api/v1/auth/token/refresh/
@@ -65,7 +65,7 @@ Content-Type: application/json
 }
 ```
 
-**Réponse :**
+**Response:**
 
 ```json
 {
@@ -73,9 +73,9 @@ Content-Type: application/json
 }
 ```
 
-## Format des réponses
+## Response format
 
-### Succès
+### Success
 
 ```json
 {
@@ -85,7 +85,7 @@ Content-Type: application/json
 }
 ```
 
-### Liste paginée
+### Paginated list
 
 ```json
 {
@@ -99,7 +99,7 @@ Content-Type: application/json
 }
 ```
 
-### Erreur
+### Error
 
 ```json
 {
@@ -114,27 +114,27 @@ Content-Type: application/json
 }
 ```
 
-## Codes de statut HTTP
+## HTTP Status Codes
 
-| Code | Signification | Description |
-|------|--------------|-------------|
-| 200 | OK | Requête réussie |
-| 201 | Created | Ressource créée avec succès |
-| 204 | No Content | Requête réussie, pas de contenu à retourner |
-| 400 | Bad Request | Données invalides |
-| 401 | Unauthorized | Non authentifié |
-| 403 | Forbidden | Non autorisé |
-| 404 | Not Found | Ressource introuvable |
-| 500 | Internal Server Error | Erreur serveur |
+| Code | Meaning | Description |
+|------|---------|-------------|
+| 200 | OK | Request succeeded |
+| 201 | Created | Resource created |
+| 204 | No Content | Success, no body |
+| 400 | Bad Request | Invalid data |
+| 401 | Unauthorized | Not authenticated |
+| 403 | Forbidden | Not allowed |
+| 404 | Not Found | Missing resource |
+| 500 | Internal Server Error | Server error |
 
 ## Pagination
 
-Les listes sont paginées par défaut (25 éléments par page).
+Lists are paginated by default (25 items/page).
 
-### Paramètres de pagination
+### Pagination params
 
-- `page` : Numéro de page (défaut: 1)
-- `page_size` : Nombre d'éléments par page (max: 100)
+- `page`: Page number (default 1)
+- `page_size`: Items per page (max 100)
 
 **Exemple :**
 
@@ -142,9 +142,9 @@ Les listes sont paginées par défaut (25 éléments par page).
 GET /api/v1/events/?page=2&page_size=50
 ```
 
-## Filtrage
+## Filtering
 
-Utilisez des paramètres de query pour filtrer les résultats.
+Use query params to filter results.
 
 **Exemple :**
 
@@ -152,9 +152,9 @@ Utilisez des paramètres de query pour filtrer les résultats.
 GET /api/v1/reports/?status=open&category=infrastructure
 ```
 
-## Tri
+## Sorting
 
-Utilisez le paramètre `ordering` pour trier les résultats.
+Use `ordering` to sort results.
 
 **Exemple :**
 
@@ -163,9 +163,9 @@ GET /api/v1/events/?ordering=-created_at  # Décroissant
 GET /api/v1/events/?ordering=title        # Croissant
 ```
 
-## Recherche
+## Search
 
-Utilisez le paramètre `search` pour effectuer une recherche textuelle.
+Use `search` for text queries.
 
 **Exemple :**
 
@@ -173,10 +173,10 @@ Utilisez le paramètre `search` pour effectuer une recherche textuelle.
 GET /api/v1/reports/?search=nid-de-poule
 ```
 
-## Limites de taux (Rate Limiting)
+## Rate limiting
 
-- **Authentifié** : 1000 requêtes/heure
-- **Non authentifié** : 100 requêtes/heure
+- **Authenticated**: 1000 req/hour
+- **Unauthenticated**: 100 req/hour
 
 Les limites sont indiquées dans les en-têtes de réponse :
 
@@ -186,17 +186,17 @@ X-RateLimit-Remaining: 999
 X-RateLimit-Reset: 1640995200
 ```
 
-## Ressources principales
+## Main resources
 
-### Authentification
-- [Login](./auth/login) - Authentification utilisateur
-- [Refresh Token](./auth/refresh-token) - Rafraîchissement du token
+### Authentication
+- [Login](./auth/login) — User authentication
+- [Refresh Token](./auth/refresh-token) — Refresh the token
 
-### Utilisateurs
-- [Liste des utilisateurs](./users/list)
-- [Créer un utilisateur](./users/create)
-- [Modifier un utilisateur](./users/update)
-- [Supprimer un utilisateur](./users/delete)
+### Users
+- [List users](./users/list)
+- [Create user](./users/create)
+- [Update user](./users/update)
+- [Delete user](./users/delete)
 
 ### Événements
 - [Liste des événements](./events/list)
