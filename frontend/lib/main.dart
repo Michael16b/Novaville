@@ -7,7 +7,6 @@ import 'package:frontend/core/bloc/app_bloc_observer.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
 import 'package:frontend/features/auth/data/auth_repository_factory.dart';
-import 'package:frontend/features/auth/presentation/widgets/auth_gate.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +21,7 @@ Future<void> main() async {
         create: (context) =>
             AuthBloc(repository: context.read<IAuthRepository>())
               ..add(const AuthStarted()),
-        child: const App(home: AuthGate()),
+        child: const App(),
       ),
     ),
   );

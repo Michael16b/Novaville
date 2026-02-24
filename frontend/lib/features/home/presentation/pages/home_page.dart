@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_home.dart';
-import 'package:frontend/features/account/presentation/pages/my_account_page.dart';
-import 'package:frontend/features/agenda/presentation/pages/agenda_page.dart';
 import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
-import 'package:frontend/features/news/presentation/pages/news_page.dart';
-import 'package:frontend/features/reports/presentation/pages/reports_page.dart';
-import 'package:frontend/features/surveys/presentation/pages/surveys_page.dart';
-import 'package:frontend/features/useful_info/presentation/pages/useful_info_page.dart';
+import 'package:go_router/go_router.dart';
 
 /// Home screen of the app that displays a grid of navigation cards
 /// linking to core features such as reports, surveys, agenda, news,
@@ -23,12 +19,9 @@ class HomePage extends StatelessWidget {
         const spacing = 16.0;
         final availableColumns =
             (constraints.maxWidth / (itemWidth + spacing)).floor();
-        final crossAxisCount = availableColumns
-            .clamp(1, 3)
-            .toInt(); // max 3 columns
+        final crossAxisCount = availableColumns.clamp(1, 3).toInt(); // max 3 columns
         final gridWidth =
-            crossAxisCount * itemWidth +
-            (crossAxisCount - 1) * spacing;
+            crossAxisCount * itemWidth + (crossAxisCount - 1) * spacing;
 
         return Align(
           alignment: Alignment.topCenter,
@@ -73,68 +66,32 @@ class HomePage extends StatelessWidget {
                       MenuCard(
                         icon: Icons.report_problem_outlined,
                         title: AppTextsHome.reports,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (context) => const ReportsPage(),
-                            ),
-                          );
-                        },
+                        onTap: () => context.go(AppRoutes.reports),
                       ),
                       MenuCard(
                         icon: Icons.poll_outlined,
                         title: AppTextsHome.surveys,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (context) => const SurveysPage(),
-                            ),
-                          );
-                        },
+                        onTap: () => context.go(AppRoutes.surveys),
                       ),
                       MenuCard(
                         icon: Icons.calendar_today_outlined,
                         title: AppTextsHome.agenda,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (context) => const AgendaPage(),
-                            ),
-                          );
-                        },
+                        onTap: () => context.go(AppRoutes.agenda),
                       ),
                       MenuCard(
                         icon: Icons.article_outlined,
                         title: AppTextsHome.news,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (context) => const NewsPage(),
-                            ),
-                          );
-                        },
+                        onTap: () => context.go(AppRoutes.news),
                       ),
                       MenuCard(
                         icon: Icons.info_outlined,
                         title: AppTextsHome.usefulInfo,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (context) => const UsefulInfoPage(),
-                            ),
-                          );
-                        },
+                        onTap: () => context.go(AppRoutes.usefulInfo),
                       ),
                       MenuCard(
                         icon: Icons.account_circle_outlined,
                         title: AppTextsHome.myAccount,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (context) => const MyAccountPage(),
-                            ),
-                          );
-                        },
+                        onTap: () => context.go(AppRoutes.myAccount),
                       ),
                     ]),
                   ),

@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/constants/texts/texts_navigation.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/design_systems/custom_elevated_stroked_button.dart';
-import 'package:frontend/features/account/presentation/pages/my_account_page.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
-import 'package:frontend/features/home/presentation/pages/home_page.dart';
 import 'package:frontend/ui/assets.dart';
-import 'package:frontend/ui/layouts/secured_layout.dart';
+import 'package:go_router/go_router.dart';
 
 class AppBanner extends StatelessWidget {
   const AppBanner({this.isHomePage = false, super.key});
@@ -45,17 +44,7 @@ class AppBanner extends StatelessWidget {
                   // Active button on other pages
                   CustomElevatedStrokedButton(
                     text: AppTextsNavigation.homeButton,
-                    onPressed: () {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute<void>(
-                          builder: (context) => const SecuredLayout(
-                            isHomePage: true,
-                            child: HomePage(),
-                          ),
-                        ),
-                        (route) => route.isFirst,
-                      );
-                    },
+                    onPressed: () => context.go(AppRoutes.home),
                     iconData: Icons.home_outlined,
                   ),
               ],
@@ -64,18 +53,12 @@ class AppBanner extends StatelessWidget {
               children: [
                 PopupMenuButton<String>(
                   offset: const Offset(0, 45),
-                  icon: const Icon(
-                    Icons.account_circle_outlined,
-                  ),
+                  icon: const Icon(Icons.account_circle_outlined),
                   onSelected: (value) {
                     if (value == 'logout') {
                       context.read<AuthBloc>().add(const AuthLogoutRequested());
                     } else if (value == 'personal_info') {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (context) => const MyAccountPage(),
-                        ),
-                      );
+                      context.go(AppRoutes.myAccount);
                     }
                   },
                   itemBuilder: (BuildContext context) => [
