@@ -37,10 +37,9 @@ class UserRepositoryImpl implements IUserRepository {
     if (username != null) body['username'] = username;
     if (email != null) body['email'] = email;
 
-    final response = await _apiClient.client.patch(
-      _apiClient.buildUri('/api/v1/users/$userId/'),
-      headers: _apiClient.defaultHeaders,
-      body: jsonEncode(body),
+    final response = await _apiClient.patch(
+      '/api/v1/users/$userId/',
+      body: body,
     );
 
     if (response.statusCode == 200) {
@@ -53,4 +52,3 @@ class UserRepositoryImpl implements IUserRepository {
     }
   }
 }
-

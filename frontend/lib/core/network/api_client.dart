@@ -95,6 +95,18 @@ class ApiClient {
     return client.delete(uri, headers: mergedHeaders);
   }
 
+  /// Effectue une requête PATCH
+  Future<http.Response> patch(
+    String path, {
+    required Map<String, dynamic> body,
+    Map<String, String?>? queryParameters,
+    Map<String, String>? headers,
+  }) {
+    final uri = buildUri(path, queryParameters);
+    final mergedHeaders = {...defaultHeaders, ...?headers};
+    return client.patch(uri, headers: mergedHeaders, body: jsonEncode(body));
+  }
+
   /// Ferme le client HTTP
   void close() {
     client.close();
