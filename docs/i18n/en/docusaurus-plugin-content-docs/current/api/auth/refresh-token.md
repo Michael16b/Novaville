@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Refresh Token
 
-Obtenez un nouveau token d'accès en utilisant le token de rafraîchissement.
+Obtain a new access token using the refresh token.
 
 ## Endpoint
 
@@ -12,17 +12,17 @@ Obtenez un nouveau token d'accès en utilisant le token de rafraîchissement.
 POST /api/v1/auth/token/refresh/
 ```
 
-## Authentification
+## Authentication
 
-Aucune authentification requise (utilise le refresh token).
+Not required (you use the refresh token instead).
 
-## Corps de la requête
+## Request body
 
-| Champ | Type | Requis | Description |
-|-------|------|--------|-------------|
-| `refresh` | string | ✅ | Token de rafraîchissement JWT |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `refresh` | string | ✅ | JWT refresh token |
 
-### Exemple
+### Example
 
 ```json
 {
@@ -30,9 +30,9 @@ Aucune authentification requise (utilise le refresh token).
 }
 ```
 
-## Réponse
+## Response
 
-### Succès (200 OK)
+### Success (200 OK)
 
 ```json
 {
@@ -40,18 +40,18 @@ Aucune authentification requise (utilise le refresh token).
 }
 ```
 
-### Erreur (401 Unauthorized) - Token invalide
+### Error (401 Unauthorized) - Invalid token
 
 ```json
 {
   "error": {
     "code": "token_invalid",
-    "message": "Le token de rafraîchissement est invalide ou expiré"
+    "message": "The refresh token is invalid or expired"
   }
 }
 ```
 
-## Exemples de code
+## Code examples
 
 ### JavaScript
 
@@ -104,28 +104,25 @@ Future<String> refreshAccessToken(String refreshToken) async {
 }
 ```
 
-## Gestion automatique du token
+## Automatic token handling
 
-### Intercepteur HTTP (Dart/Flutter)
+### HTTP interceptor (Dart/Flutter)
 
 ```dart
 class AuthInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401) {
-      // Token expiré, tentative de rafraîchissement
+      // Access token expired, attempt refresh
       try {
         final newToken = await refreshAccessToken(storedRefreshToken);
-        // Sauvegarder le nouveau token
         await saveAccessToken(newToken);
         
-        // Réessayer la requête originale
         final opts = err.requestOptions;
         opts.headers['Authorization'] = 'Bearer $newToken';
         final response = await dio.fetch(opts);
         return handler.resolve(response);
       } catch (e) {
-        // Échec du rafraîchissement, déconnecter l'utilisateur
         await logout();
         return handler.reject(err);
       }
@@ -135,30 +132,28 @@ class AuthInterceptor extends Interceptor {
 }
 ```
 
-## Durée de vie des tokens
+## Token lifetime
 
-| Token | Durée de vie | Utilisation |
-|-------|-------------|-------------|
-| Access Token | 60 minutes | Authentification des requêtes API |
-| Refresh Token | 24 heures | Obtenir de nouveaux access tokens |
+| Token | Lifetime | Usage |
+|-------|----------|-------|
+| Access Token | 60 minutes | Authenticate API requests |
+| Refresh Token | 24 hours | Obtain new access tokens |
 
-## Stratégie de rafraîchissement
+## Refresh strategy
 
-### Rafraîchissement proactif (Recommandé)
+### Proactive refresh (recommended)
 
-Rafraîchissez le token **avant** son expiration :
+Refresh **before** expiration:
 
 ```javascript
-// Décoder le token pour obtenir l'expiration
 function getTokenExpiration(token) {
   const payload = JSON.parse(atob(token.split('.')[1]));
-  return payload.exp * 1000; // Convertir en millisecondes
+  return payload.exp * 1000;
 }
 
-// Rafraîchir 5 minutes avant l'expiration
 function scheduleTokenRefresh(accessToken, refreshToken) {
   const expirationTime = getTokenExpiration(accessToken);
-  const refreshTime = expirationTime - (5 * 60 * 1000); // 5 minutes avant
+  const refreshTime = expirationTime - (5 * 60 * 1000); // 5 minutes before
   const delay = refreshTime - Date.now();
   
   if (delay > 0) {
@@ -170,24 +165,24 @@ function scheduleTokenRefresh(accessToken, refreshToken) {
 }
 ```
 
-### Rafraîchissement réactif
+### Reactive refresh
 
-Rafraîchissez le token après avoir reçu une erreur 401 (voir exemple d'intercepteur ci-dessus).
+Refresh after receiving a 401 response (see interceptor example above).
 
-## Sécurité
+## Security
 
-### Bonnes pratiques
+### Good practices
 
-1. **Stockage sécurisé** : Stockez le refresh token de manière ultra-sécurisée
-2. **Une seule fois** : Chaque refresh token ne peut être utilisé qu'une seule fois
-3. **Rotation** : À chaque rafraîchissement, un nouveau refresh token est fourni (optionnel, selon configuration)
-4. **Révocation** : Les tokens peuvent être révoqués côté serveur
+1. **Secure storage**: Keep the refresh token in highly secure storage
+2. **Single use**: Each refresh token should only be used once
+3. **Rotation**: Issue a new refresh token on each refresh (optional, based on server config)
+4. **Revocation**: Tokens can be revoked on the server side
 
-### Quand redemander la connexion
+### When to ask for login again
 
-Si le refresh token est également expiré ou invalide, l'utilisateur doit se reconnecter via [Login](./login).
+If the refresh token is also expired or invalid, prompt the user to log in again via [Login](./login).
 
-## Voir aussi
+## See also
 
-- [Login](./login) - Authentification utilisateur
-- [Configuration JWT](../../getting-started/configuration#jwt) - Configuration des tokens
+- [Login](./login) — User authentication
+- [JWT configuration](../../getting-started/configuration#jwt)

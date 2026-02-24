@@ -1,59 +1,56 @@
 ---
 sidebar_position: 1
-slug: /
 ---
 
-# Bienvenue sur la documentation Novaville
+# Welcome to Novaville Docs
 
-Bienvenue sur la documentation complète de **Novaville**, plateforme de participation citoyenne. Cette doc suit l’UI du frontend (logo Novaville, palette, sections claires) et vous guide du premier lancement aux intégrations avancées.
+Welcome to the **Novaville** documentation — a citizen participation platform. This doc mirrors the frontend UI (Novaville logo, palette, and clear sections) and guides you from the first run to advanced integrations.
 
-## 📚 À propos
+## 📚 Audience
 
-Pour chaque profil :
+- **Developers**: architecture, API, examples, security
+- **Ops**: Docker/Compose deployment, env vars, monitoring
+- **End users**: UI walkthrough aligned with the frontend
+- **Clients**: functional scope, roadmap, indicative SLAs
 
-- **Développeurs** : architecture, API, exemples, sécurité
-- **Ops** : déploiement Docker/Compose, variables d’environnement, supervision
-- **Utilisateurs** : parcours UI aligné frontend, captures et étapes clés
-- **Clients** : périmètre fonctionnel, roadmap, SLA indicatifs
+## 🚀 Where to start
 
-## 🚀 Par où commencer ?
+### For developers
 
-### Pour les développeurs
+- [Getting started](getting-started/introduction): local setup
+- [Architecture](technical/architecture): Django backend, Flutter frontend, PostgreSQL, JWT auth
+- [API Overview](api/overview): schemas, status codes, pagination
 
-- [Guide de démarrage](getting-started/introduction) : setup local
-- [Architecture](technical/architecture) : backend Django, frontend Flutter, PostgreSQL, auth JWT
-- [API Overview](api/overview) : schémas, codes retour, pagination
+### For users
 
-### Pour les utilisateurs
+- [User manual](user-manual/intro): login, navigation, reports
+- UI consistent with the frontend: same logo, colors, wording
 
-- [Manuel utilisateur](user-manual/intro) : connexion, navigation, rapports
-- UI cohérente avec le frontend : même logo, couleurs, wording
+### For API integration
 
-### Pour l’intégration API
-
-- [Auth](api/auth/login) / [Refresh](api/auth/refresh-token) : exemples cURL, JS, Python, Dart
+- [Auth](api/auth/login) / [Refresh](api/auth/refresh-token): cURL, JS, Python, Dart examples
 
 ## 🏗️ Architecture
 
-- **Backend** : Django REST + JWT, PostgreSQL
-- **Frontend** : Flutter (mobile/web), thèmes alignés Novaville
-- **Infra** : Docker/Compose (services api, front, docs, db)
-- **Sécurité** : JWT, CORS, headers Nginx durcis
+- **Backend**: Django REST + JWT, PostgreSQL
+- **Frontend**: Flutter (mobile/web), Novaville theme
+- **Infra**: Docker/Compose (api, front, docs, db)
+- **Security**: JWT, CORS, hardened Nginx headers
 
-## 📖 Structure de la documentation
+## 📖 Docs structure
 
 ```
 📁 Documentation
-├── 📘 Guide de démarrage - Installation et configuration
-├── 🔧 Documentation Technique - Architecture et détails techniques
-├── 🌐 Documentation API - Endpoints REST et authentification
-└── 📗 Manuel Utilisateur - Guide complet pour les utilisateurs finaux
+├── 📘 Getting Started — install & configure
+├── 🔧 Technical Docs — architecture & internals
+├── 🌐 API Docs — REST endpoints & auth
+└── 📗 User Manual — end-user guides
 ```
 
-## 🤝 Contribution
+## 🤝 Contribute
 
-Cette documentation est maintenue et mise à jour régulièrement. Pour toute question ou suggestion, n'hésitez pas à ouvrir une issue sur le [dépôt GitHub](https://github.com/Michael16b/Novaville).
+Maintained regularly. For questions or suggestions, open an issue on the [GitHub repo](https://github.com/Michael16b/Novaville).
 
-## 📝 Versions
+## 📝 Release notes
 
-Consultez les [Notes de version](/blog) pour voir les dernières mises à jour et améliorations.
+See the [Release notes](/blog) for the latest updates and improvements.
