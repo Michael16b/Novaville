@@ -2,15 +2,14 @@
 class AppTextsHome {
   AppTextsHome._();
 
-  static const String homeTitle = 'Novaville: Your city at your fingertips';
-  static const String homeSubtitle = 'Hello, how can we help you today?';
+  static const String homeTitle = 'Novaville : votre ville à portée de main';
+  static const String homeSubtitle = 'Bonjour, comment pouvons-nous vous aider ?';
 
   // Menu card labels
-  static const String reports = 'Reports';
-  static const String surveys = 'Surveys';
+  static const String reports = 'Signalements';
+  static const String surveys = 'Sondages';
   static const String agenda = 'Agenda';
-  static const String news = 'News';
-  static const String myAccount = 'My account';
-  static const String usefulInfo = 'Useful info';
+  static const String news = 'Actualités';
+  static const String myAccount = 'Mon compte';
+  static const String usefulInfo = 'Infos utiles';
 }
-
