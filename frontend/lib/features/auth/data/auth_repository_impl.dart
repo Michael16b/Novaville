@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/features/auth/data/auth_api.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
+import 'package:frontend/features/my_account/data/models/user.dart';
+import 'package:frontend/features/my_account/data/user_repository.dart';
 
 /// Thin abstraction wrapper to avoid direct platform package imports in this
 /// file. Provide a [FlutterSecureStorage]-based implementation in
@@ -33,17 +35,23 @@ class InMemoryTokenStorage implements TokenStorage {
 }
 
 class AuthRepositoryImpl implements IAuthRepository {
-  AuthRepositoryImpl({required AuthApi api, TokenStorage? storage})
-    : _api = api,
-      _storage = storage ?? InMemoryTokenStorage();
+  AuthRepositoryImpl({
+    required AuthApi api,
+    required IUserRepository userRepository,
+    TokenStorage? storage,
+  })  : _api = api,
+        _userRepository = userRepository,
+        _storage = storage ?? InMemoryTokenStorage();
+
   final AuthApi _api;
+  final IUserRepository _userRepository;
   final TokenStorage _storage;
 
   static const _keyAccess = 'access_token';
   static const _keyRefresh = 'refresh_token';
 
   @override
-  Future<String> login({
+  Future<User> login({
     required String username,
     required String password,
   }) async {
@@ -58,7 +66,13 @@ class AuthRepositoryImpl implements IAuthRepository {
       await _storage.write(key: _keyAccess, value: access);
       await _storage.write(key: _keyRefresh, value: refresh);
 
-      return access;
+      // Extract user info from the login response (already returned by the backend)
+      final userData = data['user'] as Map<String, dynamic>?;
+      if (userData == null) {
+        throw AuthFailure(AppTextsAuth.serverInvalidResponse);
+      }
+
+      return User.fromJson(userData);
     } catch (e) {
       debugPrint('AuthRepositoryImpl.login error: $e');
       if (e is AuthFailure) rethrow;
@@ -74,22 +88,28 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<bool> hasValidSession() async {
+  Future<User?> hasValidSession() async {
     final access = await _storage.read(key: _keyAccess);
-    if (access != null) return true;
+    if (access != null) {
+      try {
+        return await _userRepository.getCurrentUser();
+      } catch (_) {
+        // Si on ne peut pas récupérer l'utilisateur, continuer avec refresh
+      }
+    }
 
     final refresh = await _storage.read(key: _keyRefresh);
-    if (refresh == null) return false;
+    if (refresh == null) return null;
 
     try {
       final res = await _api.refresh(refreshToken: refresh);
       final newAccess = res['access'] as String?;
-      if (newAccess == null) return false;
+      if (newAccess == null) return null;
       await _storage.write(key: _keyAccess, value: newAccess);
-      return true;
+      return await _userRepository.getCurrentUser();
     } catch (_) {
       await logout();
-      return false;
+      return null;
     }
   }
 }

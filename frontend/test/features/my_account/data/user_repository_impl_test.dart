@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/core/network/api_client.dart';
-import 'package:frontend/features/account/data/user_repository_impl.dart';
+import 'package:frontend/features/my_account/data/user_repository_impl.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 

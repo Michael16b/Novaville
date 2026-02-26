@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:frontend/features/account/data/models/user_role.dart';
+import 'package:frontend/features/my_account/data/models/user_role.dart';
 
 /// Model representing a user.
 class User extends Equatable {
@@ -69,6 +69,16 @@ class User extends Equatable {
       neighborhoodId: neighborhoodId ?? this.neighborhoodId,
     );
   }
+
+  /// Helper methods to check user roles
+  bool get isGlobalAdmin => role == UserRole.globalAdmin;
+  bool get isElected => role == UserRole.elected;
+  bool get isAgent => role == UserRole.agent;
+  bool get isCitizen => role == UserRole.citizen;
+
+  /// Check if user has staff privileges (elected, agent, or admin)
+  bool get isStaff => role != null &&
+      (role == UserRole.elected || role == UserRole.agent || role == UserRole.globalAdmin);
 
   @override
   List<Object?> get props => [

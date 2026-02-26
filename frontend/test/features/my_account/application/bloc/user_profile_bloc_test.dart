@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/features/account/application/bloc/user_profile_bloc.dart';
-import 'package:frontend/features/account/data/models/user.dart';
-import 'package:frontend/features/account/data/user_repository.dart';
+import 'package:frontend/features/my_account/application/bloc/user_profile_bloc.dart';
+import 'package:frontend/features/my_account/data/models/user.dart';
+import 'package:frontend/features/my_account/data/user_repository.dart';
 
 /// Fake repository implementation for tests.
 class _FakeUserRepository implements IUserRepository {
