@@ -2,7 +2,7 @@
 """Create sample data for testing Novaville application"""
 import os
 import django
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
@@ -17,6 +17,8 @@ from core.models import (
 print('🚀 Creating sample data for Novaville...\n')
 
 RESET_PASSWORDS = os.getenv('RESET_FIXTURE_PASSWORDS', '1') == '1'
+TARGET_COUNT = 25
+RESET_FIXTURE_TABLES = os.getenv('RESET_FIXTURE_TABLES', '1') == '1'
 
 
 def upsert_user(username, defaults, password, label):
@@ -32,16 +34,28 @@ def upsert_user(username, defaults, password, label):
 
 
 def ensure_survey_options(survey, options):
+    ensured_options = []
     for text in options:
-        SurveyOption.objects.get_or_create(survey=survey, text=text)
+        option, _ = SurveyOption.objects.get_or_create(survey=survey, text=text)
+        ensured_options.append(option)
+    return ensured_options
+
+
+if RESET_FIXTURE_TABLES:
+    print('🧹 Resetting fixture tables before insert...')
+    Vote.objects.all().delete()
+    Report.objects.all().delete()
+    SurveyOption.objects.all().delete()
+    Survey.objects.all().delete()
+    Event.objects.all().delete()
+    ThemeEvent.objects.all().delete()
+    Neighborhood.objects.all().delete()
 
 # 1. Create neighborhoods
 print('📍 Creating neighborhoods...')
 neighborhoods_data = [
-    {'name': 'Centre-Ville', 'postal_code': '75001'},
-    {'name': 'Quartier Nord', 'postal_code': '75002'},
-    {'name': 'Quartier Sud', 'postal_code': '75003'},
-    {'name': 'Zone Industrielle', 'postal_code': '75004'},
+    {'name': f'Quartier {index:02d}', 'postal_code': f'75{index:03d}'}
+    for index in range(1, TARGET_COUNT + 1)
 ]
 
 neighborhoods = []
@@ -55,7 +69,13 @@ for data in neighborhoods_data:
 
 # 2. Create event themes
 print('\n🎨 Creating event themes...')
-themes_data = ['Sport', 'Culture', 'Citoyenneté', 'Environnement', 'Autre']
+themes_data = [
+    'Sport',
+    'Culture',
+    'Citoyenneté',
+    'Environnement',
+    'Autre',
+] + [f'Thème {index:02d}' for index in range(6, TARGET_COUNT + 1)]
 
 themes = []
 for title in themes_data:
@@ -113,11 +133,26 @@ agent = upsert_user(
 
 # Citizens
 citizens = []
-citizens_data = [
-    {'username': 'citoyen1', 'first_name': 'Pierre', 'last_name': 'Durand', 'neighborhood': neighborhoods[0]},
-    {'username': 'citoyen2', 'first_name': 'Sophie', 'last_name': 'Bernard', 'neighborhood': neighborhoods[1]},
-    {'username': 'citoyen3', 'first_name': 'Lucas', 'last_name': 'Petit', 'neighborhood': neighborhoods[2]},
+citizen_first_names = [
+    'Pierre', 'Sophie', 'Lucas', 'Emma', 'Louis', 'Chloé', 'Hugo', 'Lina', 'Noah', 'Léa',
+    'Jules', 'Inès', 'Paul', 'Sarah', 'Adam', 'Nina', 'Tom', 'Zoé', 'Léo', 'Mila',
+    'Gabriel', 'Eva', 'Arthur', 'Manon', 'Nathan',
 ]
+citizen_last_names = [
+    'Durand', 'Bernard', 'Petit', 'Robert', 'Richard', 'Moreau', 'Simon', 'Laurent', 'Lefebvre', 'Michel',
+    'Garcia', 'David', 'Bertrand', 'Roux', 'Vincent', 'Fournier', 'Morel', 'Girard', 'Andre', 'Lefevre',
+    'Mercier', 'Dupuis', 'Lambert', 'Bonnet', 'Francois',
+]
+citizens_data = []
+for index in range(1, TARGET_COUNT - 2):
+    citizens_data.append(
+        {
+            'username': f'citoyen{index}',
+            'first_name': citizen_first_names[(index - 1) % len(citizen_first_names)],
+            'last_name': citizen_last_names[(index - 1) % len(citizen_last_names)],
+            'neighborhood': neighborhoods[(index - 1) % len(neighborhoods)],
+        }
+    )
 
 for data in citizens_data:
     citizen = upsert_user(
@@ -138,29 +173,32 @@ for data in citizens_data:
 
 # 4. Create reports
 print('\n📋 Creating sample reports...')
-reports_data = [
-    {
-        'user': citizens[0] if citizens else admin,
-        'problem_type': ProblemTypeEnum.ROADS,
-        'description': 'Nid de poule avenue de la République',
-        'status': ReportStatusEnum.RECORDED,
-        'neighborhood': neighborhoods[0],
-    },
-    {
-        'user': citizens[1] if len(citizens) > 1 else admin,
-        'problem_type': ProblemTypeEnum.LIGHTING,
-        'description': 'Lampadaire défectueux rue Victor Hugo',
-        'status': ReportStatusEnum.IN_PROGRESS,
-        'neighborhood': neighborhoods[1],
-    },
-    {
-        'user': citizens[2] if len(citizens) > 2 else admin,
-        'problem_type': ProblemTypeEnum.CLEANLINESS,
-        'description': 'Dépôt sauvage de déchets parc municipal',
-        'status': ReportStatusEnum.RESOLVED,
-        'neighborhood': neighborhoods[2],
-    },
+problem_types = [
+    ProblemTypeEnum.ROADS,
+    ProblemTypeEnum.LIGHTING,
+    ProblemTypeEnum.CLEANLINESS,
 ]
+report_statuses = [
+    ReportStatusEnum.RECORDED,
+    ReportStatusEnum.IN_PROGRESS,
+    ReportStatusEnum.RESOLVED,
+]
+
+reports_data = []
+for index in range(1, TARGET_COUNT + 1):
+    reporter = citizens[(index - 1) % len(citizens)] if citizens else admin
+    problem_type = problem_types[(index - 1) % len(problem_types)]
+    report_status = report_statuses[(index - 1) % len(report_statuses)]
+    neighborhood = neighborhoods[(index - 1) % len(neighborhoods)]
+    reports_data.append(
+        {
+            'user': reporter,
+            'problem_type': problem_type,
+            'description': f'Signalement #{index:02d} dans {neighborhood.name.lower()}',
+            'status': report_status,
+            'neighborhood': neighborhood,
+        }
+    )
 
 for data in reports_data:
     report, created = Report.objects.update_or_create(
@@ -180,83 +218,46 @@ for data in reports_data:
 # 5. Create surveys
 print('\n📊 Creating sample surveys...')
 now = timezone.now()
-
-survey1, created = Survey.objects.update_or_create(
-    title='Aménagement de la place centrale',
-    defaults={
-        'description': 'Quel aménagement préférez-vous pour la place centrale ?',
-        'created_by': elected,
-        'start_date': now - timedelta(days=5),
-        'end_date': now + timedelta(days=25),
-    }
-)
-print(f"  ✓ Survey: {survey1.title} ({'created' if created else 'updated'})")
-ensure_survey_options(
-    survey1,
-    [
-        "Plus d'espaces verts",
-        'Aire de jeux pour enfants',
-        'Parking souterrain',
-    ],
-)
-print('    ✓ Options ensured')
-
-survey2, created = Survey.objects.update_or_create(
-    title='Horaires de la bibliothèque municipale',
-    defaults={
-        'description': 'Souhaitez-vous des horaires élargis le samedi ?',
-        'created_by': elected,
-        'start_date': now,
-        'end_date': now + timedelta(days=15),
-    }
-)
-print(f"  ✓ Survey: {survey2.title} ({'created' if created else 'updated'})")
-ensure_survey_options(
-    survey2,
-    [
-        'Oui, fermeture à 18h',
-        'Oui, fermeture à 20h',
-        'Non, horaires actuels suffisants',
-    ],
-)
-print('    ✓ Options ensured')
+surveys = []
+survey_options_map = {}
+for index in range(1, TARGET_COUNT + 1):
+    survey, created = Survey.objects.update_or_create(
+        title=f'Consultation citoyenne #{index:02d}',
+        defaults={
+            'description': f'Question citoyenne #{index:02d} sur les priorités de la commune.',
+            'created_by': elected,
+            'start_date': now - timedelta(days=(index % 10)),
+            'end_date': now + timedelta(days=30 + index),
+        }
+    )
+    print(f"  ✓ Survey: {survey.title} ({'created' if created else 'updated'})")
+    options = ensure_survey_options(
+        survey,
+        [
+            f'Option A - Sondage {index:02d}',
+            f'Option B - Sondage {index:02d}',
+            f'Option C - Sondage {index:02d}',
+        ],
+    )
+    survey_options_map[survey.id] = options
+    surveys.append(survey)
+    print('    ✓ Options ensured')
 
 # 6. Create events
 print('\n📅 Creating sample events...')
-events_data = [
-    {
-        'title': 'Tournoi de football inter-quartiers',
-        'description': 'Venez encourager votre quartier lors du tournoi annuel !',
-        'start_date': now + timedelta(days=7),
-        'end_date': now + timedelta(days=7, hours=5),
-        'theme': themes[0],  # Sport
-        'created_by': elected,
-    },
-    {
-        'title': 'Festival de musique d\'été',
-        'description': 'Trois jours de concerts gratuits au parc municipal',
-        'start_date': now + timedelta(days=30),
-        'end_date': now + timedelta(days=32),
-        'theme': themes[1],  # Culture
-        'created_by': elected,
-    },
-    {
-        'title': 'Conseil municipal public',
-        'description': 'Séance publique du conseil municipal - Tout public bienvenu',
-        'start_date': now + timedelta(days=14),
-        'end_date': now + timedelta(days=14, hours=3),
-        'theme': themes[2],  # Citoyenneté
-        'created_by': elected,
-    },
-    {
-        'title': 'Journée nettoyage citoyen',
-        'description': 'Participez au grand nettoyage de printemps de la ville',
-        'start_date': now + timedelta(days=21),
-        'end_date': now + timedelta(days=21, hours=4),
-        'theme': themes[3],  # Environnement
-        'created_by': agent,
-    },
-]
+events_data = []
+for index in range(1, TARGET_COUNT + 1):
+    start_date = now + timedelta(days=index * 2)
+    events_data.append(
+        {
+            'title': f'Événement municipal #{index:02d}',
+            'description': f'Activité citoyenne planifiée pour la session #{index:02d}.',
+            'start_date': start_date,
+            'end_date': start_date + timedelta(hours=3),
+            'theme': themes[(index - 1) % len(themes)],
+            'created_by': elected if index % 3 else agent,
+        }
+    )
 
 for data in events_data:
     event, created = Event.objects.update_or_create(
@@ -264,6 +265,20 @@ for data in events_data:
         defaults=data
     )
     print(f"  ✓ Event: {event.title} ({'created' if created else 'updated'})")
+
+# 7. Create votes
+print('\n🗳️ Creating votes...')
+for index in range(1, TARGET_COUNT + 1):
+    survey = surveys[(index - 1) % len(surveys)]
+    voter = citizens[(index - 1) % len(citizens)] if citizens else admin
+    survey_options = survey_options_map[survey.id]
+    option = survey_options[(index - 1) % len(survey_options)]
+    vote, created = Vote.objects.update_or_create(
+        user=voter,
+        survey=survey,
+        defaults={'option': option},
+    )
+    print(f"  ✓ Vote: {vote.user.username} -> {vote.survey.title} ({'created' if created else 'updated'})")
 
 print('\n✅ Sample data created successfully!')
 print('\n📖 Access the API documentation at: http://localhost:8000/api/docs/')
