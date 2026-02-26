@@ -143,8 +143,10 @@ citizen_last_names = [
     'Garcia', 'David', 'Bertrand', 'Roux', 'Vincent', 'Fournier', 'Morel', 'Girard', 'Andre', 'Lefevre',
     'Mercier', 'Dupuis', 'Lambert', 'Bonnet', 'Francois',
 ]
+# 3 non-citizen users (admin, elected, agent) + CITIZEN_COUNT = TARGET_COUNT total users
+CITIZEN_COUNT = TARGET_COUNT - 3
 citizens_data = []
-for index in range(1, TARGET_COUNT - 2):
+for index in range(1, CITIZEN_COUNT + 1):
     citizens_data.append(
         {
             'username': f'citoyen{index}',
