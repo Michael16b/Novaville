@@ -6,22 +6,22 @@ on:
   pull_request:
     branches: ["main"]
 
-
 jobs:
   run-tests:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Récupération du code du repo
+      # 1. Checkout
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Installation de Flutter
+      # 2. Setup Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.38.3"   # Mets ta version si différente
+          flutter-version: "3.38.3"
 
+      # 3. Create .env
       - name: Create .env file for tests
         working-directory: frontend
         run: |
@@ -30,14 +30,15 @@ jobs:
           SOME_KEY=dummy
           EOF
 
-      # 3. Installation des dépendances
+      # 4. Dependencies
       - name: Pub get
         working-directory: frontend
         run: flutter pub get
 
-      # 4. Exécuter UNIQUEMENT ton test ciblé
-      - name: Run specific test
+      # 5. Run ALL tests from features + ui
+      - name: Run feature & UI tests
         working-directory: frontend
-        run: flutter test test/widget_test.dart
-
-      
+        run: |
+          flutter test test/features
+          flutter test test/ui
+          flutter test test/widget_test.dart
