@@ -29,7 +29,15 @@ def upsert_user(username, defaults, password, label):
     if RESET_PASSWORDS:
         user.set_password(password)
         user.save(update_fields=['password'])
-    print(f"  ✓ {label}: {username} / {password} ({'created' if created else 'updated'})")
+    if created:
+        # New user: show initial credentials for convenience
+        print(f"  ✓ {label}: {username} / {password} (created)")
+    elif RESET_PASSWORDS:
+        # Existing user whose password was reset this run
+        print(f"  ✓ {label}: {username} (password reset)")
+    else:
+        # Existing user updated without changing password
+        print(f"  ✓ {label}: {username} (updated)")
     return user
 
 
