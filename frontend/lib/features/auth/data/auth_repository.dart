@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:frontend/constants/texts/texts_auth.dart';
-import 'package:frontend/features/my_account/data/models/user.dart';
-import 'package:frontend/features/my_account/data/models/user_role.dart';
+import 'package:frontend/features/users/data/models/user.dart';
+import 'package:frontend/features/users/data/models/user_role.dart';
 
 class AuthFailure implements Exception {
   AuthFailure(this.message);

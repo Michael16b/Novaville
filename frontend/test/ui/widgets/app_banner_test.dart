@@ -5,8 +5,8 @@ import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/constants/texts/texts_navigation.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
-import 'package:frontend/features/my_account/data/models/user.dart';
-import 'package:frontend/features/my_account/data/models/user_role.dart';
+import 'package:frontend/features/users/data/models/user.dart';
+import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/ui/assets.dart';
 import 'package:frontend/ui/widgets/app_banner.dart';
 

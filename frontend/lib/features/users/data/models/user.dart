@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:frontend/features/my_account/data/models/user_role.dart';
+import 'package:frontend/features/users/data/models/user_role.dart';
 
 /// Model representing a user.
 class User extends Equatable {
