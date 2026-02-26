@@ -139,7 +139,10 @@ GoRouter buildRouter(AuthBloc authBloc) {
 /// the redirect whenever the authentication state changes.
 class _AuthBlocListenable extends ChangeNotifier {
   _AuthBlocListenable(AuthBloc bloc) {
-    _subscription = bloc.stream.listen((_) => notifyListeners());
+    _subscription = bloc.stream.listen(
+      (_) => notifyListeners(),
+      onError: (error) => notifyListeners(),
+    );
   }
   late final StreamSubscription<AuthState> _subscription;
   @override
