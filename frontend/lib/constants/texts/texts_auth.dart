@@ -5,7 +5,7 @@ class AppTextsAuth {
   static const String login = 'Se connecter';
   static const String logout = 'Se déconnecter';
   static const String genericConnectionError = 'Erreur de connexion';
-  static const String invalidCredentials = 'Email ou mot de passe incorrect';
+  static const String invalidCredentials = "Le nom d'utilisateur ou le mot de passe est incorrect";
   static const String tokenRefreshFailed = 'Impossible de rafraîchir le token';
   static const String serverInvalidResponse = 'Réponse invalide du serveur';
   static const String emptyEmailOrPassword = "L'email ou le mot de passe est vide";

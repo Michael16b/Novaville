@@ -8,15 +8,16 @@ import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/design_systems/custom_elevated_stroked_button.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/ui/assets.dart';
-import 'package:go_router/go_router.dart';
+import 'package:go_router/go_router.dart'; // needed for context.go
 
 class AppBanner extends StatelessWidget {
-  const AppBanner({this.isHomePage = false, super.key});
+  const AppBanner({required this.currentLocation, super.key});
 
-  final bool isHomePage;
+  final String currentLocation;
 
   @override
   Widget build(BuildContext context) {
+    final isHomePage = currentLocation == AppRoutes.home;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

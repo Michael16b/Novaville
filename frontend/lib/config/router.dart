@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/config/app_routes.dart';
+import 'package:frontend/constants/colors.dart';
 import 'package:frontend/features/account/presentation/pages/my_account_page.dart';
 import 'package:frontend/features/agenda/presentation/pages/agenda_page.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
@@ -71,7 +72,11 @@ GoRouter buildRouter(AuthBloc authBloc) {
         pageBuilder: (context, state) => _buildPage(
           state: state,
           child: const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
+              ),
+            ),
           ),
         ),
       ),
@@ -84,8 +89,10 @@ GoRouter buildRouter(AuthBloc authBloc) {
       // ── Secured shell — all child routes share the AppBanner layout ───────
       ShellRoute(
         builder: (context, state, child) {
-          final isHome = state.matchedLocation == AppRoutes.home;
-          return SecuredLayout(isHomePage: isHome, child: child);
+          return SecuredLayout(
+            currentLocation: state.matchedLocation,
+            child: child,
+          );
         },
         routes: [
           GoRoute(

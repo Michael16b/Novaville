@@ -40,7 +40,7 @@ void main() {
       expect(result['user']['username'], 'admin');
     });
 
-    test('login throws AuthFailure with message on 401', () async {
+    test('login throws AuthFailure with invalidCredentials message on 401', () async {
       final mockClient = MockClient((request) async {
         return http.Response('{"detail":"Invalid credentials"}', 401);
       });
@@ -53,7 +53,7 @@ void main() {
           isA<AuthFailure>().having(
             (e) => e.message,
             'message',
-            'Invalid credentials',
+            AppTextsAuth.invalidCredentials,
           ),
         ),
       );

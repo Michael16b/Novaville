@@ -7,12 +7,12 @@ import 'package:frontend/ui/widgets/app_banner.dart';
 class SecuredLayout extends StatelessWidget {
   const SecuredLayout({
     required this.child,
-    this.isHomePage = false,
+    required this.currentLocation,
     super.key,
   });
 
   final Widget child;
-  final bool isHomePage;
+  final String currentLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class SecuredLayout extends StatelessWidget {
           color: AppColors.page,
           elevation: 6,
           shadowColor: Colors.black54,
-          child: AppBanner(isHomePage: isHomePage),
+          child: AppBanner(currentLocation: currentLocation),
         ),
       ),
       body: child,

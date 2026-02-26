@@ -35,6 +35,7 @@ void main() {
         home: BlocProvider<AuthBloc>.value(
           value: authBloc,
           child: SecuredLayout(
+            currentLocation: '/test',
             child: child ?? const Center(child: Text('Test Child')),
           ),
         ),
@@ -162,6 +163,7 @@ void main() {
           home: BlocProvider<AuthBloc>.value(
             value: authBloc,
             child: SecuredLayout(
+              currentLocation: '/test',
               child: _TestStatefulWidget(key: key),
             ),
           ),

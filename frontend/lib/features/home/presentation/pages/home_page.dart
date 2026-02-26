@@ -66,32 +66,32 @@ class HomePage extends StatelessWidget {
                       MenuCard(
                         icon: Icons.report_problem_outlined,
                         title: AppTextsHome.reports,
-                        onTap: () => context.push(AppRoutes.reports),
+                        onTap: () => context.go(AppRoutes.reports),
                       ),
                       MenuCard(
                         icon: Icons.poll_outlined,
                         title: AppTextsHome.surveys,
-                        onTap: () => context.push(AppRoutes.surveys),
+                        onTap: () => context.go(AppRoutes.surveys),
                       ),
                       MenuCard(
                         icon: Icons.calendar_today_outlined,
                         title: AppTextsHome.agenda,
-                        onTap: () => context.push(AppRoutes.agenda),
+                        onTap: () => context.go(AppRoutes.agenda),
                       ),
                       MenuCard(
                         icon: Icons.article_outlined,
                         title: AppTextsHome.news,
-                        onTap: () => context.push(AppRoutes.news),
+                        onTap: () => context.go(AppRoutes.news),
                       ),
                       MenuCard(
                         icon: Icons.info_outlined,
                         title: AppTextsHome.usefulInfo,
-                        onTap: () => context.push(AppRoutes.usefulInfo),
+                        onTap: () => context.go(AppRoutes.usefulInfo),
                       ),
                       MenuCard(
                         icon: Icons.account_circle_outlined,
                         title: AppTextsHome.myAccount,
-                        onTap: () => context.push(AppRoutes.myAccount),
+                        onTap: () => context.go(AppRoutes.myAccount),
                       ),
                     ]),
                   ),
