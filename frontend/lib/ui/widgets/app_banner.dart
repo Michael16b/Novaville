@@ -7,7 +7,7 @@ import 'package:frontend/constants/texts/texts_navigation.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/design_systems/custom_elevated_stroked_button.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
-import 'package:frontend/features/my_account/data/models/user_role.dart';
+import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/ui/assets.dart';
 import 'package:go_router/go_router.dart';
 

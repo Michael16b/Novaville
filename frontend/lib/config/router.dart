@@ -3,17 +3,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
-import 'package:frontend/features/my_account/presentation/pages/my_account_page.dart';
+import 'package:frontend/features/users/presentation/pages/my_account_page.dart';
+import 'package:frontend/features/users/presentation/pages/user_accounts_page.dart';
 import 'package:frontend/features/agenda/presentation/pages/agenda_page.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/presentation/pages/login_page.dart';
 import 'package:frontend/features/home/presentation/pages/home_page.dart';
-import 'package:frontend/features/my_account/data/models/user_role.dart';
+import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/news/presentation/pages/news_page.dart';
 import 'package:frontend/features/reports/presentation/pages/reports_page.dart';
 import 'package:frontend/features/surveys/presentation/pages/surveys_page.dart';
 import 'package:frontend/features/useful_info/presentation/pages/useful_info_page.dart';
-import 'package:frontend/features/user_accounts/presentation/pages/user_accounts_page.dart';
 import 'package:frontend/ui/layouts/secured_layout.dart';
 import 'package:go_router/go_router.dart';
 /// Returns a [Page] with no transition on web, or the default [MaterialPage]
@@ -165,7 +165,7 @@ GoRouter buildRouter(AuthBloc authBloc) {
               requiredRole: UserRole.globalAdmin,
             ),
             pageBuilder: (context, state) =>
-                _buildPage(state: state, child: const UserAccountPage()),
+                _buildPage(state: state, child: const UserAccountsPage()),
           ),
         ],
       ),

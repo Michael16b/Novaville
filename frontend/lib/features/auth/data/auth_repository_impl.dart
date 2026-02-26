@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/features/auth/data/auth_api.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
-import 'package:frontend/features/my_account/data/models/user.dart';
-import 'package:frontend/features/my_account/data/user_repository.dart';
+import 'package:frontend/features/users/data/models/user.dart';
+import 'package:frontend/features/users/data/user_repository.dart';
 
 /// Thin abstraction wrapper to avoid direct platform package imports in this
 /// file. Provide a [FlutterSecureStorage]-based implementation in

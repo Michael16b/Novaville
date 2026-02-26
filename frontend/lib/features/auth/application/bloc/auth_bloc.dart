@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:frontend/features/auth/data/auth_repository.dart';
-import 'package:frontend/features/my_account/data/models/user.dart';
+import 'package:frontend/features/users/data/models/user.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';

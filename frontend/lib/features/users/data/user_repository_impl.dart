@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:frontend/constants/texts/texts_profile.dart';
 import 'package:frontend/core/network/api_client.dart';
-import 'package:frontend/features/my_account/data/models/user.dart';
-import 'package:frontend/features/my_account/data/user_repository.dart';
+import 'package:frontend/features/users/data/models/user.dart';
+import 'package:frontend/features/users/data/user_repository.dart';
 
 /// HTTP-based implementation of [IUserRepository].
 class UserRepositoryImpl implements IUserRepository {
@@ -20,6 +20,44 @@ class UserRepositoryImpl implements IUserRepository {
     } else {
       throw Exception(
         '${AppTextsProfile.fetchProfileError}: ${response.statusCode}',
+      );
+    }
+  }
+
+  @override
+  Future<List<User>> listUsers() async {
+    final response = await _apiClient.get('/api/v1/users/');
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+
+      // Handle both list and paginated response
+      List<dynamic> usersList;
+      if (json is List) {
+        usersList = json;
+      } else if (json is Map && json['results'] != null) {
+        usersList = json['results'] as List<dynamic>;
+      } else {
+        throw Exception('Invalid response format');
+      }
+
+      return usersList
+          .map((user) => User.fromJson(user as Map<String, dynamic>))
+          .toList();
+    } else {
+      throw Exception(
+        '${AppTextsProfile.fetchProfileError}: ${response.statusCode}',
+      );
+    }
+  }
+
+  @override
+  Future<void> deleteUser({required int userId}) async {
+    final response = await _apiClient.delete('/api/v1/users/$userId/');
+
+    if (response.statusCode != 204 && response.statusCode != 200) {
+      throw Exception(
+        'Erreur lors de la suppression: ${response.statusCode}',
       );
     }
   }
