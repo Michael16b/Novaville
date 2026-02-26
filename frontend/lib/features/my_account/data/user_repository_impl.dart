@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:frontend/constants/texts/texts_profile.dart';
 import 'package:frontend/core/network/api_client.dart';
-import 'package:frontend/features/account/data/models/user.dart';
-import 'package:frontend/features/account/data/user_repository.dart';
+import 'package:frontend/features/my_account/data/models/user.dart';
+import 'package:frontend/features/my_account/data/user_repository.dart';
 
 /// HTTP-based implementation of [IUserRepository].
 class UserRepositoryImpl implements IUserRepository {

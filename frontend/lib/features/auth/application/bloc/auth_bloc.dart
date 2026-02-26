@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:frontend/features/auth/data/auth_repository.dart';
+import 'package:frontend/features/my_account/data/models/user.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -23,9 +24,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     // Note: emitting 'checking' again is not strictly necessary since it is
     // the initial state, but would be useful if the Bloc could be re-created.
     try {
-      final hasSession = await _repository.hasValidSession();
-      if (hasSession) {
-        emit(const AuthState.authenticated());
+      final user = await _repository.hasValidSession();
+      if (user != null) {
+        emit(AuthState.authenticated(user: user));
       } else {
         // Session is invalid — emit unauthenticated state.
         emit(const AuthState.unauthenticated());
@@ -43,8 +44,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthState.authenticating());
     try {
-      await _repository.login(username: event.username, password: event.password);
-      emit(const AuthState.authenticated());
+      final user = await _repository.login(username: event.username, password: event.password);
+      emit(AuthState.authenticated(user: user));
     } catch (e) {
       emit(AuthState.failure(e.toString()));
     }

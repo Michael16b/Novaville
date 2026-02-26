@@ -3,15 +3,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
-import 'package:frontend/features/account/presentation/pages/my_account_page.dart';
+import 'package:frontend/features/my_account/presentation/pages/my_account_page.dart';
 import 'package:frontend/features/agenda/presentation/pages/agenda_page.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/presentation/pages/login_page.dart';
 import 'package:frontend/features/home/presentation/pages/home_page.dart';
+import 'package:frontend/features/my_account/data/models/user_role.dart';
 import 'package:frontend/features/news/presentation/pages/news_page.dart';
 import 'package:frontend/features/reports/presentation/pages/reports_page.dart';
 import 'package:frontend/features/surveys/presentation/pages/surveys_page.dart';
 import 'package:frontend/features/useful_info/presentation/pages/useful_info_page.dart';
+import 'package:frontend/features/user_accounts/presentation/pages/user_accounts_page.dart';
 import 'package:frontend/ui/layouts/secured_layout.dart';
 import 'package:go_router/go_router.dart';
 /// Returns a [Page] with no transition on web, or the default [MaterialPage]
@@ -51,6 +53,32 @@ String? authRedirect({
     return AppRoutes.home;
   }
   return null;
+}
+
+/// Check if user has required role for a protected route.
+///
+/// Returns the path to redirect to (home), or [null] if access is allowed.
+String? roleRedirect({
+  required UserRole? userRole,
+  required UserRole requiredRole,
+}) {
+  if (userRole != requiredRole) {
+    return AppRoutes.home; // Redirect to home if user doesn't have the role
+  }
+  return null; // Allow access
+}
+
+/// Check if user has any of the required roles for a protected route.
+///
+/// Returns the path to redirect to (home), or [null] if access is allowed.
+String? anyRoleRedirect({
+  required UserRole? userRole,
+  required List<UserRole> allowedRoles,
+}) {
+  if (userRole == null || !allowedRoles.contains(userRole)) {
+    return AppRoutes.home; // Redirect to home if user doesn't have any allowed role
+  }
+  return null; // Allow access
 }
 
 /// Builds and returns the application [GoRouter].
@@ -129,6 +157,15 @@ GoRouter buildRouter(AuthBloc authBloc) {
             path: AppRoutes.myAccount,
             pageBuilder: (context, state) =>
                 _buildPage(state: state, child: const MyAccountPage()),
+          ),
+          GoRoute(
+            path: AppRoutes.userAccounts,
+            redirect: (context, state) => roleRedirect(
+              userRole: authBloc.state.user?.role,
+              requiredRole: UserRole.globalAdmin,
+            ),
+            pageBuilder: (context, state) =>
+                _buildPage(state: state, child: const UserAccountPage()),
           ),
         ],
       ),

@@ -7,8 +7,9 @@ import 'package:frontend/constants/texts/texts_navigation.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/design_systems/custom_elevated_stroked_button.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
+import 'package:frontend/features/my_account/data/models/user_role.dart';
 import 'package:frontend/ui/assets.dart';
-import 'package:go_router/go_router.dart'; // needed for context.go
+import 'package:go_router/go_router.dart';
 
 class AppBanner extends StatelessWidget {
   const AppBanner({required this.currentLocation, super.key});
@@ -18,6 +19,7 @@ class AppBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isHomePage = currentLocation == AppRoutes.home;
+    final isUserAccounts = currentLocation == AppRoutes.userAccounts;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -27,13 +29,13 @@ class AppBanner extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
+              spacing: 16,
               children: [
                 Image.asset(
                   AppAssets.login_logo,
                   height: 70,
                   width: 70,
                 ),
-                const SizedBox(width: 16),
                 if (isHomePage)
                   // Button disabled on the HomePage
                   CustomElevatedFlatButton(
@@ -48,6 +50,29 @@ class AppBanner extends StatelessWidget {
                     onPressed: () => context.go(AppRoutes.home),
                     iconData: Icons.home_outlined,
                   ),
+                BlocBuilder<AuthBloc, AuthState>(
+                  builder: (context, state) {
+                    final isAdmin = state.user?.role == UserRole.globalAdmin;
+                    if (!isAdmin) {
+                      return const SizedBox.shrink();
+                    }
+                    if (isUserAccounts) {
+                      // Button disabled on the UserAccountsPage
+                      return CustomElevatedFlatButton(
+                        text: AppTextsNavigation.userAccountButton,
+                        onPressed: () {},
+                        iconData: Icons.group_outlined,
+                      );
+                    } else {
+                      // Active button on other pages
+                      return CustomElevatedStrokedButton(
+                        text: AppTextsNavigation.userAccountButton,
+                        onPressed: () => context.go(AppRoutes.userAccounts),
+                        iconData: Icons.group_outlined,
+                      );
+                    }
+                  },
+                ),
               ],
             ),
             Row(

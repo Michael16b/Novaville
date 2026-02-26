@@ -1,4 +1,4 @@
-import 'package:frontend/features/account/data/models/user.dart';
+import 'package:frontend/features/my_account/data/models/user.dart';
 
 /// Repository interface for user operations.
 abstract class IUserRepository {

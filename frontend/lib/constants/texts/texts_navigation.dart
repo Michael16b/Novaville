@@ -3,5 +3,6 @@ class AppTextsNavigation {
   AppTextsNavigation._();
 
   static const String homeButton = 'Accueil';
+  static const String userAccountButton = 'Comptes utilisateur';
   static const String personalInfo = 'Mes informations personnelles';
 }
