@@ -1,4 +1,4 @@
-name: Widget Tests
+name: Frontend Unit Tests
 
 on:
   push:
