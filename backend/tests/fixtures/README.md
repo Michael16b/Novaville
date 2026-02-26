@@ -18,7 +18,8 @@ This directory contains scripts to populate the database with sample data for **
 
 ```bash
 # From the backend container
-docker compose exec backend python tests/fixtures/create_sample_data.py
+# Execute the sample data creation script
+docker compose exec backend python manage.py shell -c "exec(open('tests/fixtures/create_sample_data.py', encoding='utf-8').read())"
 ```
 
 ## Initial User Creation

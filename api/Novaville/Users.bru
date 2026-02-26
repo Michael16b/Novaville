@@ -1,0 +1,23 @@
+meta {
+  name: Users
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8000/api/v1/users/?ordering=first_name
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ordering: first_name
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcyMTQ3NzYxLCJpYXQiOjE3NzIxNDQxNjEsImp0aSI6IjI4MzFlM2NkZDUxODRhNTFhMTI5MGY2MzY3ZTNmYjIyIiwidXNlcl9pZCI6IjEiLCJ1c2VybmFtZSI6ImFkbWluIn0.6PDDTeNjjl6F5PbDuRw_O5igZACcpAJw-_f7W717yUU
+}
+
+settings {
+  encodeUrl: true
+}
