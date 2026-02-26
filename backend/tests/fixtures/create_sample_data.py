@@ -255,7 +255,7 @@ for index in range(1, TARGET_COUNT + 1):
             'start_date': start_date,
             'end_date': start_date + timedelta(hours=3),
             'theme': themes[(index - 1) % len(themes)],
-            'created_by': elected if index % 3 else agent,
+            'created_by': agent if index % 3 == 0 else elected,
         }
     )
 
