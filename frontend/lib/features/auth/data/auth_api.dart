@@ -33,7 +33,7 @@ class AuthApi extends ApiClient {
     try {
       final body = jsonDecode(resp.body);
       if (resp.statusCode == 401) {
-        // 401 -> toujours afficher le message générique pour ne pas exposer de détails
+        // 401 -> always display generic message to avoid exposing details
         message = AppTextsAuth.invalidCredentials;
       } else {
         if (body is Map && body['detail'] != null) {
