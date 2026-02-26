@@ -60,6 +60,8 @@ if RESET_FIXTURE_TABLES:
     Event.objects.all().delete()
     ThemeEvent.objects.all().delete()
     Neighborhood.objects.all().delete()
+    # Also remove accumulated citizen users so they are recreated fresh
+    User.objects.filter(role=RoleEnum.CITIZEN).delete()
 
 # 1. Create neighborhoods
 print('📍 Creating neighborhoods...')
@@ -206,7 +208,9 @@ for index in range(1, TARGET_COUNT + 1):
         {
             'user': reporter,
             'problem_type': problem_type,
-            'description': f'Signalement #{index:02d} dans {neighborhood.name.lower()}',
+            # Use a stable index-only key for the lookup so neighborhood changes
+            # between runs don't create duplicate reports
+            'description': f'Signalement #{index:02d}',
             'status': report_status,
             'neighborhood': neighborhood,
         }
@@ -280,6 +284,8 @@ for data in events_data:
 
 # 7. Create votes
 print('\n🗳️ Creating votes...')
+# len(surveys) == TARGET_COUNT so each survey is selected exactly once per loop
+# iteration, guaranteeing unique (voter, survey) pairs despite citizens cycling
 for index in range(1, TARGET_COUNT + 1):
     survey = surveys[(index - 1) % len(surveys)]
     voter = citizens[(index - 1) % len(citizens)] if citizens else admin
