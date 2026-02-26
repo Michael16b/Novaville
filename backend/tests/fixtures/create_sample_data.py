@@ -46,6 +46,8 @@ def ensure_survey_options(survey, options):
     for text in options:
         option, _ = SurveyOption.objects.get_or_create(survey=survey, text=text)
         ensured_options.append(option)
+    # Remove any existing options for this survey that are not in the expected list
+    SurveyOption.objects.filter(survey=survey).exclude(text__in=options).delete()
     return ensured_options
 
 
