@@ -64,7 +64,7 @@ if RESET_FIXTURE_TABLES:
 # 1. Create neighborhoods
 print('📍 Creating neighborhoods...')
 neighborhoods_data = [
-    {'name': f'Quartier {index:02d}', 'postal_code': f'75{index:03d}'}
+    {'name': f'Quartier {index:02d}', 'postal_code': f"75{index % 1000:03d}"}
     for index in range(1, TARGET_COUNT + 1)
 ]
 
