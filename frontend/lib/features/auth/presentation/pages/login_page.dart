@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
-import 'package:frontend/constants/form_labels.dart';
+import 'package:frontend/constants/texts/texts_form_labels.dart';
 import 'package:frontend/constants/texts/texts_auth.dart';
-import 'package:frontend/constants/validator_messages.dart';
+import 'package:frontend/constants/texts/texts_validator_messages.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/design_systems/custom_text_form_field.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';

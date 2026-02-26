@@ -35,12 +35,12 @@ void main() {
       authBloc.close();
     });
 
-    Widget createWidgetUnderTest() {
+    Widget createWidgetUnderTest({String currentLocation = '/'}) {
       return MaterialApp(
         home: Scaffold(
           body: BlocProvider<AuthBloc>.value(
             value: authBloc,
-            child: const AppBanner(),
+            child: AppBanner(currentLocation: currentLocation),
           ),
         ),
       );

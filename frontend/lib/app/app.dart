@@ -1,56 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/config/router.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
-import 'package:frontend/features/auth/presentation/pages/login_page.dart';
-import 'package:frontend/features/home/presentation/pages/home_page.dart';
-import 'package:frontend/ui/layouts/secured_layout.dart';
+import 'package:go_router/go_router.dart';
 
-class App extends StatelessWidget {
-  const App({required this.home, super.key});
+class App extends StatefulWidget {
+  const App({super.key});
 
-  final Widget home;
+  @override
+  State<App> createState() => _AppState();
+}
 
-  // Global key used for navigation
-  static final GlobalKey<NavigatorState> navigatorKey =
-      GlobalKey<NavigatorState>();
+class _AppState extends State<App> {
+  GoRouter? _router;
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _router = buildRouter(context.read<AuthBloc>());
+      _initialized = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    _router?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        // When the user logs in, redirect to the home page
-        if (state.status == AuthStatus.authenticated) {
-          navigatorKey.currentState?.pushAndRemoveUntil(
-            MaterialPageRoute<void>(
-              builder: (context) => const SecuredLayout(
-                isHomePage: true,
-                child: HomePage(),
-              ),
-            ),
-            (route) => false, // Remove all previous routes
-          );
-        }
-        // When the user logs out, redirect to the login page
-        else if (state.status == AuthStatus.unauthenticated) {
-          navigatorKey.currentState?.pushAndRemoveUntil(
-            MaterialPageRoute<void>(
-              builder: (context) => const LoginPage(),
-            ),
-            (route) => false, // Remove all previous routes
-          );
-        }
-      },
-      child: MaterialApp(
-        navigatorKey: navigatorKey,
-        title: AppTextsGeneral.appName,
-        theme: ThemeData(
-          fontFamily: 'Montserrat',
-          useMaterial3: true,
-          scaffoldBackgroundColor: AppColors.page,
-        ),
-        home: home,
+    if (_router == null) {
+      return const MaterialApp(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      );
+    }
+    return MaterialApp.router(
+      routerConfig: _router!,
+      title: AppTextsGeneral.appName,
+      theme: ThemeData(
+        fontFamily: 'Montserrat',
+        useMaterial3: true,
+        scaffoldBackgroundColor: AppColors.page,
       ),
     );
   }

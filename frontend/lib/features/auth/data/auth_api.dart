@@ -33,12 +33,8 @@ class AuthApi extends ApiClient {
     try {
       final body = jsonDecode(resp.body);
       if (resp.statusCode == 401) {
-        // 401 -> invalid credentials
-        if (body is Map && body['detail'] != null) {
-          message = body['detail'] as String;
-        } else {
-          message = AppTextsAuth.invalidCredentials;
-        }
+        // 401 -> always display generic message to avoid exposing details
+        message = AppTextsAuth.invalidCredentials;
       } else {
         if (body is Map && body['detail'] != null) {
           message = body['detail'] as String;
