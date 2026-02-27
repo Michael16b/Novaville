@@ -59,7 +59,7 @@ services:
     environment:
       - FLUTTER_BACKEND_API=https://novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net
     ports:
-      - "80:80"
+      - "80:8080"
     networks:
       - novaville-net
     restart: always

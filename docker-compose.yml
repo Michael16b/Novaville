@@ -72,7 +72,7 @@ services:
     environment:
       - FLUTTER_BACKEND_API=http://localhost:8000
     ports:
-      - "80:80"
+      - "80:8080"
     depends_on:
       - backend
       - postgres

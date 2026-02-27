@@ -34,17 +34,27 @@ RUN flutter config --enable-web && \
 ##########
 # STAGE 2: Serveur Nginx
 ##########
-FROM nginx:alpine AS frontend-web
+FROM nginxinc/nginx-unprivileged:stable-alpine AS frontend-web
 
 COPY --from=flutter-builder /app/build/web/ /usr/share/nginx/html/
 
 # Configuration Nginx SPA avec proxy API pour Azure multi-container
 RUN cat > /etc/nginx/conf.d/default.conf <<'EOF'
 server {
-  listen 80;
+  listen 8080;
   server_name _;
+  server_tokens off;
   root /usr/share/nginx/html;
   index index.html;
+
+  # En-têtes sécurité (compatibles Flutter Web/PWA)
+  add_header X-Content-Type-Options "nosniff" always;
+  add_header X-Frame-Options "DENY" always;
+  add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+  add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+  add_header Cross-Origin-Opener-Policy "same-origin" always;
+  add_header Cross-Origin-Resource-Policy "same-origin" always;
+  add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' https: http: ws: wss:; font-src 'self' data:;" always;
 
   # Proxy pour les requêtes API vers le backend Django
   location /api/ {
@@ -97,28 +107,28 @@ server {
   # Sécurité et Cache pour fichiers Flutter
   location ~* \.(manifest|appcache|html?|xml|json)$ {
     expires -1;
-    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
   }
 
   location = /flutter_service_worker.js {
     try_files $uri =404;
     expires -1;
-    add_header Service-Worker-Allowed "/";
-    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+    add_header Service-Worker-Allowed "/" always;
+    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
   }
 
   location = /manifest.json {
     try_files $uri =404;
-    add_header Content-Type "application/manifest+json";
-    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+    add_header Content-Type "application/manifest+json" always;
+    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
   }
 
   location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|webp|woff|woff2|ttf|eot)$ {
     try_files $uri =404;
     expires 1y;
-    add_header Cache-Control "public, immutable";
+    add_header Cache-Control "public, immutable" always;
   }
 }
 EOF
 
-EXPOSE 80
+EXPOSE 8080
