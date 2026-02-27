@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
-import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 
@@ -11,7 +9,7 @@ class UserDataSource extends DataTableSource {
   final int _rowCount;
   final int _page;
   final int _pageSize;
-  final BuildContext context;
+  final int? currentUserId;
   final void Function(User) onEdit;
   final void Function(User) onDelete;
 
@@ -20,7 +18,7 @@ class UserDataSource extends DataTableSource {
     required int rowCount,
     required int page,
     required int pageSize,
-    required this.context,
+    required this.currentUserId,
     required this.onEdit,
     required this.onDelete,
   })  : _users = users,
@@ -38,8 +36,7 @@ class UserDataSource extends DataTableSource {
     }
     final user = _users[localIndex];
 
-    final currentUser = context.read<AuthBloc>().state.user;
-    final isCurrentUser = user.id == currentUser?.id;
+    final isCurrentUser = user.id == currentUserId;
     final fullName = '${user.firstName} ${user.lastName}';
 
     return DataRow(
