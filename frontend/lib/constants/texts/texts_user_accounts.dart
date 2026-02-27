@@ -24,4 +24,5 @@ class UserTexts {
   static const previous = 'Précédent';
   static const next = 'Suivant';
   static const on = 'sur';
+  static const addUser = 'Ajouter un utilisateur';
 }

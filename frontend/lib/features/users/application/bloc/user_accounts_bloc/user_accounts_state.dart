@@ -73,6 +73,28 @@ class UserAccountsState extends Equatable {
   final String? previous;
   final int pageSize;
 
+  UserAccountsState copyWith({
+    UserAccountsStatus? status,
+    List<User>? users,
+    String? error,
+    int? page,
+    int? count,
+    String? next,
+    String? previous,
+    int? pageSize,
+  }) {
+    return UserAccountsState(
+      status: status ?? this.status,
+      users: users ?? this.users,
+      error: error ?? this.error,
+      page: page ?? this.page,
+      count: count ?? this.count,
+      next: next ?? this.next,
+      previous: previous ?? this.previous,
+      pageSize: pageSize ?? this.pageSize,
+    );
+  }
+
   @override
   List<Object?> get props => [status, users, error, page, count, next, previous, pageSize];
 }

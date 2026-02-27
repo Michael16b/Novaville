@@ -16,7 +16,6 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     on<UserAccountsRefreshRequested>(_onRefreshRequested);
     on<UserAccountsSortRequested>(_onSortRequested);
     on<UserAccountsPageRequested>(_onPageRequested);
-    // Suppression de l'appel automatique à UserAccountsLoadRequested ici
   }
 
   final IUserRepository _repository;
@@ -43,7 +42,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
         count: userPage.count,
         next: userPage.next,
         previous: userPage.previous,
-        pageSize: userPage.results.length,
+        // On garde la taille de page par défaut (20) au lieu d'utiliser la taille de la liste reçue
       ));
     } catch (e) {
       emit(UserAccountsState.failure(e.toString()));
@@ -62,7 +61,6 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     try {
       await _repository.deleteUser(userId: event.userId);
 
-      // Remove the deleted user from the list
       final updatedUsers = currentState.users
           .where((user) => user.id != event.userId)
           .toList();
@@ -77,7 +75,6 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
       ));
     } catch (e) {
       emit(UserAccountsState.failure(e.toString()));
-      // Reload the list if deletion failed
       emit(UserAccountsState.loaded(
         currentState.users,
         page: currentState.page,
@@ -93,6 +90,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     UserAccountsRefreshRequested event,
     Emitter<UserAccountsState> emit,
   ) async {
+    emit(state.copyWith(status: UserAccountsStatus.loading));
     try {
       final userPage = await _repository.listUsers(page: state.page);
       final page = _extractPageNumber(userPage.previous);
@@ -102,7 +100,6 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
         count: userPage.count,
         next: userPage.next,
         previous: userPage.previous,
-        pageSize: userPage.results.length,
       ));
     } catch (e) {
       emit(UserAccountsState.failure(e.toString()));
@@ -113,21 +110,19 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     UserAccountsSortRequested event,
     Emitter<UserAccountsState> emit,
   ) async {
-    emit(const UserAccountsState.loading());
+    emit(state.copyWith(status: UserAccountsStatus.loading));
     try {
       final ordering = event.ascending ? event.column : '-${event.column}';
-      final userPage = await _repository.listUsers(ordering: ordering, page: state.page);
-      final page = _extractPageNumber(userPage.previous);
+      final userPage = await _repository.listUsers(ordering: ordering, page: 1);
       emit(UserAccountsState.loaded(
         userPage.results,
-        page: page,
+        page: 1,
         count: userPage.count,
         next: userPage.next,
         previous: userPage.previous,
-        pageSize: userPage.results.length,
       ));
     } catch (e) {
-      emit(UserAccountsState.failure(e.toString()));
+      emit(state.copyWith(status: UserAccountsStatus.failure, error: e.toString()));
     }
   }
 
@@ -135,7 +130,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     UserAccountsPageRequested event,
     Emitter<UserAccountsState> emit,
   ) async {
-    emit(const UserAccountsState.loading());
+    emit(state.copyWith(status: UserAccountsStatus.loading));
     try {
       final userPage = await _repository.listUsers(ordering: event.ordering, page: event.page);
       final page = _extractPageNumber(userPage.previous);
@@ -145,10 +140,9 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
         count: userPage.count,
         next: userPage.next,
         previous: userPage.previous,
-        pageSize: userPage.results.length,
       ));
     } catch (e) {
-      emit(UserAccountsState.failure(e.toString()));
+      emit(state.copyWith(status: UserAccountsStatus.failure, error: e.toString()));
     }
   }
 }
