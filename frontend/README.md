@@ -1,8 +1,8 @@
 # Frontend UniCity
 
-Application Flutter (Web, iOS, Android) de la plateforme citoyenne Novaville.
+Flutter application (Web, iOS, Android) for the Novaville citizen platform.
 
-## Lancer en local (Web)
+## Run locally (Web)
 
 ```bash
 flutter pub get
@@ -11,41 +11,41 @@ flutter run -d chrome --web-port 3000
 
 ## PWA (Progressive Web App)
 
-Le projet est configuré en PWA via Flutter Web:
+The project is configured as a PWA through Flutter Web:
 
-- manifeste: `web/manifest.json`
-- métadonnées HTML: `web/index.html`
-- service worker: généré automatiquement au build Flutter Web
-- icônes installables: `web/icons/`
+- manifest: `web/manifest.json`
+- HTML metadata: `web/index.html`
+- service worker: automatically generated during Flutter Web build
+- installable icons: `web/icons/`
 
-### Build PWA recommandé
+### Recommended PWA build
 
 ```bash
 flutter build web --release --pwa-strategy=offline-first
 ```
 
-Le dossier généré est `build/web`.
+The generated folder is `build/web`.
 
-### Tester l'installation PWA
+### Test PWA installation
 
-1. Servir `build/web` derrière HTTPS (ou en `localhost` en local).
-2. Ouvrir l'application dans Chrome/Edge.
-3. Vérifier l'option d'installation (« Installer l'application »).
+1. Serve `build/web` over HTTPS (or on localhost for local testing).
+2. Open the app in Chrome/Edge.
+3. Check the install option ("Install app").
 
-### Notes importantes
+### Important notes
 
-- Le cache PWA est géré par le service worker Flutter.
-- Après un nouveau déploiement, un rechargement complet peut être nécessaire pour récupérer la nouvelle version.
+- PWA caching is handled by the Flutter service worker.
+- After a new deployment, a full reload may be required to get the latest version.
 
-### Régénérer les icônes web (branding)
+### Regenerate web icons (branding)
 
-Les icônes PWA sont générées depuis `assets/images/logo.png`.
+PWA icons are generated from `assets/images/logo.png`.
 
 ```bash
 dart run flutter_launcher_icons
 ```
 
-### Vérification qualité PWA (recommandé)
+### PWA quality checks (recommended)
 
-- Ouvrir DevTools > Application pour vérifier `manifest.json` et `service worker`.
-- Exécuter un audit Lighthouse (catégorie PWA) en build release.
+- Open DevTools > Application to verify `manifest.json` and the service worker.
+- Run a Lighthouse audit (PWA category) on a release build.
