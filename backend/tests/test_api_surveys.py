@@ -130,6 +130,33 @@ class TestSurveysAPI:
         assert response.data["total_votes"] == 1
         assert "options" in response.data
 
+    def test_filter_surveys_with_multiple_attributes(self, authenticated_client, elected_user):
+        """Test combining multiple survey filters in one request"""
+        matching_survey = elected_user.created_surveys.create(
+            title="Multi Attr Survey",
+            description="Should match",
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=5),
+        )
+        elected_user.created_surveys.create(
+            title="Multi Attr Survey",
+            description="Wrong date range",
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() - timedelta(days=2),
+        )
+
+        response = authenticated_client.get(
+            f"/api/v1/surveys/?title=Multi Attr Survey&created_by={elected_user.id}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        result_ids = [s["id"] for s in results]
+
+        assert matching_survey.id in result_ids
+        for survey_data in results:
+            assert survey_data["title"] == "Multi Attr Survey"
+            assert survey_data["created_by"]["id"] == elected_user.id
+
 
 class TestVotesAPI:
     """Tests for votes endpoints"""
@@ -206,6 +233,46 @@ class TestVotesAPI:
         results = response.data.get('results', response.data)
         assert len(results) >= 1
 
+    def test_filter_votes_with_multiple_attributes(self, authenticated_client, survey_with_options, elected_user):
+        """Test combining multiple vote filters in one request"""
+        from core.db.models import Survey, SurveyOption
+
+        option1 = survey_with_options.options.first()
+        option2 = survey_with_options.options.last()
+
+        other_survey = Survey.objects.create(
+            title="Other Filter Survey",
+            description="Different survey",
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=7),
+            created_by=elected_user,
+        )
+        other_option = SurveyOption.objects.create(survey=other_survey, text="Other Option")
+
+        response1 = authenticated_client.post(
+            "/api/v1/votes/",
+            {"survey": survey_with_options.id, "option": option1.id},
+            format="json"
+        )
+        assert response1.status_code == status.HTTP_201_CREATED
+
+        response2 = authenticated_client.post(
+            "/api/v1/votes/",
+            {"survey": other_survey.id, "option": other_option.id},
+            format="json"
+        )
+        assert response2.status_code == status.HTTP_201_CREATED
+
+        response = authenticated_client.get(
+            f"/api/v1/votes/?survey={survey_with_options.id}&option={option1.id}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+
+        assert len(results) == 1
+        assert results[0]["survey"] == survey_with_options.id
+        assert results[0]["option"] == option1.id
+
     def test_vote_unique_constraint_exception(self, citizen_user, monkeypatch):
         """Test viewset handles unique constraint exception"""
         from django.db import IntegrityError
@@ -251,3 +318,17 @@ class TestSurveyOptionsAPI:
         view.action = "create"
         permissions = view.get_permissions()
         assert any(isinstance(p, IsStaffOrReadOnly) for p in permissions)
+
+    def test_filter_survey_options_with_multiple_attributes(self, authenticated_client, survey_with_options):
+        """Test combining multiple survey option filters in one request"""
+        option = survey_with_options.options.first()
+
+        response = authenticated_client.get(
+            f"/api/v1/survey-options/?id={option.id}&text={option.text}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get("results", response.data)
+
+        assert len(results) == 1
+        assert results[0]["id"] == option.id
+        assert results[0]["text"] == option.text

@@ -317,6 +317,19 @@ class TestNeighborhoodsAPI:
         )
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "Updated Name"
+
+    def test_filter_neighborhoods_with_multiple_attributes(self, authenticated_client, neighborhood):
+        """Test combining multiple neighborhood filters in one request"""
+        response = authenticated_client.get(
+            f"/api/v1/neighborhoods/?id={neighborhood.id}&postal_code={neighborhood.postal_code}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+
+        assert len(results) >= 1
+        for neighborhood_data in results:
+            assert neighborhood_data["id"] == neighborhood.id
+            assert neighborhood_data["postal_code"] == neighborhood.postal_code
     
     def test_delete_neighborhood(self, admin_client):
         """Test deleting a neighborhood"""
