@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_home.dart';
 import 'package:frontend/features/home/presentation/pages/home_page.dart';
 import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   group('HomePage', () {
@@ -193,11 +195,41 @@ void main() {
     });
 
     testWidgets('menu cards are tappable', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: AppRoutes.home,
+            builder: (context, state) => const HomePage(),
+          ),
+          GoRoute(
+            path: AppRoutes.reports,
+            builder: (_, __) => const Scaffold(),
+          ),
+          GoRoute(
+            path: AppRoutes.surveys,
+            builder: (_, __) => const Scaffold(),
+          ),
+          GoRoute(
+            path: AppRoutes.agenda,
+            builder: (_, __) => const Scaffold(),
+          ),
+          GoRoute(
+            path: AppRoutes.news,
+            builder: (_, __) => const Scaffold(),
+          ),
+          GoRoute(
+            path: AppRoutes.usefulInfo,
+            builder: (_, __) => const Scaffold(),
+          ),
+          GoRoute(
+            path: AppRoutes.myAccount,
+            builder: (_, __) => const Scaffold(),
+          ),
+        ],
       );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pump();
 
       // Tap on the first MenuCard (Reports)
       await tester.tap(find.byType(MenuCard).first);

@@ -153,6 +153,17 @@ void main() {
           AppRoutes.home,
         );
       });
+
+      test('redirects to savedPath instead of /home when savedPath is provided', () {
+        expect(
+          authRedirect(
+            authStatus: AuthStatus.authenticated,
+            currentLocation: AppRoutes.loading,
+            savedPath: AppRoutes.myAccount,
+          ),
+          AppRoutes.myAccount,
+        );
+      });
     });
   });
 }

@@ -30,9 +30,14 @@ Page<T> _buildPage<T>({
 /// Returns the path to redirect to, or [null] if no redirect is needed.
 /// Extracted as a standalone function so it can be unit-tested independently
 /// of [GoRouter].
+///
+/// [savedPath] is an optional path to redirect to instead of [AppRoutes.home]
+/// when the user finishes authenticating (e.g. after a browser refresh on a
+/// protected page).
 String? authRedirect({
   required AuthStatus authStatus,
   required String currentLocation,
+  String? savedPath,
 }) {
   final isOnLoading = currentLocation == AppRoutes.loading;
   final isLoggingIn = currentLocation == AppRoutes.login;
@@ -46,9 +51,10 @@ String? authRedirect({
   if (!isAuthenticated) {
     return isLoggingIn ? null : AppRoutes.login;
   }
-  // Authenticated → leave login / loading pages.
+  // Authenticated → leave login / loading pages, restoring the original
+  // destination when available (e.g. after a browser refresh).
   if (isLoggingIn || isOnLoading) {
-    return AppRoutes.home;
+    return savedPath ?? AppRoutes.home;
   }
   return null;
 }
@@ -58,13 +64,39 @@ String? authRedirect({
 /// Receives the [AuthBloc] directly so the router can be created once in
 /// [State.didChangeDependencies] without needing a [BuildContext] at build time.
 GoRouter buildRouter(AuthBloc authBloc) {
+  // Stores the page the user was on before being redirected to /loading so
+  // that we can restore it once authentication completes (e.g. on refresh).
+  String? pendingDestination;
+
   return GoRouter(
     initialLocation: AppRoutes.home,
     refreshListenable: _AuthBlocListenable(authBloc),
-    redirect: (context, state) => authRedirect(
-      authStatus: authBloc.state.status,
-      currentLocation: state.matchedLocation,
-    ),
+    redirect: (context, state) {
+      final currentLocation = state.matchedLocation;
+      final authStatus = authBloc.state.status;
+
+      // When auth is being checked, save the page the user intended to visit
+      // so it can be restored after authentication completes.
+      if ((authStatus == AuthStatus.checking ||
+              authStatus == AuthStatus.authenticating) &&
+          currentLocation != AppRoutes.loading &&
+          currentLocation != AppRoutes.login) {
+        pendingDestination ??= currentLocation;
+      }
+
+      final destination = authRedirect(
+        authStatus: authStatus,
+        currentLocation: currentLocation,
+        savedPath: pendingDestination,
+      );
+
+      // Clear the saved path once we have navigated away from /loading.
+      if (destination != null && destination != AppRoutes.loading) {
+        pendingDestination = null;
+      }
+
+      return destination;
+    },
     routes: [
       // ── Loading route (shown while auth status is being checked) ──────────
       GoRoute(
