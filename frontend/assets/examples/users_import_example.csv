@@ -1,0 +1,5 @@
+first_name,last_name,username,email,role
+Jean,Dupont,jdupont,jdupont@novaville.fr,CITIZEN
+Marie,Martin,mmartin,mmartin@novaville.fr,ELECTED
+Paul,Bernard,pbernard,pbernard@novaville.fr,AGENT
+Louise,Roux,lroux,lroux@novaville.fr,CITIZEN

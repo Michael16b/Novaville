@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
@@ -91,11 +93,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
           FabMenuAction(
             label: UserTexts.addUsers,
             icon: Icons.group_add,
-            onPressed: () => _showAddInProgressDialog(
-              context,
-              title: UserTexts.addUsers,
-              description: UserTexts.addMultipleUsersDescription,
-            ),
+            onPressed: () => context.push(AppRoutes.bulkUserCreation),
           ),
         ],
       ),

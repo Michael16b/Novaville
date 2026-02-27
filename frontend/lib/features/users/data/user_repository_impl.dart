@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:frontend/constants/texts/texts_my_account.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/users/data/models/user.dart';
+import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
 
 /// HTTP-based implementation of [IUserRepository].
@@ -89,5 +90,36 @@ class UserRepositoryImpl implements IUserRepository {
         '${AppTextsProfile.updateProfileError}: ${response.statusCode}',
       );
     }
+  }
+
+  @override
+  Future<User> createUser({
+    required String username,
+    required String email,
+    required String firstName,
+    required String lastName,
+    required String password,
+    UserRole role = UserRole.citizen,
+    int? neighborhoodId,
+  }) async {
+    final response = await _apiClient.post(
+      '/api/v1/users/',
+      body: {
+        'username': username,
+        'email': email,
+        'first_name': firstName,
+        'last_name': lastName,
+        'password': password,
+        'role': role.toJson(),
+        if (neighborhoodId != null) 'neighborhood': neighborhoodId,
+      },
+    );
+
+    if (response.statusCode == 201) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return User.fromJson(json);
+    }
+
+    throw Exception('Erreur lors de la création: ${response.body}');
   }
 }

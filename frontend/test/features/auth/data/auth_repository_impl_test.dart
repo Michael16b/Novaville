@@ -13,10 +13,7 @@ class _StubUserRepository implements IUserRepository {
   final User? returnUser;
   final bool throwOnGetCurrentUser;
 
-  _StubUserRepository({
-    this.returnUser,
-    this.throwOnGetCurrentUser = false,
-  });
+  _StubUserRepository({this.returnUser, this.throwOnGetCurrentUser = false});
 
   static const _defaultUser = User(
     id: 1,
@@ -34,7 +31,11 @@ class _StubUserRepository implements IUserRepository {
   }
 
   @override
-  Future<UserPage> listUsers({String? ordering, String? search, int page = 1}) async {
+  Future<UserPage> listUsers({
+    String? ordering,
+    String? search,
+    int page = 1,
+  }) async {
     throw UnimplementedError();
   }
 
@@ -51,6 +52,19 @@ class _StubUserRepository implements IUserRepository {
 
   @override
   Future<void> deleteUser({required int userId}) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<User> createUser({
+    required String username,
+    required String email,
+    required String firstName,
+    required String lastName,
+    required String password,
+    UserRole role = UserRole.citizen,
+    int? neighborhoodId,
+  }) async {
     throw UnimplementedError();
   }
 }
@@ -72,59 +86,65 @@ AuthRepositoryImpl _buildRepo({
 
 void main() {
   group('AuthRepositoryImpl.hasValidSession', () {
-    test('returns user when access token present and getCurrentUser succeeds', () async {
-      final storage = InMemoryTokenStorage();
-      await storage.write(key: 'access_token', value: 'valid-access');
+    test(
+      'returns user when access token present and getCurrentUser succeeds',
+      () async {
+        final storage = InMemoryTokenStorage();
+        await storage.write(key: 'access_token', value: 'valid-access');
 
-      final repo = _buildRepo(
-        storage: storage,
-        userRepo: _StubUserRepository(),
-      );
+        final repo = _buildRepo(
+          storage: storage,
+          userRepo: _StubUserRepository(),
+        );
 
-      final user = await repo.hasValidSession();
-      expect(user, isNotNull);
-      expect(user!.username, 'admin');
-    });
+        final user = await repo.hasValidSession();
+        expect(user, isNotNull);
+        expect(user!.username, 'admin');
+      },
+    );
 
-    test('falls back to refresh path when access token present but getCurrentUser throws', () async {
-      final storage = InMemoryTokenStorage();
-      await storage.write(key: 'access_token', value: 'expired-access');
-      await storage.write(key: 'refresh_token', value: 'valid-refresh');
+    test(
+      'falls back to refresh path when access token present but getCurrentUser throws',
+      () async {
+        final storage = InMemoryTokenStorage();
+        await storage.write(key: 'access_token', value: 'expired-access');
+        await storage.write(key: 'refresh_token', value: 'valid-refresh');
 
-      // First getCurrentUser() call throws (expired access token); second call (after refresh) succeeds.
-      final seqRepo = _SequentialUserRepository(
-        responses: [
-          () => throw Exception('401 Unauthorized'),
-          () => const User(
-                id: 2,
-                username: 'refreshed',
-                email: 'r@example.com',
-                firstName: 'Refreshed',
-                lastName: 'User',
-              ),
-        ],
-      );
+        // First getCurrentUser() call throws (expired access token); second call (after refresh) succeeds.
+        final seqRepo = _SequentialUserRepository(
+          responses: [
+            () => throw Exception('401 Unauthorized'),
+            () => const User(
+              id: 2,
+              username: 'refreshed',
+              email: 'r@example.com',
+              firstName: 'Refreshed',
+              lastName: 'User',
+            ),
+          ],
+        );
 
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('refresh')) {
-          return http.Response('{"access":"new-access-token"}', 200);
-        }
-        return http.Response('{}', 500);
-      });
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('refresh')) {
+            return http.Response('{"access":"new-access-token"}', 200);
+          }
+          return http.Response('{}', 500);
+        });
 
-      final repo = AuthRepositoryImpl(
-        api: AuthApi(baseUrl: 'http://localhost:8000', client: mockClient),
-        userRepository: seqRepo,
-        storage: storage,
-      );
+        final repo = AuthRepositoryImpl(
+          api: AuthApi(baseUrl: 'http://localhost:8000', client: mockClient),
+          userRepository: seqRepo,
+          storage: storage,
+        );
 
-      final user = await repo.hasValidSession();
-      expect(user, isNotNull);
-      expect(user!.username, 'refreshed');
-      // New access token should have been stored
-      final stored = await storage.read(key: 'access_token');
-      expect(stored, 'new-access-token');
-    });
+        final user = await repo.hasValidSession();
+        expect(user, isNotNull);
+        expect(user!.username, 'refreshed');
+        // New access token should have been stored
+        final stored = await storage.read(key: 'access_token');
+        expect(stored, 'new-access-token');
+      },
+    );
 
     test('returns null when no tokens are stored', () async {
       final storage = InMemoryTokenStorage();
@@ -158,19 +178,22 @@ void main() {
       expect(await storage.read(key: 'refresh_token'), isNull);
     });
 
-    test('returns null when refresh token missing and access token invalid', () async {
-      final storage = InMemoryTokenStorage();
-      await storage.write(key: 'access_token', value: 'bad-access');
-      // No refresh token
+    test(
+      'returns null when refresh token missing and access token invalid',
+      () async {
+        final storage = InMemoryTokenStorage();
+        await storage.write(key: 'access_token', value: 'bad-access');
+        // No refresh token
 
-      final repo = _buildRepo(
-        storage: storage,
-        userRepo: _StubUserRepository(throwOnGetCurrentUser: true),
-      );
+        final repo = _buildRepo(
+          storage: storage,
+          userRepo: _StubUserRepository(throwOnGetCurrentUser: true),
+        );
 
-      final user = await repo.hasValidSession();
-      expect(user, isNull);
-    });
+        final user = await repo.hasValidSession();
+        expect(user, isNull);
+      },
+    );
   });
 
   group('AuthRepositoryImpl.logout', () {
@@ -179,7 +202,10 @@ void main() {
       await storage.write(key: 'access_token', value: 'access');
       await storage.write(key: 'refresh_token', value: 'refresh');
 
-      final repo = _buildRepo(storage: storage, userRepo: _StubUserRepository());
+      final repo = _buildRepo(
+        storage: storage,
+        userRepo: _StubUserRepository(),
+      );
       await repo.logout();
 
       expect(await storage.read(key: 'access_token'), isNull);
@@ -202,7 +228,11 @@ class _SequentialUserRepository implements IUserRepository {
   }
 
   @override
-  Future<UserPage> listUsers({String? ordering, String? search, int page = 1}) async {
+  Future<UserPage> listUsers({
+    String? ordering,
+    String? search,
+    int page = 1,
+  }) async {
     throw UnimplementedError();
   }
 
@@ -219,6 +249,19 @@ class _SequentialUserRepository implements IUserRepository {
 
   @override
   Future<void> deleteUser({required int userId}) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<User> createUser({
+    required String username,
+    required String email,
+    required String firstName,
+    required String lastName,
+    required String password,
+    UserRole role = UserRole.citizen,
+    int? neighborhoodId,
+  }) async {
     throw UnimplementedError();
   }
 }

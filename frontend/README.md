@@ -2,6 +2,22 @@
 
 Flutter application (Web, iOS, Android) for the Novaville citizen platform.
 
+## Création multiple d'utilisateurs (CSV)
+
+La vue d'administration "Ajouter plusieurs utilisateurs" permet l'import d'un fichier CSV.
+
+- Fichier d'exemple : `assets/examples/users_import_example.csv`
+- Colonnes obligatoires : `first_name,last_name,username,email`
+- Colonne optionnelle : `role` (`CITIZEN`, `ELECTED`, `AGENT`, `GLOBAL_ADMIN`)
+- La colonne mot de passe n'est pas requise : un mot de passe aléatoire est généré automatiquement.
+
+Exemple minimal :
+
+```csv
+first_name,last_name,username,email,role
+Jean,Dupont,jdupont,jdupont@novaville.fr,CITIZEN
+```
+
 ## Run locally (Web)
 
 ```bash

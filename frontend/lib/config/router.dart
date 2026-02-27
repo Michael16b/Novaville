@@ -12,6 +12,8 @@ import 'package:frontend/features/reports/presentation/pages/reports_page.dart';
 import 'package:frontend/features/surveys/presentation/pages/surveys_page.dart';
 import 'package:frontend/features/useful_info/presentation/pages/useful_info_page.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
+import 'package:frontend/features/users/presentation/pages/bulk_user_creation_page.dart';
+import 'package:frontend/features/users/presentation/pages/credentials_share_page.dart';
 import 'package:frontend/features/users/presentation/pages/my_account_page.dart';
 import 'package:frontend/features/users/presentation/pages/user_accounts_page.dart';
 import 'package:frontend/ui/layouts/secured_layout.dart';
@@ -38,6 +40,7 @@ String? authRedirect({
 }) {
   final isOnLoading = currentLocation == AppRoutes.loading;
   final isLoggingIn = currentLocation == AppRoutes.login;
+  final isCredentialsShare = currentLocation == AppRoutes.credentialsShare;
   final intendedLocation = (fromLocation != null && fromLocation.isNotEmpty)
       ? fromLocation
       : currentLocation;
@@ -53,6 +56,9 @@ String? authRedirect({
   final isAuthenticated = authStatus == AuthStatus.authenticated;
   // Not authenticated → send to login (and away from loading).
   if (!isAuthenticated) {
+    if (isCredentialsShare) {
+      return null;
+    }
     if (isLoggingIn) {
       return null;
     }
@@ -128,6 +134,11 @@ GoRouter buildRouter(AuthBloc authBloc) {
         pageBuilder: (context, state) =>
             _buildPage(state: state, child: const LoginPage()),
       ),
+      GoRoute(
+        path: AppRoutes.credentialsShare,
+        pageBuilder: (context, state) =>
+            _buildPage(state: state, child: const CredentialsSharePage()),
+      ),
       // ── Secured shell — all child routes share the AppBanner layout ───────
       ShellRoute(
         builder: (context, state, child) {
@@ -180,6 +191,15 @@ GoRouter buildRouter(AuthBloc authBloc) {
             ),
             pageBuilder: (context, state) =>
                 _buildPage(state: state, child: const UserAccountsPage()),
+          ),
+          GoRoute(
+            path: AppRoutes.bulkUserCreation,
+            redirect: (context, state) => roleRedirect(
+              userRole: authBloc.state.user?.role,
+              requiredRole: UserRole.globalAdmin,
+            ),
+            pageBuilder: (context, state) =>
+                _buildPage(state: state, child: const BulkUserCreationPage()),
           ),
         ],
       ),
