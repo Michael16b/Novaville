@@ -107,7 +107,9 @@ void main() {
       );
     }
 
-    testWidgets('renders title and floating add button', (WidgetTester tester) async {
+    testWidgets(
+      'renders title and floating add button',
+      (WidgetTester tester) async {
       // Set a large screen size to avoid overflow
       tester.view.physicalSize = const Size(2400, 1200);
       tester.view.devicePixelRatio = 1.0;
