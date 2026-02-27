@@ -3,6 +3,8 @@ class UserTexts {
   static const sortBy = 'Trier par';
   static const search = 'Rechercher';
   static const searchHint = 'Nom, prénom, nom d\'utilisateur ou email';
+  static const cardsPerRow = 'Cartes par ligne';
+  static const auto = 'Auto';
   static const ascending = 'Ordre croissant';
   static const descending = 'Ordre décroissant';
   static const error = 'Erreur';

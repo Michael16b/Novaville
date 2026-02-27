@@ -55,6 +55,7 @@ class _UserAccountsPageContent extends StatefulWidget {
 class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   String _sortColumnKey = 'first_name';
   bool _sortAscending = true;
+  int? _preferredCardsPerRow;
   User? _deletedUser;
   final TextEditingController _searchController = TextEditingController();
   Timer? _searchDebounce;
@@ -215,38 +216,117 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
               ),
             ),
             const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(
-                  UserTexts.sortBy,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                for (final sortItem in sortItems)
-                  ChoiceChip(
-                    label: Text(sortItem.label),
-                    selected: _sortColumnKey == sortItem.key,
-                    onSelected: (_) => _applySort(sortItem.key, _sortAscending),
-                  ),
-                OutlinedButton.icon(
-                  onPressed: () => _applySort(_sortColumnKey, !_sortAscending),
-                  icon: Icon(
-                    _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                    size: 16,
-                  ),
-                  label: Text(
-                    _sortAscending ? UserTexts.ascending : UserTexts.descending,
-                  ),
-                ),
-              ],
-            ),
+            _buildSortAndLayoutControls(sortItems),
             const SizedBox(height: 8),
             _buildPaginationControls(context, state),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSortAndLayoutControls(
+    List<({String label, String key})> sortItems,
+  ) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final showCardsPerRowFilter =
+            _maxCardsAllowedForWidth(constraints.maxWidth) > 1;
+
+        if (constraints.maxWidth < 900) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSortControlsWrap(sortItems),
+              if (showCardsPerRowFilter) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: 220,
+                  child: _buildCardsPerRowDropdown(constraints.maxWidth),
+                ),
+              ],
+            ],
+          );
+        }
+
+        if (!showCardsPerRowFilter) {
+          return _buildSortControlsWrap(sortItems);
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _buildSortControlsWrap(sortItems)),
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 220,
+              child: _buildCardsPerRowDropdown(constraints.maxWidth),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSortControlsWrap(List<({String label, String key})> sortItems) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text(UserTexts.sortBy, style: Theme.of(context).textTheme.titleSmall),
+        for (final sortItem in sortItems)
+          ChoiceChip(
+            label: Text(sortItem.label),
+            selected: _sortColumnKey == sortItem.key,
+            onSelected: (_) => _applySort(sortItem.key, _sortAscending),
+          ),
+        OutlinedButton.icon(
+          onPressed: () => _applySort(_sortColumnKey, !_sortAscending),
+          icon: Icon(
+            _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+            size: 16,
+          ),
+          label: Text(
+            _sortAscending ? UserTexts.ascending : UserTexts.descending,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCardsPerRowDropdown(double width) {
+    final maxAllowedCount = _maxCardsAllowedForWidth(width);
+    final options = <int?>[
+      null,
+      for (var count = 1; count <= maxAllowedCount; count++) count,
+    ];
+    final selectedValue =
+        (_preferredCardsPerRow != null &&
+            _preferredCardsPerRow! <= maxAllowedCount)
+        ? _preferredCardsPerRow
+        : null;
+
+    return DropdownButtonFormField<int?>(
+      value: selectedValue,
+      isDense: true,
+      decoration: const InputDecoration(
+        labelText: UserTexts.cardsPerRow,
+        border: OutlineInputBorder(),
+      ),
+      items: options
+          .map(
+            (option) => DropdownMenuItem<int?>(
+              value: option,
+              child: Text(option == null ? UserTexts.auto : option.toString()),
+            ),
+          )
+          .toList(),
+      onChanged: (value) {
+        setState(() {
+          _preferredCardsPerRow = value;
+        });
+      },
     );
   }
 
@@ -273,25 +353,41 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   ) {
     const spacing = 14.0;
     const minCardWidth = 250.0;
+    final maxByWidth = _maxCardsAllowedForWidth(width);
 
     final estimatedCount = ((width + spacing) / (minCardWidth + spacing))
         .floor()
-        .clamp(1, 6);
+        .clamp(1, maxByWidth);
 
-    final cappedCount = width >= 1300
-      ? estimatedCount.clamp(1, 4)
-        : estimatedCount;
+    final maxAllowedCount = estimatedCount.clamp(1, maxByWidth);
 
-    final cardWidth = (width - (spacing * (cappedCount - 1))) / cappedCount;
-    final estimatedCardHeight = cappedCount == 1
+    final chosenCount = _preferredCardsPerRow == null
+        ? maxAllowedCount
+        : _preferredCardsPerRow!.clamp(1, maxAllowedCount);
+
+    final cardWidth = (width - (spacing * (chosenCount - 1))) / chosenCount;
+    final estimatedCardHeight = chosenCount == 1
         ? 165.0
-        : cappedCount == 2
+        : chosenCount == 2
         ? 185.0
         : 205.0;
 
     final childAspectRatio = (cardWidth / estimatedCardHeight).clamp(1.15, 2.4);
 
-    return (crossAxisCount: cappedCount, childAspectRatio: childAspectRatio);
+    return (crossAxisCount: chosenCount, childAspectRatio: childAspectRatio);
+  }
+
+  int _maxCardsAllowedForWidth(double width) {
+    if (width < 700) {
+      return 1;
+    }
+    if (width < 1000) {
+      return 2;
+    }
+    if (width < 1300) {
+      return 3;
+    }
+    return 4;
   }
 
   Widget _buildUsersSkeleton(BuildContext context) {
