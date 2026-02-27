@@ -9,13 +9,14 @@ part 'user_accounts_state.dart';
 /// BLoC for managing user accounts (admin only)
 class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
   UserAccountsBloc({required IUserRepository repository})
-      : _repository = repository,
-        super(const UserAccountsState.initial()) {
+    : _repository = repository,
+      super(const UserAccountsState.initial()) {
     on<UserAccountsLoadRequested>(_onLoadRequested);
     on<UserAccountsDeleteRequested>(_onDeleteRequested);
     on<UserAccountsRefreshRequested>(_onRefreshRequested);
     on<UserAccountsSortRequested>(_onSortRequested);
     on<UserAccountsPageRequested>(_onPageRequested);
+    on<UserAccountsSearchRequested>(_onSearchRequested);
   }
 
   final IUserRepository _repository;
@@ -34,15 +35,22 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
   ) async {
     emit(const UserAccountsState.loading());
     try {
-      final userPage = await _repository.listUsers(ordering: event.ordering, page: 1);
+      final userPage = await _repository.listUsers(
+        ordering: event.ordering,
+        search: event.search,
+        page: 1,
+      );
       final page = _extractPageNumber(userPage.previous);
-      emit(UserAccountsState.loaded(
-        userPage.results,
-        page: page,
-        count: userPage.count,
-        next: userPage.next,
-        previous: userPage.previous,
-      ));
+      emit(
+        UserAccountsState.loaded(
+          userPage.results,
+          page: page,
+          count: userPage.count,
+          next: userPage.next,
+          previous: userPage.previous,
+          search: event.search ?? '',
+        ),
+      );
     } catch (e) {
       emit(UserAccountsState.failure(e.toString()));
     }
@@ -64,24 +72,30 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
           .where((user) => user.id != event.userId)
           .toList();
 
-      emit(UserAccountsState.loaded(
-        updatedUsers,
-        page: currentState.page,
-        count: currentState.count - 1,
-        next: currentState.next,
-        previous: currentState.previous,
-        pageSize: currentState.pageSize,
-      ));
+      emit(
+        UserAccountsState.loaded(
+          updatedUsers,
+          page: currentState.page,
+          count: currentState.count - 1,
+          next: currentState.next,
+          previous: currentState.previous,
+          pageSize: currentState.pageSize,
+          search: currentState.search,
+        ),
+      );
     } catch (e) {
       emit(UserAccountsState.failure(e.toString()));
-      emit(UserAccountsState.loaded(
-        currentState.users,
-        page: currentState.page,
-        count: currentState.count,
-        next: currentState.next,
-        previous: currentState.previous,
-        pageSize: currentState.pageSize,
-      ));
+      emit(
+        UserAccountsState.loaded(
+          currentState.users,
+          page: currentState.page,
+          count: currentState.count,
+          next: currentState.next,
+          previous: currentState.previous,
+          pageSize: currentState.pageSize,
+          search: currentState.search,
+        ),
+      );
     }
   }
 
@@ -91,15 +105,21 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
   ) async {
     emit(state.copyWith(status: UserAccountsStatus.loading));
     try {
-      final userPage = await _repository.listUsers(page: state.page);
+      final userPage = await _repository.listUsers(
+        page: state.page,
+        search: state.search,
+      );
       final page = _extractPageNumber(userPage.previous);
-      emit(UserAccountsState.loaded(
-        userPage.results,
-        page: page,
-        count: userPage.count,
-        next: userPage.next,
-        previous: userPage.previous,
-      ));
+      emit(
+        UserAccountsState.loaded(
+          userPage.results,
+          page: page,
+          count: userPage.count,
+          next: userPage.next,
+          previous: userPage.previous,
+          search: state.search,
+        ),
+      );
     } catch (e) {
       emit(UserAccountsState.failure(e.toString()));
     }
@@ -112,16 +132,25 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     emit(state.copyWith(status: UserAccountsStatus.loading));
     try {
       final ordering = event.ascending ? event.column : '-${event.column}';
-      final userPage = await _repository.listUsers(ordering: ordering, page: 1);
-      emit(UserAccountsState.loaded(
-        userPage.results,
+      final userPage = await _repository.listUsers(
+        ordering: ordering,
+        search: event.search,
         page: 1,
-        count: userPage.count,
-        next: userPage.next,
-        previous: userPage.previous,
-      ));
+      );
+      emit(
+        UserAccountsState.loaded(
+          userPage.results,
+          page: 1,
+          count: userPage.count,
+          next: userPage.next,
+          previous: userPage.previous,
+          search: event.search ?? state.search,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(status: UserAccountsStatus.failure, error: e.toString()));
+      emit(
+        state.copyWith(status: UserAccountsStatus.failure, error: e.toString()),
+      );
     }
   }
 
@@ -131,17 +160,54 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
   ) async {
     emit(state.copyWith(status: UserAccountsStatus.loading));
     try {
-      final userPage = await _repository.listUsers(ordering: event.ordering, page: event.page);
+      final userPage = await _repository.listUsers(
+        ordering: event.ordering,
+        search: event.search,
+        page: event.page,
+      );
       final page = _extractPageNumber(userPage.previous);
-      emit(UserAccountsState.loaded(
-        userPage.results,
-        page: page,
-        count: userPage.count,
-        next: userPage.next,
-        previous: userPage.previous,
-      ));
+      emit(
+        UserAccountsState.loaded(
+          userPage.results,
+          page: page,
+          count: userPage.count,
+          next: userPage.next,
+          previous: userPage.previous,
+          search: event.search ?? state.search,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(status: UserAccountsStatus.failure, error: e.toString()));
+      emit(
+        state.copyWith(status: UserAccountsStatus.failure, error: e.toString()),
+      );
+    }
+  }
+
+  Future<void> _onSearchRequested(
+    UserAccountsSearchRequested event,
+    Emitter<UserAccountsState> emit,
+  ) async {
+    emit(state.copyWith(status: UserAccountsStatus.loading));
+    try {
+      final userPage = await _repository.listUsers(
+        ordering: event.ordering,
+        search: event.query,
+        page: 1,
+      );
+      emit(
+        UserAccountsState.loaded(
+          userPage.results,
+          page: 1,
+          count: userPage.count,
+          next: userPage.next,
+          previous: userPage.previous,
+          search: event.query,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(status: UserAccountsStatus.failure, error: e.toString()),
+      );
     }
   }
 }
