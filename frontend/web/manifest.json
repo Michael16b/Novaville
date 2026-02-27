@@ -1,12 +1,55 @@
 {
-    "name": "frontend",
-    "short_name": "frontend",
+    "name": "Novaville",
+    "short_name": "Novaville",
+    "id": ".",
     "start_url": ".",
+    "scope": ".",
     "display": "standalone",
+    "display_override": [
+        "standalone",
+        "window-controls-overlay",
+        "minimal-ui",
+        "browser"
+    ],
+    "lang": "fr",
+    "dir": "ltr",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Plateforme citoyenne de la ville de Novaville.",
     "orientation": "portrait-primary",
+    "categories": [
+        "government",
+        "productivity",
+        "social"
+    ],
+    "shortcuts": [
+        {
+            "name": "Signaler un problème",
+            "short_name": "Signalement",
+            "description": "Créer rapidement un signalement citoyen",
+            "url": "/reports"
+        },
+        {
+            "name": "Sondages",
+            "short_name": "Sondages",
+            "description": "Répondre aux consultations citoyennes",
+            "url": "/surveys"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "screenshots/home.png",
+            "sizes": "508x529",
+            "type": "image/png",
+            "label": "Accueil Novaville"
+        },
+        {
+            "src": "screenshots/mobile.png",
+            "sizes": "375x324",
+            "type": "image/png",
+            "label": "Vue mobile Novaville"
+        }
+    ],
     "prefer_related_applications": false,
     "icons": [
         {

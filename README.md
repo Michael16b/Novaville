@@ -194,7 +194,7 @@ flutter pub get
 flutter run -d chrome --web-port 3000
 
 # Build for web
-flutter build web
+flutter build web --release --pwa-strategy=offline-first
 ```
 
 **Note**: Make sure the backend is running on http://localhost:8000
@@ -333,7 +333,7 @@ Build frontend with production URL:
 
 ```bash
 cd frontend
-flutter build web --release --dart-define=API_URL=https://api.your-domain.com
+flutter build web --release --pwa-strategy=offline-first --dart-define=API_URL=https://api.your-domain.com
 ```
 
 ---
@@ -493,7 +493,7 @@ accentColor: Color(0xFF4CAF50),   // Green
    Otherwise, rebuild the frontend:
 ```bash
 cd frontend
-flutter build web
+flutter build web --release --pwa-strategy=offline-first
 # Or rebuild the container
 docker compose up -d --build frontend
 ```
