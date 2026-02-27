@@ -23,6 +23,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
   final Map<_UserPageCacheKey, _CachedUserPage> _pageCache = {};
 
   static const Duration _revalidationInterval = Duration(seconds: 20);
+  static const Duration _minimumSkeletonDuration = Duration(milliseconds: 300);
 
   int _extractPageNumber(String? previous) {
     if (previous == null) return 1;
@@ -43,6 +44,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
       search: event.search ?? '',
       forceRefresh: false,
       useInitialLoading: true,
+      forceLoadingStateFirst: false,
     );
   }
 
@@ -101,6 +103,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
       search: state.search,
       forceRefresh: true,
       useInitialLoading: false,
+      forceLoadingStateFirst: false,
     );
   }
 
@@ -116,6 +119,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
       search: event.search ?? state.search,
       forceRefresh: false,
       useInitialLoading: false,
+      forceLoadingStateFirst: false,
     );
   }
 
@@ -130,6 +134,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
       search: event.search ?? state.search,
       forceRefresh: false,
       useInitialLoading: false,
+      forceLoadingStateFirst: true,
     );
   }
 
@@ -144,6 +149,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
       search: event.query,
       forceRefresh: false,
       useInitialLoading: false,
+      forceLoadingStateFirst: false,
     );
   }
 
@@ -154,7 +160,14 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     required String search,
     required bool forceRefresh,
     required bool useInitialLoading,
+    required bool forceLoadingStateFirst,
   }) async {
+    DateTime? loadingStartedAt;
+    if (forceLoadingStateFirst) {
+      emit(state.copyWith(status: UserAccountsStatus.loading, error: null));
+      loadingStartedAt = DateTime.now();
+    }
+
     final key = _UserPageCacheKey(
       page: page,
       ordering: ordering,
@@ -164,6 +177,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
 
     if (!forceRefresh && cached != null) {
       try {
+        await _waitForMinimumSkeleton(loadingStartedAt);
         _emitLoadedFromPage(emit, cached.pageData, search: search);
 
         final needsRevalidation =
@@ -179,7 +193,9 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
               pageData: freshPage,
               cachedAt: DateTime.now(),
             );
-            _emitLoadedFromPage(emit, freshPage, search: search);
+            if (_hasPageChanged(cached.pageData, freshPage)) {
+              _emitLoadedFromPage(emit, freshPage, search: search);
+            }
           } catch (_) {}
         }
         return;
@@ -190,7 +206,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
 
     if (useInitialLoading) {
       emit(const UserAccountsState.loading());
-    } else {
+    } else if (!forceLoadingStateFirst) {
       emit(state.copyWith(status: UserAccountsStatus.loading, error: null));
     }
 
@@ -204,6 +220,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
         pageData: userPage,
         cachedAt: DateTime.now(),
       );
+      await _waitForMinimumSkeleton(loadingStartedAt);
       _emitLoadedFromPage(emit, userPage, search: search);
     } catch (e) {
       emit(
@@ -228,6 +245,34 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
         search: search,
       ),
     );
+  }
+
+  Future<void> _waitForMinimumSkeleton(DateTime? loadingStartedAt) async {
+    if (loadingStartedAt == null) {
+      return;
+    }
+    final elapsed = DateTime.now().difference(loadingStartedAt);
+    final remaining = _minimumSkeletonDuration - elapsed;
+    if (remaining > Duration.zero) {
+      await Future<void>.delayed(remaining);
+    }
+  }
+
+  bool _hasPageChanged(UserPage previousPage, UserPage nextPage) {
+    if (previousPage.count != nextPage.count ||
+        previousPage.next != nextPage.next ||
+        previousPage.previous != nextPage.previous ||
+        previousPage.results.length != nextPage.results.length) {
+      return true;
+    }
+
+    for (var index = 0; index < previousPage.results.length; index++) {
+      if (previousPage.results[index] != nextPage.results[index]) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
 
