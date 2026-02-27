@@ -36,14 +36,20 @@ void main() {
       );
     }
 
+    IgnorePointer findMenuIgnorePointer(WidgetTester tester) {
+      final menuIgnorePointerFinder = find.descendant(
+        of: find.byType(ExpandableFabMenu),
+        matching: find.byType(IgnorePointer),
+      );
+      return tester.widget<IgnorePointer>(menuIgnorePointerFinder);
+    }
+
     testWidgets('actions are not interactive by default (collapsed)', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(buildWidget());
 
-      final ignorePointer = tester.widget<IgnorePointer>(
-        find.byType(IgnorePointer).first,
-      );
+      final ignorePointer = findMenuIgnorePointer(tester);
       expect(ignorePointer.ignoring, isTrue);
     });
 
@@ -55,9 +61,7 @@ void main() {
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
-      final ignorePointer = tester.widget<IgnorePointer>(
-        find.byType(IgnorePointer).first,
-      );
+      final ignorePointer = findMenuIgnorePointer(tester);
       expect(ignorePointer.ignoring, isFalse);
     });
 
@@ -99,9 +103,7 @@ void main() {
       await tester.tap(find.text('Action Two'));
       await tester.pumpAndSettle();
 
-      final ignorePointer = tester.widget<IgnorePointer>(
-        find.byType(IgnorePointer).first,
-      );
+      final ignorePointer = findMenuIgnorePointer(tester);
       expect(ignorePointer.ignoring, isTrue);
     });
 
@@ -116,9 +118,7 @@ void main() {
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
-      final ignorePointer = tester.widget<IgnorePointer>(
-        find.byType(IgnorePointer).first,
-      );
+      final ignorePointer = findMenuIgnorePointer(tester);
       expect(ignorePointer.ignoring, isTrue);
     });
   });
