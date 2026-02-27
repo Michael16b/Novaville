@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
-import 'package:frontend/constants/texts/texts_profile.dart';
+import 'package:frontend/constants/texts/texts_my_account.dart';
 import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/design_systems/custom_outlined_button.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/design_systems/custom_text_form_field.dart';
-import 'package:frontend/features/account/application/bloc/user_profile_bloc.dart';
-import 'package:frontend/features/account/data/user_repository_factory.dart';
+import 'package:frontend/features/users/application/bloc/user_profil_bloc/user_profile_bloc.dart';
+import 'package:frontend/features/users/data/user_repository_factory.dart';
 
 /// User account page with a profile edit form.
 class MyAccountPage extends StatelessWidget {

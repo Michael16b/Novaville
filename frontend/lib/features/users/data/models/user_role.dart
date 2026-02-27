@@ -1,16 +1,16 @@
 /// Enumeration of user roles in the system.
 enum UserRole {
-  /// Citizen
-  citizen('CITIZEN', 'Citizen'),
+  /// Citoyen
+  citizen('CITIZEN', 'Citoyen'),
 
-  /// Elected official
-  elected('ELECTED', 'Elected Official'),
+  /// Élu
+  elected('ELECTED', 'Élu'),
 
-  /// Municipal agent
-  agent('AGENT', 'Municipal Agent'),
+  /// Agent municipal
+  agent('AGENT', 'Agent municipal'),
 
-  /// Global administrator
-  globalAdmin('GLOBAL_ADMIN', 'Global Administrator');
+  /// Administrateur global
+  globalAdmin('GLOBAL_ADMIN', 'Administrateur global');
 
   const UserRole(this.value, this.label);
 

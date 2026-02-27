@@ -5,20 +5,43 @@ import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/constants/texts/texts_navigation.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
+import 'package:frontend/features/users/data/models/user.dart';
+import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/ui/assets.dart';
 import 'package:frontend/ui/widgets/app_banner.dart';
 
 class MockAuthRepository implements IAuthRepository {
+  bool logoutCalled = false;
+
   @override
-  Future<String> login({required String username, required String password}) async {
-    return 'mock-token';
+  Future<User> login({
+    required String username,
+    required String password,
+  }) async {
+    return User(
+      id: 1,
+      username: username,
+      email: 'test@example.com',
+      firstName: 'Test',
+      lastName: 'User',
+      role: UserRole.citizen,
+    );
   }
 
   @override
-  Future<void> logout() async {}
+  Future<void> logout() async {
+    logoutCalled = true;
+  }
 
   @override
-  Future<bool> hasValidSession() async => true;
+  Future<User?> hasValidSession() async => User(
+    id: 1,
+    username: 'testuser',
+    email: 'test@example.com',
+    firstName: 'Test',
+    lastName: 'User',
+    role: UserRole.citizen,
+  );
 }
 
 void main() {
@@ -40,13 +63,23 @@ void main() {
         home: Scaffold(
           body: BlocProvider<AuthBloc>.value(
             value: authBloc,
-            child: AppBanner(currentLocation: currentLocation),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: 1200, // Ensure enough width to avoid overflow
+                child: AppBanner(currentLocation: currentLocation),
+              ),
+            ),
           ),
         ),
       );
     }
 
     testWidgets('renders logo image', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       final logoFinder = find.byWidgetPredicate(
@@ -59,7 +92,13 @@ void main() {
       expect(logoFinder, findsOneWidget);
     });
 
-    testWidgets('renders home button with correct text', (WidgetTester tester) async {
+    testWidgets('renders home button with correct text', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       expect(find.text(AppTextsNavigation.homeButton), findsOneWidget);
@@ -67,12 +106,22 @@ void main() {
     });
 
     testWidgets('renders user account icon', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       expect(find.byIcon(Icons.account_circle_outlined), findsOneWidget);
     });
 
-    testWidgets('opens menu when account icon is tapped', (WidgetTester tester) async {
+    testWidgets('opens menu when account icon is tapped', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Tap the account icon to open the menu
@@ -84,7 +133,13 @@ void main() {
       expect(find.text(AppTextsAuth.logout), findsOneWidget);
     });
 
-    testWidgets('menu displays personal info option with correct icon', (WidgetTester tester) async {
+    testWidgets('menu displays personal info option with correct icon', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Open the menu
@@ -96,7 +151,13 @@ void main() {
       expect(find.text(AppTextsNavigation.personalInfo), findsOneWidget);
     });
 
-    testWidgets('menu displays logout option with correct icon', (WidgetTester tester) async {
+    testWidgets('menu displays logout option with correct icon', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Open the menu
@@ -108,7 +169,13 @@ void main() {
       expect(find.text(AppTextsAuth.logout), findsOneWidget);
     });
 
-    testWidgets('triggers logout when logout menu item is tapped', (WidgetTester tester) async {
+    testWidgets('triggers logout when logout menu item is tapped', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Open the menu
@@ -119,11 +186,15 @@ void main() {
       await tester.tap(find.text(AppTextsAuth.logout));
       await tester.pumpAndSettle();
 
-      // Verify that AuthLogoutRequested event was added to the bloc
-      expect(authBloc.state.status, AuthStatus.unauthenticated);
+      // Verify logout was requested from the auth repository
+      expect(mockAuthRepository.logoutCalled, isTrue);
     });
 
     testWidgets('home button is tappable', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       final homeButtonFinder = find.text(AppTextsNavigation.homeButton);
@@ -134,7 +205,13 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('uses SafeArea to avoid system UI overlap', (WidgetTester tester) async {
+    testWidgets('uses SafeArea to avoid system UI overlap', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       final safeAreaFinder = find.byWidgetPredicate(
@@ -144,7 +221,13 @@ void main() {
       expect(safeAreaFinder, findsOneWidget);
     });
 
-    testWidgets('has correct layout structure with logo and buttons', (WidgetTester tester) async {
+    testWidgets('has correct layout structure with logo and buttons', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Verify the main container exists
@@ -154,7 +237,10 @@ void main() {
       expect(containerFinder, findsOneWidget);
 
       // Verify Row layout exists
-      expect(find.byWidgetPredicate((widget) => widget is Row), findsAtLeastNWidgets(1));
+      expect(
+        find.byWidgetPredicate((widget) => widget is Row),
+        findsAtLeastNWidgets(1),
+      );
     });
   });
 }

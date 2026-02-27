@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/features/account/application/bloc/user_profile_bloc.dart';
-import 'package:frontend/features/account/data/models/user.dart';
-import 'package:frontend/features/account/data/user_repository.dart';
+import 'package:frontend/features/users/application/bloc/user_profil_bloc/user_profile_bloc.dart';
+import 'package:frontend/features/users/data/models/user.dart';
+import 'package:frontend/features/users/data/user_repository.dart';
 
 /// Fake repository implementation for tests.
 class _FakeUserRepository implements IUserRepository {
@@ -32,6 +32,17 @@ class _FakeUserRepository implements IUserRepository {
   }
 
   @override
+  Future<UserPage> listUsers({String? ordering, String? search, int page = 1}) async {
+    if (shouldThrow) throw Exception(errorMessage);
+    return UserPage(
+      count: 1,
+      next: null,
+      previous: null,
+      results: [userToReturn ?? _defaultUser],
+    );
+  }
+
+  @override
   Future<User> updateUser({
     required int userId,
     String? firstName,
@@ -47,6 +58,11 @@ class _FakeUserRepository implements IUserRepository {
       firstName: firstName ?? 'John',
       lastName: lastName ?? 'Doe',
     );
+  }
+
+  @override
+  Future<void> deleteUser({required int userId}) async {
+    if (shouldThrow) throw Exception(errorMessage);
   }
 }
 
