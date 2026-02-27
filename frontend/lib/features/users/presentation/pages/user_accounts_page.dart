@@ -268,20 +268,38 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     return _buildUsersGrid(context, state.users);
   }
 
+  ({int crossAxisCount, double childAspectRatio}) _computeGridLayout(
+    double width,
+  ) {
+    const spacing = 14.0;
+    const minCardWidth = 250.0;
+
+    final estimatedCount = ((width + spacing) / (minCardWidth + spacing))
+        .floor()
+        .clamp(1, 6);
+
+    final cappedCount = width >= 1300
+      ? estimatedCount.clamp(1, 4)
+        : estimatedCount;
+
+    final cardWidth = (width - (spacing * (cappedCount - 1))) / cappedCount;
+    final estimatedCardHeight = cappedCount == 1
+        ? 165.0
+        : cappedCount == 2
+        ? 185.0
+        : 205.0;
+
+    final childAspectRatio = (cardWidth / estimatedCardHeight).clamp(1.15, 2.4);
+
+    return (crossAxisCount: cappedCount, childAspectRatio: childAspectRatio);
+  }
+
   Widget _buildUsersSkeleton(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final crossAxisCount = width >= 1700
-            ? 3
-            : width >= 900
-            ? 2
-            : 1;
-        final childAspectRatio = crossAxisCount == 1
-            ? 2.4
-            : crossAxisCount == 2
-            ? 1.6
-            : 1.45;
+        final layout = _computeGridLayout(constraints.maxWidth);
+        final crossAxisCount = layout.crossAxisCount;
+        final childAspectRatio = layout.childAspectRatio;
 
         return GridView.builder(
           shrinkWrap: true,
@@ -306,17 +324,9 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final crossAxisCount = width >= 1700
-            ? 3
-            : width >= 900
-            ? 2
-            : 1;
-        final childAspectRatio = crossAxisCount == 1
-            ? 2.4
-            : crossAxisCount == 2
-            ? 1.6
-            : 1.45;
+        final layout = _computeGridLayout(constraints.maxWidth);
+        final crossAxisCount = layout.crossAxisCount;
+        final childAspectRatio = layout.childAspectRatio;
 
         return GridView.builder(
           shrinkWrap: true,
