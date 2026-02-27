@@ -40,6 +40,7 @@ class VoteViewSet(viewsets.ModelViewSet):
     queryset = Vote.objects.select_related('user', 'survey', 'option').all()
     serializer_class = VoteSerializer
     permission_classes = [IsAuthenticated]
+    filterset_fields = '__all__'
     http_method_names = ['get', 'post', 'delete']  # No PUT/PATCH
     
     def get_serializer_class(self):

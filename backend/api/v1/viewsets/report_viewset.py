@@ -57,7 +57,7 @@ class ReportViewSet(viewsets.ModelViewSet):
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ['status', 'problem_type', 'neighborhood']
+    filterset_fields = '__all__'
     ordering_fields = ['created_at', 'status']
     ordering = ['-created_at']
     

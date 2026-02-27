@@ -60,7 +60,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.select_related('neighborhood').all()
     serializer_class = UserSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['role', 'is_active', 'neighborhood']
+    filterset_fields = '__all__'
     search_fields = ['username', 'first_name', 'last_name', 'email']
     ordering_fields = ['first_name', 'username', 'email', 'role', 'date_joined']
     ordering = ['-date_joined']
