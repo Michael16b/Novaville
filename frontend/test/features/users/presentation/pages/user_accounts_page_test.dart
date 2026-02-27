@@ -159,8 +159,8 @@ void main() {
 
       expect(find.text('Admin User'), findsOneWidget);
       expect(find.text('John Doe'), findsOneWidget);
-      expect(find.text('@admin'), findsOneWidget);
-      expect(find.text('@user2'), findsOneWidget);
+      expect(find.text('admin'), findsOneWidget);
+      expect(find.text('user2'), findsOneWidget);
     });
 
     testWidgets('shows error message when loading fails', (WidgetTester tester) async {

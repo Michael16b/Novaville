@@ -60,7 +60,7 @@ class UserAccountCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '@${user.username}',
+                        user.username,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
