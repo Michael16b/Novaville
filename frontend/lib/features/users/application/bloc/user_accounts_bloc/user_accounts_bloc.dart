@@ -20,6 +20,9 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
   }
 
   final IUserRepository _repository;
+  final Map<_UserPageCacheKey, _CachedUserPage> _pageCache = {};
+
+  static const Duration _revalidationInterval = Duration(seconds: 20);
 
   int _extractPageNumber(String? previous) {
     if (previous == null) return 1;
@@ -33,27 +36,14 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     UserAccountsLoadRequested event,
     Emitter<UserAccountsState> emit,
   ) async {
-    emit(const UserAccountsState.loading());
-    try {
-      final userPage = await _repository.listUsers(
-        ordering: event.ordering,
-        search: event.search,
-        page: 1,
-      );
-      final page = _extractPageNumber(userPage.previous);
-      emit(
-        UserAccountsState.loaded(
-          userPage.results,
-          page: page,
-          count: userPage.count,
-          next: userPage.next,
-          previous: userPage.previous,
-          search: event.search ?? '',
-        ),
-      );
-    } catch (e) {
-      emit(UserAccountsState.failure(e.toString()));
-    }
+    await _loadPageWithCache(
+      emit: emit,
+      page: 1,
+      ordering: event.ordering,
+      search: event.search ?? '',
+      forceRefresh: false,
+      useInitialLoading: true,
+    );
   }
 
   Future<void> _onDeleteRequested(
@@ -67,6 +57,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
 
     try {
       await _repository.deleteUser(userId: event.userId);
+      _pageCache.clear();
 
       final updatedUsers = currentState.users
           .where((user) => user.id != event.userId)
@@ -103,79 +94,117 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     UserAccountsRefreshRequested event,
     Emitter<UserAccountsState> emit,
   ) async {
-    emit(state.copyWith(status: UserAccountsStatus.loading));
-    try {
-      final userPage = await _repository.listUsers(
-        page: state.page,
-        search: state.search,
-      );
-      final page = _extractPageNumber(userPage.previous);
-      emit(
-        UserAccountsState.loaded(
-          userPage.results,
-          page: page,
-          count: userPage.count,
-          next: userPage.next,
-          previous: userPage.previous,
-          search: state.search,
-        ),
-      );
-    } catch (e) {
-      emit(UserAccountsState.failure(e.toString()));
-    }
+    await _loadPageWithCache(
+      emit: emit,
+      page: state.page,
+      ordering: null,
+      search: state.search,
+      forceRefresh: true,
+      useInitialLoading: false,
+    );
   }
 
   Future<void> _onSortRequested(
     UserAccountsSortRequested event,
     Emitter<UserAccountsState> emit,
   ) async {
-    emit(state.copyWith(status: UserAccountsStatus.loading));
-    try {
-      final ordering = event.ascending ? event.column : '-${event.column}';
-      final userPage = await _repository.listUsers(
-        ordering: ordering,
-        search: event.search,
-        page: 1,
-      );
-      emit(
-        UserAccountsState.loaded(
-          userPage.results,
-          page: 1,
-          count: userPage.count,
-          next: userPage.next,
-          previous: userPage.previous,
-          search: event.search ?? state.search,
-        ),
-      );
-    } catch (e) {
-      emit(
-        state.copyWith(status: UserAccountsStatus.failure, error: e.toString()),
-      );
-    }
+    final ordering = event.ascending ? event.column : '-${event.column}';
+    await _loadPageWithCache(
+      emit: emit,
+      page: 1,
+      ordering: ordering,
+      search: event.search ?? state.search,
+      forceRefresh: false,
+      useInitialLoading: false,
+    );
   }
 
   Future<void> _onPageRequested(
     UserAccountsPageRequested event,
     Emitter<UserAccountsState> emit,
   ) async {
-    emit(state.copyWith(status: UserAccountsStatus.loading));
+    await _loadPageWithCache(
+      emit: emit,
+      page: event.page,
+      ordering: event.ordering,
+      search: event.search ?? state.search,
+      forceRefresh: false,
+      useInitialLoading: false,
+    );
+  }
+
+  Future<void> _onSearchRequested(
+    UserAccountsSearchRequested event,
+    Emitter<UserAccountsState> emit,
+  ) async {
+    await _loadPageWithCache(
+      emit: emit,
+      page: 1,
+      ordering: event.ordering,
+      search: event.query,
+      forceRefresh: false,
+      useInitialLoading: false,
+    );
+  }
+
+  Future<void> _loadPageWithCache({
+    required Emitter<UserAccountsState> emit,
+    required int page,
+    required String? ordering,
+    required String search,
+    required bool forceRefresh,
+    required bool useInitialLoading,
+  }) async {
+    final key = _UserPageCacheKey(
+      page: page,
+      ordering: ordering,
+      search: search,
+    );
+    final cached = _pageCache[key];
+
+    if (!forceRefresh && cached != null) {
+      try {
+        _emitLoadedFromPage(emit, cached.pageData, search: search);
+
+        final needsRevalidation =
+            DateTime.now().difference(cached.cachedAt) >= _revalidationInterval;
+        if (needsRevalidation) {
+          try {
+            final freshPage = await _repository.listUsers(
+              ordering: ordering,
+              search: search,
+              page: page,
+            );
+            _pageCache[key] = _CachedUserPage(
+              pageData: freshPage,
+              cachedAt: DateTime.now(),
+            );
+            _emitLoadedFromPage(emit, freshPage, search: search);
+          } catch (_) {}
+        }
+        return;
+      } catch (_) {
+        _pageCache.remove(key);
+      }
+    }
+
+    if (useInitialLoading) {
+      emit(const UserAccountsState.loading());
+    } else {
+      emit(state.copyWith(status: UserAccountsStatus.loading, error: null));
+    }
+
     try {
       final userPage = await _repository.listUsers(
-        ordering: event.ordering,
-        search: event.search,
-        page: event.page,
+        ordering: ordering,
+        search: search,
+        page: page,
       );
-      final page = _extractPageNumber(userPage.previous);
-      emit(
-        UserAccountsState.loaded(
-          userPage.results,
-          page: page,
-          count: userPage.count,
-          next: userPage.next,
-          previous: userPage.previous,
-          search: event.search ?? state.search,
-        ),
+      _pageCache[key] = _CachedUserPage(
+        pageData: userPage,
+        cachedAt: DateTime.now(),
       );
+      _emitLoadedFromPage(emit, userPage, search: search);
     } catch (e) {
       emit(
         state.copyWith(status: UserAccountsStatus.failure, error: e.toString()),
@@ -183,31 +212,43 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     }
   }
 
-  Future<void> _onSearchRequested(
-    UserAccountsSearchRequested event,
+  void _emitLoadedFromPage(
     Emitter<UserAccountsState> emit,
-  ) async {
-    emit(state.copyWith(status: UserAccountsStatus.loading));
-    try {
-      final userPage = await _repository.listUsers(
-        ordering: event.ordering,
-        search: event.query,
-        page: 1,
-      );
-      emit(
-        UserAccountsState.loaded(
-          userPage.results,
-          page: 1,
-          count: userPage.count,
-          next: userPage.next,
-          previous: userPage.previous,
-          search: event.query,
-        ),
-      );
-    } catch (e) {
-      emit(
-        state.copyWith(status: UserAccountsStatus.failure, error: e.toString()),
-      );
-    }
+    UserPage userPage, {
+    required String search,
+  }) {
+    final page = _extractPageNumber(userPage.previous);
+    emit(
+      UserAccountsState.loaded(
+        userPage.results,
+        page: page,
+        count: userPage.count,
+        next: userPage.next,
+        previous: userPage.previous,
+        search: search,
+      ),
+    );
   }
+}
+
+class _UserPageCacheKey extends Equatable {
+  const _UserPageCacheKey({
+    required this.page,
+    required this.ordering,
+    required this.search,
+  });
+
+  final int page;
+  final String? ordering;
+  final String search;
+
+  @override
+  List<Object?> get props => [page, ordering, search];
+}
+
+class _CachedUserPage {
+  const _CachedUserPage({required this.pageData, required this.cachedAt});
+
+  final UserPage pageData;
+  final DateTime cachedAt;
 }

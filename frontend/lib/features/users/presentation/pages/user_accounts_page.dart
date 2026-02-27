@@ -331,9 +331,8 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   }
 
   Widget _buildResultsSection(BuildContext context, UserAccountsState state) {
-    if ((state.status == UserAccountsStatus.initial ||
-            state.status == UserAccountsStatus.loading) &&
-        state.users.isEmpty) {
+    if (state.status == UserAccountsStatus.initial ||
+        state.status == UserAccountsStatus.loading) {
       return _buildUsersSkeleton(context);
     }
 
