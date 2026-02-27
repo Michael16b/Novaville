@@ -6,13 +6,13 @@ import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 void main() {
   group('authRedirect', () {
     group('when AuthStatus is checking', () {
-      test('redirects to /loading when not already there', () {
+      test('redirects to /loading with from param when not already there', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.checking,
             currentLocation: AppRoutes.home,
           ),
-          AppRoutes.loading,
+          '${AppRoutes.loading}?from=${Uri.encodeComponent(AppRoutes.home)}',
         );
       });
 
@@ -26,7 +26,7 @@ void main() {
         );
       });
 
-      test('redirects to /loading from login page', () {
+      test('redirects to /loading without from param when on login page', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.checking,
@@ -35,16 +35,26 @@ void main() {
           AppRoutes.loading,
         );
       });
+
+      test('redirects to /loading with from param when on a protected route', () {
+        expect(
+          authRedirect(
+            authStatus: AuthStatus.checking,
+            currentLocation: AppRoutes.myAccount,
+          ),
+          '${AppRoutes.loading}?from=${Uri.encodeComponent(AppRoutes.myAccount)}',
+        );
+      });
     });
 
     group('when AuthStatus is authenticating', () {
-      test('redirects to /loading when not already there', () {
+      test('redirects to /loading with from param when not already there', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.authenticating,
             currentLocation: AppRoutes.home,
           ),
-          AppRoutes.loading,
+          '${AppRoutes.loading}?from=${Uri.encodeComponent(AppRoutes.home)}',
         );
       });
 
@@ -144,13 +154,24 @@ void main() {
         );
       });
 
-      test('redirects to /home when on loading page', () {
+      test('redirects to /home when on loading page with no returnUrl', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.authenticated,
             currentLocation: AppRoutes.loading,
           ),
           AppRoutes.home,
+        );
+      });
+
+      test('redirects to returnUrl when on loading page with a returnUrl', () {
+        expect(
+          authRedirect(
+            authStatus: AuthStatus.authenticated,
+            currentLocation: AppRoutes.loading,
+            returnUrl: AppRoutes.myAccount,
+          ),
+          AppRoutes.myAccount,
         );
       });
     });

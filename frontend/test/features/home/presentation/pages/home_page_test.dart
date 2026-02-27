@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_home.dart';
 import 'package:frontend/features/home/presentation/pages/home_page.dart';
 import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   group('HomePage', () {
@@ -54,6 +56,10 @@ void main() {
     });
 
     testWidgets('renders GridView with 6 MenuCards', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
       await tester.pumpWidget(
         const MaterialApp(
           home: HomePage(),
@@ -120,6 +126,10 @@ void main() {
     });
 
     testWidgets('renders News menu card with correct icon and title', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
       await tester.pumpWidget(
         const MaterialApp(
           home: HomePage(),
@@ -131,6 +141,10 @@ void main() {
     });
 
     testWidgets('renders My Account menu card with correct icon and title', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
       await tester.pumpWidget(
         const MaterialApp(
           home: HomePage(),
@@ -142,6 +156,10 @@ void main() {
     });
 
     testWidgets('renders Useful Info menu card with correct icon and title', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
       await tester.pumpWidget(
         const MaterialApp(
           home: HomePage(),
@@ -173,10 +191,11 @@ void main() {
         ),
       );
 
-      // SizedBoxes order: height 24 (before title), height 8 (between title/subtitle), height 24 (after subtitle)
-      final sizedBoxes = find.byType(SizedBox);
-      final SizedBox spacer1 = tester.widget(sizedBoxes.at(1));
-      expect(spacer1.height, 8);
+      // SizedBox with height 8 separates the title from the subtitle
+      expect(
+        find.byWidgetPredicate((widget) => widget is SizedBox && widget.height == 8),
+        findsOneWidget,
+      );
     });
 
     testWidgets('has correct spacing between subtitle and grid', (WidgetTester tester) async {
@@ -186,18 +205,33 @@ void main() {
         ),
       );
 
-      // SizedBoxes order: height 24 (before title), height 8 (between title/subtitle), height 24 (after subtitle)
-      final sizedBoxes = find.byType(SizedBox);
-      final SizedBox spacer2 = tester.widget(sizedBoxes.at(2));
-      expect(spacer2.height, 24);
+      // SizedBoxes with height 24 appear before the title and after the subtitle
+      expect(
+        find.byWidgetPredicate((widget) => widget is SizedBox && widget.height == 24),
+        findsAtLeastNWidgets(2),
+      );
     });
 
     testWidgets('menu cards are tappable', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
+      tester.view.physicalSize = const Size(800, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      final router = GoRouter(
+        routes: [
+          GoRoute(path: AppRoutes.home, builder: (_, __) => const HomePage()),
+          GoRoute(path: AppRoutes.reports, builder: (_, __) => const Scaffold()),
+          GoRoute(path: AppRoutes.surveys, builder: (_, __) => const Scaffold()),
+          GoRoute(path: AppRoutes.agenda, builder: (_, __) => const Scaffold()),
+          GoRoute(path: AppRoutes.news, builder: (_, __) => const Scaffold()),
+          GoRoute(path: AppRoutes.usefulInfo, builder: (_, __) => const Scaffold()),
+          GoRoute(path: AppRoutes.myAccount, builder: (_, __) => const Scaffold()),
+        ],
       );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
 
       // Tap on the first MenuCard (Reports)
       await tester.tap(find.byType(MenuCard).first);

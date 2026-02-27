@@ -30,25 +30,40 @@ Page<T> _buildPage<T>({
 /// Returns the path to redirect to, or [null] if no redirect is needed.
 /// Extracted as a standalone function so it can be unit-tested independently
 /// of [GoRouter].
+///
+/// [returnUrl] is the path to redirect to after authentication completes
+/// (extracted from the `?from=` query parameter on the loading page).
 String? authRedirect({
   required AuthStatus authStatus,
   required String currentLocation,
+  String? returnUrl,
 }) {
   final isOnLoading = currentLocation == AppRoutes.loading;
   final isLoggingIn = currentLocation == AppRoutes.login;
   // While checking / authenticating, show a dedicated loading screen.
   if (authStatus == AuthStatus.checking ||
       authStatus == AuthStatus.authenticating) {
-    return isOnLoading ? null : AppRoutes.loading;
+    if (isOnLoading) return null;
+    // Preserve the intended destination so we can return after auth.
+    if (!isLoggingIn) {
+      return '${AppRoutes.loading}?from=${Uri.encodeComponent(currentLocation)}';
+    }
+    return AppRoutes.loading;
   }
   final isAuthenticated = authStatus == AuthStatus.authenticated;
   // Not authenticated → send to login (and away from loading).
   if (!isAuthenticated) {
     return isLoggingIn ? null : AppRoutes.login;
   }
-  // Authenticated → leave login / loading pages.
-  if (isLoggingIn || isOnLoading) {
-    return AppRoutes.home;
+  // Authenticated → leave login page.
+  if (isLoggingIn) return AppRoutes.home;
+  // Authenticated → leave loading page, returning to the original destination.
+  if (isOnLoading) {
+    // Only redirect to internal paths (must start with '/') to prevent open
+    // redirect vulnerabilities where an attacker crafts ?from=https://evil.com.
+    final isInternalPath =
+        returnUrl != null && returnUrl.startsWith('/') && returnUrl.isNotEmpty;
+    return isInternalPath ? returnUrl : AppRoutes.home;
   }
   return null;
 }
@@ -64,6 +79,7 @@ GoRouter buildRouter(AuthBloc authBloc) {
     redirect: (context, state) => authRedirect(
       authStatus: authBloc.state.status,
       currentLocation: state.matchedLocation,
+      returnUrl: state.uri.queryParameters['from'],
     ),
     routes: [
       // ── Loading route (shown while auth status is being checked) ──────────
