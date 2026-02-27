@@ -12,7 +12,7 @@ void main() {
             authStatus: AuthStatus.checking,
             currentLocation: AppRoutes.home,
           ),
-          AppRoutes.loading,
+          '${AppRoutes.loading}?from=%2F',
         );
       });
 
@@ -32,9 +32,23 @@ void main() {
             authStatus: AuthStatus.checking,
             currentLocation: AppRoutes.login,
           ),
-          AppRoutes.loading,
+          '${AppRoutes.loading}?from=%2Flogin',
         );
       });
+
+      test(
+        'preserves existing from query value when redirecting to /loading',
+        () {
+          expect(
+            authRedirect(
+              authStatus: AuthStatus.checking,
+              currentLocation: AppRoutes.login,
+              fromLocation: AppRoutes.userAccounts,
+            ),
+            '${AppRoutes.loading}?from=%2Fuser-accounts',
+          );
+        },
+      );
     });
 
     group('when AuthStatus is authenticating', () {
@@ -44,7 +58,7 @@ void main() {
             authStatus: AuthStatus.authenticating,
             currentLocation: AppRoutes.home,
           ),
-          AppRoutes.loading,
+          '${AppRoutes.loading}?from=%2F',
         );
       });
 
@@ -66,7 +80,7 @@ void main() {
             authStatus: AuthStatus.unauthenticated,
             currentLocation: AppRoutes.home,
           ),
-          AppRoutes.login,
+          '${AppRoutes.login}?from=%2F',
         );
       });
 
@@ -76,9 +90,23 @@ void main() {
             authStatus: AuthStatus.unauthenticated,
             currentLocation: AppRoutes.reports,
           ),
-          AppRoutes.login,
+          '${AppRoutes.login}?from=%2Freports',
         );
       });
+
+      test(
+        'keeps intended destination when unauthenticated on loading page',
+        () {
+          expect(
+            authRedirect(
+              authStatus: AuthStatus.unauthenticated,
+              currentLocation: AppRoutes.loading,
+              fromLocation: AppRoutes.userAccounts,
+            ),
+            '${AppRoutes.login}?from=%2Fuser-accounts',
+          );
+        },
+      );
 
       test('stays on /login (returns null) when already on login page', () {
         expect(
@@ -98,7 +126,7 @@ void main() {
             authStatus: AuthStatus.failure,
             currentLocation: AppRoutes.home,
           ),
-          AppRoutes.login,
+          '${AppRoutes.login}?from=%2F',
         );
       });
 
@@ -153,6 +181,20 @@ void main() {
           AppRoutes.home,
         );
       });
+
+      test(
+        'returns intended destination when authenticated on loading page',
+        () {
+          expect(
+            authRedirect(
+              authStatus: AuthStatus.authenticated,
+              currentLocation: AppRoutes.loading,
+              fromLocation: AppRoutes.userAccounts,
+            ),
+            AppRoutes.userAccounts,
+          );
+        },
+      );
     });
   });
 }

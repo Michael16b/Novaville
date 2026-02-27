@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_home.dart';
 import 'package:frontend/features/home/presentation/pages/home_page.dart';
 import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   group('HomePage', () {
+    // Helper to set screen size for desktop-like view to ensure all grid items are visible
+    void setDesktopSize(WidgetTester tester) {
+      tester.view.physicalSize = const Size(1440, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+    }
+
     testWidgets('renders title and subtitle', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
@@ -54,6 +64,7 @@ void main() {
     });
 
     testWidgets('renders GridView with 6 MenuCards', (WidgetTester tester) async {
+      setDesktopSize(tester);
       await tester.pumpWidget(
         const MaterialApp(
           home: HomePage(),
@@ -69,6 +80,7 @@ void main() {
     });
 
     testWidgets('GridView has correct configuration', (WidgetTester tester) async {
+      setDesktopSize(tester);
       await tester.pumpWidget(
         const MaterialApp(
           home: HomePage(),
@@ -87,6 +99,7 @@ void main() {
     });
 
     testWidgets('renders Reports menu card with correct icon and title', (WidgetTester tester) async {
+      setDesktopSize(tester);
       await tester.pumpWidget(
         const MaterialApp(
           home: HomePage(),
@@ -98,6 +111,7 @@ void main() {
     });
 
     testWidgets('renders Surveys menu card with correct icon and title', (WidgetTester tester) async {
+      setDesktopSize(tester);
       await tester.pumpWidget(
         const MaterialApp(
           home: HomePage(),
@@ -109,6 +123,7 @@ void main() {
     });
 
     testWidgets('renders Agenda menu card with correct icon and title', (WidgetTester tester) async {
+      setDesktopSize(tester);
       await tester.pumpWidget(
         const MaterialApp(
           home: HomePage(),
@@ -120,6 +135,7 @@ void main() {
     });
 
     testWidgets('renders News menu card with correct icon and title', (WidgetTester tester) async {
+      setDesktopSize(tester);
       await tester.pumpWidget(
         const MaterialApp(
           home: HomePage(),
@@ -131,6 +147,7 @@ void main() {
     });
 
     testWidgets('renders My Account menu card with correct icon and title', (WidgetTester tester) async {
+      setDesktopSize(tester);
       await tester.pumpWidget(
         const MaterialApp(
           home: HomePage(),
@@ -142,6 +159,7 @@ void main() {
     });
 
     testWidgets('renders Useful Info menu card with correct icon and title', (WidgetTester tester) async {
+      setDesktopSize(tester);
       await tester.pumpWidget(
         const MaterialApp(
           home: HomePage(),
@@ -173,10 +191,14 @@ void main() {
         ),
       );
 
-      // SizedBoxes order: height 24 (before title), height 8 (between title/subtitle), height 24 (after subtitle)
-      final sizedBoxes = find.byType(SizedBox);
-      final SizedBox spacer1 = tester.widget(sizedBoxes.at(1));
-      expect(spacer1.height, 8);
+      final columnFinder = find.descendant(
+        of: find.byType(SliverToBoxAdapter),
+        matching: find.byType(Column),
+      );
+      final Column column = tester.widget(columnFinder);
+      
+      // Children: SizedBox(24), Text(Title), SizedBox(8), Text(Subtitle), SizedBox(24)
+      expect((column.children[2] as SizedBox).height, 8);
     });
 
     testWidgets('has correct spacing between subtitle and grid', (WidgetTester tester) async {
@@ -186,24 +208,45 @@ void main() {
         ),
       );
 
-      // SizedBoxes order: height 24 (before title), height 8 (between title/subtitle), height 24 (after subtitle)
-      final sizedBoxes = find.byType(SizedBox);
-      final SizedBox spacer2 = tester.widget(sizedBoxes.at(2));
-      expect(spacer2.height, 24);
+      final columnFinder = find.descendant(
+        of: find.byType(SliverToBoxAdapter),
+        matching: find.byType(Column),
+      );
+      final Column column = tester.widget(columnFinder);
+      
+      // Children: SizedBox(24), Text(Title), SizedBox(8), Text(Subtitle), SizedBox(24)
+      expect((column.children[4] as SizedBox).height, 24);
     });
 
     testWidgets('menu cards are tappable', (WidgetTester tester) async {
+      setDesktopSize(tester);
+      
+      final router = GoRouter(
+        initialLocation: '/',
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => const HomePage(),
+          ),
+          GoRoute(
+            path: AppRoutes.reports,
+            builder: (context, state) => const Scaffold(body: Text('Reports Page')),
+          ),
+        ],
+      );
+
       await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
+        MaterialApp.router(
+          routerConfig: router,
         ),
       );
 
       // Tap on the first MenuCard (Reports)
-      await tester.tap(find.byType(MenuCard).first);
+      await tester.tap(find.text(AppTextsHome.reports));
       await tester.pumpAndSettle();
 
-      // No exception should be thrown - the tap is handled
+      // Verify navigation happened
+      expect(find.text('Reports Page'), findsOneWidget);
     });
   });
 }

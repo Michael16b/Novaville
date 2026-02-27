@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:frontend/features/account/data/models/user.dart';
-import 'package:frontend/features/account/data/user_repository.dart';
+import 'package:frontend/features/users/data/models/user.dart';
+import 'package:frontend/features/users/data/user_repository.dart';
 
 part 'user_profile_event.dart';
 part 'user_profile_state.dart';
