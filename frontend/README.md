@@ -8,14 +8,15 @@ La vue d'administration "Ajouter plusieurs utilisateurs" permet l'import d'un fi
 
 - Fichier d'exemple : `assets/examples/users_import_example.csv`
 - Colonnes obligatoires : `first_name,last_name,username,email`
-- Colonne optionnelle : `role` (`CITIZEN`, `ELECTED`, `AGENT`, `GLOBAL_ADMIN`)
+- Colonne optionnelle : `role` (`citizen`, `elected`, `agent`, `global_admin`) en minuscule
 - La colonne mot de passe n'est pas requise : un mot de passe aléatoire est généré automatiquement.
+- Une pré-validation est effectuée avant import ("compilation CSV") et affiche les erreurs détaillées (ligne/colonne) si le fichier est invalide.
 
 Exemple minimal :
 
 ```csv
 first_name,last_name,username,email,role
-Jean,Dupont,jdupont,jdupont@novaville.fr,CITIZEN
+Jean,Dupont,jdupont,jdupont@novaville.fr,citizen
 ```
 
 ## Run locally (Web)

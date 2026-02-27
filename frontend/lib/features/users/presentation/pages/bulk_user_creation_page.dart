@@ -207,87 +207,18 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
         throw Exception('Le fichier CSV est vide.');
       }
 
-      final headers = rows.first
-          .map((cell) => cell.toString().trim().toLowerCase())
-          .toList();
+      final compilation = _compileCsv(rows);
 
-      int indexOfHeader(String key) => headers.indexOf(key);
-
-      final firstNameIndex = indexOfHeader('first_name');
-      final lastNameIndex = indexOfHeader('last_name');
-      final usernameIndex = indexOfHeader('username');
-      final emailIndex = indexOfHeader('email');
-      final roleIndex = indexOfHeader('role');
-
-      if (firstNameIndex < 0 ||
-          lastNameIndex < 0 ||
-          usernameIndex < 0 ||
-          emailIndex < 0) {
-        throw Exception(
-          'Colonnes obligatoires: first_name,last_name,username,email',
+      if (compilation.errors.isNotEmpty) {
+        if (!mounted) {
+          return;
+        }
+        CustomSnackBar.showError(
+          context,
+          'Compilation CSV échouée (${compilation.errors.length} erreur(s)).',
         );
-      }
-
-      String cellAt(List<dynamic> row, int index) {
-        if (index < 0 || index >= row.length) {
-          return '';
-        }
-        return row[index].toString().trim();
-      }
-
-      final existingUsernames = _draftUsers
-          .map((entry) => entry.username.toLowerCase())
-          .toSet();
-      final existingEmails = _draftUsers
-          .map((entry) => entry.email.toLowerCase())
-          .toSet();
-
-      var importedCount = 0;
-      final imported = <_DraftUser>[];
-
-      for (var i = 1; i < rows.length; i++) {
-        final row = rows[i];
-        final firstName = cellAt(row, firstNameIndex);
-        final lastName = cellAt(row, lastNameIndex);
-        final username = cellAt(row, usernameIndex);
-        final email = cellAt(row, emailIndex);
-        final roleRaw = cellAt(row, roleIndex);
-
-        if (firstName.isEmpty &&
-            lastName.isEmpty &&
-            username.isEmpty &&
-            email.isEmpty) {
-          continue;
-        }
-
-        if (firstName.isEmpty ||
-            lastName.isEmpty ||
-            username.isEmpty ||
-            email.isEmpty) {
-          continue;
-        }
-
-        final normalizedUsername = username.toLowerCase();
-        final normalizedEmail = email.toLowerCase();
-
-        if (existingUsernames.contains(normalizedUsername) ||
-            existingEmails.contains(normalizedEmail)) {
-          continue;
-        }
-
-        existingUsernames.add(normalizedUsername);
-        existingEmails.add(normalizedEmail);
-
-        imported.add(
-          _DraftUser(
-            firstName: firstName,
-            lastName: lastName,
-            username: username,
-            email: email,
-            role: _parseRole(roleRaw),
-          ),
-        );
-        importedCount++;
+        await _showCsvCompilationErrors(compilation.errors);
+        return;
       }
 
       if (!mounted) {
@@ -295,13 +226,13 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       }
 
       setState(() {
-        _draftUsers = <_DraftUser>[..._draftUsers, ...imported];
+        _draftUsers = <_DraftUser>[..._draftUsers, ...compilation.drafts];
       });
       await _saveDrafts();
 
       CustomSnackBar.showSuccess(
         context,
-        '$importedCount utilisateur(s) importé(s) depuis le CSV.',
+        'Compilation réussie : ${compilation.drafts.length} utilisateur(s) importé(s).',
       );
     } catch (error) {
       if (!mounted) {
@@ -317,16 +248,245 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     }
   }
 
+  _CsvCompilationResult _compileCsv(List<List<dynamic>> rows) {
+    final errors = <_CsvValidationError>[];
+    final drafts = <_DraftUser>[];
+
+    final headers = rows.first
+        .map((cell) => cell.toString().trim().toLowerCase())
+        .toList();
+
+    int indexOfHeader(String key) => headers.indexOf(key);
+
+    final firstNameIndex = indexOfHeader('first_name');
+    final lastNameIndex = indexOfHeader('last_name');
+    final usernameIndex = indexOfHeader('username');
+    final emailIndex = indexOfHeader('email');
+    final roleIndex = indexOfHeader('role');
+
+    void addHeaderError(String column, String message) {
+      errors.add(
+        _CsvValidationError(line: 1, column: column, message: message),
+      );
+    }
+
+    if (firstNameIndex < 0) {
+      addHeaderError('first_name', 'Colonne obligatoire manquante');
+    }
+    if (lastNameIndex < 0) {
+      addHeaderError('last_name', 'Colonne obligatoire manquante');
+    }
+    if (usernameIndex < 0) {
+      addHeaderError('username', 'Colonne obligatoire manquante');
+    }
+    if (emailIndex < 0) {
+      addHeaderError('email', 'Colonne obligatoire manquante');
+    }
+
+    if (errors.isNotEmpty) {
+      return _CsvCompilationResult(drafts: drafts, errors: errors);
+    }
+
+    String cellAt(List<dynamic> row, int index) {
+      if (index < 0 || index >= row.length) {
+        return '';
+      }
+      return row[index].toString().trim();
+    }
+
+    final existingUsernames = _draftUsers
+        .map((entry) => entry.username.toLowerCase())
+        .toSet();
+    final existingEmails = _draftUsers
+        .map((entry) => entry.email.toLowerCase())
+        .toSet();
+
+    for (var i = 1; i < rows.length; i++) {
+      final row = rows[i];
+      final lineNumber = i + 1;
+
+      final firstName = cellAt(row, firstNameIndex);
+      final lastName = cellAt(row, lastNameIndex);
+      final username = cellAt(row, usernameIndex);
+      final email = cellAt(row, emailIndex);
+      final roleRaw = roleIndex >= 0 ? cellAt(row, roleIndex) : '';
+
+      if (firstName.isEmpty &&
+          lastName.isEmpty &&
+          username.isEmpty &&
+          email.isEmpty &&
+          roleRaw.isEmpty) {
+        continue;
+      }
+
+      void addError(String column, String message) {
+        errors.add(
+          _CsvValidationError(
+            line: lineNumber,
+            column: column,
+            message: message,
+          ),
+        );
+      }
+
+      if (firstName.isEmpty) {
+        addError('first_name', 'Valeur obligatoire manquante');
+      }
+      if (lastName.isEmpty) {
+        addError('last_name', 'Valeur obligatoire manquante');
+      }
+      if (username.isEmpty) {
+        addError('username', 'Valeur obligatoire manquante');
+      }
+      if (email.isEmpty) {
+        addError('email', 'Valeur obligatoire manquante');
+      }
+
+      if (email.isNotEmpty && !_isValidEmail(email)) {
+        addError('email', 'Format invalide');
+      }
+
+      if (username.contains(' ')) {
+        addError('username', 'Ne doit pas contenir d\'espace');
+      }
+
+      final normalizedUsername = username.toLowerCase();
+      final normalizedEmail = email.toLowerCase();
+
+      if (username.isNotEmpty &&
+          existingUsernames.contains(normalizedUsername)) {
+        addError('username', 'Doublon détecté (brouillon/fichier)');
+      }
+      if (email.isNotEmpty && existingEmails.contains(normalizedEmail)) {
+        addError('email', 'Doublon détecté (brouillon/fichier)');
+      }
+
+      if (roleRaw.isNotEmpty) {
+        if (roleRaw != roleRaw.toLowerCase()) {
+          addError(
+            'role',
+            'Le rôle doit être en minuscule (ex: citizen, elected, agent, global_admin)',
+          );
+        }
+
+        const allowedRoles = {'citizen', 'elected', 'agent', 'global_admin'};
+        if (!allowedRoles.contains(roleRaw.toLowerCase())) {
+          addError(
+            'role',
+            'Valeur invalide. Valeurs autorisées: citizen, elected, agent, global_admin',
+          );
+        }
+      }
+
+      if (errors.any((error) => error.line == lineNumber)) {
+        continue;
+      }
+
+      existingUsernames.add(normalizedUsername);
+      existingEmails.add(normalizedEmail);
+
+      drafts.add(
+        _DraftUser(
+          firstName: firstName,
+          lastName: lastName,
+          username: username,
+          email: email,
+          role: _parseRole(roleRaw),
+        ),
+      );
+    }
+
+    return _CsvCompilationResult(drafts: drafts, errors: errors);
+  }
+
+  Future<void> _showCsvCompilationErrors(
+    List<_CsvValidationError> errors,
+  ) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              const Icon(Icons.error_outline, color: AppColors.error),
+              const SizedBox(width: 8),
+              Text('Compilation CSV échouée (${errors.length})'),
+            ],
+          ),
+          content: SizedBox(
+            width: 720,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.highlight,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Le fichier contient des erreurs. Corrigez-les puis relancez l\'import.',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: errors.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final error = errors[index];
+                      return ListTile(
+                        dense: true,
+                        leading: CircleAvatar(
+                          radius: 14,
+                          backgroundColor: AppColors.error.withValues(
+                            alpha: 0.2,
+                          ),
+                          child: Text(
+                            '${error.line}',
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
+                        ),
+                        title: Text(error.message),
+                        subtitle: Text(
+                          'Ligne ${error.line} • Colonne ${error.column}',
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Fermer'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  bool _isValidEmail(String value) {
+    final emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    return emailPattern.hasMatch(value);
+  }
+
   UserRole _parseRole(String raw) {
-    final roleValue = raw.trim().toUpperCase();
+    final normalizedRole = raw.trim().toLowerCase();
+    final roleValue = normalizedRole.isEmpty ? 'citizen' : normalizedRole;
     switch (roleValue) {
-      case 'GLOBAL_ADMIN':
+      case 'global_admin':
         return UserRole.globalAdmin;
-      case 'AGENT':
+      case 'agent':
         return UserRole.agent;
-      case 'ELECTED':
+      case 'elected':
         return UserRole.elected;
-      case 'CITIZEN':
+      case 'citizen':
       default:
         return UserRole.citizen;
     }
@@ -827,12 +987,12 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
             const SizedBox(height: 8),
             const Text(
               'Colonnes obligatoires: first_name,last_name,username,email\n'
-              'Colonnes optionnelles: role (CITIZEN|ELECTED|AGENT|GLOBAL_ADMIN).\n'
+              'Colonne optionnelle: role (citizen|elected|agent|global_admin) en minuscule.\n'
               'Aucune colonne mot de passe: il est généré automatiquement (8 caractères lettres/chiffres).',
             ),
             const SizedBox(height: 8),
             SelectableText(
-              'Exemple:\nfirst_name,last_name,username,email,role\nJean,Dupont,jdupont,jdupont@novaville.fr,CITIZEN',
+              'Exemple:\nfirst_name,last_name,username,email,role\nJean,Dupont,jdupont,jdupont@novaville.fr,citizen',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
@@ -1045,4 +1205,23 @@ class _CreatedCredential {
   final String lastName;
   final String username;
   final String password;
+}
+
+class _CsvCompilationResult {
+  const _CsvCompilationResult({required this.drafts, required this.errors});
+
+  final List<_DraftUser> drafts;
+  final List<_CsvValidationError> errors;
+}
+
+class _CsvValidationError {
+  const _CsvValidationError({
+    required this.line,
+    required this.column,
+    required this.message,
+  });
+
+  final int line;
+  final String column;
+  final String message;
 }
