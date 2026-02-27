@@ -17,6 +17,122 @@ class TestUsersAPI:
         assert response.status_code == status.HTTP_200_OK
         results = response.data.get('results', response.data)
         assert len(results) >= 1
+
+    def test_filter_users_by_role(self, authenticated_client, elected_user):
+        """Test filtering users by role"""
+        response = authenticated_client.get("/api/v1/users/?role=ELECTED")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        assert len(results) >= 1
+        assert all(user["role"] == "ELECTED" for user in results)
+
+    def test_filter_users_by_is_active(self, authenticated_client):
+        """Test filtering users by active status"""
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        User.objects.create_user(
+            username="inactiveuser",
+            email="inactive@test.com",
+            password="TestPass123",
+            is_active=False,
+        )
+
+        response = authenticated_client.get("/api/v1/users/?is_active=false")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        assert len(results) >= 1
+        assert all(user["is_active"] is False for user in results)
+
+    def test_search_users(self, authenticated_client):
+        """Test searching users by text fields"""
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        User.objects.create_user(
+            username="dupont_user",
+            email="dupont@example.com",
+            password="TestPass123",
+            first_name="Jean",
+            last_name="Dupont",
+        )
+
+        response = authenticated_client.get("/api/v1/users/?search=dupont")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        assert len(results) >= 1
+        usernames = [user["username"] for user in results]
+        assert "dupont_user" in usernames
+
+    def test_order_users(self, authenticated_client):
+        """Test ordering users by username"""
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        User.objects.create_user(username="aaa_user", email="aaa@test.com", password="TestPass123")
+        User.objects.create_user(username="zzz_user", email="zzz@test.com", password="TestPass123")
+
+        response = authenticated_client.get("/api/v1/users/?ordering=username")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        usernames = [user["username"] for user in results]
+        assert usernames == sorted(usernames)
+
+    def test_filter_users_with_multiple_attributes(self, authenticated_client, neighborhood):
+        """Test combining role, is_active, neighborhood and search filters"""
+        from django.contrib.auth import get_user_model
+        from core.db.models import Neighborhood, RoleEnum
+
+        User = get_user_model()
+
+        other_neighborhood = Neighborhood.objects.create(
+            name="Other Neighborhood",
+            postal_code="75099"
+        )
+
+        matching_user = User.objects.create_user(
+            username="multi_match_user",
+            email="multi.match@test.com",
+            password="TestPass123",
+            first_name="Multi",
+            last_name="MultiAttrToken",
+            role=RoleEnum.CITIZEN,
+            is_active=True,
+            neighborhood=neighborhood,
+        )
+
+        User.objects.create_user(
+            username="multi_wrong_neigh",
+            email="multi.neigh@test.com",
+            password="TestPass123",
+            first_name="Multi",
+            last_name="MultiAttrToken",
+            role=RoleEnum.CITIZEN,
+            is_active=True,
+            neighborhood=other_neighborhood,
+        )
+
+        User.objects.create_user(
+            username="multi_wrong_status",
+            email="multi.status@test.com",
+            password="TestPass123",
+            first_name="Multi",
+            last_name="MultiAttrToken",
+            role=RoleEnum.CITIZEN,
+            is_active=False,
+            neighborhood=neighborhood,
+        )
+
+        response = authenticated_client.get(
+            f"/api/v1/users/?role=CITIZEN&is_active=true&neighborhood={neighborhood.id}&search=multiattrtoken"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+
+        returned_ids = [user["id"] for user in results]
+        assert matching_user.id in returned_ids
+
+        for user in results:
+            assert user["role"] == "CITIZEN"
+            assert user["is_active"] is True
+            assert user["neighborhood"] == neighborhood.id
     
     def test_create_user(self, api_client, neighborhood):
         """Test creating a new user (registration)"""
