@@ -16,6 +16,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     on<UserAccountsRefreshRequested>(_onRefreshRequested);
     on<UserAccountsSortRequested>(_onSortRequested);
     on<UserAccountsPageRequested>(_onPageRequested);
+    // Suppression de l'appel automatique à UserAccountsLoadRequested ici
   }
 
   final IUserRepository _repository;
@@ -136,7 +137,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
   ) async {
     emit(const UserAccountsState.loading());
     try {
-      final userPage = await _repository.listUsers(ordering: null, page: event.page);
+      final userPage = await _repository.listUsers(ordering: event.ordering, page: event.page);
       final page = _extractPageNumber(userPage.previous);
       emit(UserAccountsState.loaded(
         userPage.results,

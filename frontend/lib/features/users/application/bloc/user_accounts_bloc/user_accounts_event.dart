@@ -41,8 +41,9 @@ class UserAccountsRefreshRequested extends UserAccountsEvent {
 
 /// Event to demander une page spécifique
 class UserAccountsPageRequested extends UserAccountsEvent {
-  const UserAccountsPageRequested({required this.page});
+  const UserAccountsPageRequested({required this.page, this.ordering});
   final int page;
+  final String? ordering;
   @override
-  List<Object?> get props => [page];
+  List<Object?> get props => [page, ordering];
 }

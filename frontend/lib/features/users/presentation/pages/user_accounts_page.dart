@@ -36,7 +36,7 @@ class UserAccountsPage extends StatelessWidget {
 
     return BlocProvider(
       create: (context) => UserAccountsBloc(repository: repository)
-        ..add(const UserAccountsLoadRequested()),
+        ..add(const UserAccountsLoadRequested(ordering: 'first_name')),
       child: const _UserAccountsPageContent(),
     );
   }
@@ -51,6 +51,7 @@ class _UserAccountsPageContent extends StatefulWidget {
 
 class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   int? _sortColumnIndex;
+  String _sortColumnKey = 'first_name';
   bool _sortAscending = true;
   User? _deletedUser;
 
@@ -158,6 +159,8 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                 Container(
                   width: double.infinity,
                   child: DataTable(
+                    sortColumnIndex: _sortColumnIndex,
+                    sortAscending: _sortAscending,
                     columns: [
                       DataColumn(
                         label: _buildSortableLabel(UserTexts.firstNameLastName, 0),
@@ -222,7 +225,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                         onPressed: blocState.previous != null && !isLoading
                             ? () {
                                 context.read<UserAccountsBloc>().add(
-                                  UserAccountsPageRequested(page: page - 1),
+                                  UserAccountsPageRequested(page: page - 1, ordering: _sortAscending ? _sortColumnKey : '-$_sortColumnKey'),
                                 );
                               }
                             : null,
@@ -247,7 +250,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                         onPressed: blocState.next != null && !isLoading
                             ? () {
                                 context.read<UserAccountsBloc>().add(
-                                  UserAccountsPageRequested(page: page + 1),
+                                  UserAccountsPageRequested(page: page + 1, ordering: _sortAscending ? _sortColumnKey : '-$_sortColumnKey'),
                                 );
                               }
                             : null,
@@ -266,38 +269,20 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   }
 
   Widget _buildSortableLabel(String label, int columnIndex) {
-    final isSorted = _sortColumnIndex == columnIndex;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(child: Text(label)),
-        if (isSorted)
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Icon(
-              _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-              size: 18,
-              color: Colors.blue,
-            ),
-          ),
-      ],
-    );
+    // Affiche uniquement le texte, la flèche de tri est gérée par DataTable
+    return Text(label);
   }
 
   void _onSortColumn(int columnIndex, String columnKey, bool ascending) {
     setState(() {
-      if (_sortColumnIndex == columnIndex) {
-        _sortAscending = !_sortAscending;
-      } else {
-        _sortColumnIndex = columnIndex;
-        _sortAscending = true;
-      }
+      _sortColumnIndex = columnIndex;
+      _sortColumnKey = columnKey;
+      _sortAscending = ascending;
     });
     context.read<UserAccountsBloc>().add(
       UserAccountsSortRequested(
         column: columnKey,
-        ascending: _sortAscending,
+        ascending: ascending,
       ),
     );
   }
