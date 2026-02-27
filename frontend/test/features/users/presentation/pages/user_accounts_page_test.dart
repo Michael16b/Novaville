@@ -55,7 +55,11 @@ class MockUserRepository implements IUserRepository {
   }
 
   @override
-  Future<UserPage> listUsers({String? ordering, int page = 1}) async {
+  Future<UserPage> listUsers({
+    String? ordering,
+    String? search,
+    int page = 1,
+  }) async {
     if (shouldThrow) throw Exception('Network error');
     return UserPage(
       count: users.length,
@@ -107,7 +111,9 @@ void main() {
       );
     }
 
-    testWidgets('renders title and add user button', (WidgetTester tester) async {
+    testWidgets(
+      'renders title and floating add button',
+      (WidgetTester tester) async {
       // Set a large screen size to avoid overflow
       tester.view.physicalSize = const Size(2400, 1200);
       tester.view.devicePixelRatio = 1.0;
@@ -119,7 +125,6 @@ void main() {
       await tester.pumpAndSettle(); // Wait for bloc to load
 
       expect(find.text(UserTexts.title), findsAtLeastNWidgets(1));
-      expect(find.text(UserTexts.addUser), findsOneWidget);
       expect(find.byIcon(Icons.add), findsOneWidget);
     });
 
@@ -224,7 +229,7 @@ void main() {
       await tester.pumpAndSettle(); // Wait for initial load
 
       // Open the delete dialog for John (the second delete icon)
-      final deleteButtons = find.byIcon(Icons.delete);
+      final deleteButtons = find.byIcon(Icons.delete_outline);
       await tester.tap(deleteButtons.last);
       await tester.pumpAndSettle();
 

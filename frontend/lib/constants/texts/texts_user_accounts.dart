@@ -1,5 +1,12 @@
 class UserTexts {
   static const title = 'Gestion des comptes utilisateurs';
+  static const sortBy = 'Trier par';
+  static const search = 'Rechercher';
+  static const searchHint = 'Nom, prénom, nom d\'utilisateur ou email';
+  static const cardsPerRow = 'Cartes par ligne';
+  static const auto = 'Auto';
+  static const ascending = 'Ordre croissant';
+  static const descending = 'Ordre décroissant';
   static const error = 'Erreur';
   static const retry = 'Réessayer';
   static const noUsers = 'Aucun utilisateur';
@@ -25,4 +32,11 @@ class UserTexts {
   static const next = 'Suivant';
   static const on = 'sur';
   static const addUser = 'Ajouter un utilisateur';
+  static const addUsers = 'Ajouter plusieurs utilisateurs';
+  static const addActionsTooltip = 'Actions d\'ajout';
+  static const addSingleUserDescription =
+      'Création d\'un compte utilisateur individuel.';
+  static const addMultipleUsersDescription =
+      'Ajout groupé de comptes utilisateurs.';
+  static const featureComingSoon = editInProgress;
 }

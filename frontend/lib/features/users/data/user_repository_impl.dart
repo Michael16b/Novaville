@@ -25,10 +25,17 @@ class UserRepositoryImpl implements IUserRepository {
   }
 
   @override
-  Future<UserPage> listUsers({String? ordering, int page = 1}) async {
+  Future<UserPage> listUsers({
+    String? ordering,
+    String? search,
+    int page = 1,
+  }) async {
     String url = '/api/v1/users/?page=$page';
     if (ordering != null && ordering.isNotEmpty) {
       url += '&ordering=$ordering';
+    }
+    if (search != null && search.trim().isNotEmpty) {
+      url += '&search=${Uri.encodeQueryComponent(search.trim())}';
     }
     final response = await _apiClient.get(url);
 
@@ -51,9 +58,7 @@ class UserRepositoryImpl implements IUserRepository {
     final response = await _apiClient.delete('/api/v1/users/$userId/');
 
     if (response.statusCode != 204 && response.statusCode != 200) {
-      throw Exception(
-        'Erreur lors de la suppression: ${response.statusCode}',
-      );
+      throw Exception('Erreur lors de la suppression: ${response.statusCode}');
     }
   }
 

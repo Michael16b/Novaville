@@ -6,7 +6,12 @@ class UserPage {
   final String? previous;
   final List<User> results;
 
-  UserPage({required this.count, this.next, this.previous, required this.results});
+  UserPage({
+    required this.count,
+    this.next,
+    this.previous,
+    required this.results,
+  });
 
   factory UserPage.fromJson(Map<String, dynamic> json) {
     return UserPage(
@@ -26,7 +31,7 @@ abstract class IUserRepository {
   Future<User> getCurrentUser();
 
   /// Retrieves a paginated list of users.
-  Future<UserPage> listUsers({String? ordering, int page = 1});
+  Future<UserPage> listUsers({String? ordering, String? search, int page = 1});
 
   /// Updates the user's information.
   Future<User> updateUser({

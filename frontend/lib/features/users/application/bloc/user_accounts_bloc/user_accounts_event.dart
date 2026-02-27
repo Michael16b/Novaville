@@ -9,19 +9,25 @@ abstract class UserAccountsEvent extends Equatable {
 
 /// Event to load all user accounts
 class UserAccountsLoadRequested extends UserAccountsEvent {
-  const UserAccountsLoadRequested({this.ordering});
+  const UserAccountsLoadRequested({this.ordering, this.search});
   final String? ordering;
+  final String? search;
   @override
-  List<Object?> get props => [ordering];
+  List<Object?> get props => [ordering, search];
 }
 
 /// Event to demander un tri sur une colonne
 class UserAccountsSortRequested extends UserAccountsEvent {
-  const UserAccountsSortRequested({required this.column, required this.ascending});
+  const UserAccountsSortRequested({
+    required this.column,
+    required this.ascending,
+    this.search,
+  });
   final String column;
   final bool ascending;
+  final String? search;
   @override
-  List<Object?> get props => [column, ascending];
+  List<Object?> get props => [column, ascending, search];
 }
 
 /// Event to delete a user account
@@ -41,9 +47,25 @@ class UserAccountsRefreshRequested extends UserAccountsEvent {
 
 /// Event to demander une page spécifique
 class UserAccountsPageRequested extends UserAccountsEvent {
-  const UserAccountsPageRequested({required this.page, this.ordering});
+  const UserAccountsPageRequested({
+    required this.page,
+    this.ordering,
+    this.search,
+  });
   final int page;
   final String? ordering;
+  final String? search;
   @override
-  List<Object?> get props => [page, ordering];
+  List<Object?> get props => [page, ordering, search];
+}
+
+/// Event to request a filtered list based on a search query.
+class UserAccountsSearchRequested extends UserAccountsEvent {
+  const UserAccountsSearchRequested({required this.query, this.ordering});
+
+  final String query;
+  final String? ordering;
+
+  @override
+  List<Object?> get props => [query, ordering];
 }

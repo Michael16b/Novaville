@@ -50,6 +50,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    search_fields = ["first_name", "last_name", "username", "email"]
     
     def get_permissions(self):
         """Set permissions based on action"""

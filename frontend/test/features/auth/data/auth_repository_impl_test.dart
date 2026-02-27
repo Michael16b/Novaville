@@ -34,7 +34,7 @@ class _StubUserRepository implements IUserRepository {
   }
 
   @override
-  Future<UserPage> listUsers({String? ordering, int page = 1}) async {
+  Future<UserPage> listUsers({String? ordering, String? search, int page = 1}) async {
     throw UnimplementedError();
   }
 
@@ -202,7 +202,7 @@ class _SequentialUserRepository implements IUserRepository {
   }
 
   @override
-  Future<UserPage> listUsers({String? ordering, int page = 1}) async {
+  Future<UserPage> listUsers({String? ordering, String? search, int page = 1}) async {
     throw UnimplementedError();
   }
 
