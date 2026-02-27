@@ -33,10 +33,12 @@ class MockAuthRepository implements IAuthRepository {
 
 class MockUserRepository implements IUserRepository {
   final bool shouldThrow;
+  final bool shouldThrowOnDelete;
   final List<User> users;
 
   MockUserRepository({
     this.shouldThrow = false,
+    this.shouldThrowOnDelete = false,
     this.users = const [],
   });
 
@@ -76,7 +78,7 @@ class MockUserRepository implements IUserRepository {
 
   @override
   Future<void> deleteUser({required int userId}) async {
-    if (shouldThrow) throw Exception('Delete failed');
+    if (shouldThrow || shouldThrowOnDelete) throw Exception('Delete failed');
   }
 }
 
@@ -186,6 +188,55 @@ void main() {
 
       expect(find.text(UserTexts.noUsers), findsOneWidget);
       expect(find.text(UserTexts.noUsersFound), findsOneWidget);
+    });
+
+    testWidgets('clears deleted user on failure and does not show success snackbar', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(2400, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      // Admin (id=1) is the current user; John (id=2) can be deleted but delete will fail
+      final users = [
+        const User(
+          id: 1,
+          username: 'admin',
+          email: 'admin@example.com',
+          firstName: 'Admin',
+          lastName: 'User',
+          role: UserRole.globalAdmin,
+        ),
+        const User(
+          id: 2,
+          username: 'john',
+          email: 'john@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+          role: UserRole.citizen,
+        ),
+      ];
+      final mockUserRepository = MockUserRepository(
+        users: users,
+        shouldThrowOnDelete: true,
+      );
+
+      await tester.pumpWidget(createWidgetUnderTest(userRepository: mockUserRepository));
+      await tester.pumpAndSettle(); // Wait for initial load
+
+      // Open the delete dialog for John (the second delete icon)
+      final deleteButtons = find.byIcon(Icons.delete);
+      await tester.tap(deleteButtons.last);
+      await tester.pumpAndSettle();
+
+      // Confirm delete in the dialog
+      await tester.tap(find.text(UserTexts.delete).last);
+      await tester.pumpAndSettle();
+
+      // Error snackbar should appear (from failure state)
+      expect(find.text('Exception: Delete failed'), findsOneWidget);
+
+      // Success snackbar must NOT appear (deletedUser was cleared)
+      expect(find.textContaining(UserTexts.deleted), findsNothing);
     });
   });
 }
