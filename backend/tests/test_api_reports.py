@@ -138,3 +138,52 @@ class TestReportsAPI:
         assert response.status_code == status.HTTP_200_OK
         results = response.data.get('results', response.data)
         assert all(r["neighborhood"] == neighborhood.id for r in results)
+
+    def test_filter_reports_with_multiple_attributes(self, authenticated_client, citizen_user, neighborhood):
+        """Test combining multiple report filters in one request"""
+        other_neighborhood = neighborhood.__class__.objects.create(
+            name="Other Multi",
+            postal_code="75003"
+        )
+
+        matching_report = Report.objects.create(
+            user=citizen_user,
+            problem_type=ProblemTypeEnum.ROADS,
+            description="Multi attr report",
+            status=ReportStatusEnum.IN_PROGRESS,
+            neighborhood=neighborhood,
+        )
+        Report.objects.create(
+            user=citizen_user,
+            problem_type=ProblemTypeEnum.ROADS,
+            description="Wrong status",
+            status=ReportStatusEnum.RECORDED,
+            neighborhood=neighborhood,
+        )
+        Report.objects.create(
+            user=citizen_user,
+            problem_type=ProblemTypeEnum.LIGHTING,
+            description="Wrong problem type",
+            status=ReportStatusEnum.IN_PROGRESS,
+            neighborhood=neighborhood,
+        )
+        Report.objects.create(
+            user=citizen_user,
+            problem_type=ProblemTypeEnum.ROADS,
+            description="Wrong neighborhood",
+            status=ReportStatusEnum.IN_PROGRESS,
+            neighborhood=other_neighborhood,
+        )
+
+        response = authenticated_client.get(
+            f"/api/v1/reports/?status=IN_PROGRESS&problem_type=ROADS&neighborhood={neighborhood.id}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        result_ids = [r["id"] for r in results]
+
+        assert matching_report.id in result_ids
+        for report_data in results:
+            assert report_data["status"] == "IN_PROGRESS"
+            assert report_data["problem_type"] == "ROADS"
+            assert report_data["neighborhood"] == neighborhood.id

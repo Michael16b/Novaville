@@ -47,6 +47,7 @@ class NeighborhoodViewSet(viewsets.ModelViewSet):
     """
     queryset = Neighborhood.objects.all()
     serializer_class = NeighborhoodSerializer
+    filterset_fields = '__all__'
     
     def get_permissions(self):
         """Allow read for authenticated, write for admin only"""

@@ -2,6 +2,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from core.db.models import User
 from api.v1.serializers.user_serializer import UserSerializer, UserPublicSerializer
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
@@ -10,8 +12,15 @@ from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiPara
 @extend_schema_view(
     list=extend_schema(
         summary="List all users",
-        description="Retrieve a list of all users (admin only)",
-        tags=["Users"]
+        description="Retrieve a list of users with optional filters, search, and ordering (admin can see all, regular users see public directory)",
+        tags=["Users"],
+        parameters=[
+            OpenApiParameter(name='role', description='Filter by role (e.g. CITIZEN, ELECTED, AGENT, GLOBAL_ADMIN)', required=False, type=str),
+            OpenApiParameter(name='is_active', description='Filter by active status (true/false)', required=False, type=bool),
+            OpenApiParameter(name='neighborhood', description='Filter by neighborhood ID', required=False, type=int),
+            OpenApiParameter(name='search', description='Search in username, first_name, last_name, email', required=False, type=str),
+            OpenApiParameter(name='ordering', description='Order by first_name, username, email, role, date_joined', required=False, type=str),
+        ]
     ),
     retrieve=extend_schema(
         summary="Get user details",
@@ -48,9 +57,13 @@ class UserViewSet(viewsets.ModelViewSet):
     create: Anyone can register (returns minimal info)
     update/destroy: Admin only
     """
-    queryset = User.objects.all()
+    queryset = User.objects.select_related('neighborhood').all()
     serializer_class = UserSerializer
-    search_fields = ["first_name", "last_name", "username", "email"]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = '__all__'
+    search_fields = ['username', 'first_name', 'last_name', 'email']
+    ordering_fields = ['first_name', 'username', 'email', 'role', 'date_joined']
+    ordering = ['-date_joined']
     
     def get_permissions(self):
         """Set permissions based on action"""
