@@ -24,7 +24,8 @@ class UserAccountCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fullName = '${user.firstName} ${user.lastName}'.trim();
-    final initials = '${_firstChar(user.firstName)}${_firstChar(user.lastName)}';
+    final initials =
+        '${_firstChar(user.firstName)}${_firstChar(user.lastName)}';
 
     return Card(
       child: Padding(
@@ -59,19 +60,21 @@ class UserAccountCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '@${user.username}',
+                        user.username,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.secondaryText,
-                            ),
+                          color: AppColors.secondaryText,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: getRoleColor(user.role),
                     borderRadius: BorderRadius.circular(999),

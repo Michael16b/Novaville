@@ -1,6 +1,8 @@
 class UserTexts {
   static const title = 'Gestion des comptes utilisateurs';
   static const sortBy = 'Trier par';
+  static const search = 'Rechercher';
+  static const searchHint = 'Nom, prénom, nom d\'utilisateur ou email';
   static const ascending = 'Ordre croissant';
   static const descending = 'Ordre décroissant';
   static const error = 'Erreur';
