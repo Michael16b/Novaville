@@ -1,16 +1,51 @@
-# frontend
+# Frontend UniCity
 
-A new Flutter project.
+Application Flutter (Web, iOS, Android) de la plateforme citoyenne Novaville.
 
-## Getting Started
+## Lancer en local (Web)
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+flutter run -d chrome --web-port 3000
+```
 
-A few resources to get you started if this is your first Flutter project:
+## PWA (Progressive Web App)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Le projet est configuré en PWA via Flutter Web:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- manifeste: `web/manifest.json`
+- métadonnées HTML: `web/index.html`
+- service worker: généré automatiquement au build Flutter Web
+- icônes installables: `web/icons/`
+
+### Build PWA recommandé
+
+```bash
+flutter build web --release --pwa-strategy=offline-first
+```
+
+Le dossier généré est `build/web`.
+
+### Tester l'installation PWA
+
+1. Servir `build/web` derrière HTTPS (ou en `localhost` en local).
+2. Ouvrir l'application dans Chrome/Edge.
+3. Vérifier l'option d'installation (« Installer l'application »).
+
+### Notes importantes
+
+- Le cache PWA est géré par le service worker Flutter.
+- Après un nouveau déploiement, un rechargement complet peut être nécessaire pour récupérer la nouvelle version.
+
+### Régénérer les icônes web (branding)
+
+Les icônes PWA sont générées depuis `assets/images/logo.png`.
+
+```bash
+dart run flutter_launcher_icons
+```
+
+### Vérification qualité PWA (recommandé)
+
+- Ouvrir DevTools > Application pour vérifier `manifest.json` et `service worker`.
+- Exécuter un audit Lighthouse (catégorie PWA) en build release.

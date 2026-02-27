@@ -27,6 +27,7 @@ RUN touch .env && \
 # On utilise --dart-define pour injecter les variables directement dans le code
 RUN flutter config --enable-web && \
     flutter build web --release --verbose \
+  --pwa-strategy=offline-first \
       --dart-define=FLUTTER_BACKEND_API=${FLUTTER_BACKEND_API} \
       --dart-define=ENVIRONMENT=${ENVIRONMENT}
 
@@ -102,6 +103,13 @@ server {
   location = /flutter_service_worker.js {
     try_files $uri =404;
     expires -1;
+    add_header Service-Worker-Allowed "/";
+    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+  }
+
+  location = /manifest.json {
+    try_files $uri =404;
+    add_header Content-Type "application/manifest+json";
     add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
   }
 
