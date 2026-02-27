@@ -38,5 +38,5 @@ class UserTexts {
       'Création d\'un compte utilisateur individuel.';
   static const addMultipleUsersDescription =
       'Ajout groupé de comptes utilisateurs.';
-  static const featureComingSoon = 'Fonctionnalité en cours de développement';
+  static const featureComingSoon = editInProgress;
 }
