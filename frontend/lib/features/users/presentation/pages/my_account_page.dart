@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
-import 'package:frontend/constants/texts/texts_profile.dart';
+import 'package:frontend/constants/texts/texts_my_account.dart';
 import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/design_systems/custom_outlined_button.dart';

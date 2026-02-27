@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/config/app_config.dart';
+import 'package:frontend/constants/colors.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/users/data/user_repository_impl.dart';
 import 'package:frontend/features/users/application/bloc/user_accounts_bloc/user_accounts_bloc.dart';
@@ -9,6 +10,7 @@ import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/auth/data/auth_storage_impl.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
+import 'package:frontend/constants/texts/texts_user_accounts.dart';
 
 /// User Accounts management page - accessible only to GLOBAL_ADMIN.
 ///
@@ -40,46 +42,60 @@ class UserAccountsPage extends StatelessWidget {
   }
 }
 
-class _UserAccountsPageContent extends StatelessWidget {
+class _UserAccountsPageContent extends StatefulWidget {
   const _UserAccountsPageContent();
+
+  @override
+  State<_UserAccountsPageContent> createState() => _UserAccountsPageContentState();
+}
+
+class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
+  int? _sortColumnIndex;
+  bool _sortAscending = true;
+  User? _deletedUser;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gestion des comptes utilisateurs'),
-        actions: [
-          // Refresh button
-          BlocBuilder<UserAccountsBloc, UserAccountsState>(
-            builder: (context, state) {
-              return IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: () {
-                  context
-                      .read<UserAccountsBloc>()
-                      .add(const UserAccountsRefreshRequested());
-                },
-              );
-            },
-          ),
-        ],
-      ),
-      body: BlocBuilder<UserAccountsBloc, UserAccountsState>(
-        builder: (context, state) {
-          if (state.status == UserAccountsStatus.loading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
+      body: BlocListener<UserAccountsBloc, UserAccountsState>(
+        listener: (context, state) {
           if (state.status == UserAccountsStatus.failure) {
-            return _buildErrorState(context, state.error ?? 'Unknown error');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(UserTexts.error),
+                backgroundColor: Colors.red,
+              ),
+            );
+          } else if (state.status == UserAccountsStatus.loaded && _deletedUser != null) {
+            final deleted = !state.users.any((u) => u.id == _deletedUser!.id);
+            if (deleted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${_deletedUser!.firstName} ${_deletedUser!.lastName} ${UserTexts.deleted}'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              _deletedUser = null;
+            }
           }
-
-          if (state.users.isEmpty) {
-            return const _EmptyState();
-          }
-
-          return _buildUsersList(context, state.users);
         },
+        child: BlocBuilder<UserAccountsBloc, UserAccountsState>(
+          builder: (context, state) {
+            if (state.status == UserAccountsStatus.loading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state.status == UserAccountsStatus.failure) {
+              return _buildErrorState(context, state.error ?? 'Unknown error');
+            }
+
+            if (state.users.isEmpty) {
+              return const _EmptyState();
+            }
+
+            return _buildUsersList(context, state.users);
+          },
+        ),
       ),
     );
   }
@@ -92,7 +108,7 @@ class _UserAccountsPageContent extends StatelessWidget {
           const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
           Text(
-            'Erreur',
+            UserTexts.error,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
@@ -112,7 +128,7 @@ class _UserAccountsPageContent extends StatelessWidget {
                   .add(const UserAccountsLoadRequested());
             },
             icon: const Icon(Icons.refresh),
-            label: const Text('Réessayer'),
+            label: const Text(UserTexts.retry),
           ),
         ],
       ),
@@ -120,25 +136,168 @@ class _UserAccountsPageContent extends StatelessWidget {
   }
 
   Widget _buildUsersList(BuildContext context, List<User> users) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: DataTable(
-            columns: const [
-              DataColumn(label: Text('Prénom')),
-              DataColumn(label: Text('Nom')),
-              DataColumn(label: Text('Nom d\'utilisateur')),
-              DataColumn(label: Text('Email')),
-              DataColumn(label: Text('Rôle')),
-              DataColumn(label: Text('Actions')),
-            ],
-            rows: users
-                .map((user) => _buildUserRow(context, user))
-                .toList(),
+    final blocState = context.watch<UserAccountsBloc>().state;
+    final isLoading = blocState.status == UserAccountsStatus.loading;
+    final page = blocState.page;
+    final count = blocState.count;
+    final pageSize = blocState.pageSize;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  UserTexts.title,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  child: DataTable(
+                    columns: [
+                      DataColumn(
+                        label: _buildSortableLabel(UserTexts.firstNameLastName, 0),
+                        onSort: (columnIndex, ascending) {
+                          _onSortColumn(columnIndex, 'first_name', ascending);
+                        },
+                      ),
+                      DataColumn(
+                        label: _buildSortableLabel(UserTexts.username, 1),
+                        onSort: (columnIndex, ascending) {
+                          _onSortColumn(columnIndex, 'username', ascending);
+                        },
+                      ),
+                      DataColumn(
+                        label: _buildSortableLabel(UserTexts.email, 2),
+                        onSort: (columnIndex, ascending) {
+                          _onSortColumn(columnIndex, 'email', ascending);
+                        },
+                      ),
+                      DataColumn(
+                        label: _buildSortableLabel(UserTexts.role, 3),
+                        onSort: (columnIndex, ascending) {
+                          _onSortColumn(columnIndex, 'role', ascending);
+                        },
+                      ),
+                      DataColumn(label: const Text(UserTexts.actions)),
+                    ],
+                    rows: isLoading
+                        ? [
+                            DataRow(
+                              cells: [
+                                DataCell(
+                                  Container(
+                                    alignment: Alignment.center,
+                                    padding: const EdgeInsets.symmetric(vertical: 32),
+                                    child: const CircularProgressIndicator(),
+                                  ),
+                                ),
+                                DataCell(Container()),
+                                DataCell(Container()),
+                                DataCell(Container()),
+                                DataCell(Container()),
+                              ],
+                            ),
+                          ]
+                        : users
+                            .map((user) => _buildUserRow(context, user))
+                            .toList(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextButton.icon(
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        onPressed: blocState.previous != null && !isLoading
+                            ? () {
+                                context.read<UserAccountsBloc>().add(
+                                  UserAccountsPageRequested(page: page - 1),
+                                );
+                              }
+                            : null,
+                        icon: const Icon(Icons.chevron_left),
+                        label: const Text(UserTexts.previous),
+                      ),
+                      const SizedBox(width: 8),
+                      Builder(
+                        builder: (_) {
+                          final bool isLastPage = blocState.next == null;
+                          final int end = isLastPage ? count : page * pageSize;
+                          final int start = end - users.length + 1;
+                          return Text('$start - $end ${UserTexts.on} $count', style: const TextStyle(fontWeight: FontWeight.w500));
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton.icon(
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        onPressed: blocState.next != null && !isLoading
+                            ? () {
+                                context.read<UserAccountsBloc>().add(
+                                  UserAccountsPageRequested(page: page + 1),
+                                );
+                              }
+                            : null,
+                        icon: const Icon(Icons.chevron_right),
+                        label: const Text(UserTexts.next),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSortableLabel(String label, int columnIndex) {
+    final isSorted = _sortColumnIndex == columnIndex;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: Text(label)),
+        if (isSorted)
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Icon(
+              _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+              size: 18,
+              color: Colors.blue,
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _onSortColumn(int columnIndex, String columnKey, bool ascending) {
+    setState(() {
+      if (_sortColumnIndex == columnIndex) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortColumnIndex = columnIndex;
+        _sortAscending = true;
+      }
+    });
+    context.read<UserAccountsBloc>().add(
+      UserAccountsSortRequested(
+        column: columnKey,
+        ascending: _sortAscending,
       ),
     );
   }
@@ -147,10 +306,11 @@ class _UserAccountsPageContent extends StatelessWidget {
     final currentUser = context.read<AuthBloc>().state.user;
     final isCurrentUser = user.id == currentUser?.id;
 
+    final fullName = '${user.firstName} ${user.lastName}';
+
     return DataRow(
       cells: [
-        DataCell(Text(user.firstName ?? '-')),
-        DataCell(Text(user.lastName ?? '-')),
+        DataCell(Text(fullName)),
         DataCell(Text(user.username)),
         DataCell(Text(user.email)),
         DataCell(
@@ -177,7 +337,7 @@ class _UserAccountsPageContent extends StatelessWidget {
               // Edit button
               IconButton(
                 icon: const Icon(Icons.edit, size: 18),
-                tooltip: 'Modifier',
+                tooltip: UserTexts.edit,
                 onPressed: () {
                   _showEditDialog(context, user);
                 },
@@ -190,7 +350,7 @@ class _UserAccountsPageContent extends StatelessWidget {
                   color: isCurrentUser ? Colors.grey : Colors.red,
                 ),
                 tooltip:
-                    isCurrentUser ? 'Impossible de supprimer votre compte' : 'Supprimer',
+                    isCurrentUser ? UserTexts.cannotDeleteSelf : UserTexts.delete,
                 onPressed: isCurrentUser
                     ? null
                     : () {
@@ -222,19 +382,19 @@ class _UserAccountsPageContent extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Modifier l\'utilisateur'),
+        title: const Text(UserTexts.editUserTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Édition du compte de ${user.username}'),
+            Text('${UserTexts.editUser} ${user.username}'),
             const SizedBox(height: 16),
-            const Text('Fonctionnalité en cours de développement'),
+            const Text(UserTexts.editInProgress),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Fermer'),
+            child: const Text(UserTexts.close),
           ),
         ],
       ),
@@ -245,32 +405,24 @@ class _UserAccountsPageContent extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Supprimer l\'utilisateur'),
+        title: const Text(UserTexts.confirmDeleteTitle),
         content: Text(
-          'Êtes-vous sûr de vouloir supprimer ${user.firstName} ${user.lastName} (${user.username}) ?\n\nCette action est irréversible.',
+          '${UserTexts.confirmDelete} ${user.firstName} ${user.lastName} (${user.username}) ?\n\n${UserTexts.irreversible}',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler'),
+            child: const Text(UserTexts.cancel),
           ),
           TextButton(
             onPressed: () {
-              context
-                  .read<UserAccountsBloc>()
-                  .add(UserAccountsDeleteRequested(userId: user.id));
               Navigator.pop(context);
-
-              // Show confirmation
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content:
-                      Text('${user.firstName} ${user.lastName} a été supprimé'),
-                  backgroundColor: Colors.green,
-                ),
-              );
+              setState(() {
+                _deletedUser = user;
+              });
+              context.read<UserAccountsBloc>().add(UserAccountsDeleteRequested(userId: user.id));
             },
-            child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+            child: const Text(UserTexts.delete, style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -294,12 +446,12 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Aucun utilisateur',
+            UserTexts.noUsers,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'Aucun compte utilisateur trouvé',
+            UserTexts.noUsersFound,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:frontend/constants/texts/texts_profile.dart';
+import 'package:frontend/constants/texts/texts_my_account.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
@@ -25,25 +25,20 @@ class UserRepositoryImpl implements IUserRepository {
   }
 
   @override
-  Future<List<User>> listUsers() async {
-    final response = await _apiClient.get('/api/v1/users/');
+  Future<UserPage> listUsers({String? ordering, int page = 1}) async {
+    String url = '/api/v1/users/?page=$page';
+    if (ordering != null && ordering.isNotEmpty) {
+      url += '&ordering=$ordering';
+    }
+    final response = await _apiClient.get(url);
 
     if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-
-      // Handle both list and paginated response
-      List<dynamic> usersList;
-      if (json is List) {
-        usersList = json;
-      } else if (json is Map && json['results'] != null) {
-        usersList = json['results'] as List<dynamic>;
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      if (json['results'] != null) {
+        return UserPage.fromJson(json);
       } else {
         throw Exception('Invalid response format');
       }
-
-      return usersList
-          .map((user) => User.fromJson(user as Map<String, dynamic>))
-          .toList();
     } else {
       throw Exception(
         '${AppTextsProfile.fetchProfileError}: ${response.statusCode}',

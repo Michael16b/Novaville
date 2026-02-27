@@ -32,9 +32,14 @@ class _FakeUserRepository implements IUserRepository {
   }
 
   @override
-  Future<List<User>> listUsers() async {
+  Future<UserPage> listUsers({String? ordering, int page = 1}) async {
     if (shouldThrow) throw Exception(errorMessage);
-    return [userToReturn ?? _defaultUser];
+    return UserPage(
+      count: 1,
+      next: null,
+      previous: null,
+      results: [userToReturn ?? _defaultUser],
+    );
   }
 
   @override
