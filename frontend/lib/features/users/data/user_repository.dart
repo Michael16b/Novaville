@@ -1,6 +1,5 @@
 import 'package:frontend/features/users/data/models/user.dart';
 
-/// Modèle pour la pagination
 class UserPage {
   final int count;
   final String? next;

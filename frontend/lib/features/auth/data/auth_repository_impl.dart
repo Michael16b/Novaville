@@ -94,7 +94,6 @@ class AuthRepositoryImpl implements IAuthRepository {
       try {
         return await _userRepository.getCurrentUser();
       } catch (_) {
-        // Si on ne peut pas récupérer l'utilisateur, continuer avec refresh
       }
     }
 

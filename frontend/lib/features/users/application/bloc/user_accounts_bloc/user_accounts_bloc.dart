@@ -42,7 +42,6 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
         count: userPage.count,
         next: userPage.next,
         previous: userPage.previous,
-        // On garde la taille de page par défaut (20) au lieu d'utiliser la taille de la liste reçue
       ));
     } catch (e) {
       emit(UserAccountsState.failure(e.toString()));
