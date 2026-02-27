@@ -1,9 +1,9 @@
 {
     "name": "Novaville",
     "short_name": "Novaville",
-    "id": "/",
+    "id": ".",
     "start_url": ".",
-    "scope": "/",
+    "scope": ".",
     "display": "standalone",
     "display_override": [
         "standalone",
