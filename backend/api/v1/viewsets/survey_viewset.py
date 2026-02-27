@@ -55,6 +55,7 @@ class SurveyViewSet(viewsets.ModelViewSet):
     queryset = Survey.objects.prefetch_related('options', 'votes').all()
     serializer_class = SurveySerializer
     permission_classes = [IsStaffOrReadOnly]
+    filterset_fields = '__all__'
     
     def get_serializer_class(self):
         """Use different serializers for different actions"""
@@ -126,6 +127,7 @@ class SurveyOptionViewSet(viewsets.ModelViewSet):
     """ViewSet for managing survey options"""
     queryset = SurveyOption.objects.all()
     serializer_class = SurveyOptionSerializer
+    filterset_fields = '__all__'
     
     def get_permissions(self):
         """Allow read for authenticated, write for staff only"""

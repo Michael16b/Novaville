@@ -62,7 +62,7 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.select_related('created_by', 'theme').all()
     serializer_class = EventSerializer
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ['theme']
+    filterset_fields = '__all__'
     ordering_fields = ['start_date', 'end_date']
     ordering = ['start_date']
     
@@ -129,6 +129,7 @@ class ThemeEventViewSet(viewsets.ModelViewSet):
     """ViewSet for managing event themes"""
     queryset = ThemeEvent.objects.all()
     serializer_class = ThemeEventSerializer
+    filterset_fields = '__all__'
     
     def get_permissions(self):
         """Allow read for authenticated, write for admin only"""

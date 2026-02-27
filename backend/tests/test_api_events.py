@@ -116,6 +116,39 @@ class TestEventsAPI:
         assert event1.id in event_ids
         assert event2.id not in event_ids
 
+    def test_filter_events_with_multiple_attributes(self, authenticated_client, elected_user, theme):
+        """Test combining multiple event filters in one request"""
+        from core.db.models import ThemeEvent, ThemeEnum
+
+        other_theme = ThemeEvent.objects.create(title=ThemeEnum.CULTURE)
+
+        matching_event = elected_user.created_events.create(
+            title="Multi Attr Event",
+            description="Should match",
+            start_date=timezone.now() + timedelta(days=3),
+            end_date=timezone.now() + timedelta(days=3, hours=2),
+            theme=theme,
+        )
+        elected_user.created_events.create(
+            title="Multi Attr Event",
+            description="Wrong theme",
+            start_date=timezone.now() + timedelta(days=4),
+            end_date=timezone.now() + timedelta(days=4, hours=2),
+            theme=other_theme,
+        )
+
+        response = authenticated_client.get(
+            f"/api/v1/events/?theme={theme.id}&title=Multi Attr Event"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        result_ids = [e["id"] for e in results]
+
+        assert matching_event.id in result_ids
+        for event_data in results:
+            assert event_data["theme"] == theme.id
+            assert event_data["title"] == "Multi Attr Event"
+
 
 class TestEventThemesAPI:
     """Tests for event themes endpoints"""
@@ -144,3 +177,17 @@ class TestEventThemesAPI:
             format="json"
         )
         assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_filter_event_themes_with_multiple_attributes(self, authenticated_client, theme):
+        """Test combining multiple theme filters in one request"""
+        response = authenticated_client.get(
+            f"/api/v1/event-themes/?id={theme.id}&title={theme.title}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        result_ids = [t["id"] for t in results]
+
+        assert theme.id in result_ids
+        for theme_data in results:
+            assert theme_data["id"] == theme.id
+            assert theme_data["title"] == theme.title
