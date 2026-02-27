@@ -39,13 +39,17 @@ class AuthRepositoryImpl implements IAuthRepository {
     required AuthApi api,
     required IUserRepository userRepository,
     TokenStorage? storage,
+    Duration? sessionCheckTimeout,
   })  : _api = api,
         _userRepository = userRepository,
-        _storage = storage ?? InMemoryTokenStorage();
+        _storage = storage ?? InMemoryTokenStorage(),
+        _sessionCheckTimeout =
+            sessionCheckTimeout ?? const Duration(seconds: 2);
 
   final AuthApi _api;
   final IUserRepository _userRepository;
   final TokenStorage _storage;
+  final Duration _sessionCheckTimeout;
 
   static const _keyAccess = 'access_token';
   static const _keyRefresh = 'refresh_token';
@@ -92,7 +96,9 @@ class AuthRepositoryImpl implements IAuthRepository {
     final access = await _storage.read(key: _keyAccess);
     if (access != null) {
       try {
-        return await _userRepository.getCurrentUser();
+        return await _userRepository
+            .getCurrentUser()
+            .timeout(_sessionCheckTimeout);
       } catch (e, stackTrace) {
         debugPrint('AuthRepositoryImpl.hasValidSession getCurrentUser error: $e');
         debugPrintStack(stackTrace: stackTrace);
@@ -103,11 +109,17 @@ class AuthRepositoryImpl implements IAuthRepository {
     if (refresh == null) return null;
 
     try {
-      final res = await _api.refresh(refreshToken: refresh);
+      final res = await _api
+          .refresh(refreshToken: refresh)
+          .timeout(_sessionCheckTimeout);
       final newAccess = res['access'] as String?;
       if (newAccess == null) return null;
       await _storage.write(key: _keyAccess, value: newAccess);
-      return await _userRepository.getCurrentUser();
+      return await _userRepository
+          .getCurrentUser()
+          .timeout(_sessionCheckTimeout);
+    } on TimeoutException catch (_) {
+      return null;
     } catch (_) {
       await logout();
       return null;
