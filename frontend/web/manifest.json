@@ -1,6 +1,6 @@
 {
-    "name": "UniCity - Novaville",
-    "short_name": "UniCity",
+    "name": "Novaville",
+    "short_name": "Novaville",
     "id": "/",
     "start_url": ".",
     "scope": "/",
@@ -41,13 +41,13 @@
             "src": "screenshots/home.png",
             "sizes": "508x529",
             "type": "image/png",
-            "label": "Accueil UniCity"
+            "label": "Accueil Novaville"
         },
         {
             "src": "screenshots/mobile.png",
             "sizes": "375x324",
             "type": "image/png",
-            "label": "Vue mobile UniCity"
+            "label": "Vue mobile Novaville"
         }
     ],
     "prefer_related_applications": false,
