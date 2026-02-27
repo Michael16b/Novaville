@@ -13,22 +13,25 @@ RUN flutter pub get
 COPY . /app/
 
 # Build args (injectés depuis docker-compose ou GitHub Actions)
-ARG FLUTTER_BACKEND_API=http://localhost:8000
+ARG FLUTTER_BACKEND_API
+ARG API_URL
 ARG ENVIRONMENT=production
 
 # --- SOLUTION AU PROBLÈME .ENV ---
 # On crée un fichier .env minimaliste pour satisfaire le compilateur Flutter
 # même si le fichier physique est absent du repo.
 RUN touch .env && \
-    echo "FLUTTER_BACKEND_API=${FLUTTER_BACKEND_API}" > .env && \
-    echo "ENVIRONMENT=${ENVIRONMENT}" >> .env
+  BACKEND_API="${FLUTTER_BACKEND_API:-${API_URL:-http://localhost:8000}}" && \
+  echo "FLUTTER_BACKEND_API=${BACKEND_API}" > .env && \
+  echo "ENVIRONMENT=${ENVIRONMENT}" >> .env
 
 # Configuration et build web release
 # On utilise --dart-define pour injecter les variables directement dans le code
 RUN flutter config --enable-web && \
+    BACKEND_API="${FLUTTER_BACKEND_API:-${API_URL:-http://localhost:8000}}" && \
     flutter build web --release --verbose \
   --pwa-strategy=offline-first \
-      --dart-define=FLUTTER_BACKEND_API=${FLUTTER_BACKEND_API} \
+      --dart-define=FLUTTER_BACKEND_API=${BACKEND_API} \
       --dart-define=ENVIRONMENT=${ENVIRONMENT}
 
 ##########
