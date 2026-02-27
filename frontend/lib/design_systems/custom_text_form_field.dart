@@ -19,6 +19,14 @@ class CustomTextFormField extends StatefulWidget {
   final FormFieldValidator<String>? validator;
   final bool isRequired;
 
+  @override
+  State<CustomTextFormField> createState() => _CustomTextFormFieldState();
+}
+
+class _CustomTextFormFieldState extends State<CustomTextFormField> {
+  late final FocusNode _focusNode;
+  bool _isFocused = false;
+
   // Colors (defaults: white background, primary for others)
   static const Color fillColor = AppColors.white;
   static const Color focusedFillColor = AppColors.white;
@@ -29,14 +37,6 @@ class CustomTextFormField extends StatefulWidget {
   static const Color cursorColor = AppColors.primary;
   static const Color selectionColor = AppColors.highlight;
   static const Color errorColor = AppColors.error;
-
-  @override
-  State<CustomTextFormField> createState() => _CustomTextFormFieldState();
-}
-
-class _CustomTextFormFieldState extends State<CustomTextFormField> {
-  late final FocusNode _focusNode;
-  bool _isFocused = false;
 
   @override
   void initState() {
@@ -58,15 +58,15 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   @override
   Widget build(BuildContext context) {
     final effectiveTextColor = _isFocused
-        ? CustomTextFormField.focusedTextColor
-        : CustomTextFormField.textColor;
-    const effectiveCursorColor = CustomTextFormField.cursorColor;
+        ? focusedTextColor
+        : textColor;
+    const effectiveCursorColor = cursorColor;
     final effectiveFillColor = _isFocused
-        ? CustomTextFormField.focusedFillColor
-        : CustomTextFormField.fillColor;
+        ? focusedFillColor
+        : fillColor;
     final effectiveBorderColor = _isFocused
-        ? CustomTextFormField.focusedBorderColor
-        : CustomTextFormField.borderColor;
+        ? focusedBorderColor
+        : borderColor;
 
     final enabled = OutlineInputBorder(
       borderRadius: BorderRadius.circular(4),
@@ -79,12 +79,12 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     // Borders used when the field is in error state
     final error = OutlineInputBorder(
       borderRadius: BorderRadius.circular(4),
-      borderSide: const BorderSide(color: CustomTextFormField.errorColor),
+      borderSide: const BorderSide(color: errorColor),
     );
     final focusedError = OutlineInputBorder(
       borderRadius: BorderRadius.circular(4),
       borderSide: const BorderSide(
-        color: CustomTextFormField.errorColor,
+        color: errorColor,
         width: 2,
       ),
     );
@@ -93,13 +93,13 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
       data: Theme.of(context).copyWith(
         colorScheme: Theme.of(
           context,
-        ).colorScheme.copyWith(error: CustomTextFormField.errorColor),
+        ).colorScheme.copyWith(error: errorColor),
       ),
       child: TextSelectionTheme(
         data: const TextSelectionThemeData(
-          selectionColor: CustomTextFormField.selectionColor,
-          selectionHandleColor: CustomTextFormField.cursorColor,
-          cursorColor: CustomTextFormField.cursorColor,
+          selectionColor: selectionColor,
+          selectionHandleColor: cursorColor,
+          cursorColor: cursorColor,
         ),
         child: TextFormField(
           focusNode: _focusNode,
@@ -109,20 +109,19 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           obscureText: widget.obscureText,
           keyboardType: widget.keyboardType,
           decoration: InputDecoration(
-            label: widget.labelText != null && widget.isRequired
+            label: widget.labelText != null
                 ? Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(widget.labelText!),
-                      const Text(
-                        ' *',
-                        style: TextStyle(color: Colors.red),
-                      ),
+                      if (widget.isRequired)
+                        const Text(
+                          ' *',
+                          style: TextStyle(color: Colors.red),
+                        ),
                     ],
                   )
-                : widget.labelText != null
-                    ? Text(widget.labelText!)
-                    : null,
+                : null,
             filled: true,
             fillColor: effectiveFillColor,
             enabledBorder: enabled,
@@ -130,10 +129,10 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             // Use specific borders for the error state
             errorBorder: error,
             focusedErrorBorder: focusedError,
-            errorStyle: const TextStyle(color: CustomTextFormField.errorColor),
-            labelStyle: const TextStyle(color: CustomTextFormField.textColor),
+            errorStyle: const TextStyle(color: errorColor),
+            labelStyle: const TextStyle(color: textColor),
             floatingLabelStyle: const TextStyle(
-              color: CustomTextFormField.focusedTextColor,
+              color: focusedTextColor,
             ),
           ),
           validator: widget.validator,

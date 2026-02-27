@@ -190,7 +190,7 @@ void main() {
       expect(find.text('Counter: 0'), findsOneWidget);
 
       // Interact with the child widget
-      await tester.tap(find.byType(ElevatedButton));
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Increment'));
       await tester.pump();
 
       // Verify state is preserved

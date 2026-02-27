@@ -94,9 +94,11 @@ class AppBanner extends StatelessWidget {
                         children: [
                           Icon(Icons.person_outline, color: AppColors.primary),
                           SizedBox(width: 12),
-                          Text(
-                            AppTextsNavigation.personalInfo,
-                            style: TextStyle(color: AppColors.primaryText),
+                          Flexible(
+                            child: Text(
+                              AppTextsNavigation.personalInfo,
+                              style: TextStyle(color: AppColors.primaryText),
+                            ),
                           ),
                         ],
                       ),
@@ -107,9 +109,11 @@ class AppBanner extends StatelessWidget {
                         children: [
                           Icon(Icons.logout, color: AppColors.error),
                           SizedBox(width: 12),
-                          Text(
-                            AppTextsAuth.logout,
-                            style: TextStyle(color: AppColors.error),
+                          Flexible(
+                            child: Text(
+                              AppTextsAuth.logout,
+                              style: TextStyle(color: AppColors.error),
+                            ),
                           ),
                         ],
                       ),

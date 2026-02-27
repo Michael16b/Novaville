@@ -11,6 +11,7 @@ import 'package:frontend/features/auth/data/auth_storage_impl.dart';
 import 'package:frontend/features/users/application/bloc/user_accounts_bloc/user_accounts_bloc.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
+import 'package:frontend/features/users/data/user_repository.dart';
 import 'package:frontend/features/users/data/user_repository_impl.dart';
 
 /// User Accounts management page - accessible only to GLOBAL_ADMIN.
@@ -18,11 +19,26 @@ import 'package:frontend/features/users/data/user_repository_impl.dart';
 /// Access control is handled at the router level.
 class UserAccountsPage extends StatelessWidget {
   /// Creates the user accounts page.
-  const UserAccountsPage({super.key});
+  ///
+  /// [userRepository] can be provided for testing purposes.
+  const UserAccountsPage({super.key, this.userRepository});
+
+  /// The repository used to fetch user data.
+  final IUserRepository? userRepository;
 
   @override
   Widget build(BuildContext context) {
     // Setup repository with authenticated client
+    final repository = userRepository ?? _createDefaultRepository();
+
+    return BlocProvider(
+      create: (context) => UserAccountsBloc(repository: repository)
+        ..add(const UserAccountsLoadRequested(ordering: 'first_name')),
+      child: const _UserAccountsPageContent(),
+    );
+  }
+
+  IUserRepository _createDefaultRepository() {
     final storage = SecureTokenStorage();
     final baseUrl = AppConfig.apiBaseUrl;
     final authenticatedClient = AuthenticatedClientFactory.create(
@@ -33,13 +49,7 @@ class UserAccountsPage extends StatelessWidget {
       },
     );
     final apiClient = ApiClient(baseUrl: baseUrl, client: authenticatedClient);
-    final repository = UserRepositoryImpl(apiClient: apiClient);
-
-    return BlocProvider(
-      create: (context) => UserAccountsBloc(repository: repository)
-        ..add(const UserAccountsLoadRequested(ordering: 'first_name')),
-      child: const _UserAccountsPageContent(),
-    );
+    return UserRepositoryImpl(apiClient: apiClient);
   }
 }
 
@@ -91,12 +101,6 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
             return _buildErrorState(context, state.error ?? 'Unknown error');
           }
 
-          if (state.users.isEmpty &&
-              state.status != UserAccountsStatus.loading &&
-              state.status != UserAccountsStatus.failure) {
-            return const _EmptyState();
-          }
-
           return Stack(
             children: [
               SingleChildScrollView(
@@ -125,22 +129,27 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Card(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          DataTable(
-                            sortColumnIndex: _sortColumnIndex,
-                            sortAscending: _sortAscending,
-                            columns: _getColumns(),
-                            rows: state.users
-                                .map((user) => _buildUserRow(context, user))
-                                .toList(),
-                          ),
-                          _buildPaginationControls(context, state),
-                        ],
+                    if (state.users.isEmpty &&
+                        state.status != UserAccountsStatus.loading &&
+                        state.status != UserAccountsStatus.failure)
+                      const _EmptyState()
+                    else
+                      Card(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            DataTable(
+                              sortColumnIndex: _sortColumnIndex,
+                              sortAscending: _sortAscending,
+                              columns: _getColumns(),
+                              rows: state.users
+                                  .map((user) => _buildUserRow(context, user))
+                                  .toList(),
+                            ),
+                            _buildPaginationControls(context, state),
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
