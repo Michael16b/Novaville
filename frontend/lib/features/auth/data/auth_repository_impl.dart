@@ -93,7 +93,9 @@ class AuthRepositoryImpl implements IAuthRepository {
     if (access != null) {
       try {
         return await _userRepository.getCurrentUser();
-      } catch (_) {
+      } catch (e, stackTrace) {
+        debugPrint('AuthRepositoryImpl.hasValidSession getCurrentUser error: $e');
+        debugPrintStack(stackTrace: stackTrace);
       }
     }
 

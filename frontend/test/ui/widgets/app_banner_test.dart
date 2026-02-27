@@ -71,6 +71,8 @@ void main() {
     testWidgets('renders logo image', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       final logoFinder = find.byWidgetPredicate(
@@ -81,31 +83,34 @@ void main() {
       );
 
       expect(logoFinder, findsOneWidget);
-      addTearDown(tester.view.resetPhysicalSize);
     });
 
     testWidgets('renders home button with correct text', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       expect(find.text(AppTextsNavigation.homeButton), findsOneWidget);
       expect(find.byIcon(Icons.home_outlined), findsOneWidget);
-      addTearDown(tester.view.resetPhysicalSize);
     });
 
     testWidgets('renders user account icon', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       expect(find.byIcon(Icons.account_circle_outlined), findsOneWidget);
-      addTearDown(tester.view.resetPhysicalSize);
     });
 
     testWidgets('opens menu when account icon is tapped', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Tap the account icon to open the menu
@@ -115,12 +120,13 @@ void main() {
       // Verify menu items are displayed
       expect(find.text(AppTextsNavigation.personalInfo), findsOneWidget);
       expect(find.text(AppTextsAuth.logout), findsOneWidget);
-      addTearDown(tester.view.resetPhysicalSize);
     });
 
     testWidgets('menu displays personal info option with correct icon', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Open the menu
@@ -130,12 +136,13 @@ void main() {
       // Verify personal info menu item has the correct icon
       expect(find.byIcon(Icons.person_outline), findsOneWidget);
       expect(find.text(AppTextsNavigation.personalInfo), findsOneWidget);
-      addTearDown(tester.view.resetPhysicalSize);
     });
 
     testWidgets('menu displays logout option with correct icon', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Open the menu
@@ -145,12 +152,13 @@ void main() {
       // Verify logout menu item has the correct icon
       expect(find.byIcon(Icons.logout), findsOneWidget);
       expect(find.text(AppTextsAuth.logout), findsOneWidget);
-      addTearDown(tester.view.resetPhysicalSize);
     });
 
     testWidgets('triggers logout when logout menu item is tapped', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Open the menu
@@ -159,18 +167,17 @@ void main() {
 
       // Tap the logout option
       await tester.tap(find.text(AppTextsAuth.logout));
-      await tester.pump(); // Process the tap
+      await tester.pumpAndSettle();
 
-      // Wait for the bloc to process the event
-      // We can't easily check the state immediately because it's async
-      // But we can verify that no exception occurred
-
-      addTearDown(tester.view.resetPhysicalSize);
+      // Verify the bloc transitioned to unauthenticated
+      expect(authBloc.state.status, AuthStatus.unauthenticated);
     });
 
     testWidgets('home button is tappable', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       final homeButtonFinder = find.text(AppTextsNavigation.homeButton);
@@ -179,12 +186,13 @@ void main() {
       // Verify the button can be tapped (no exception should be thrown)
       await tester.tap(homeButtonFinder);
       await tester.pumpAndSettle();
-      addTearDown(tester.view.resetPhysicalSize);
     });
 
     testWidgets('uses SafeArea to avoid system UI overlap', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       final safeAreaFinder = find.byWidgetPredicate(
@@ -192,12 +200,13 @@ void main() {
       );
 
       expect(safeAreaFinder, findsOneWidget);
-      addTearDown(tester.view.resetPhysicalSize);
     });
 
     testWidgets('has correct layout structure with logo and buttons', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Verify the main container exists
@@ -208,7 +217,6 @@ void main() {
 
       // Verify Row layout exists
       expect(find.byWidgetPredicate((widget) => widget is Row), findsAtLeastNWidgets(1));
-      addTearDown(tester.view.resetPhysicalSize);
     });
   });
 }

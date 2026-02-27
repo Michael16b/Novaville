@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:frontend/config/app_config.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
-import 'package:frontend/core/network/api_client.dart';
-import 'package:frontend/core/network/authenticated_client_factory.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
-import 'package:frontend/features/auth/data/auth_storage_impl.dart';
 import 'package:frontend/features/users/application/bloc/user_accounts_bloc/user_accounts_bloc.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
-import 'package:frontend/features/users/data/user_repository_impl.dart';
+import 'package:frontend/features/users/data/user_repository_factory.dart';
 
 /// User Accounts management page - accessible only to GLOBAL_ADMIN.
 ///
@@ -39,17 +35,7 @@ class UserAccountsPage extends StatelessWidget {
   }
 
   IUserRepository _createDefaultRepository() {
-    final storage = SecureTokenStorage();
-    final baseUrl = AppConfig.apiBaseUrl;
-    final authenticatedClient = AuthenticatedClientFactory.create(
-      storage: storage,
-      onRefresh: (refreshToken) async {
-        // Token refresh is handled by AuthenticatedClientFactory
-        return '';
-      },
-    );
-    final apiClient = ApiClient(baseUrl: baseUrl, client: authenticatedClient);
-    return UserRepositoryImpl(apiClient: apiClient);
+    return createUserRepository();
   }
 }
 
@@ -73,6 +59,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
       body: BlocConsumer<UserAccountsBloc, UserAccountsState>(
         listener: (context, state) {
           if (state.status == UserAccountsStatus.failure) {
+            _deletedUser = null;
             CustomSnackBar.showError(context, state.error ?? UserTexts.error);
           } else if (state.status == UserAccountsStatus.loaded &&
               _deletedUser != null) {
