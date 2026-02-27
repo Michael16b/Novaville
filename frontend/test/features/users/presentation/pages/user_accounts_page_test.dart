@@ -107,7 +107,7 @@ void main() {
       );
     }
 
-    testWidgets('renders title and add user button', (WidgetTester tester) async {
+    testWidgets('renders title and floating add button', (WidgetTester tester) async {
       // Set a large screen size to avoid overflow
       tester.view.physicalSize = const Size(2400, 1200);
       tester.view.devicePixelRatio = 1.0;
@@ -119,7 +119,6 @@ void main() {
       await tester.pumpAndSettle(); // Wait for bloc to load
 
       expect(find.text(UserTexts.title), findsAtLeastNWidgets(1));
-      expect(find.text(UserTexts.addUser), findsOneWidget);
       expect(find.byIcon(Icons.add), findsOneWidget);
     });
 
@@ -154,8 +153,8 @@ void main() {
 
       expect(find.text('Admin User'), findsOneWidget);
       expect(find.text('John Doe'), findsOneWidget);
-      expect(find.text('admin'), findsOneWidget);
-      expect(find.text('user2'), findsOneWidget);
+      expect(find.text('@admin'), findsOneWidget);
+      expect(find.text('@user2'), findsOneWidget);
     });
 
     testWidgets('shows error message when loading fails', (WidgetTester tester) async {
@@ -224,7 +223,7 @@ void main() {
       await tester.pumpAndSettle(); // Wait for initial load
 
       // Open the delete dialog for John (the second delete icon)
-      final deleteButtons = find.byIcon(Icons.delete);
+      final deleteButtons = find.byIcon(Icons.delete_outline);
       await tester.tap(deleteButtons.last);
       await tester.pumpAndSettle();
 

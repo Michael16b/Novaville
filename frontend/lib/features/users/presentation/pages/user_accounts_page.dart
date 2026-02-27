@@ -9,6 +9,8 @@ import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
 import 'package:frontend/features/users/data/user_repository_factory.dart';
+import 'package:frontend/features/users/presentation/widgets/user_account_card.dart';
+import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 
 /// User Accounts management page - accessible only to GLOBAL_ADMIN.
 ///
@@ -48,7 +50,6 @@ class _UserAccountsPageContent extends StatefulWidget {
 }
 
 class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
-  int _sortColumnIndex = 0;
   String _sortColumnKey = 'first_name';
   bool _sortAscending = true;
   User? _deletedUser;
@@ -56,6 +57,31 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: ExpandableFabMenu(
+        heroTag: 'user-accounts-add-fab',
+        tooltip: UserTexts.addActionsTooltip,
+        actions: [
+          FabMenuAction(
+            label: UserTexts.addUser,
+            icon: Icons.person_add_alt_1,
+            onPressed: () => _showAddInProgressDialog(
+              context,
+              title: UserTexts.addUser,
+              description: UserTexts.addSingleUserDescription,
+            ),
+          ),
+          FabMenuAction(
+            label: UserTexts.addUsers,
+            icon: Icons.group_add,
+            onPressed: () => _showAddInProgressDialog(
+              context,
+              title: UserTexts.addUsers,
+              description: UserTexts.addMultipleUsersDescription,
+            ),
+          ),
+        ],
+      ),
       body: BlocConsumer<UserAccountsBloc, UserAccountsState>(
         listener: (context, state) {
           if (state.status == UserAccountsStatus.failure) {
@@ -91,59 +117,33 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
           return Stack(
             children: [
               SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          UserTexts.title,
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            // TODO: Implement add user functionality
-                          },
-                          icon: const Icon(Icons.add),
-                          label: const Text(UserTexts.addUser),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      UserTexts.title,
+                      style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 16),
                     if (state.users.isEmpty &&
                         state.status != UserAccountsStatus.loading &&
                         state.status != UserAccountsStatus.failure)
                       const _EmptyState()
-                    else
-                      Card(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            DataTable(
-                              sortColumnIndex: _sortColumnIndex,
-                              sortAscending: _sortAscending,
-                              columns: _getColumns(),
-                              rows: state.users
-                                  .map((user) => _buildUserRow(context, user))
-                                  .toList(),
-                            ),
-                            _buildPaginationControls(context, state),
-                          ],
-                        ),
-                      ),
+                    else ...[
+                      _buildSortControls(context),
+                      const SizedBox(height: 12),
+                      _buildUsersGrid(context, state.users),
+                      const SizedBox(height: 8),
+                      _buildPaginationControls(context, state),
+                    ],
                   ],
                 ),
               ),
               if (state.status == UserAccountsStatus.loading)
                 Positioned.fill(
                   child: Container(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     child: const Center(
                       child: CircularProgressIndicator(
                         color: AppColors.primary,
@@ -158,92 +158,76 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     );
   }
 
-  List<DataColumn> _getColumns() {
-    return [
-      DataColumn(
-        columnWidth: const FlexColumnWidth(1.5),
-        label: const Text(UserTexts.firstNameLastName),
-        onSort: (columnIndex, ascending) {
-          _onSort(columnIndex, 'first_name', ascending);
-        },
-      ),
-      DataColumn(
-        columnWidth: const FlexColumnWidth(1.5),
-        label: const Text(UserTexts.username),
-        onSort: (columnIndex, ascending) {
-          _onSort(columnIndex, 'username', ascending);
-        },
-      ),
-      DataColumn(
-        columnWidth: const FlexColumnWidth(1.5),
-        label: const Text(UserTexts.email),
-        onSort: (columnIndex, ascending) {
-          _onSort(columnIndex, 'email', ascending);
-        },
-      ),
-      const DataColumn(
-        columnWidth: const FlexColumnWidth(1.5),
-        label: Text(UserTexts.role),
-      ),
-      const DataColumn(
-          columnWidth: const FlexColumnWidth(1),
-          label: Text(UserTexts.actions)),
+  Widget _buildSortControls(BuildContext context) {
+    final sortItems = [
+      (label: UserTexts.firstNameLastName, key: 'first_name'),
+      (label: UserTexts.username, key: 'username'),
+      (label: UserTexts.email, key: 'email'),
     ];
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(UserTexts.sortBy, style: Theme.of(context).textTheme.titleSmall),
+            for (final sortItem in sortItems)
+              ChoiceChip(
+                label: Text(sortItem.label),
+                selected: _sortColumnKey == sortItem.key,
+                onSelected: (_) => _applySort(sortItem.key, _sortAscending),
+              ),
+            OutlinedButton.icon(
+              onPressed: () => _applySort(_sortColumnKey, !_sortAscending),
+              icon: Icon(
+                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                size: 16,
+              ),
+              label: Text(
+                _sortAscending ? UserTexts.ascending : UserTexts.descending,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  DataRow _buildUserRow(BuildContext context, User user) {
+  Widget _buildUsersGrid(BuildContext context, List<User> users) {
     final currentUser = context.read<AuthBloc>().state.user;
-    final isCurrentUser = user.id == currentUser?.id;
-    final fullName = '${user.firstName} ${user.lastName}';
 
-    return DataRow(
-      cells: [
-        DataCell(Text(fullName)),
-        DataCell(Text(user.username)),
-        DataCell(Text(user.email)),
-        DataCell(
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: _getRoleColor(user.role),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              user.role?.label ?? '-',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final crossAxisCount = width >= 1280 ? 3 : width >= 800 ? 2 : 1;
+        final childAspectRatio =
+            crossAxisCount == 1 ? 2.6 : crossAxisCount == 2 ? 2.0 : 1.8;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: users.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: childAspectRatio,
           ),
-        ),
-        DataCell(
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit, size: 18),
-                tooltip: UserTexts.edit,
-                onPressed: () => _showEditDialog(context, user),
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.delete,
-                  size: 18,
-                  color: isCurrentUser ? Colors.grey : Colors.red,
-                ),
-                tooltip: isCurrentUser
-                    ? UserTexts.cannotDeleteSelf
-                    : UserTexts.delete,
-                onPressed: isCurrentUser
-                    ? null
-                    : () => _showDeleteDialog(context, user),
-              ),
-            ],
-          ),
-        ),
-      ],
+          itemBuilder: (context, index) {
+            final user = users[index];
+            return UserAccountCard(
+              user: user,
+              isCurrentUser: user.id == currentUser?.id,
+              onEdit: (value) => _showEditDialog(context, value),
+              onDelete: (value) => _showDeleteDialog(context, value),
+              getRoleColor: _getRoleColor,
+            );
+          },
+        );
+      },
     );
   }
 
@@ -296,9 +280,8 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     );
   }
 
-  void _onSort(int columnIndex, String columnKey, bool ascending) {
+  void _applySort(String columnKey, bool ascending) {
     setState(() {
-      _sortColumnIndex = columnIndex;
       _sortColumnKey = columnKey;
       _sortAscending = ascending;
     });
@@ -339,6 +322,34 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
             },
             icon: const Icon(Icons.refresh),
             label: const Text(UserTexts.retry),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddInProgressDialog(
+    BuildContext context, {
+    required String title,
+    required String description,
+  }) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(description),
+            const SizedBox(height: 12),
+            const Text(UserTexts.featureComingSoon),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text(UserTexts.close),
           ),
         ],
       ),
