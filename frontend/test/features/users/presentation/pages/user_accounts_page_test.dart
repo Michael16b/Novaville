@@ -55,7 +55,11 @@ class MockUserRepository implements IUserRepository {
   }
 
   @override
-  Future<UserPage> listUsers({String? ordering, int page = 1}) async {
+  Future<UserPage> listUsers({
+    String? ordering,
+    String? search,
+    int page = 1,
+  }) async {
     if (shouldThrow) throw Exception('Network error');
     return UserPage(
       count: users.length,

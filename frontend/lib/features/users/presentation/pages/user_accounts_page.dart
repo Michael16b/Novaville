@@ -469,6 +469,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
             icon: const Icon(Icons.chevron_left),
             onPressed: state.previous != null
                 ? () {
+                    _flushSearchDebounce();
                     context.read<UserAccountsBloc>().add(
                       UserAccountsPageRequested(
                         page: state.page - 1,
@@ -485,6 +486,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
             icon: const Icon(Icons.chevron_right),
             onPressed: state.next != null
                 ? () {
+                    _flushSearchDebounce();
                     context.read<UserAccountsBloc>().add(
                       UserAccountsPageRequested(
                         page: state.page + 1,
@@ -502,7 +504,20 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     );
   }
 
+  void _flushSearchDebounce() {
+    if (_searchDebounce?.isActive ?? false) {
+      _searchDebounce!.cancel();
+      final nextQuery = _searchController.text.trim();
+      if (nextQuery != _searchQuery) {
+        setState(() {
+          _searchQuery = nextQuery;
+        });
+      }
+    }
+  }
+
   void _applySort(String columnKey, bool ascending) {
+    _flushSearchDebounce();
     setState(() {
       _sortColumnKey = columnKey;
       _sortAscending = ascending;
