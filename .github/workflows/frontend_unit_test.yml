@@ -11,17 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Setup Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.38.3"
 
-      # 3. Create .env
       - name: Create .env file for tests
         working-directory: frontend
         run: |
@@ -30,12 +27,10 @@ jobs:
           SOME_KEY=dummy
           EOF
 
-      # 4. Dependencies
       - name: Pub get
         working-directory: frontend
         run: flutter pub get
 
-      # 5. Run ALL tests from features + ui
       - name: Run feature & UI tests
         working-directory: frontend
         run: |
