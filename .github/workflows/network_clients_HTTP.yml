@@ -1,4 +1,4 @@
-name: Tests Réseaux
+name: Network Tests
 
 on:
   push:
