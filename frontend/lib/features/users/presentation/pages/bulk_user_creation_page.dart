@@ -33,6 +33,15 @@ class BulkUserCreationPage extends StatefulWidget {
 
 enum _CreationMode { manual, csv }
 
+enum _GridMode { auto, manual }
+
+class _GridConfig {
+  const _GridConfig({required this.columns, required this.rows});
+
+  final int columns;
+  final int rows;
+}
+
 class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
   static const String _draftStorageKey = 'bulk_users_draft_v1';
   final _csvDropZoneKey = GlobalKey();
@@ -46,6 +55,8 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
   bool _isSubmitting = false;
   bool _isImportingCsv = false;
   bool _isDraggingCsv = false;
+  _GridMode _gridMode = _GridMode.auto;
+  bool _includeOneUserPdfFromGrouped = false;
   WebDropHandler? _webDropHandler;
 
   List<_DraftUser> _draftUsers = <_DraftUser>[];
@@ -742,34 +753,85 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     return chars.join();
   }
 
-  String _credentialLink(_CreatedCredential credential) {
-    final firstName = credential.firstName;
-    final lastName = credential.lastName;
-    final username = credential.username;
-    final password = credential.password;
-    final email = credential.email ?? '';
+  String _buildPdfDateSuffix() {
+    final now = DateTime.now();
+    final day = now.day.toString().padLeft(2, '0');
+    final month = now.month.toString().padLeft(2, '0');
+    final year = now.year.toString();
+    return '$day$month$year';
+  }
+
+  String _buildPdfFileName(String? suffix) {
+    final datePart = _buildPdfDateSuffix();
+    final suffixPart = (suffix == null || suffix.isEmpty) ? '' : suffix;
+    return '${BulkUserCreationTexts.pdfFileBaseName}${datePart}$suffixPart.pdf';
+  }
+
+  _GridConfig _resolveAutoGridConfig(int itemCount) {
+    if (itemCount <= 4) {
+      return const _GridConfig(columns: 2, rows: 2);
+    }
+    if (itemCount <= 6) {
+      return const _GridConfig(columns: 3, rows: 2);
+    }
+    if (itemCount <= 9) {
+      return const _GridConfig(columns: 3, rows: 3);
+    }
+    if (itemCount <= 12) {
+      return const _GridConfig(columns: 4, rows: 3);
+    }
+    if (itemCount <= 16) {
+      return const _GridConfig(columns: 4, rows: 4);
+    }
+    if (itemCount <= 20) {
+      return const _GridConfig(columns: 5, rows: 4);
+    }
+    return const _GridConfig(columns: 5, rows: 5);
+  }
+
+  Future<String> _createCredentialShareLink(
+    _CreatedCredential credential,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final token =
+        '${DateTime.now().millisecondsSinceEpoch}_${Random.secure().nextInt(1 << 32)}';
+    final storageKey = '${BulkUserCreationTexts.shareTokenPrefix}$token';
+
+    final payload = jsonEncode({
+      'first_name': credential.firstName,
+      'last_name': credential.lastName,
+      'email': credential.email ?? '',
+      'username': credential.username,
+      'password': credential.password,
+      'created_at': DateTime.now().toIso8601String(),
+    });
+    await prefs.setString(storageKey, payload);
 
     final routeUri = Uri(
       path: AppRoutes.credentialsShare,
-      queryParameters: {
-        'username': username,
-        'password': password,
-        'first_name': firstName,
-        'last_name': lastName,
-        'email': email,
-      },
+      queryParameters: {'token': token},
     );
-
     return Uri.base.resolveUri(routeUri).toString();
   }
 
   Future<void> _copyCredentialLink(_CreatedCredential credential) async {
-    final link = _credentialLink(credential);
-    await Clipboard.setData(ClipboardData(text: link));
-    if (!mounted) {
-      return;
+    try {
+      final link = await _createCredentialShareLink(credential);
+      await Clipboard.setData(ClipboardData(text: link));
+      if (!mounted) {
+        return;
+      }
+      CustomSnackBar.showSuccess(context, BulkUserCreationTexts.linkCopied);
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      CustomSnackBar.showError(
+        context,
+        BulkUserCreationTexts.linkGenerationFailed,
+      );
     }
-    CustomSnackBar.showSuccess(context, BulkUserCreationTexts.linkCopied);
   }
 
   Future<void> _downloadPdfFile({
@@ -799,6 +861,20 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     try {
       final logoBytes = await rootBundle.load('assets/images/logo.png');
       return pw.MemoryImage(logoBytes.buffer.asUint8List());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<_PdfFontPack?> _loadPdfFonts() async {
+    try {
+      final regular = pw.Font.ttf(
+        await rootBundle.load('assets/fonts/Montserrat-Regular.ttf'),
+      );
+      final bold = pw.Font.ttf(
+        await rootBundle.load('assets/fonts/Montserrat-Bold.ttf'),
+      );
+      return _PdfFontPack(base: regular, bold: bold);
     } catch (_) {
       return null;
     }
@@ -911,17 +987,29 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       return;
     }
 
-    final columns = int.tryParse(_gridColumnsController.text.trim()) ?? 3;
-    final rows = int.tryParse(_gridRowsController.text.trim()) ?? 8;
-    final safeColumns = columns.clamp(1, 8);
-    final safeRows = rows.clamp(1, 20);
+    final gridConfig = _gridMode == _GridMode.auto
+        ? _resolveAutoGridConfig(_createdCredentials.length)
+        : _GridConfig(
+            columns: (int.tryParse(_gridColumnsController.text.trim()) ?? 3)
+                .clamp(1, 8),
+            rows: (int.tryParse(_gridRowsController.text.trim()) ?? 8).clamp(
+              1,
+              20,
+            ),
+          );
+    final safeColumns = gridConfig.columns;
+    final safeRows = gridConfig.rows;
     final slotsPerPage = safeColumns * safeRows;
 
     final document = pw.Document();
     final primary = PdfColor.fromInt(AppColors.primary.toARGB32());
     final accent = PdfColor.fromInt(AppColors.secondary.toARGB32());
-    final background = PdfColor.fromInt(AppColors.highlight.toARGB32());
+    final background = PdfColors.white;
     final logo = await _loadPdfLogo();
+    final fontPack = await _loadPdfFonts();
+    final theme = fontPack == null
+        ? null
+        : pw.ThemeData.withFont(base: fontPack.base, bold: fontPack.bold);
 
     final horizontalSpacing = 10.0;
     final cardWidth =
@@ -942,6 +1030,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       document.addPage(
         pw.Page(
           margin: const pw.EdgeInsets.all(20),
+          theme: theme,
           build: (context) {
             return pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -987,8 +1076,12 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
 
     await _downloadPdfFile(
       bytes: await document.save(),
-      fileName: BulkUserCreationTexts.groupedPdfFileName,
+      fileName: _buildPdfFileName(BulkUserCreationTexts.groupedPdfSuffix),
     );
+
+    if (_includeOneUserPdfFromGrouped) {
+      await _generateOneUserPerPagePdf();
+    }
   }
 
   Future<void> _generateOneUserPerPagePdf() async {
@@ -1003,13 +1096,18 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final document = pw.Document();
     final primary = PdfColor.fromInt(AppColors.primary.toARGB32());
     final accent = PdfColor.fromInt(AppColors.secondary.toARGB32());
-    final background = PdfColor.fromInt(AppColors.highlight.toARGB32());
+    final background = PdfColors.white;
     final logo = await _loadPdfLogo();
+    final fontPack = await _loadPdfFonts();
+    final theme = fontPack == null
+        ? null
+        : pw.ThemeData.withFont(base: fontPack.base, bold: fontPack.bold);
 
     for (final credential in _createdCredentials) {
       document.addPage(
         pw.Page(
           margin: const pw.EdgeInsets.all(28),
+          theme: theme,
           build: (context) {
             return pw.Center(
               child: pw.SizedBox(
@@ -1030,7 +1128,46 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
 
     await _downloadPdfFile(
       bytes: await document.save(),
-      fileName: BulkUserCreationTexts.individualPdfFileName,
+      fileName: _buildPdfFileName(BulkUserCreationTexts.individualPdfSuffix),
+    );
+  }
+
+  Future<void> _generateSingleUserPdf(_CreatedCredential credential) async {
+    final document = pw.Document();
+    final primary = PdfColor.fromInt(AppColors.primary.toARGB32());
+    final accent = PdfColor.fromInt(AppColors.secondary.toARGB32());
+    final background = PdfColors.white;
+    final logo = await _loadPdfLogo();
+    final fontPack = await _loadPdfFonts();
+    final theme = fontPack == null
+        ? null
+        : pw.ThemeData.withFont(base: fontPack.base, bold: fontPack.bold);
+
+    document.addPage(
+      pw.Page(
+        margin: const pw.EdgeInsets.all(28),
+        theme: theme,
+        build: (context) {
+          return pw.Center(
+            child: pw.SizedBox(
+              width: 460,
+              child: _buildCredentialPdfCard(
+                credential,
+                primary: primary,
+                accent: accent,
+                background: background,
+                logo: logo,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
+    await _downloadPdfFile(
+      bytes: await document.save(),
+      fileName:
+          '${BulkUserCreationTexts.pdfFileBaseName}${_buildPdfDateSuffix()}${BulkUserCreationTexts.oneUserPdfSuffix}_${credential.username}.pdf',
     );
   }
 
@@ -1563,10 +1700,32 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
               runSpacing: 8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
+                DropdownButton<_GridMode>(
+                  value: _gridMode,
+                  onChanged: (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    setState(() {
+                      _gridMode = value;
+                    });
+                  },
+                  items: const [
+                    DropdownMenuItem(
+                      value: _GridMode.auto,
+                      child: Text(BulkUserCreationTexts.gridModeAuto),
+                    ),
+                    DropdownMenuItem(
+                      value: _GridMode.manual,
+                      child: Text(BulkUserCreationTexts.gridModeManual),
+                    ),
+                  ],
+                ),
                 SizedBox(
                   width: 120,
                   child: TextField(
                     controller: _gridColumnsController,
+                    enabled: _gridMode == _GridMode.manual,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Colonnes'),
                   ),
@@ -1576,6 +1735,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   width: 120,
                   child: TextField(
                     controller: _gridRowsController,
+                    enabled: _gridMode == _GridMode.manual,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Lignes'),
                   ),
@@ -1583,14 +1743,26 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                 ElevatedButton.icon(
                   onPressed: _generateSchoolGridPdf,
                   icon: const Icon(Icons.grid_view),
-                  label: const Text('PDF type école'),
+                  label: const Text(BulkUserCreationTexts.groupedPdfButton),
                 ),
                 ElevatedButton.icon(
                   onPressed: _generateOneUserPerPagePdf,
                   icon: const Icon(Icons.picture_as_pdf),
-                  label: const Text('PDF 1 utilisateur/page'),
+                  label: const Text(BulkUserCreationTexts.oneUserPageButton),
                 ),
               ],
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text(
+                BulkUserCreationTexts.includeIndividualPdfOption,
+              ),
+              value: _includeOneUserPdfFromGrouped,
+              onChanged: (value) {
+                setState(() {
+                  _includeOneUserPdfFromGrouped = value;
+                });
+              },
             ),
             const SizedBox(height: 12),
             Column(
@@ -1611,10 +1783,23 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                         subtitle: Text(
                           '${credential.email ?? ''} • ${credential.username} • mot de passe: ${credential.password}',
                         ),
-                        trailing: TextButton.icon(
-                          onPressed: () => _copyCredentialLink(credential),
-                          icon: const Icon(Icons.link),
-                          label: const Text('Copier lien'),
+                        trailing: Wrap(
+                          spacing: 8,
+                          children: [
+                            TextButton.icon(
+                              onPressed: () => _copyCredentialLink(credential),
+                              icon: const Icon(Icons.link),
+                              label: const Text('Copier lien'),
+                            ),
+                            TextButton.icon(
+                              onPressed: () =>
+                                  _generateSingleUserPdf(credential),
+                              icon: const Icon(Icons.download_outlined),
+                              label: const Text(
+                                BulkUserCreationTexts.userPdfButton,
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     },
@@ -1752,4 +1937,11 @@ class _CreatedCredential {
   final String? email;
   final String username;
   final String password;
+}
+
+class _PdfFontPack {
+  const _PdfFontPack({required this.base, required this.bold});
+
+  final pw.Font base;
+  final pw.Font bold;
 }

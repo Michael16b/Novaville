@@ -9,6 +9,10 @@ class CredentialsShareTexts {
 
   static const copyTooltip = 'Copier';
   static const copyAllLabel = 'Copier toutes les informations';
+  static const loading = 'Chargement des informations...';
+  static const unavailableTitle = 'Informations indisponibles';
+  static const unavailableMessage =
+      'Ce lien de partage est invalide, expiré ou déjà supprimé.';
 
   static const emailCopied = 'Email copié.';
   static const usernameCopied = 'Nom d\'utilisateur copié.';
