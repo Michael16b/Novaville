@@ -3,9 +3,12 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:csv/csv.dart';
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/features/users/presentation/pages/web_drop_handler.dart';
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
@@ -31,38 +34,90 @@ enum _CreationMode { manual, csv }
 
 class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
   static const String _draftStorageKey = 'bulk_users_draft_v1';
-
-  final _manualFormKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _usernameController = TextEditingController();
-  final _emailController = TextEditingController();
+  final _csvDropZoneKey = GlobalKey();
   final _gridColumnsController = TextEditingController(text: '3');
   final _gridRowsController = TextEditingController(text: '8');
 
   late final IUserRepository _repository;
 
   _CreationMode _creationMode = _CreationMode.manual;
-  UserRole _selectedRole = UserRole.citizen;
   bool _isSubmitting = false;
   bool _isImportingCsv = false;
+  bool _isDraggingCsv = false;
+  WebDropHandler? _webDropHandler;
 
   List<_DraftUser> _draftUsers = <_DraftUser>[];
   List<_CreatedCredential> _createdCredentials = <_CreatedCredential>[];
+  late List<_ManualUserFormData> _manualCards;
 
   @override
   void initState() {
     super.initState();
     _repository = widget.userRepository ?? createUserRepository();
+    _manualCards = <_ManualUserFormData>[_ManualUserFormData()];
+    if (kIsWeb) {
+      _webDropHandler = WebDropHandler(
+        onHover: () {
+          if (!mounted) {
+            return;
+          }
+          setState(() {
+            _isDraggingCsv = true;
+          });
+        },
+        onLeave: () {
+          if (!mounted) {
+            return;
+          }
+          setState(() {
+            _isDraggingCsv = false;
+          });
+        },
+        onCsvDropped: (fileName, content) async {
+          if (_creationMode != _CreationMode.csv) {
+            return;
+          }
+          await _importCsvContent(content, sourceLabel: fileName);
+        },
+        shouldAcceptDrop: (x, y) => _isPointInsideCsvDropZone(x, y),
+        onError: (message) {
+          if (!mounted) {
+            return;
+          }
+          CustomSnackBar.showError(context, message);
+        },
+      );
+      _webDropHandler!.attach();
+    }
     _loadDrafts();
+  }
+
+  bool _isPointInsideCsvDropZone(double x, double y) {
+    if (_creationMode != _CreationMode.csv) {
+      return false;
+    }
+
+    final zoneContext = _csvDropZoneKey.currentContext;
+    if (zoneContext == null) {
+      return false;
+    }
+
+    final renderObject = zoneContext.findRenderObject();
+    if (renderObject is! RenderBox || !renderObject.hasSize) {
+      return false;
+    }
+
+    final origin = renderObject.localToGlobal(Offset.zero);
+    final rect = origin & renderObject.size;
+    return rect.contains(Offset(x, y));
   }
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _usernameController.dispose();
-    _emailController.dispose();
+    for (final card in _manualCards) {
+      card.dispose();
+    }
+    _webDropHandler?.dispose();
     _gridColumnsController.dispose();
     _gridRowsController.dispose();
     super.dispose();
@@ -89,7 +144,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       if (loaded.isNotEmpty) {
         CustomSnackBar.showSuccess(
           context,
-          'Brouillon restauré (${loaded.length} utilisateurs).',
+          '${loaded.length} utilisateur(s) restauré(s) depuis le cache local.',
         );
       }
     } catch (_) {
@@ -109,9 +164,9 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final shouldClear = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Supprimer le brouillon'),
+        title: const Text('Supprimer la liste en attente'),
         content: const Text(
-          'Voulez-vous supprimer tous les utilisateurs en brouillon ?',
+          'Voulez-vous supprimer tous les utilisateurs en attente de création ?',
         ),
         actions: [
           TextButton(
@@ -136,48 +191,152 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     await _saveDrafts();
   }
 
-  void _addManualDraft() {
-    if (!_manualFormKey.currentState!.validate()) {
+  void _addManualCard() {
+    setState(() {
+      _manualCards = <_ManualUserFormData>[
+        ..._manualCards,
+        _ManualUserFormData(),
+      ];
+    });
+  }
+
+  void _removeManualCard(int index) {
+    if (_manualCards.length == 1) {
       return;
     }
+    final card = _manualCards[index];
+    setState(() {
+      _manualCards.removeAt(index);
+    });
+    card.dispose();
+  }
 
-    final draft = _DraftUser(
-      firstName: _firstNameController.text.trim(),
-      lastName: _lastNameController.text.trim(),
-      username: _usernameController.text.trim(),
-      email: _emailController.text.trim(),
-      role: _selectedRole,
-    );
+  Future<void> _addManualCardsToList() async {
+    final errors = <String>[];
+    final currentUsernames = _draftUsers
+        .map((entry) => entry.username.toLowerCase())
+        .toSet();
+    final currentEmails = _draftUsers
+        .map((entry) => entry.email.toLowerCase())
+        .toSet();
 
-    final alreadyExists = _draftUsers.any(
-      (entry) =>
-          entry.username.toLowerCase() == draft.username.toLowerCase() ||
-          entry.email.toLowerCase() == draft.email.toLowerCase(),
-    );
+    final newUsers = <_DraftUser>[];
+    final seenInCardsUsernames = <String>{};
+    final seenInCardsEmails = <String>{};
 
-    if (alreadyExists) {
-      CustomSnackBar.showError(
-        context,
-        'Un brouillon avec ce nom d\'utilisateur ou cet email existe déjà.',
+    for (var i = 0; i < _manualCards.length; i++) {
+      final card = _manualCards[i];
+      final lineLabel = 'Carte ${i + 1}';
+      final firstName = card.firstNameController.text.trim();
+      final lastName = card.lastNameController.text.trim();
+      final username = card.usernameController.text.trim();
+      final email = card.emailController.text.trim();
+
+      final isEmpty =
+          firstName.isEmpty &&
+          lastName.isEmpty &&
+          username.isEmpty &&
+          email.isEmpty;
+      if (isEmpty) {
+        continue;
+      }
+
+      if (firstName.isEmpty) {
+        errors.add('$lineLabel • first_name manquant');
+      }
+      if (lastName.isEmpty) {
+        errors.add('$lineLabel • last_name manquant');
+      }
+      if (username.isEmpty) {
+        errors.add('$lineLabel • username manquant');
+      }
+      if (email.isEmpty) {
+        errors.add('$lineLabel • email manquant');
+      }
+      if (email.isNotEmpty && !_isValidEmail(email)) {
+        errors.add('$lineLabel • email invalide');
+      }
+
+      final normalizedUsername = username.toLowerCase();
+      final normalizedEmail = email.toLowerCase();
+      if (username.isNotEmpty &&
+          (currentUsernames.contains(normalizedUsername) ||
+              seenInCardsUsernames.contains(normalizedUsername))) {
+        errors.add('$lineLabel • username déjà utilisé');
+      }
+      if (email.isNotEmpty &&
+          (currentEmails.contains(normalizedEmail) ||
+              seenInCardsEmails.contains(normalizedEmail))) {
+        errors.add('$lineLabel • email déjà utilisé');
+      }
+
+      if (errors.any((error) => error.startsWith(lineLabel))) {
+        continue;
+      }
+
+      seenInCardsUsernames.add(normalizedUsername);
+      seenInCardsEmails.add(normalizedEmail);
+      newUsers.add(
+        _DraftUser(
+          firstName: firstName,
+          lastName: lastName,
+          username: username,
+          email: email,
+          role: card.role,
+        ),
+      );
+    }
+
+    if (errors.isNotEmpty) {
+      if (!mounted) {
+        return;
+      }
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Validation des cartes impossible'),
+          content: SizedBox(
+            width: 520,
+            child: SingleChildScrollView(child: Text(errors.join('\n'))),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Fermer'),
+            ),
+          ],
+        ),
       );
       return;
     }
 
+    if (newUsers.isEmpty) {
+      CustomSnackBar.showError(
+        context,
+        'Remplissez au moins une carte utilisateur.',
+      );
+      return;
+    }
+
+    for (final card in _manualCards) {
+      card.dispose();
+    }
+
     setState(() {
-      _draftUsers = <_DraftUser>[..._draftUsers, draft];
-      _firstNameController.clear();
-      _lastNameController.clear();
-      _usernameController.clear();
-      _emailController.clear();
+      _draftUsers = <_DraftUser>[..._draftUsers, ...newUsers];
+      _manualCards = <_ManualUserFormData>[_ManualUserFormData()];
     });
-    _saveDrafts();
+    await _saveDrafts();
+    if (!mounted) {
+      return;
+    }
+    CustomSnackBar.showSuccess(
+      context,
+      '${newUsers.length} utilisateur(s) ajouté(s) à la liste.',
+    );
   }
 
   Future<void> _importCsv() async {
-    setState(() {
-      _isImportingCsv = true;
-    });
-
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -189,15 +348,36 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       }
 
       final file = result.files.single;
-      String csvContent;
       if (file.bytes != null) {
-        csvContent = utf8.decode(file.bytes!, allowMalformed: true);
+        await _importCsvContent(
+          utf8.decode(file.bytes!, allowMalformed: true),
+          sourceLabel: file.name,
+        );
       } else if (file.path != null) {
-        csvContent = await File(file.path!).readAsString();
+        await _importCsvContent(
+          await File(file.path!).readAsString(),
+          sourceLabel: file.name,
+        );
       } else {
         throw Exception('Fichier CSV illisible');
       }
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      CustomSnackBar.showError(context, error.toString());
+    }
+  }
 
+  Future<void> _importCsvContent(
+    String csvContent, {
+    required String sourceLabel,
+  }) async {
+    setState(() {
+      _isImportingCsv = true;
+    });
+
+    try {
       final rows = const CsvToListConverter(
         shouldParseNumbers: false,
         eol: '\n',
@@ -232,7 +412,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
 
       CustomSnackBar.showSuccess(
         context,
-        'Compilation réussie : ${compilation.drafts.length} utilisateur(s) importé(s).',
+        '$sourceLabel: ${compilation.drafts.length} utilisateur(s) importé(s).',
       );
     } catch (error) {
       if (!mounted) {
@@ -246,6 +426,54 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
         });
       }
     }
+  }
+
+  Future<void> _onCsvFilesDropped(DropDoneDetails details) async {
+    if (details.files.isEmpty) {
+      return;
+    }
+
+    final file = details.files.first;
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      CustomSnackBar.showError(context, 'Déposez un fichier .csv uniquement.');
+      return;
+    }
+
+    try {
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty) {
+        CustomSnackBar.showError(context, 'Le fichier CSV est vide.');
+        return;
+      }
+      await _importCsvContent(
+        utf8.decode(bytes, allowMalformed: true),
+        sourceLabel: file.name,
+      );
+    } catch (_) {
+      CustomSnackBar.showError(
+        context,
+        'Lecture du fichier déposé impossible.',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDraggingCsv = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _downloadCsvExample() async {
+    const example =
+        'first_name,last_name,username,email,role\n'
+        'Jean,Dupont,jdupont,jdupont@novaville.fr,citizen\n';
+
+    await FilePicker.platform.saveFile(
+      fileName: 'users_import_example.csv',
+      bytes: Uint8List.fromList(utf8.encode(example)),
+      type: FileType.custom,
+      allowedExtensions: const ['csv'],
+    );
   }
 
   _CsvCompilationResult _compileCsv(List<List<dynamic>> rows) {
@@ -355,25 +583,25 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
 
       if (username.isNotEmpty &&
           existingUsernames.contains(normalizedUsername)) {
-        addError('username', 'Doublon détecté (brouillon/fichier)');
+        addError('username', 'Doublon détecté (liste actuelle/fichier)');
       }
       if (email.isNotEmpty && existingEmails.contains(normalizedEmail)) {
-        addError('email', 'Doublon détecté (brouillon/fichier)');
+        addError('email', 'Doublon détecté (liste actuelle/fichier)');
       }
 
       if (roleRaw.isNotEmpty) {
         if (roleRaw != roleRaw.toLowerCase()) {
           addError(
             'role',
-            'Le rôle doit être en minuscule (ex: citizen, elected, agent, global_admin)',
+            'Le rôle doit être en minuscule (ex: citizen, elected, agent)',
           );
         }
 
-        const allowedRoles = {'citizen', 'elected', 'agent', 'global_admin'};
+        const allowedRoles = {'citizen', 'elected', 'agent'};
         if (!allowedRoles.contains(roleRaw.toLowerCase())) {
           addError(
             'role',
-            'Valeur invalide. Valeurs autorisées: citizen, elected, agent, global_admin',
+            'Valeur invalide. Valeurs autorisées: citizen, elected, agent',
           );
         }
       }
@@ -480,8 +708,6 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final normalizedRole = raw.trim().toLowerCase();
     final roleValue = normalizedRole.isEmpty ? 'citizen' : normalizedRole;
     switch (roleValue) {
-      case 'global_admin':
-        return UserRole.globalAdmin;
       case 'agent':
         return UserRole.agent;
       case 'elected':
@@ -798,7 +1024,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Préparez vos comptes en brouillon (sauvegarde locale automatique), puis validez la création finale.',
+              'Préparez vos utilisateurs en saisie manuelle ou via CSV, puis validez la création finale.',
             ),
             const SizedBox(height: 12),
             Card(
@@ -808,12 +1034,12 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Brouillon local: ${_draftUsers.length} utilisateur(s)',
+                      'Liste en attente: ${_draftUsers.length} utilisateur(s)',
                     ),
                     TextButton.icon(
                       onPressed: _draftUsers.isEmpty ? null : _clearDrafts,
                       icon: const Icon(Icons.delete_outline),
-                      label: const Text('Vider'),
+                      label: const Text('Réinitialiser'),
                     ),
                   ],
                 ),
@@ -878,102 +1104,227 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Form(
-          key: _manualFormKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Ajouter un utilisateur au brouillon',
-                style: Theme.of(context).textTheme.titleMedium,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Saisie manuelle',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const Spacer(),
+                OutlinedButton.icon(
+                  onPressed: _addManualCard,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Ajouter une carte'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _manualCards.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                return _buildManualUserCard(index, _manualCards[index]);
+              },
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton.icon(
+                onPressed: _addManualCardsToList,
+                icon: const Icon(Icons.playlist_add_check),
+                label: const Text('Valider les cartes'),
               ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  SizedBox(
-                    width: 260,
-                    child: TextFormField(
-                      controller: _firstNameController,
-                      decoration: const InputDecoration(labelText: 'Prénom'),
-                      validator: _requiredValidator,
-                    ),
-                  ),
-                  SizedBox(
-                    width: 260,
-                    child: TextFormField(
-                      controller: _lastNameController,
-                      decoration: const InputDecoration(labelText: 'Nom'),
-                      validator: _requiredValidator,
-                    ),
-                  ),
-                  SizedBox(
-                    width: 260,
-                    child: TextFormField(
-                      controller: _usernameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nom d\'utilisateur',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildManualUserCard(int index, _ManualUserFormData card) {
+    final allowedRoles = <UserRole>[
+      UserRole.citizen,
+      UserRole.elected,
+      UserRole.agent,
+    ];
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isCompact = constraints.maxWidth < 900;
+
+            Widget roleField() {
+              return DropdownButtonFormField<UserRole>(
+                initialValue: card.role,
+                decoration: const InputDecoration(labelText: 'Rôle'),
+                items: allowedRoles
+                    .map(
+                      (role) => DropdownMenuItem<UserRole>(
+                        value: role,
+                        child: Text(role.label),
                       ),
-                      validator: _requiredValidator,
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  if (value == null) {
+                    return;
+                  }
+                  setState(() {
+                    card.role = value;
+                  });
+                },
+              );
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Utilisateur ${index + 1}',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () => _removeManualCard(index),
+                      icon: const Icon(Icons.delete_outline),
+                      tooltip: 'Retirer',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (isCompact) ...[
+                  TextField(
+                    controller: card.firstNameController,
+                    decoration: const InputDecoration(labelText: 'Prénom'),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: card.lastNameController,
+                    decoration: const InputDecoration(labelText: 'Nom'),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: card.usernameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nom d\'utilisateur',
                     ),
                   ),
-                  SizedBox(
-                    width: 320,
-                    child: TextFormField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(labelText: 'Email'),
-                      validator: (value) {
-                        final text = value?.trim() ?? '';
-                        if (text.isEmpty) {
-                          return 'Champ obligatoire';
-                        }
-                        if (!text.contains('@')) {
-                          return 'Email invalide';
-                        }
-                        return null;
-                      },
-                    ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: card.emailController,
+                    decoration: const InputDecoration(labelText: 'Email'),
                   ),
-                  SizedBox(
-                    width: 260,
-                    child: DropdownButtonFormField<UserRole>(
-                      initialValue: _selectedRole,
-                      decoration: const InputDecoration(labelText: 'Rôle'),
-                      items: UserRole.values
-                          .map(
-                            (role) => DropdownMenuItem<UserRole>(
-                              value: role,
-                              child: Text(role.label),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value == null) {
-                          return;
-                        }
-                        setState(() {
-                          _selectedRole = value;
-                        });
-                      },
-                    ),
+                  const SizedBox(height: 10),
+                  roleField(),
+                ] else ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: card.firstNameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Prénom',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: card.lastNameController,
+                          decoration: const InputDecoration(labelText: 'Nom'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: card.usernameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Nom d\'utilisateur',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: card.emailController,
+                          decoration: const InputDecoration(labelText: 'Email'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(child: roleField()),
+                    ],
                   ),
                 ],
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton.icon(
-                onPressed: _addManualDraft,
-                icon: const Icon(Icons.add),
-                label: const Text('Ajouter au brouillon'),
-              ),
-            ],
-          ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
   Widget _buildCsvSection() {
+    final dropArea = AnimatedContainer(
+      key: _csvDropZoneKey,
+      duration: const Duration(milliseconds: 150),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+      decoration: BoxDecoration(
+        color: _isDraggingCsv
+            ? AppColors.highlight.withValues(alpha: 0.28)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _isDraggingCsv ? AppColors.primary : AppColors.secondaryText,
+          width: _isDraggingCsv ? 2 : 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            _isDraggingCsv
+                ? Icons.file_download_done
+                : Icons.file_upload_outlined,
+            size: 48,
+            color: AppColors.primary,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Glissez-déposez votre fichier CSV ici',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: 6),
+          Text('ou', style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 8),
+          FilledButton.icon(
+            onPressed: _isImportingCsv ? null : _importCsv,
+            icon: _isImportingCsv
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.upload_file),
+            label: const Text('Sélectionner un fichier'),
+          ),
+        ],
+      ),
+    );
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -985,27 +1336,31 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Colonnes obligatoires: first_name,last_name,username,email\n'
-              'Colonne optionnelle: role (citizen|elected|agent|global_admin) en minuscule.\n'
-              'Aucune colonne mot de passe: il est généré automatiquement (8 caractères lettres/chiffres).',
-            ),
-            const SizedBox(height: 8),
-            SelectableText(
-              'Exemple:\nfirst_name,last_name,username,email,role\nJean,Dupont,jdupont,jdupont@novaville.fr,citizen',
-              style: Theme.of(context).textTheme.bodySmall,
+            DropTarget(
+              onDragEntered: (_) {
+                setState(() {
+                  _isDraggingCsv = true;
+                });
+              },
+              onDragExited: (_) {
+                setState(() {
+                  _isDraggingCsv = false;
+                });
+              },
+              onDragDone: _onCsvFilesDropped,
+              child: dropArea,
             ),
             const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: _isImportingCsv ? null : _importCsv,
-              icon: _isImportingCsv
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.upload_file),
-              label: const Text('Importer le CSV'),
+            InkWell(
+              onTap: _downloadCsvExample,
+              borderRadius: BorderRadius.circular(4),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 4),
+                child: Text(
+                  'TÉLÉCHARGER UN FICHIER D\'EXEMPLE',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ],
         ),
@@ -1021,42 +1376,145 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Utilisateurs en brouillon',
+              'Utilisateurs en attente',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             if (_draftUsers.isEmpty)
-              const Text('Aucun utilisateur en brouillon.')
+              const Text('Aucun utilisateur en attente.')
             else
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemBuilder: (context, index) {
-                  final draft = _draftUsers[index];
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const CircleAvatar(
-                      backgroundColor: AppColors.highlight,
-                      child: Icon(Icons.person, color: AppColors.primary),
-                    ),
-                    title: Text('${draft.firstName} ${draft.lastName}'),
-                    subtitle: Text(
-                      '${draft.username} • ${draft.email} • ${draft.role.label}',
-                    ),
-                    trailing: IconButton(
-                      onPressed: () async {
-                        setState(() {
-                          _draftUsers.removeAt(index);
-                        });
-                        await _saveDrafts();
-                      },
-                      icon: const Icon(Icons.delete_outline),
-                    ),
-                  );
+                  return _buildPendingUserCard(index, _draftUsers[index]);
                 },
-                separatorBuilder: (_, __) => const Divider(height: 1),
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
                 itemCount: _draftUsers.length,
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPendingUserCard(int index, _DraftUser draft) {
+    final allowedRoles = <UserRole>[
+      UserRole.citizen,
+      UserRole.elected,
+      UserRole.agent,
+    ];
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Utilisateur ${index + 1}',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const Spacer(),
+                IconButton(
+                  tooltip: 'Supprimer',
+                  onPressed: () async {
+                    setState(() {
+                      _draftUsers.removeAt(index);
+                    });
+                    await _saveDrafts();
+                  },
+                  icon: const Icon(Icons.delete_outline),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                SizedBox(
+                  width: 260,
+                  child: TextFormField(
+                    initialValue: draft.firstName,
+                    decoration: const InputDecoration(labelText: 'Prénom'),
+                    onChanged: (value) {
+                      _draftUsers[index] = _draftUsers[index].copyWith(
+                        firstName: value,
+                      );
+                      _saveDrafts();
+                    },
+                  ),
+                ),
+                SizedBox(
+                  width: 260,
+                  child: TextFormField(
+                    initialValue: draft.lastName,
+                    decoration: const InputDecoration(labelText: 'Nom'),
+                    onChanged: (value) {
+                      _draftUsers[index] = _draftUsers[index].copyWith(
+                        lastName: value,
+                      );
+                      _saveDrafts();
+                    },
+                  ),
+                ),
+                SizedBox(
+                  width: 260,
+                  child: TextFormField(
+                    initialValue: draft.username,
+                    decoration: const InputDecoration(labelText: 'Identifiant'),
+                    onChanged: (value) {
+                      _draftUsers[index] = _draftUsers[index].copyWith(
+                        username: value,
+                      );
+                      _saveDrafts();
+                    },
+                  ),
+                ),
+                SizedBox(
+                  width: 300,
+                  child: TextFormField(
+                    initialValue: draft.email,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                    onChanged: (value) {
+                      _draftUsers[index] = _draftUsers[index].copyWith(
+                        email: value,
+                      );
+                      _saveDrafts();
+                    },
+                  ),
+                ),
+                SizedBox(
+                  width: 220,
+                  child: DropdownButtonFormField<UserRole>(
+                    initialValue: draft.role,
+                    decoration: const InputDecoration(labelText: 'Rôle'),
+                    items: allowedRoles
+                        .map(
+                          (role) => DropdownMenuItem<UserRole>(
+                            value: role,
+                            child: Text(role.label),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value == null) {
+                        return;
+                      }
+                      _draftUsers[index] = _draftUsers[index].copyWith(
+                        role: value,
+                      );
+                      _saveDrafts();
+                      setState(() {});
+                    },
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -1135,12 +1593,22 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       ),
     );
   }
+}
 
-  String? _requiredValidator(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Champ obligatoire';
-    }
-    return null;
+class _ManualUserFormData {
+  _ManualUserFormData() : role = UserRole.citizen;
+
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  UserRole role;
+
+  void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    usernameController.dispose();
+    emailController.dispose();
   }
 }
 
@@ -1168,6 +1636,22 @@ class _DraftUser {
   final String username;
   final String email;
   final UserRole role;
+
+  _DraftUser copyWith({
+    String? firstName,
+    String? lastName,
+    String? username,
+    String? email,
+    UserRole? role,
+  }) {
+    return _DraftUser(
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      role: role ?? this.role,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
