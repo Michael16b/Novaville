@@ -271,6 +271,59 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     CustomSnackBar.showSuccess(context, 'Utilisateur ajouté à la liste.');
   }
 
+  String _buildUsernameFromNames(String firstName, String lastName) {
+    final cleanedFirstName = firstName.trim().toLowerCase();
+    final cleanedLastName = lastName.trim().toLowerCase().replaceAll(' ', '');
+
+    if (cleanedFirstName.isEmpty || cleanedLastName.isEmpty) {
+      return '';
+    }
+
+    return '${cleanedFirstName[0]}$cleanedLastName';
+  }
+
+  void _applyAutoUsernameIfNeeded(_ManualUserFormData card) {
+    if (card.usernameWasManuallyEdited) {
+      return;
+    }
+
+    final suggestion = _buildUsernameFromNames(
+      card.firstNameController.text,
+      card.lastNameController.text,
+    );
+
+    if (suggestion == card.usernameController.text.trim()) {
+      return;
+    }
+
+    card.isProgrammaticUsernameUpdate = true;
+    card.usernameController.text = suggestion;
+    card.usernameController.selection = TextSelection.collapsed(
+      offset: card.usernameController.text.length,
+    );
+    card.isProgrammaticUsernameUpdate = false;
+  }
+
+  void _applyRandomUsernameSuggestion(_ManualUserFormData card) {
+    final base = _buildUsernameFromNames(
+      card.firstNameController.text,
+      card.lastNameController.text,
+    );
+    final random = Random.secure();
+    final suffix = (100 + random.nextInt(900)).toString();
+    final suggestion = '${base.isEmpty ? 'user' : base}$suffix';
+
+    card.isProgrammaticUsernameUpdate = true;
+    card.usernameController.text = suggestion;
+    card.usernameController.selection = TextSelection.collapsed(
+      offset: card.usernameController.text.length,
+    );
+    card.isProgrammaticUsernameUpdate = false;
+    card.usernameWasManuallyEdited = true;
+
+    setState(() {});
+  }
+
   void _startEditingDraft(int index) {
     _editingDraftCard?.dispose();
     final draft = _draftUsers[index];
@@ -1025,18 +1078,37 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   TextField(
                     controller: card.firstNameController,
                     decoration: const InputDecoration(labelText: 'Prénom'),
+                    onChanged: (_) {
+                      _applyAutoUsernameIfNeeded(card);
+                      setState(() {});
+                    },
                   ),
                   const SizedBox(height: 10),
                   TextField(
                     controller: card.lastNameController,
                     decoration: const InputDecoration(labelText: 'Nom'),
+                    onChanged: (_) {
+                      _applyAutoUsernameIfNeeded(card);
+                      setState(() {});
+                    },
                   ),
                   const SizedBox(height: 10),
                   TextField(
                     controller: card.usernameController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Nom d\'utilisateur',
+                      suffixIcon: IconButton(
+                        tooltip: 'Proposer un identifiant aléatoire',
+                        onPressed: () => _applyRandomUsernameSuggestion(card),
+                        icon: const Icon(Icons.casino_outlined),
+                      ),
                     ),
+                    onChanged: (value) {
+                      if (card.isProgrammaticUsernameUpdate) {
+                        return;
+                      }
+                      card.usernameWasManuallyEdited = value.trim().isNotEmpty;
+                    },
                   ),
                   const SizedBox(height: 10),
                   TextField(
@@ -1054,6 +1126,10 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                           decoration: const InputDecoration(
                             labelText: 'Prénom',
                           ),
+                          onChanged: (_) {
+                            _applyAutoUsernameIfNeeded(card);
+                            setState(() {});
+                          },
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -1061,6 +1137,10 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                         child: TextField(
                           controller: card.lastNameController,
                           decoration: const InputDecoration(labelText: 'Nom'),
+                          onChanged: (_) {
+                            _applyAutoUsernameIfNeeded(card);
+                            setState(() {});
+                          },
                         ),
                       ),
                     ],
@@ -1071,9 +1151,23 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                       Expanded(
                         child: TextField(
                           controller: card.usernameController,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Nom d\'utilisateur',
+                            suffixIcon: IconButton(
+                              tooltip: 'Proposer un identifiant aléatoire',
+                              onPressed: () =>
+                                  _applyRandomUsernameSuggestion(card),
+                              icon: const Icon(Icons.casino_outlined),
+                            ),
                           ),
+                          onChanged: (value) {
+                            if (card.isProgrammaticUsernameUpdate) {
+                              return;
+                            }
+                            card.usernameWasManuallyEdited = value
+                                .trim()
+                                .isNotEmpty;
+                          },
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -1398,9 +1492,15 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
 }
 
 class _ManualUserFormData {
-  _ManualUserFormData() : role = UserRole.citizen;
+  _ManualUserFormData()
+    : role = UserRole.citizen,
+      usernameWasManuallyEdited = false,
+      isProgrammaticUsernameUpdate = false;
 
-  _ManualUserFormData.fromDraft(_DraftUser draft) : role = draft.role {
+  _ManualUserFormData.fromDraft(_DraftUser draft)
+    : role = draft.role,
+      usernameWasManuallyEdited = true,
+      isProgrammaticUsernameUpdate = false {
     firstNameController.text = draft.firstName;
     lastNameController.text = draft.lastName;
     usernameController.text = draft.username;
@@ -1412,6 +1512,8 @@ class _ManualUserFormData {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   UserRole role;
+  bool usernameWasManuallyEdited;
+  bool isProgrammaticUsernameUpdate;
 
   void clear() {
     firstNameController.clear();
@@ -1419,6 +1521,8 @@ class _ManualUserFormData {
     usernameController.clear();
     emailController.clear();
     role = UserRole.citizen;
+    usernameWasManuallyEdited = false;
+    isProgrammaticUsernameUpdate = false;
   }
 
   void dispose() {
