@@ -41,5 +41,5 @@ jobs:
         run: |
           flutter test test/features
           flutter test test/ui
-          flutter test test/design_system
+          flutter test test/design_systems
           flutter test test/widget_test.dart
