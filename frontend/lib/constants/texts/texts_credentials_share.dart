@@ -13,6 +13,8 @@ class CredentialsShareTexts {
   static const unavailableTitle = 'Informations indisponibles';
   static const unavailableMessage =
       'Ce lien de partage est invalide, expiré ou déjà supprimé.';
+  static const noSensitiveData =
+      'Ce lien ne contient pas de donnée sensible. Transmettez le mot de passe séparément.';
 
   static const emailCopied = 'Email copié.';
   static const usernameCopied = 'Nom d\'utilisateur copié.';
@@ -25,6 +27,19 @@ class CredentialsShareTexts {
     required String username,
     required String password,
   }) {
-    return 'Nom: $fullName\nEmail: $email\nNom d\'utilisateur: $username\nMot de passe: $password';
+    final lines = <String>[];
+    if (fullName.trim().isNotEmpty) {
+      lines.add('Nom: $fullName');
+    }
+    if (email.trim().isNotEmpty) {
+      lines.add('Email: $email');
+    }
+    if (username.trim().isNotEmpty) {
+      lines.add('Nom d\'utilisateur: $username');
+    }
+    if (password.trim().isNotEmpty) {
+      lines.add('Mot de passe: $password');
+    }
+    return lines.join('\n');
   }
 }

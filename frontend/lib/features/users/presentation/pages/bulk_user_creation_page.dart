@@ -157,7 +157,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       if (loaded.isNotEmpty) {
         CustomSnackBar.showSuccess(
           context,
-          '${loaded.length} utilisateur(s) restauré(s) depuis le cache local.',
+          BulkUserCreationTexts.restoredFromCache(loaded.length),
         );
       }
     } catch (_) {
@@ -177,18 +177,16 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final shouldClear = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Supprimer la liste en attente'),
-        content: const Text(
-          'Voulez-vous supprimer tous les utilisateurs en attente de création ?',
-        ),
+        title: const Text(BulkUserCreationTexts.clearPendingTitle),
+        content: const Text(BulkUserCreationTexts.clearPendingMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annuler'),
+            child: const Text(BulkUserCreationTexts.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Supprimer'),
+            child: const Text(BulkUserCreationTexts.delete),
           ),
         ],
       ),
@@ -212,22 +210,22 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final email = draft.email.trim();
 
     if (firstName.isEmpty) {
-      errors.add('first_name manquant');
+      errors.add(BulkUserCreationTexts.firstNameMissing);
     }
     if (lastName.isEmpty) {
-      errors.add('last_name manquant');
+      errors.add(BulkUserCreationTexts.lastNameMissing);
     }
     if (username.isEmpty) {
-      errors.add('username manquant');
+      errors.add(BulkUserCreationTexts.usernameMissing);
     }
     if (email.isEmpty) {
-      errors.add('email manquant');
+      errors.add(BulkUserCreationTexts.emailMissing);
     }
     if (email.isNotEmpty && !_isValidEmail(email)) {
-      errors.add('email invalide');
+      errors.add(BulkUserCreationTexts.emailInvalid);
     }
     if (username.contains(RegExp(r'\s'))) {
-      errors.add('username invalide (espaces interdits)');
+      errors.add(BulkUserCreationTexts.usernameInvalidWhitespace);
     }
 
     final normalizedUsername = username.toLowerCase();
@@ -240,7 +238,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       return entry.value.username.toLowerCase() == normalizedUsername;
     });
     if (username.isNotEmpty && hasUsernameDuplicate) {
-      errors.add('username déjà utilisé');
+      errors.add(BulkUserCreationTexts.usernameAlreadyUsed);
     }
 
     final hasEmailDuplicate = _draftUsers.asMap().entries.any((entry) {
@@ -250,7 +248,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       return entry.value.email.toLowerCase() == normalizedEmail;
     });
     if (email.isNotEmpty && hasEmailDuplicate) {
-      errors.add('email déjà utilisé');
+      errors.add(BulkUserCreationTexts.emailAlreadyUsed);
     }
 
     return errors;
@@ -279,7 +277,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     if (!mounted) {
       return;
     }
-    CustomSnackBar.showSuccess(context, 'Utilisateur ajouté à la liste.');
+    CustomSnackBar.showSuccess(context, BulkUserCreationTexts.userAddedToList);
   }
 
   String _buildUsernameFromNames(String firstName, String lastName) {
@@ -382,7 +380,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     if (!mounted) {
       return;
     }
-    CustomSnackBar.showSuccess(context, 'Utilisateur modifié.');
+    CustomSnackBar.showSuccess(context, BulkUserCreationTexts.userUpdated);
   }
 
   Future<void> _importCsv() async {
@@ -408,7 +406,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           sourceLabel: file.name,
         );
       } else {
-        throw Exception('Fichier CSV illisible');
+        throw Exception(BulkUserCreationTexts.unreadableCsvFile);
       }
     } catch (error) {
       if (!mounted) {
@@ -443,7 +441,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
         }
         CustomSnackBar.showError(
           context,
-          'Compilation CSV échouée (${compilation.errors.length} erreur(s)).',
+          BulkUserCreationTexts.csvCompilationFailed(compilation.errors.length),
         );
         await _showCsvCompilationErrors(compilation.errors);
         return;
@@ -471,7 +469,10 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
 
       CustomSnackBar.showSuccess(
         context,
-        '$sourceLabel: ${compilation.users.length} utilisateur(s) importé(s).',
+        BulkUserCreationTexts.csvImported(
+          sourceLabel,
+          compilation.users.length,
+        ),
       );
     } catch (error) {
       if (!mounted) {
@@ -494,14 +495,14 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
 
     final file = details.files.first;
     if (!file.name.toLowerCase().endsWith('.csv')) {
-      CustomSnackBar.showError(context, 'Déposez un fichier .csv uniquement.');
+      CustomSnackBar.showError(context, BulkUserCreationTexts.csvOnlyDrop);
       return;
     }
 
     try {
       final bytes = await file.readAsBytes();
       if (bytes.isEmpty) {
-        CustomSnackBar.showError(context, 'Le fichier CSV est vide.');
+        CustomSnackBar.showError(context, BulkUserCreationTexts.csvEmptyFile);
         return;
       }
       await _importCsvContent(
@@ -511,7 +512,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     } catch (_) {
       CustomSnackBar.showError(
         context,
-        'Lecture du fichier déposé impossible.',
+        BulkUserCreationTexts.csvDropReadFailed,
       );
     } finally {
       if (mounted) {
@@ -546,7 +547,9 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
             children: [
               const Icon(Icons.error_outline, color: AppColors.error),
               const SizedBox(width: 8),
-              Text('Compilation CSV échouée (${errors.length})'),
+              Text(
+                BulkUserCreationTexts.csvCompilationDialogTitle(errors.length),
+              ),
             ],
           ),
           content: SizedBox(
@@ -562,7 +565,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
-                    'Le fichier contient des erreurs. Corrigez-les puis relancez l\'import.',
+                    BulkUserCreationTexts.csvCompilationDialogMessage,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -591,7 +594,10 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                                 ),
                                 title: Text(error.message),
                                 subtitle: Text(
-                                  'Ligne ${error.line} • Colonne ${error.column}',
+                                  BulkUserCreationTexts.csvLineAndColumn(
+                                    error.line,
+                                    error.column,
+                                  ),
                                 ),
                               );
                             },
@@ -609,7 +615,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Fermer'),
+              child: const Text(BulkUserCreationTexts.close),
             ),
           ],
         );
@@ -624,25 +630,28 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
 
   Future<void> _submitDrafts() async {
     if (_draftUsers.isEmpty) {
-      CustomSnackBar.showError(context, 'Ajoutez au moins un utilisateur.');
+      CustomSnackBar.showError(
+        context,
+        BulkUserCreationTexts.addAtLeastOneUser,
+      );
       return;
     }
 
     final shouldSubmit = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Validation finale'),
+        title: const Text(BulkUserCreationTexts.finalValidationTitle),
         content: Text(
-          'Créer définitivement ${_draftUsers.length} utilisateur(s) ? Cette action enverra la liste au serveur.',
+          BulkUserCreationTexts.finalValidationMessage(_draftUsers.length),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annuler'),
+            child: const Text(BulkUserCreationTexts.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Créer'),
+            child: const Text(BulkUserCreationTexts.create),
           ),
         ],
       ),
@@ -706,19 +715,19 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     if (createdCredentials.isNotEmpty) {
       CustomSnackBar.showSuccess(
         context,
-        '${createdCredentials.length} utilisateur(s) créé(s) avec succès.',
+        BulkUserCreationTexts.createdWithSuccess(createdCredentials.length),
       );
     }
 
     if (errors.isNotEmpty) {
       CustomSnackBar.showError(
         context,
-        '${errors.length} échec(s). Consultez le détail.',
+        BulkUserCreationTexts.creationFailures(errors.length),
       );
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Erreurs de création'),
+          title: const Text(BulkUserCreationTexts.creationErrorsTitle),
           content: SizedBox(
             width: 520,
             child: SingleChildScrollView(child: Text(errors.join('\n'))),
@@ -726,7 +735,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Fermer'),
+              child: const Text(BulkUserCreationTexts.close),
             ),
           ],
         ),
@@ -768,56 +777,60 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
   }
 
   _GridConfig _resolveAutoGridConfig(int itemCount) {
+    if (itemCount <= 2) {
+      return const _GridConfig(columns: 1, rows: 2);
+    }
     if (itemCount <= 4) {
       return const _GridConfig(columns: 2, rows: 2);
     }
     if (itemCount <= 6) {
-      return const _GridConfig(columns: 3, rows: 2);
+      return const _GridConfig(columns: 2, rows: 3);
     }
     if (itemCount <= 9) {
       return const _GridConfig(columns: 3, rows: 3);
     }
     if (itemCount <= 12) {
-      return const _GridConfig(columns: 4, rows: 3);
+      return const _GridConfig(columns: 3, rows: 4);
     }
     if (itemCount <= 16) {
       return const _GridConfig(columns: 4, rows: 4);
     }
-    if (itemCount <= 20) {
-      return const _GridConfig(columns: 5, rows: 4);
-    }
     return const _GridConfig(columns: 5, rows: 5);
   }
 
-  Future<String> _createCredentialShareLink(
-    _CreatedCredential credential,
-  ) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final token =
-        '${DateTime.now().millisecondsSinceEpoch}_${Random.secure().nextInt(1 << 32)}';
-    final storageKey = '${BulkUserCreationTexts.shareTokenPrefix}$token';
-
+  String _createCredentialShareLink(_CreatedCredential credential) {
     final payload = jsonEncode({
+      'v': 1,
       'first_name': credential.firstName,
       'last_name': credential.lastName,
-      'email': credential.email ?? '',
       'username': credential.username,
+      'email': credential.email ?? '',
       'password': credential.password,
-      'created_at': DateTime.now().toIso8601String(),
     });
-    await prefs.setString(storageKey, payload);
+    final encodedShareRef = base64Url
+        .encode(utf8.encode(payload))
+        .replaceAll('=', '');
 
     final routeUri = Uri(
       path: AppRoutes.credentialsShare,
-      queryParameters: {'token': token},
+      queryParameters: {
+        BulkUserCreationTexts.shareReferenceKey: encodedShareRef,
+      },
     );
-    return Uri.base.resolveUri(routeUri).toString();
+
+    final currentUri = Uri.base;
+    final usesHashRouting = currentUri.fragment.startsWith('/');
+
+    if (usesHashRouting) {
+      return '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#${routeUri.toString()}';
+    }
+
+    return currentUri.resolveUri(routeUri).toString();
   }
 
   Future<void> _copyCredentialLink(_CreatedCredential credential) async {
     try {
-      final link = await _createCredentialShareLink(credential);
+      final link = _createCredentialShareLink(credential);
       await Clipboard.setData(ClipboardData(text: link));
       if (!mounted) {
         return;
@@ -971,7 +984,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           ),
           pw.SizedBox(height: compact ? 6 : 10),
           lineItem(BulkUserCreationTexts.pdfEmailLabel, credential.email ?? ''),
-          lineItem(BulkUserCreationTexts.pdfLoginLabel, credential.username),
+          lineItem(BulkUserCreationTexts.pdfUsernameLabel, credential.username),
           lineItem(BulkUserCreationTexts.pdfPasswordLabel, credential.password),
         ],
       ),
@@ -1062,7 +1075,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                           accent: accent,
                           background: background,
                           logo: logo,
-                          compact: true,
+                          compact: pageItems.length > 4,
                         ),
                       ),
                   ],
@@ -1111,7 +1124,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           build: (context) {
             return pw.Center(
               child: pw.SizedBox(
-                width: 460,
+                width: PdfPageFormat.a4.availableWidth,
                 child: _buildCredentialPdfCard(
                   credential,
                   primary: primary,
@@ -1184,20 +1197,18 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                 IconButton(
                   onPressed: () => context.pop(),
                   icon: const Icon(Icons.arrow_back),
-                  tooltip: 'Retour',
+                  tooltip: BulkUserCreationTexts.backTooltip,
                 ),
                 Expanded(
                   child: Text(
-                    'Création multiple d\'utilisateurs',
+                    BulkUserCreationTexts.pageTitle,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Préparez vos utilisateurs en saisie manuelle ou via CSV, puis validez la création finale.',
-            ),
+            const Text(BulkUserCreationTexts.pageSubtitle),
             const SizedBox(height: 12),
             Card(
               child: Padding(
@@ -1208,12 +1219,14 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   alignment: WrapAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Liste en attente: ${_draftUsers.length} utilisateur(s)',
+                      BulkUserCreationTexts.pendingListCount(
+                        _draftUsers.length,
+                      ),
                     ),
                     TextButton.icon(
                       onPressed: _draftUsers.isEmpty ? null : _clearDrafts,
                       icon: const Icon(Icons.delete_outline),
-                      label: const Text('Réinitialiser'),
+                      label: const Text(BulkUserCreationTexts.reset),
                     ),
                   ],
                 ),
@@ -1227,12 +1240,12 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   segments: const [
                     ButtonSegment<_CreationMode>(
                       value: _CreationMode.manual,
-                      label: Text('Saisie manuelle'),
+                      label: Text(BulkUserCreationTexts.manualInput),
                       icon: Icon(Icons.edit),
                     ),
                     ButtonSegment<_CreationMode>(
                       value: _CreationMode.csv,
-                      label: Text('Import CSV'),
+                      label: Text(BulkUserCreationTexts.csvImport),
                       icon: Icon(Icons.upload_file),
                     ),
                   ],
@@ -1262,8 +1275,10 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   : const Icon(Icons.check_circle),
               label: Text(
                 _isSubmitting
-                    ? 'Création en cours...'
-                    : 'Valider et créer ${_draftUsers.length} utilisateur(s)',
+                    ? BulkUserCreationTexts.creatingInProgress
+                    : BulkUserCreationTexts.validateAndCreate(
+                        _draftUsers.length,
+                      ),
               ),
             ),
             const SizedBox(height: 18),
@@ -1282,12 +1297,12 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Saisie manuelle',
+              BulkUserCreationTexts.manualSectionTitle,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
             _buildEditableUserCard(
-              title: 'Nouvel utilisateur',
+              title: BulkUserCreationTexts.newUserTitle,
               card: _manualCard,
             ),
             const SizedBox(height: 12),
@@ -1296,7 +1311,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
               child: FilledButton.icon(
                 onPressed: _addManualCardToList,
                 icon: const Icon(Icons.add),
-                label: const Text('Ajouter la carte'),
+                label: const Text(BulkUserCreationTexts.addCard),
               ),
             ),
           ],
@@ -1326,7 +1341,9 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
             Widget roleField() {
               return DropdownButtonFormField<UserRole>(
                 initialValue: card.role,
-                decoration: const InputDecoration(labelText: 'Rôle'),
+                decoration: const InputDecoration(
+                  labelText: BulkUserCreationTexts.roleLabel,
+                ),
                 items: allowedRoles
                     .map(
                       (role) => DropdownMenuItem<UserRole>(
@@ -1354,7 +1371,9 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                 if (isCompact) ...[
                   TextField(
                     controller: card.firstNameController,
-                    decoration: const InputDecoration(labelText: 'Prénom'),
+                    decoration: const InputDecoration(
+                      labelText: BulkUserCreationTexts.firstNameLabel,
+                    ),
                     onChanged: (_) {
                       _applyAutoUsernameIfNeeded(card);
                       setState(() {});
@@ -1363,7 +1382,9 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   const SizedBox(height: 10),
                   TextField(
                     controller: card.lastNameController,
-                    decoration: const InputDecoration(labelText: 'Nom'),
+                    decoration: const InputDecoration(
+                      labelText: BulkUserCreationTexts.lastNameLabel,
+                    ),
                     onChanged: (_) {
                       _applyAutoUsernameIfNeeded(card);
                       setState(() {});
@@ -1373,9 +1394,9 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   TextField(
                     controller: card.usernameController,
                     decoration: InputDecoration(
-                      labelText: 'Nom d\'utilisateur',
+                      labelText: BulkUserCreationTexts.usernameLabel,
                       suffixIcon: IconButton(
-                        tooltip: 'Proposer un identifiant aléatoire',
+                        tooltip: BulkUserCreationTexts.randomUsernameTooltip,
                         onPressed: () => _applyRandomUsernameSuggestion(card),
                         icon: const Icon(Icons.casino_outlined),
                       ),
@@ -1390,7 +1411,9 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   const SizedBox(height: 10),
                   TextField(
                     controller: card.emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
+                    decoration: const InputDecoration(
+                      labelText: BulkUserCreationTexts.emailLabel,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   roleField(),
@@ -1401,7 +1424,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                         child: TextField(
                           controller: card.firstNameController,
                           decoration: const InputDecoration(
-                            labelText: 'Prénom',
+                            labelText: BulkUserCreationTexts.firstNameLabel,
                           ),
                           onChanged: (_) {
                             _applyAutoUsernameIfNeeded(card);
@@ -1413,7 +1436,9 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                       Expanded(
                         child: TextField(
                           controller: card.lastNameController,
-                          decoration: const InputDecoration(labelText: 'Nom'),
+                          decoration: const InputDecoration(
+                            labelText: BulkUserCreationTexts.lastNameLabel,
+                          ),
                           onChanged: (_) {
                             _applyAutoUsernameIfNeeded(card);
                             setState(() {});
@@ -1429,9 +1454,10 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                         child: TextField(
                           controller: card.usernameController,
                           decoration: InputDecoration(
-                            labelText: 'Nom d\'utilisateur',
+                            labelText: BulkUserCreationTexts.usernameLabel,
                             suffixIcon: IconButton(
-                              tooltip: 'Proposer un identifiant aléatoire',
+                              tooltip:
+                                  BulkUserCreationTexts.randomUsernameTooltip,
                               onPressed: () =>
                                   _applyRandomUsernameSuggestion(card),
                               icon: const Icon(Icons.casino_outlined),
@@ -1451,7 +1477,9 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                       Expanded(
                         child: TextField(
                           controller: card.emailController,
-                          decoration: const InputDecoration(labelText: 'Email'),
+                          decoration: const InputDecoration(
+                            labelText: BulkUserCreationTexts.emailLabel,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -1494,11 +1522,14 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Glissez-déposez votre fichier CSV ici',
+            BulkUserCreationTexts.csvDropHere,
             style: Theme.of(context).textTheme.titleSmall,
           ),
           const SizedBox(height: 6),
-          Text('ou', style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            BulkUserCreationTexts.or,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           const SizedBox(height: 8),
           FilledButton.icon(
             onPressed: _isImportingCsv ? null : _importCsv,
@@ -1509,7 +1540,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.upload_file),
-            label: const Text('Sélectionner un fichier'),
+            label: const Text(BulkUserCreationTexts.selectFile),
           ),
         ],
       ),
@@ -1522,7 +1553,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Importer un fichier CSV',
+              BulkUserCreationTexts.importCsvTitle,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -1550,7 +1581,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 4),
                 child: Text(
-                  'TÉLÉCHARGER UN FICHIER D\'EXEMPLE',
+                  BulkUserCreationTexts.downloadCsvExample,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -1569,12 +1600,12 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Utilisateurs en attente',
+              BulkUserCreationTexts.pendingUsersTitle,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             if (_draftUsers.isEmpty)
-              const Text('Aucun utilisateur en attente.')
+              const Text(BulkUserCreationTexts.noPendingUsers)
             else
               Column(
                 children: [
@@ -1603,7 +1634,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildEditableUserCard(
-                title: 'Modification utilisateur ${index + 1}',
+                title: BulkUserCreationTexts.editUserTitle(index + 1),
                 card: _editingDraftCard!,
               ),
               const SizedBox(height: 12),
@@ -1612,13 +1643,13 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                 children: [
                   TextButton(
                     onPressed: _cancelEditingDraft,
-                    child: const Text('Annuler'),
+                    child: const Text(BulkUserCreationTexts.cancel),
                   ),
                   const SizedBox(width: 8),
                   FilledButton.icon(
                     onPressed: _saveEditingDraft,
                     icon: const Icon(Icons.save),
-                    label: const Text('Enregistrer'),
+                    label: const Text(BulkUserCreationTexts.save),
                   ),
                 ],
               ),
@@ -1656,12 +1687,12 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
               ),
             ),
             IconButton(
-              tooltip: 'Modifier',
+              tooltip: BulkUserCreationTexts.edit,
               onPressed: () => _startEditingDraft(index),
               icon: const Icon(Icons.edit_outlined),
             ),
             IconButton(
-              tooltip: 'Supprimer',
+              tooltip: BulkUserCreationTexts.delete,
               onPressed: () async {
                 if (_editingDraftIndex == index) {
                   _cancelEditingDraft();
@@ -1691,7 +1722,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Comptes créés et diffusion des identifiants',
+              BulkUserCreationTexts.credentialsSectionTitle,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -1727,7 +1758,9 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                     controller: _gridColumnsController,
                     enabled: _gridMode == _GridMode.manual,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Colonnes'),
+                    decoration: const InputDecoration(
+                      labelText: BulkUserCreationTexts.columnsLabel,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -1737,18 +1770,15 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                     controller: _gridRowsController,
                     enabled: _gridMode == _GridMode.manual,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Lignes'),
+                    decoration: const InputDecoration(
+                      labelText: BulkUserCreationTexts.rowsLabel,
+                    ),
                   ),
                 ),
                 ElevatedButton.icon(
                   onPressed: _generateSchoolGridPdf,
                   icon: const Icon(Icons.grid_view),
                   label: const Text(BulkUserCreationTexts.groupedPdfButton),
-                ),
-                ElevatedButton.icon(
-                  onPressed: _generateOneUserPerPagePdf,
-                  icon: const Icon(Icons.picture_as_pdf),
-                  label: const Text(BulkUserCreationTexts.oneUserPageButton),
                 ),
               ],
             ),
@@ -1780,24 +1810,20 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                         title: Text(
                           '${credential.firstName} ${credential.lastName}',
                         ),
-                        subtitle: Text(
-                          '${credential.email ?? ''} • ${credential.username} • mot de passe: ${credential.password}',
-                        ),
                         trailing: Wrap(
-                          spacing: 8,
+                          spacing: 4,
                           children: [
-                            TextButton.icon(
+                            IconButton(
+                              tooltip: BulkUserCreationTexts.copyLinkTooltip,
                               onPressed: () => _copyCredentialLink(credential),
                               icon: const Icon(Icons.link),
-                              label: const Text('Copier lien'),
                             ),
-                            TextButton.icon(
+                            IconButton(
+                              tooltip:
+                                  BulkUserCreationTexts.downloadUserPdfTooltip,
                               onPressed: () =>
                                   _generateSingleUserPdf(credential),
-                              icon: const Icon(Icons.download_outlined),
-                              label: const Text(
-                                BulkUserCreationTexts.userPdfButton,
-                              ),
+                              icon: const Icon(Icons.picture_as_pdf),
                             ),
                           ],
                         ),

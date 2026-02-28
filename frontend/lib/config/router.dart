@@ -38,9 +38,15 @@ String? authRedirect({
   required String currentLocation,
   String? fromLocation,
 }) {
+  final normalizedLocation =
+      currentLocation.endsWith('/') && currentLocation.length > 1
+      ? currentLocation.substring(0, currentLocation.length - 1)
+      : currentLocation;
   final isOnLoading = currentLocation == AppRoutes.loading;
   final isLoggingIn = currentLocation == AppRoutes.login;
-  final isCredentialsShare = currentLocation == AppRoutes.credentialsShare;
+  final isCredentialsShare =
+      normalizedLocation == AppRoutes.credentialsShare ||
+      normalizedLocation.startsWith('${AppRoutes.credentialsShare}/');
   final intendedLocation = (fromLocation != null && fromLocation.isNotEmpty)
       ? fromLocation
       : currentLocation;
