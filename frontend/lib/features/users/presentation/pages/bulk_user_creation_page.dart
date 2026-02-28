@@ -50,13 +50,14 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
 
   List<_DraftUser> _draftUsers = <_DraftUser>[];
   List<_CreatedCredential> _createdCredentials = <_CreatedCredential>[];
-  late List<_ManualUserFormData> _manualCards;
+  final _manualCard = _ManualUserFormData();
+  int? _editingDraftIndex;
+  _ManualUserFormData? _editingDraftCard;
 
   @override
   void initState() {
     super.initState();
     _repository = widget.userRepository ?? createUserRepository();
-    _manualCards = <_ManualUserFormData>[_ManualUserFormData()];
     if (kIsWeb) {
       _webDropHandler = WebDropHandler(
         onHover: () {
@@ -116,9 +117,8 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
 
   @override
   void dispose() {
-    for (final card in _manualCards) {
-      card.dispose();
-    }
+    _manualCard.dispose();
+    _editingDraftCard?.dispose();
     _webDropHandler?.dispose();
     _gridColumnsController.dispose();
     _gridRowsController.dispose();
@@ -193,149 +193,132 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     await _saveDrafts();
   }
 
-  void _addManualCard() {
-    setState(() {
-      _manualCards = <_ManualUserFormData>[
-        ..._manualCards,
-        _ManualUserFormData(),
-      ];
-    });
-  }
-
-  void _removeManualCard(int index) {
-    if (_manualCards.length == 1) {
-      return;
-    }
-    final card = _manualCards[index];
-    setState(() {
-      _manualCards.removeAt(index);
-    });
-    card.dispose();
-  }
-
-  Future<void> _addManualCardsToList() async {
+  List<String> _validateDraftUser(_DraftUser draft, {int? ignoreIndex}) {
     final errors = <String>[];
-    final currentUsernames = _draftUsers
-        .map((entry) => entry.username.toLowerCase())
-        .toSet();
-    final currentEmails = _draftUsers
-        .map((entry) => entry.email.toLowerCase())
-        .toSet();
+    final firstName = draft.firstName.trim();
+    final lastName = draft.lastName.trim();
+    final username = draft.username.trim();
+    final email = draft.email.trim();
 
-    final newUsers = <_DraftUser>[];
-    final seenInCardsUsernames = <String>{};
-    final seenInCardsEmails = <String>{};
-
-    for (var i = 0; i < _manualCards.length; i++) {
-      final card = _manualCards[i];
-      final lineLabel = 'Carte ${i + 1}';
-      final firstName = card.firstNameController.text.trim();
-      final lastName = card.lastNameController.text.trim();
-      final username = card.usernameController.text.trim();
-      final email = card.emailController.text.trim();
-
-      final isEmpty =
-          firstName.isEmpty &&
-          lastName.isEmpty &&
-          username.isEmpty &&
-          email.isEmpty;
-      if (isEmpty) {
-        continue;
-      }
-
-      if (firstName.isEmpty) {
-        errors.add('$lineLabel • first_name manquant');
-      }
-      if (lastName.isEmpty) {
-        errors.add('$lineLabel • last_name manquant');
-      }
-      if (username.isEmpty) {
-        errors.add('$lineLabel • username manquant');
-      }
-      if (email.isEmpty) {
-        errors.add('$lineLabel • email manquant');
-      }
-      if (email.isNotEmpty && !_isValidEmail(email)) {
-        errors.add('$lineLabel • email invalide');
-      }
-
-      final normalizedUsername = username.toLowerCase();
-      final normalizedEmail = email.toLowerCase();
-      if (username.isNotEmpty &&
-          (currentUsernames.contains(normalizedUsername) ||
-              seenInCardsUsernames.contains(normalizedUsername))) {
-        errors.add('$lineLabel • username déjà utilisé');
-      }
-      if (email.isNotEmpty &&
-          (currentEmails.contains(normalizedEmail) ||
-              seenInCardsEmails.contains(normalizedEmail))) {
-        errors.add('$lineLabel • email déjà utilisé');
-      }
-
-      if (errors.any((error) => error.startsWith(lineLabel))) {
-        continue;
-      }
-
-      seenInCardsUsernames.add(normalizedUsername);
-      seenInCardsEmails.add(normalizedEmail);
-      newUsers.add(
-        _DraftUser(
-          firstName: firstName,
-          lastName: lastName,
-          username: username,
-          email: email,
-          role: card.role,
-        ),
-      );
+    if (firstName.isEmpty) {
+      errors.add('first_name manquant');
+    }
+    if (lastName.isEmpty) {
+      errors.add('last_name manquant');
+    }
+    if (username.isEmpty) {
+      errors.add('username manquant');
+    }
+    if (email.isEmpty) {
+      errors.add('email manquant');
+    }
+    if (email.isNotEmpty && !_isValidEmail(email)) {
+      errors.add('email invalide');
+    }
+    if (username.contains(RegExp(r'\s'))) {
+      errors.add('username invalide (espaces interdits)');
     }
 
+    final normalizedUsername = username.toLowerCase();
+    final normalizedEmail = email.toLowerCase();
+
+    final hasUsernameDuplicate = _draftUsers.asMap().entries.any((entry) {
+      if (ignoreIndex != null && entry.key == ignoreIndex) {
+        return false;
+      }
+      return entry.value.username.toLowerCase() == normalizedUsername;
+    });
+    if (username.isNotEmpty && hasUsernameDuplicate) {
+      errors.add('username déjà utilisé');
+    }
+
+    final hasEmailDuplicate = _draftUsers.asMap().entries.any((entry) {
+      if (ignoreIndex != null && entry.key == ignoreIndex) {
+        return false;
+      }
+      return entry.value.email.toLowerCase() == normalizedEmail;
+    });
+    if (email.isNotEmpty && hasEmailDuplicate) {
+      errors.add('email déjà utilisé');
+    }
+
+    return errors;
+  }
+
+  Future<void> _addManualCardToList() async {
+    final draft = _DraftUser(
+      firstName: _manualCard.firstNameController.text.trim(),
+      lastName: _manualCard.lastNameController.text.trim(),
+      username: _manualCard.usernameController.text.trim(),
+      email: _manualCard.emailController.text.trim(),
+      role: _manualCard.role,
+    );
+
+    final errors = _validateDraftUser(draft);
     if (errors.isNotEmpty) {
-      if (!mounted) {
-        return;
-      }
-      await showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Validation des cartes impossible'),
-          content: SizedBox(
-            width: 520,
-            child: SingleChildScrollView(child: Text(errors.join('\n'))),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Fermer'),
-            ),
-          ],
-        ),
-      );
+      CustomSnackBar.showError(context, errors.join(' • '));
       return;
-    }
-
-    if (newUsers.isEmpty) {
-      CustomSnackBar.showError(
-        context,
-        'Remplissez au moins une carte utilisateur.',
-      );
-      return;
-    }
-
-    for (final card in _manualCards) {
-      card.dispose();
     }
 
     setState(() {
-      _draftUsers = <_DraftUser>[..._draftUsers, ...newUsers];
-      _manualCards = <_ManualUserFormData>[_ManualUserFormData()];
+      _draftUsers = <_DraftUser>[..._draftUsers, draft];
+      _manualCard.clear();
     });
     await _saveDrafts();
     if (!mounted) {
       return;
     }
-    CustomSnackBar.showSuccess(
-      context,
-      '${newUsers.length} utilisateur(s) ajouté(s) à la liste.',
+    CustomSnackBar.showSuccess(context, 'Utilisateur ajouté à la liste.');
+  }
+
+  void _startEditingDraft(int index) {
+    _editingDraftCard?.dispose();
+    final draft = _draftUsers[index];
+    final editCard = _ManualUserFormData.fromDraft(draft);
+    setState(() {
+      _editingDraftIndex = index;
+      _editingDraftCard = editCard;
+    });
+  }
+
+  void _cancelEditingDraft() {
+    _editingDraftCard?.dispose();
+    setState(() {
+      _editingDraftCard = null;
+      _editingDraftIndex = null;
+    });
+  }
+
+  Future<void> _saveEditingDraft() async {
+    final index = _editingDraftIndex;
+    final card = _editingDraftCard;
+    if (index == null || card == null) {
+      return;
+    }
+
+    final updated = _DraftUser(
+      firstName: card.firstNameController.text.trim(),
+      lastName: card.lastNameController.text.trim(),
+      username: card.usernameController.text.trim(),
+      email: card.emailController.text.trim(),
+      role: card.role,
     );
+
+    final errors = _validateDraftUser(updated, ignoreIndex: index);
+    if (errors.isNotEmpty) {
+      CustomSnackBar.showError(context, errors.join(' • '));
+      return;
+    }
+
+    setState(() {
+      _draftUsers[index] = updated;
+    });
+    await _saveDrafts();
+    _cancelEditingDraft();
+    if (!mounted) {
+      return;
+    }
+    CustomSnackBar.showSuccess(context, 'Utilisateur modifié.');
   }
 
   Future<void> _importCsv() async {
@@ -519,31 +502,41 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Flexible(
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: errors.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final error = errors[index];
-                      return ListTile(
-                        dense: true,
-                        leading: CircleAvatar(
-                          radius: 14,
-                          backgroundColor: AppColors.error.withValues(
-                            alpha: 0.2,
+                SizedBox(
+                  height: 320,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        for (var index = 0; index < errors.length; index++) ...[
+                          Builder(
+                            builder: (context) {
+                              final error = errors[index];
+                              return ListTile(
+                                dense: true,
+                                leading: CircleAvatar(
+                                  radius: 14,
+                                  backgroundColor: AppColors.error.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                  child: Text(
+                                    '${error.line}',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.labelSmall,
+                                  ),
+                                ),
+                                title: Text(error.message),
+                                subtitle: Text(
+                                  'Ligne ${error.line} • Colonne ${error.column}',
+                                ),
+                              );
+                            },
                           ),
-                          child: Text(
-                            '${error.line}',
-                            style: Theme.of(context).textTheme.labelSmall,
-                          ),
-                        ),
-                        title: Text(error.message),
-                        subtitle: Text(
-                          'Ligne ${error.line} • Colonne ${error.column}',
-                        ),
-                      );
-                    },
+                          if (index < errors.length - 1)
+                            const Divider(height: 1),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -863,9 +856,11 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   icon: const Icon(Icons.arrow_back),
                   tooltip: 'Retour',
                 ),
-                Text(
-                  'Création multiple d\'utilisateurs',
-                  style: Theme.of(context).textTheme.headlineSmall,
+                Expanded(
+                  child: Text(
+                    'Création multiple d\'utilisateurs',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
                 ),
               ],
             ),
@@ -877,8 +872,10 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.spaceBetween,
                   children: [
                     Text(
                       'Liste en attente: ${_draftUsers.length} utilisateur(s)',
@@ -954,37 +951,22 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Text(
-                  'Saisie manuelle',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const Spacer(),
-                OutlinedButton.icon(
-                  onPressed: _addManualCard,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Ajouter une carte'),
-                ),
-              ],
+            Text(
+              'Saisie manuelle',
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _manualCards.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                return _buildManualUserCard(index, _manualCards[index]);
-              },
+            _buildEditableUserCard(
+              title: 'Nouvel utilisateur',
+              card: _manualCard,
             ),
             const SizedBox(height: 12),
             Align(
               alignment: Alignment.centerRight,
-              child: ElevatedButton.icon(
-                onPressed: _addManualCardsToList,
-                icon: const Icon(Icons.playlist_add_check),
-                label: const Text('Valider les cartes'),
+              child: FilledButton.icon(
+                onPressed: _addManualCardToList,
+                icon: const Icon(Icons.add),
+                label: const Text('Ajouter la carte'),
               ),
             ),
           ],
@@ -993,7 +975,10 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     );
   }
 
-  Widget _buildManualUserCard(int index, _ManualUserFormData card) {
+  Widget _buildEditableUserCard({
+    required String title,
+    required _ManualUserFormData card,
+  }) {
     final allowedRoles = <UserRole>[
       UserRole.citizen,
       UserRole.elected,
@@ -1034,20 +1019,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      'Utilisateur ${index + 1}',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => _removeManualCard(index),
-                      icon: const Icon(Icons.delete_outline),
-                      tooltip: 'Retirer',
-                    ),
-                  ],
-                ),
+                Text(title, style: Theme.of(context).textTheme.titleSmall),
                 const SizedBox(height: 8),
                 if (isCompact) ...[
                   TextField(
@@ -1183,20 +1155,23 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            DropTarget(
-              onDragEntered: (_) {
-                setState(() {
-                  _isDraggingCsv = true;
-                });
-              },
-              onDragExited: (_) {
-                setState(() {
-                  _isDraggingCsv = false;
-                });
-              },
-              onDragDone: _onCsvFilesDropped,
-              child: dropArea,
-            ),
+            if (kIsWeb)
+              dropArea
+            else
+              DropTarget(
+                onDragEntered: (_) {
+                  setState(() {
+                    _isDraggingCsv = true;
+                  });
+                },
+                onDragExited: (_) {
+                  setState(() {
+                    _isDraggingCsv = false;
+                  });
+                },
+                onDragDone: _onCsvFilesDropped,
+                child: dropArea,
+              ),
             const SizedBox(height: 12),
             InkWell(
               onTap: _downloadCsvExample,
@@ -1230,14 +1205,14 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
             if (_draftUsers.isEmpty)
               const Text('Aucun utilisateur en attente.')
             else
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (context, index) {
-                  return _buildPendingUserCard(index, _draftUsers[index]);
-                },
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemCount: _draftUsers.length,
+              Column(
+                children: [
+                  for (var index = 0; index < _draftUsers.length; index++) ...[
+                    _buildPendingUserCard(index, _draftUsers[index]),
+                    if (index < _draftUsers.length - 1)
+                      const SizedBox(height: 10),
+                  ],
+                ],
               ),
           ],
         ),
@@ -1246,121 +1221,90 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
   }
 
   Widget _buildPendingUserCard(int index, _DraftUser draft) {
-    final allowedRoles = <UserRole>[
-      UserRole.citizen,
-      UserRole.elected,
-      UserRole.agent,
-    ];
+    final isEditing = _editingDraftIndex == index && _editingDraftCard != null;
+
+    if (isEditing) {
+      return Card(
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildEditableUserCard(
+                title: 'Modification utilisateur ${index + 1}',
+                card: _editingDraftCard!,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: _cancelEditingDraft,
+                    child: const Text('Annuler'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    onPressed: _saveEditingDraft,
+                    icon: const Icon(Icons.save),
+                    label: const Text('Enregistrer'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              children: [
-                Text(
-                  'Utilisateur ${index + 1}',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                const Spacer(),
-                IconButton(
-                  tooltip: 'Supprimer',
-                  onPressed: () async {
-                    setState(() {
-                      _draftUsers.removeAt(index);
-                    });
-                    await _saveDrafts();
-                  },
-                  icon: const Icon(Icons.delete_outline),
-                ),
-              ],
+            const CircleAvatar(
+              backgroundColor: AppColors.highlight,
+              child: Icon(Icons.person, color: AppColors.primary),
             ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                SizedBox(
-                  width: 260,
-                  child: TextFormField(
-                    initialValue: draft.firstName,
-                    decoration: const InputDecoration(labelText: 'Prénom'),
-                    onChanged: (value) {
-                      _draftUsers[index] = _draftUsers[index].copyWith(
-                        firstName: value,
-                      );
-                      _saveDrafts();
-                    },
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${draft.firstName} ${draft.lastName}',
+                    style: Theme.of(context).textTheme.titleSmall,
                   ),
-                ),
-                SizedBox(
-                  width: 260,
-                  child: TextFormField(
-                    initialValue: draft.lastName,
-                    decoration: const InputDecoration(labelText: 'Nom'),
-                    onChanged: (value) {
-                      _draftUsers[index] = _draftUsers[index].copyWith(
-                        lastName: value,
-                      );
-                      _saveDrafts();
-                    },
+                  const SizedBox(height: 2),
+                  Text(
+                    '${draft.username} • ${draft.email} • ${draft.role.label}',
                   ),
-                ),
-                SizedBox(
-                  width: 260,
-                  child: TextFormField(
-                    initialValue: draft.username,
-                    decoration: const InputDecoration(labelText: 'Identifiant'),
-                    onChanged: (value) {
-                      _draftUsers[index] = _draftUsers[index].copyWith(
-                        username: value,
-                      );
-                      _saveDrafts();
-                    },
-                  ),
-                ),
-                SizedBox(
-                  width: 300,
-                  child: TextFormField(
-                    initialValue: draft.email,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                    onChanged: (value) {
-                      _draftUsers[index] = _draftUsers[index].copyWith(
-                        email: value,
-                      );
-                      _saveDrafts();
-                    },
-                  ),
-                ),
-                SizedBox(
-                  width: 220,
-                  child: DropdownButtonFormField<UserRole>(
-                    initialValue: draft.role,
-                    decoration: const InputDecoration(labelText: 'Rôle'),
-                    items: allowedRoles
-                        .map(
-                          (role) => DropdownMenuItem<UserRole>(
-                            value: role,
-                            child: Text(role.label),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value == null) {
-                        return;
-                      }
-                      _draftUsers[index] = _draftUsers[index].copyWith(
-                        role: value,
-                      );
-                      _saveDrafts();
-                      setState(() {});
-                    },
-                  ),
-                ),
-              ],
+                ],
+              ),
+            ),
+            IconButton(
+              tooltip: 'Modifier',
+              onPressed: () => _startEditingDraft(index),
+              icon: const Icon(Icons.edit_outlined),
+            ),
+            IconButton(
+              tooltip: 'Supprimer',
+              onPressed: () async {
+                if (_editingDraftIndex == index) {
+                  _cancelEditingDraft();
+                }
+                setState(() {
+                  _draftUsers.removeAt(index);
+                  if (_editingDraftIndex != null &&
+                      _editingDraftIndex! > index) {
+                    _editingDraftIndex = _editingDraftIndex! - 1;
+                  }
+                });
+                await _saveDrafts();
+              },
+              icon: const Icon(Icons.delete_outline),
             ),
           ],
         ),
@@ -1380,7 +1324,10 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 SizedBox(
                   width: 120,
@@ -1399,13 +1346,11 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                     decoration: const InputDecoration(labelText: 'Lignes'),
                   ),
                 ),
-                const SizedBox(width: 12),
                 ElevatedButton.icon(
                   onPressed: _generateSchoolGridPdf,
                   icon: const Icon(Icons.grid_view),
                   label: const Text('PDF type école'),
                 ),
-                const SizedBox(width: 8),
                 ElevatedButton.icon(
                   onPressed: _generateOneUserPerPagePdf,
                   icon: const Icon(Icons.picture_as_pdf),
@@ -1414,26 +1359,36 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
               ],
             ),
             const SizedBox(height: 12),
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                final credential = _createdCredentials[index];
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text('${credential.firstName} ${credential.lastName}'),
-                  subtitle: Text(
-                    '${credential.username} • mot de passe: ${credential.password}',
+            Column(
+              children: [
+                for (
+                  var index = 0;
+                  index < _createdCredentials.length;
+                  index++
+                ) ...[
+                  Builder(
+                    builder: (context) {
+                      final credential = _createdCredentials[index];
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          '${credential.firstName} ${credential.lastName}',
+                        ),
+                        subtitle: Text(
+                          '${credential.username} • mot de passe: ${credential.password}',
+                        ),
+                        trailing: TextButton.icon(
+                          onPressed: () => _copyCredentialLink(credential),
+                          icon: const Icon(Icons.link),
+                          label: const Text('Copier lien'),
+                        ),
+                      );
+                    },
                   ),
-                  trailing: TextButton.icon(
-                    onPressed: () => _copyCredentialLink(credential),
-                    icon: const Icon(Icons.link),
-                    label: const Text('Copier lien'),
-                  ),
-                );
-              },
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemCount: _createdCredentials.length,
+                  if (index < _createdCredentials.length - 1)
+                    const Divider(height: 1),
+                ],
+              ],
             ),
           ],
         ),
@@ -1445,11 +1400,26 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
 class _ManualUserFormData {
   _ManualUserFormData() : role = UserRole.citizen;
 
+  _ManualUserFormData.fromDraft(_DraftUser draft) : role = draft.role {
+    firstNameController.text = draft.firstName;
+    lastNameController.text = draft.lastName;
+    usernameController.text = draft.username;
+    emailController.text = draft.email;
+  }
+
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   UserRole role;
+
+  void clear() {
+    firstNameController.clear();
+    lastNameController.clear();
+    usernameController.clear();
+    emailController.clear();
+    role = UserRole.citizen;
+  }
 
   void dispose() {
     firstNameController.dispose();
