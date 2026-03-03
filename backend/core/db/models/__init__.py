@@ -23,6 +23,7 @@ from .neighborhood import Neighborhood
 from .report import Report
 from .survey import Survey, SurveyOption, Vote
 from .event import Event, ThemeEvent
+from .useful_info import UsefulInfo
 
 __all__ = [
     # Enums
@@ -39,4 +40,5 @@ __all__ = [
     'Vote',
     'Event',
     'ThemeEvent',
+    'UsefulInfo',
 ]
