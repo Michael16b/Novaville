@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
-import 'package:frontend/constants/texts/texts_reports.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/users/application/bloc/user_accounts_bloc/user_accounts_bloc.dart';
@@ -374,14 +373,14 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     final neighborhoods = state.neighborhoods;
 
     // Show skeleton while loading
-    if (neighborhoods.isEmpty) {
+    if (!state.neighborhoodsLoaded) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: Text(
-              ReportTexts.filterByNeighborhood,
+              UserTexts.filterByNeighborhood,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.secondaryText,
                     fontWeight: FontWeight.w600,
@@ -403,7 +402,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
         Padding(
           padding: const EdgeInsets.only(bottom: 4),
           child: Text(
-            ReportTexts.filterByNeighborhood,
+            UserTexts.filterByNeighborhood,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.secondaryText,
                   fontWeight: FontWeight.w600,
@@ -1185,8 +1184,10 @@ class _NeighborhoodAutocompleteState
         });
       },
       fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
-        // Synchronize the internal controller with Autocomplete's controller
-        controller.text = _internalController.text;
+        // Only sync when the field is not focused to avoid overwriting user input.
+        if (!focusNode.hasFocus && controller.text != _internalController.text) {
+          controller.text = _internalController.text;
+        }
 
         return SizedBox(
           height: 32,
@@ -1195,7 +1196,7 @@ class _NeighborhoodAutocompleteState
             focusNode: focusNode,
             style: Theme.of(context).textTheme.bodySmall,
             decoration: InputDecoration(
-              hintText: ReportTexts.allNeighborhoods,
+              hintText: UserTexts.allNeighborhoods,
               hintStyle: Theme.of(context).textTheme.bodySmall,
               border: const OutlineInputBorder(),
               contentPadding: const EdgeInsets.symmetric(
@@ -1214,7 +1215,7 @@ class _NeighborhoodAutocompleteState
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       splashRadius: 14,
-                      tooltip: ReportTexts.allNeighborhoods,
+                      tooltip: UserTexts.allNeighborhoods,
                     )
                   : const Icon(Icons.arrow_drop_down, size: 18),
             ),

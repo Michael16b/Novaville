@@ -124,7 +124,7 @@ class ReportViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Update report status",
-        description="Update the status of a report (staff only)",
+        description="Update the status of a report (owner or staff only)",
         tags=["Reports"],
         request={"application/json": {"example": {"status": "IN_PROGRESS"}}}
     )

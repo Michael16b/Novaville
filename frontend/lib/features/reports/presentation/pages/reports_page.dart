@@ -414,7 +414,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     final neighborhoods = state.neighborhoods;
 
     // Show skeleton while loading
-    if (neighborhoods.isEmpty) {
+    if (!state.neighborhoodsLoaded) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1367,8 +1367,10 @@ class _NeighborhoodAutocompleteState
         });
       },
       fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
-        // Synchronize the internal controller with Autocomplete's controller
-        controller.text = _internalController.text;
+        // Only sync when the field is not focused to avoid overwriting user input.
+        if (!focusNode.hasFocus && controller.text != _internalController.text) {
+          controller.text = _internalController.text;
+        }
 
         return SizedBox(
           height: 32,

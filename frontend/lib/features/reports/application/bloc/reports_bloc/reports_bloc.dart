@@ -132,7 +132,6 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     _filterProblemType = event.problemType;
     _filterStatus = event.status;
     _filterNeighborhood = event.neighborhood;
-    _filterStatus = event.status;
     _filterCreatedAfter = event.createdAfter;
     _pageCache.clear();
     await _loadPageWithCache(
@@ -307,9 +306,10 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   ) async {
     try {
       final neighborhoods = await _repository.listNeighborhoods();
-      emit(state.copyWith(neighborhoods: neighborhoods));
+      emit(state.copyWith(neighborhoods: neighborhoods, neighborhoodsLoaded: true));
     } catch (_) {
       // Silently fail – neighborhoods are optional
+      emit(state.copyWith(neighborhoodsLoaded: true));
     }
   }
 
@@ -420,6 +420,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         previous: reportPage.previous,
         search: search,
         neighborhoods: state.neighborhoods,
+        neighborhoodsLoaded: state.neighborhoodsLoaded,
       ),
     );
   }
