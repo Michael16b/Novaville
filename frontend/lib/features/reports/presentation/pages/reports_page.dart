@@ -17,6 +17,8 @@ import 'package:frontend/features/reports/presentation/widgets/report_card.dart'
 import 'package:frontend/features/reports/presentation/widgets/report_form_dialog.dart';
 import 'package:frontend/features/reports/presentation/widgets/report_status_dialog.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
+import 'package:frontend/ui/widgets/neighborhood_autocomplete.dart';
+import 'package:frontend/ui/widgets/neighborhood_filter_skeleton.dart';
 
 /// Date filter periods
 enum DateFilterPeriod {
@@ -314,9 +316,10 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
               ReportTexts.advancedFilters,
               style: Theme.of(context).textTheme.titleSmall,
             ),
-              const SizedBox(width: 8),
+            const SizedBox(width: 8),
+            if (hasActiveFilter)
               TextButton.icon(
-                onPressed: hasActiveFilter ?_clearAllFilters : null,
+                onPressed: _clearAllFilters,
                 icon: const Icon(Icons.clear_all, size: 16),
                 label: const Text(ReportTexts.clearFilters),
                 style: TextButton.styleFrom(
@@ -433,7 +436,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
           const SizedBox(
             width: 250,
             height: 32,
-            child: _NeighborhoodFilterSkeleton(),
+            child: NeighborhoodFilterSkeleton(),
           ),
         ],
       );
@@ -454,9 +457,10 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
         ),
         SizedBox(
           width: 250,
-          child: _NeighborhoodAutocomplete(
+          child: NeighborhoodAutocomplete(
             neighborhoods: neighborhoods,
             selectedId: _filterNeighborhood,
+            hintText: ReportTexts.allNeighborhoods,
             onSelected: (int? value) {
               setState(() => _filterNeighborhood = value);
               _applyFilters();
@@ -1203,243 +1207,6 @@ class _ReportCardSkeletonState extends State<_ReportCardSkeleton>
                   ],
                 ),
               ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-// ─── Neighborhood Filter Skeleton ────────────────────────────────
-
-class _NeighborhoodFilterSkeleton extends StatefulWidget {
-  const _NeighborhoodFilterSkeleton();
-
-  @override
-  State<_NeighborhoodFilterSkeleton> createState() =>
-      _NeighborhoodFilterSkeletonState();
-}
-
-class _NeighborhoodFilterSkeletonState
-    extends State<_NeighborhoodFilterSkeleton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pulseController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1700),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, child) {
-        final pulseValue = _pulseController.value;
-        final barColor = Color.lerp(
-          AppColors.secondaryText.withValues(alpha: 0.12),
-          AppColors.secondaryText.withValues(alpha: 0.24),
-          pulseValue,
-        );
-
-        return Container(
-          height: 32,
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: barColor ?? Colors.grey,
-              width: 1,
-            ),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 14,
-                    width: 80,
-                    color: barColor,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  height: 16,
-                  width: 16,
-                  color: barColor,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-// ─── Neighborhood Autocomplete ────────────────────────────────────
-
-/// Autocomplete widget for selecting a neighborhood with search.
-class _NeighborhoodAutocomplete extends StatefulWidget {
-  const _NeighborhoodAutocomplete({
-    required this.neighborhoods,
-    required this.selectedId,
-    required this.onSelected,
-  });
-
-  /// Available neighborhoods.
-  final List<Neighborhood> neighborhoods;
-
-  /// Currently selected neighborhood ID (null = all).
-  final int? selectedId;
-
-  /// Callback when a neighborhood is selected or cleared.
-  final ValueChanged<int?> onSelected;
-
-  @override
-  State<_NeighborhoodAutocomplete> createState() =>
-      _NeighborhoodAutocompleteState();
-}
-
-class _NeighborhoodAutocompleteState
-    extends State<_NeighborhoodAutocomplete> {
-  late TextEditingController _internalController;
-
-  @override
-  void initState() {
-    super.initState();
-    _internalController = TextEditingController(
-      text: _labelForId(widget.selectedId),
-    );
-  }
-
-  @override
-  void didUpdateWidget(covariant _NeighborhoodAutocomplete oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.selectedId != widget.selectedId) {
-      _internalController.text = _labelForId(widget.selectedId);
-    }
-  }
-
-  @override
-  void dispose() {
-    _internalController.dispose();
-    super.dispose();
-  }
-
-  String _labelForId(int? id) {
-    if (id == null) return '';
-    return widget.neighborhoods
-            .where((n) => n.id == id)
-            .map((n) => n.name)
-            .firstOrNull ??
-        '';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Autocomplete<Neighborhood>(
-      displayStringForOption: (n) => n.name,
-      optionsBuilder: (textEditingValue) {
-        final query = textEditingValue.text.toLowerCase().trim();
-        if (query.isEmpty) {
-          return widget.neighborhoods;
-        }
-        return widget.neighborhoods.where(
-          (n) => n.name.toLowerCase().contains(query),
-        );
-      },
-      onSelected: (neighborhood) {
-        _internalController.text = neighborhood.name;
-        widget.onSelected(neighborhood.id);
-        // Fermer le focus pour fermer la dropdown
-        Future.microtask(() {
-          FocusScope.of(context).unfocus();
-        });
-      },
-      fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
-        // Only sync when the field is not focused to avoid overwriting user input.
-        if (!focusNode.hasFocus && controller.text != _internalController.text) {
-          controller.text = _internalController.text;
-        }
-
-        return SizedBox(
-          height: 32,
-          child: TextFormField(
-            controller: controller,
-            focusNode: focusNode,
-            style: Theme.of(context).textTheme.bodySmall,
-            decoration: InputDecoration(
-              hintText: ReportTexts.allNeighborhoods,
-              hintStyle: Theme.of(context).textTheme.bodySmall,
-              border: const OutlineInputBorder(),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
-              isDense: true,
-              suffixIcon: widget.selectedId != null
-                  ? IconButton(
-                      icon: const Icon(Icons.close, size: 16),
-                      onPressed: () {
-                        controller.clear();
-                        _internalController.clear();
-                        widget.onSelected(null);
-                      },
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      splashRadius: 14,
-                      tooltip: ReportTexts.allNeighborhoods,
-                    )
-                  : const Icon(Icons.arrow_drop_down, size: 18),
-            ),
-            onTap: () {
-              controller.selection = TextSelection(
-                baseOffset: 0,
-                extentOffset: controller.text.length,
-              );
-            },
-            onFieldSubmitted: (_) => onSubmitted(),
-          ),
-        );
-      },
-      optionsViewBuilder: (context, onSelected, options) {
-        return Align(
-          alignment: Alignment.topLeft,
-          child: Material(
-            elevation: 4,
-            borderRadius: BorderRadius.circular(8),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxHeight: 220,
-                maxWidth: 250,
-              ),
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                itemCount: options.length,
-                itemBuilder: (context, index) {
-                  final neighborhood = options.elementAt(index);
-                  final isSelected = neighborhood.id == widget.selectedId;
-                  return ListTile(
-                    dense: true,
-                    title: Text(neighborhood.name),
-                    selected: isSelected,
-                    onTap: () => onSelected(neighborhood),
-                  );
-                },
-              ),
             ),
           ),
         );
