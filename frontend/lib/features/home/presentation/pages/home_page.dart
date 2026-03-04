@@ -74,7 +74,7 @@ class HomePage extends StatelessWidget {
                         onTap: () => context.go(AppRoutes.surveys),
                       ),
                       MenuCard(
-                        icon: Icons.calendar_today_outlined,
+                        icon: Icons.calendar_month_outlined,
                         title: AppTextsHome.agenda,
                         onTap: () => context.go(AppRoutes.agenda),
                       ),
