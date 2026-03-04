@@ -81,6 +81,7 @@ class _NeighborhoodAutocompleteState extends State<NeighborhoodAutocomplete> {
       onSelected: (neighborhood) {
         _internalController.text = neighborhood.name;
         widget.onSelected(neighborhood.id);
+        // Close the dropdown by removing focus.
         Future.microtask(() {
           FocusScope.of(context).unfocus();
         });
