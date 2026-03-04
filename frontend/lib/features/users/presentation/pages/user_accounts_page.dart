@@ -331,11 +331,8 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
 
   Widget _buildRoleFilterChips() {
     final roles = [
-      (label: UserTexts.allRoles, value: null),
-      (label: 'Citoyen', value: 'CITIZEN'),
-      (label: 'Élu', value: 'ELECTED'),
-      (label: 'Agent', value: 'AGENT'),
-      (label: 'Admin', value: 'GLOBAL_ADMIN'),
+      (label: UserTexts.allRoles, value: null as String?),
+      ...UserRole.values.map((r) => (label: r.label, value: r.value)),
     ];
 
     return Column(
