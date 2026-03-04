@@ -6,7 +6,7 @@ class User extends Equatable {
   const User({
     required this.id,
     required this.username,
-    required this.email,
+    this.email = '',
     required this.firstName,
     required this.lastName,
     this.role,
@@ -26,9 +26,9 @@ class User extends Equatable {
     return User(
       id: json['id'] as int,
       username: json['username'] as String,
-      email: json['email'] as String,
-      firstName: json['first_name'] as String,
-      lastName: json['last_name'] as String,
+      email: (json['email'] as String?) ?? '',
+      firstName: (json['first_name'] as String?) ?? '',
+      lastName: (json['last_name'] as String?) ?? '',
       role: json['role'] != null
           ? UserRole.fromString(json['role'] as String)
           : null,

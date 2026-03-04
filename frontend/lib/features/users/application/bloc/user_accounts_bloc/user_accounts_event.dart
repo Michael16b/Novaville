@@ -69,3 +69,36 @@ class UserAccountsSearchRequested extends UserAccountsEvent {
   @override
   List<Object?> get props => [query, ordering];
 }
+
+/// Event to apply advanced filters (role, neighborhood).
+class UserAccountsFilterRequested extends UserAccountsEvent {
+  /// Creates a [UserAccountsFilterRequested].
+  const UserAccountsFilterRequested({
+    this.role,
+    this.neighborhood,
+    this.ordering,
+    this.search,
+  });
+
+  /// Filter by role.
+  final String? role;
+
+  /// Filter by neighborhood ID.
+  final int? neighborhood;
+
+  /// Current ordering.
+  final String? ordering;
+
+  /// Current search query.
+  final String? search;
+
+  @override
+  List<Object?> get props => [role, neighborhood, ordering, search];
+}
+
+/// Event to load neighborhoods for filter dropdowns.
+class UserAccountsNeighborhoodsLoadRequested extends UserAccountsEvent {
+  /// Creates a [UserAccountsNeighborhoodsLoadRequested].
+  const UserAccountsNeighborhoodsLoadRequested();
+}
+

@@ -1,3 +1,4 @@
+import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 
 class UserPage {
@@ -31,7 +32,13 @@ abstract class IUserRepository {
   Future<User> getCurrentUser();
 
   /// Retrieves a paginated list of users.
-  Future<UserPage> listUsers({String? ordering, String? search, int page = 1});
+  Future<UserPage> listUsers({
+    String? ordering,
+    String? search,
+    int page = 1,
+    String? role,
+    int? neighborhood,
+  });
 
   /// Updates the user's information.
   Future<User> updateUser({
@@ -44,4 +51,7 @@ abstract class IUserRepository {
 
   /// Deletes a user.
   Future<void> deleteUser({required int userId});
+
+  /// Lists all available neighborhoods.
+  Future<List<Neighborhood>> listNeighborhoods();
 }

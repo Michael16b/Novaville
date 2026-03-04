@@ -39,4 +39,13 @@ class UserTexts {
   static const addMultipleUsersDescription =
       'Ajout groupé de comptes utilisateurs.';
   static const featureComingSoon = editInProgress;
+
+  static const titleDescription =
+      'Gérez les comptes des utilisateurs de la plateforme';
+  static const advancedFilters = 'Filtres avancés';
+  static const filterByRole = 'Rôle';
+  static const allRoles = 'Tous les rôles';
+  static const filterByNeighborhood = 'Quartier';
+  static const allNeighborhoods = 'Tous les quartiers';
+  static const clearFilters = 'Réinitialiser les filtres';
 }
