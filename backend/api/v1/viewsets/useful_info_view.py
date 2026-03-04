@@ -8,22 +8,26 @@ from api.v1.serializers.useful_info_serializer import UsefulInfoSerializer
 
 
 class UsefulInfoView(APIView):
-    """Endpoint for reading/updating the useful information.
-
-    GET is publicly accessible and returns the current stored JSON object.
-    PUT can only be performed by admin users and will replace the stored
-    info with the provided data.
-    """
-
     def get_permissions(self):
-        # allow anyone to read, only admins can write
         if self.request.method in ["PUT", "PATCH"]:
             return [IsAdminUser()]
         return [AllowAny()]
 
     def _get_object(self):
-        # always work with the singleton instance
-        obj, _ = UsefulInfo.objects.get_or_create(pk=1)
+        # there should always be exactly one row; if missing we create it with
+        # safe defaults so that the DB constraints are satisfied.
+        defaults = {
+            "city_hall_name": "",
+            "address_line1": "",
+            "address_line2": "",
+            "postal_code": "",
+            "city": "",
+            "phone": "",
+            "email": "",
+            "website": "",
+            "opening_hours": {},
+        }
+        obj, _ = UsefulInfo.objects.get_or_create(pk=1, defaults=defaults)
         return obj
 
     def get(self, request):
