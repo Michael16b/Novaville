@@ -186,9 +186,10 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
   ) async {
     try {
       final neighborhoods = await _repository.listNeighborhoods();
-      emit(state.copyWith(neighborhoods: neighborhoods));
+      emit(state.copyWith(neighborhoods: neighborhoods, neighborhoodsLoaded: true));
     } catch (_) {
       // Silently fail – neighborhoods are optional for filters
+      emit(state.copyWith(neighborhoodsLoaded: true));
     }
   }
 
@@ -289,6 +290,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
         previous: userPage.previous,
         search: search,
         neighborhoods: state.neighborhoods,
+        neighborhoodsLoaded: state.neighborhoodsLoaded,
       ),
     );
   }

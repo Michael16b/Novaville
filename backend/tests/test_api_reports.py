@@ -215,3 +215,95 @@ class TestReportsAPI:
         response = other_citizen_client.delete(f"/api/v1/reports/{report.id}/")
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert Report.objects.filter(id=report.id).exists()
+
+    def test_owner_citizen_can_update_own_report_status(self, authenticated_client, report):
+        """Test that the report owner (citizen) can update the status of their own report"""
+        response = authenticated_client.post(
+            f"/api/v1/reports/{report.id}/update_status/",
+            {"status": "IN_PROGRESS"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "IN_PROGRESS"
+        report.refresh_from_db()
+        assert report.status == ReportStatusEnum.IN_PROGRESS
+
+    def test_search_filter(self, authenticated_client, citizen_user, neighborhood):
+        """Test full-text search across report description"""
+        Report.objects.create(
+            user=citizen_user,
+            problem_type=ProblemTypeEnum.ROADS,
+            description="Unique search term xyzzy",
+            neighborhood=neighborhood,
+        )
+        Report.objects.create(
+            user=citizen_user,
+            problem_type=ProblemTypeEnum.LIGHTING,
+            description="Other report without the term",
+            neighborhood=neighborhood,
+        )
+
+        response = authenticated_client.get("/api/v1/reports/?search=xyzzy")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get("results", response.data)
+        assert len(results) >= 1
+        assert all("xyzzy" in r["description"] for r in results)
+
+    def test_created_after_filter(self, authenticated_client, citizen_user, neighborhood):
+        """Test filtering reports created after a given datetime"""
+        import datetime
+
+        old_report = Report.objects.create(
+            user=citizen_user,
+            problem_type=ProblemTypeEnum.ROADS,
+            description="Old report",
+            neighborhood=neighborhood,
+        )
+        # Back-date the old report
+        Report.objects.filter(id=old_report.id).update(
+            created_at=datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc)
+        )
+
+        new_report = Report.objects.create(
+            user=citizen_user,
+            problem_type=ProblemTypeEnum.LIGHTING,
+            description="New report",
+            neighborhood=neighborhood,
+        )
+
+        cutoff = "2021-01-01T00:00:00Z"
+        response = authenticated_client.get(f"/api/v1/reports/?created_after={cutoff}")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get("results", response.data)
+        result_ids = [r["id"] for r in results]
+        assert new_report.id in result_ids
+        assert old_report.id not in result_ids
+
+    def test_created_before_filter(self, authenticated_client, citizen_user, neighborhood):
+        """Test filtering reports created before a given datetime"""
+        import datetime
+
+        old_report = Report.objects.create(
+            user=citizen_user,
+            problem_type=ProblemTypeEnum.ROADS,
+            description="Old report for before filter",
+            neighborhood=neighborhood,
+        )
+        Report.objects.filter(id=old_report.id).update(
+            created_at=datetime.datetime(2020, 6, 1, tzinfo=datetime.timezone.utc)
+        )
+
+        new_report = Report.objects.create(
+            user=citizen_user,
+            problem_type=ProblemTypeEnum.LIGHTING,
+            description="New report for before filter",
+            neighborhood=neighborhood,
+        )
+
+        cutoff = "2021-01-01T00:00:00Z"
+        response = authenticated_client.get(f"/api/v1/reports/?created_before={cutoff}")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get("results", response.data)
+        result_ids = [r["id"] for r in results]
+        assert old_report.id in result_ids
+        assert new_report.id not in result_ids

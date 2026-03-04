@@ -47,6 +47,7 @@ class ReportsState extends Equatable {
     this.pageSize = 20,
     this.search = '',
     this.neighborhoods = const <Neighborhood>[],
+    this.neighborhoodsLoaded = false,
   });
 
   /// Initial state.
@@ -60,7 +61,8 @@ class ReportsState extends Equatable {
         previous = null,
         pageSize = 20,
         search = '',
-        neighborhoods = const <Neighborhood>[];
+        neighborhoods = const <Neighborhood>[],
+        neighborhoodsLoaded = false;
 
   /// Loading state.
   const ReportsState.loading()
@@ -73,7 +75,8 @@ class ReportsState extends Equatable {
         previous = null,
         pageSize = 20,
         search = '',
-        neighborhoods = const <Neighborhood>[];
+        neighborhoods = const <Neighborhood>[],
+        neighborhoodsLoaded = false;
 
   /// Loaded state.
   const ReportsState.loaded(
@@ -85,6 +88,7 @@ class ReportsState extends Equatable {
     this.pageSize = 20,
     this.search = '',
     this.neighborhoods = const <Neighborhood>[],
+    this.neighborhoodsLoaded = false,
   })  : status = ReportsStatus.loaded,
         error = null;
 
@@ -99,7 +103,8 @@ class ReportsState extends Equatable {
         previous = null,
         pageSize = 20,
         search = '',
-        neighborhoods = const <Neighborhood>[];
+        neighborhoods = const <Neighborhood>[],
+        neighborhoodsLoaded = false;
 
   /// Current status.
   final ReportsStatus status;
@@ -131,6 +136,9 @@ class ReportsState extends Equatable {
   /// Available neighborhoods for form dropdowns.
   final List<Neighborhood> neighborhoods;
 
+  /// Whether neighborhoods have been loaded (even if the list is empty).
+  final bool neighborhoodsLoaded;
+
   /// Returns a copy of this state with the given fields replaced.
   ReportsState copyWith({
     ReportsStatus? status,
@@ -143,6 +151,7 @@ class ReportsState extends Equatable {
     int? pageSize,
     String? search,
     List<Neighborhood>? neighborhoods,
+    bool? neighborhoodsLoaded,
   }) {
     return ReportsState(
       status: status ?? this.status,
@@ -155,6 +164,7 @@ class ReportsState extends Equatable {
       pageSize: pageSize ?? this.pageSize,
       search: search ?? this.search,
       neighborhoods: neighborhoods ?? this.neighborhoods,
+      neighborhoodsLoaded: neighborhoodsLoaded ?? this.neighborhoodsLoaded,
     );
   }
 
@@ -170,6 +180,7 @@ class ReportsState extends Equatable {
         pageSize,
         search,
         neighborhoods,
+        neighborhoodsLoaded,
       ];
 }
 
