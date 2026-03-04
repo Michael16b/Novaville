@@ -240,8 +240,11 @@ class _NeighborhoodAutocompleteFieldState
         });
       },
       fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
-        // Synchronize the controller
-        controller.text = _controller.text;
+        // Synchronize the controller only when not focused to avoid
+        // resetting user input and cursor position while typing.
+        if (!focusNode.hasFocus && controller.text != _controller.text) {
+          controller.text = _controller.text;
+        }
 
         return TextFormField(
           controller: controller,

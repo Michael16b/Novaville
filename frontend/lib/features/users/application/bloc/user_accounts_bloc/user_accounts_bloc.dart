@@ -83,6 +83,8 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
           previous: currentState.previous,
           pageSize: currentState.pageSize,
           search: currentState.search,
+          neighborhoods: currentState.neighborhoods,
+          neighborhoodsLoaded: currentState.neighborhoodsLoaded,
         ),
       );
     } catch (e) {
@@ -96,6 +98,8 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
           previous: currentState.previous,
           pageSize: currentState.pageSize,
           search: currentState.search,
+          neighborhoods: currentState.neighborhoods,
+          neighborhoodsLoaded: currentState.neighborhoodsLoaded,
         ),
       );
     }

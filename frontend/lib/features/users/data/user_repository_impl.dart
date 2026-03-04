@@ -117,8 +117,7 @@ class UserRepositoryImpl implements IUserRepository {
           .toList();
     } else {
       throw Exception(
-        'Erreur lors de la récupération des quartiers: '
-        '${response.statusCode}',
+        'Failed to fetch neighborhoods: ${response.statusCode}',
       );
     }
   }

@@ -106,8 +106,9 @@ def report(citizen_user, neighborhood):
 
 
 @pytest.fixture
-def other_citizen_client(api_client, neighborhood):
+def other_citizen_client(neighborhood):
     """API client authenticated as a second citizen who does not own any reports"""
+    api_client = APIClient()
     other_citizen = User.objects.create_user(
         username="othercitizen",
         email="othercitizen@test.com",
