@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
+import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
@@ -59,6 +60,8 @@ class MockUserRepository implements IUserRepository {
     String? ordering,
     String? search,
     int page = 1,
+    String? role,
+    int? neighborhood,
   }) async {
     if (shouldThrow) throw Exception('Network error');
     return UserPage(
@@ -67,6 +70,11 @@ class MockUserRepository implements IUserRepository {
       previous: null,
       results: users,
     );
+  }
+
+  @override
+  Future<List<Neighborhood>> listNeighborhoods() async {
+    return [];
   }
 
   @override

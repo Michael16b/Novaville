@@ -34,7 +34,8 @@ class UserAccountsPage extends StatelessWidget {
     return BlocProvider(
       create: (context) =>
           UserAccountsBloc(repository: repository)
-            ..add(const UserAccountsLoadRequested(ordering: 'first_name')),
+            ..add(const UserAccountsLoadRequested(ordering: 'first_name'))
+            ..add(const UserAccountsNeighborhoodsLoadRequested()),
       child: const _UserAccountsPageContent(),
     );
   }
@@ -62,6 +63,13 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   Timer? _loadingTimer;
   String _searchQuery = '';
   bool _showLoadingOverlay = false;
+
+  // Advanced filters
+  String? _filterRole;
+  int? _filterNeighborhood;
+
+  String get _currentOrdering =>
+      _sortAscending ? _sortColumnKey : '-$_sortColumnKey';
 
   @override
   void dispose() {
@@ -125,10 +133,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      UserTexts.title,
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
+                    _buildAccessibleTitle(context),
                     const SizedBox(height: 16),
                     _buildControlsSection(context, state),
                     const SizedBox(height: 12),
@@ -217,12 +222,223 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
             ),
             const SizedBox(height: 10),
             _buildSortAndLayoutControls(sortItems),
+            const SizedBox(height: 10),
+            _buildAdvancedFilters(context, state),
             const SizedBox(height: 8),
             _buildPaginationControls(context, state),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildAccessibleTitle(BuildContext context) {
+    return Semantics(
+      header: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.people_alt_outlined,
+                size: 32,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  UserTexts.title,
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineMedium
+                      ?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primaryText,
+                        letterSpacing: 0.3,
+                        height: 1.3,
+                      ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 44),
+            child: Text(
+              UserTexts.titleDescription,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppColors.secondaryText,
+                    height: 1.4,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdvancedFilters(
+    BuildContext context,
+    UserAccountsState state,
+  ) {
+    final hasActiveFilter =
+        _filterRole != null || _filterNeighborhood != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(
+              Icons.filter_list,
+              size: 18,
+              color: AppColors.secondaryText,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              UserTexts.advancedFilters,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            if (hasActiveFilter) ...[
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: _clearAllFilters,
+                icon: const Icon(Icons.clear_all, size: 16),
+                label: const Text(UserTexts.clearFilters),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _buildRoleFilterChips(),
+            _buildNeighborhoodFilter(state),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRoleFilterChips() {
+    final roles = [
+      (label: UserTexts.allRoles, value: null),
+      (label: 'Citoyen', value: 'CITIZEN'),
+      (label: 'Élu', value: 'ELECTED'),
+      (label: 'Agent', value: 'AGENT'),
+      (label: 'Admin', value: 'GLOBAL_ADMIN'),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Text(
+            UserTexts.filterByRole,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.secondaryText,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ),
+        Wrap(
+          spacing: 6,
+          runSpacing: 4,
+          children: roles.map((option) {
+            final isSelected = _filterRole == option.value;
+            return ChoiceChip(
+              label: Text(option.label),
+              selected: isSelected,
+              onSelected: (_) {
+                setState(() => _filterRole = option.value);
+                _applyFilters();
+              },
+              visualDensity: VisualDensity.compact,
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNeighborhoodFilter(UserAccountsState state) {
+    final neighborhoods = state.neighborhoods;
+    if (neighborhoods.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Text(
+            UserTexts.filterByNeighborhood,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.secondaryText,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ),
+        SizedBox(
+          width: 250,
+          child: DropdownButtonFormField<int?>(
+            value: _filterNeighborhood,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+            ),
+            isExpanded: true,
+            items: [
+              const DropdownMenuItem<int?>(
+                child: Text(UserTexts.allNeighborhoods),
+              ),
+              ...neighborhoods.map(
+                (n) => DropdownMenuItem<int?>(
+                  value: n.id,
+                  child: Text(n.name),
+                ),
+              ),
+            ],
+            onChanged: (value) {
+              setState(() => _filterNeighborhood = value);
+              _applyFilters();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _applyFilters() {
+    _flushSearchDebounce();
+    context.read<UserAccountsBloc>().add(
+          UserAccountsFilterRequested(
+            role: _filterRole,
+            neighborhood: _filterNeighborhood,
+            ordering: _currentOrdering,
+            search: _searchQuery,
+          ),
+        );
+  }
+
+  void _clearAllFilters() {
+    setState(() {
+      _filterRole = null;
+      _filterNeighborhood = null;
+    });
+    _applyFilters();
   }
 
   Widget _buildSortAndLayoutControls(

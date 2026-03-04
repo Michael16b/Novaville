@@ -70,6 +70,7 @@ class _LoginPageState extends State<LoginPage> {
                         labelText: AppFormLabels.username,
                         controller: _usernameController,
                         keyboardType: TextInputType.name,
+                        textInputAction: TextInputAction.next,
                         validator: (v) => (v == null || v.isEmpty)
                             ? AppValidatorMessages.usernameRequired
                             : null,
@@ -79,6 +80,8 @@ class _LoginPageState extends State<LoginPage> {
                         labelText: AppFormLabels.password,
                         controller: _passwordController,
                         obscureText: true,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => _submit(),
                         validator: (v) => (v == null || v.isEmpty)
                             ? AppValidatorMessages.passwordRequired
                             : null,
