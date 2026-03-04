@@ -73,12 +73,12 @@ class TestReportsAPI:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "Status is required" in str(response.data)
     
-    def test_citizen_cannot_update_status(self, authenticated_client, report):
-        """Test citizen cannot update report status"""
-        response = authenticated_client.post(
+    def test_citizen_cannot_update_status_of_other_report(self, other_citizen_client, report):
+        """Test non-owner citizen cannot update report status"""
+        response = other_citizen_client.post(
             f"/api/v1/reports/{report.id}/update_status/",
             {"status": "RESOLVED"},
-            format="json"
+            format="json",
         )
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -187,3 +187,31 @@ class TestReportsAPI:
             assert report_data["status"] == "IN_PROGRESS"
             assert report_data["problem_type"] == "ROADS"
             assert report_data["neighborhood"] == neighborhood.id
+
+    def test_non_owner_citizen_cannot_update_report(self, other_citizen_client, report):
+        """Test a non-owner citizen receives 403 when updating another user's report"""
+        response = other_citizen_client.patch(
+            f"/api/v1/reports/{report.id}/",
+            {"description": "Should not work"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_non_owner_citizen_cannot_full_update_report(self, other_citizen_client, report, neighborhood):
+        """Test a non-owner citizen receives 403 on full PUT of another user's report"""
+        response = other_citizen_client.put(
+            f"/api/v1/reports/{report.id}/",
+            {
+                "problem_type": "CLEANLINESS",
+                "description": "Should not work",
+                "neighborhood": neighborhood.id,
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_non_owner_citizen_cannot_delete_report(self, other_citizen_client, report):
+        """Test a non-owner citizen receives 403 when deleting another user's report"""
+        response = other_citizen_client.delete(f"/api/v1/reports/{report.id}/")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert Report.objects.filter(id=report.id).exists()
