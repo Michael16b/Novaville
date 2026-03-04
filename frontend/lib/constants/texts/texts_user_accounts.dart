@@ -1,5 +1,5 @@
 class UserTexts {
-  static const title = 'Gestion des comptes utilisateurs';
+  static const title = 'Comptes utilisateurs';
   static const sortBy = 'Trier par';
   static const search = 'Rechercher';
   static const searchHint = 'Nom, prénom, nom d\'utilisateur ou email';

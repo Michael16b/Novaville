@@ -236,45 +236,45 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   Widget _buildAccessibleTitle(BuildContext context) {
     return Semantics(
       header: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.people_alt_outlined,
-                size: 32,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  UserTexts.title,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineMedium
-                      ?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primaryText,
-                        letterSpacing: 0.3,
-                        height: 1.3,
-                      ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Padding(
-            padding: const EdgeInsets.only(left: 44),
-            child: Text(
-              UserTexts.titleDescription,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.secondaryText,
-                    height: 1.4,
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.people_alt_outlined,
+              size: 22,
+              color: AppColors.primary.withValues(alpha: 0.7),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              UserTexts.title,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primaryText,
+                    letterSpacing: 0.2,
                   ),
             ),
-          ),
-        ],
+            const SizedBox(width: 8),
+            Container(
+              width: 4,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.secondaryText.withValues(alpha: 0.4),
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                UserTexts.titleDescription,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.secondaryText,
+                    ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
