@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
+import 'package:frontend/constants/texts/texts_reports.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/users/application/bloc/user_accounts_bloc/user_accounts_bloc.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
+import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
 import 'package:frontend/features/users/data/user_repository_factory.dart';
 import 'package:frontend/features/users/presentation/widgets/user_account_card.dart';
@@ -370,7 +372,30 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
 
   Widget _buildNeighborhoodFilter(UserAccountsState state) {
     final neighborhoods = state.neighborhoods;
-    if (neighborhoods.isEmpty) return const SizedBox.shrink();
+
+    // Show skeleton while loading
+    if (neighborhoods.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              ReportTexts.filterByNeighborhood,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.secondaryText,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ),
+          const SizedBox(
+            width: 250,
+            height: 32,
+            child: _NeighborhoodFilterSkeleton(),
+          ),
+        ],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,7 +403,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
         Padding(
           padding: const EdgeInsets.only(bottom: 4),
           child: Text(
-            UserTexts.filterByNeighborhood,
+            ReportTexts.filterByNeighborhood,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.secondaryText,
                   fontWeight: FontWeight.w600,
@@ -387,28 +412,10 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
         ),
         SizedBox(
           width: 250,
-          child: DropdownButtonFormField<int?>(
-            value: _filterNeighborhood,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
-            ),
-            isExpanded: true,
-            items: [
-              const DropdownMenuItem<int?>(
-                child: Text(UserTexts.allNeighborhoods),
-              ),
-              ...neighborhoods.map(
-                (n) => DropdownMenuItem<int?>(
-                  value: n.id,
-                  child: Text(n.name),
-                ),
-              ),
-            ],
-            onChanged: (value) {
+          child: _NeighborhoodAutocomplete(
+            neighborhoods: neighborhoods,
+            selectedId: _filterNeighborhood,
+            onSelected: (int? value) {
               setState(() => _filterNeighborhood = value);
               _applyFilters();
             },
@@ -1019,3 +1026,239 @@ class _UserCardSkeletonState extends State<_UserCardSkeleton>
     );
   }
 }
+
+// ─── Neighborhood Filter Skeleton ────────────────────────────────
+
+class _NeighborhoodFilterSkeleton extends StatefulWidget {
+  const _NeighborhoodFilterSkeleton();
+
+  @override
+  State<_NeighborhoodFilterSkeleton> createState() =>
+      _NeighborhoodFilterSkeletonState();
+}
+
+class _NeighborhoodFilterSkeletonState
+    extends State<_NeighborhoodFilterSkeleton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1700),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final pulseValue = _pulseController.value;
+        final barColor = Color.lerp(
+          AppColors.secondaryText.withValues(alpha: 0.12),
+          AppColors.secondaryText.withValues(alpha: 0.24),
+          pulseValue,
+        );
+
+        return Container(
+          height: 32,
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: barColor ?? Colors.grey,
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 14,
+                    width: 80,
+                    color: barColor,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  height: 16,
+                  width: 16,
+                  color: barColor,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ─── Neighborhood Autocomplete ────────────────────────────────────
+
+/// Autocomplete widget for selecting a neighborhood with search.
+class _NeighborhoodAutocomplete extends StatefulWidget {
+  const _NeighborhoodAutocomplete({
+    required this.neighborhoods,
+    required this.selectedId,
+    required this.onSelected,
+  });
+
+  /// Available neighborhoods.
+  final List<Neighborhood> neighborhoods;
+
+  /// Currently selected neighborhood ID (null = all).
+  final int? selectedId;
+
+  /// Callback when a neighborhood is selected or cleared.
+  final ValueChanged<int?> onSelected;
+
+  @override
+  State<_NeighborhoodAutocomplete> createState() =>
+      _NeighborhoodAutocompleteState();
+}
+
+class _NeighborhoodAutocompleteState
+    extends State<_NeighborhoodAutocomplete> {
+  late TextEditingController _internalController;
+
+  @override
+  void initState() {
+    super.initState();
+    _internalController = TextEditingController(
+      text: _labelForId(widget.selectedId),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _NeighborhoodAutocomplete oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedId != widget.selectedId) {
+      _internalController.text = _labelForId(widget.selectedId);
+    }
+  }
+
+  @override
+  void dispose() {
+    _internalController.dispose();
+    super.dispose();
+  }
+
+  String _labelForId(int? id) {
+    if (id == null) return '';
+    return widget.neighborhoods
+            .where((n) => n.id == id)
+            .map((n) => n.name)
+            .firstOrNull ??
+        '';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Autocomplete<Neighborhood>(
+      displayStringForOption: (n) => n.name,
+      optionsBuilder: (textEditingValue) {
+        final query = textEditingValue.text.toLowerCase().trim();
+        if (query.isEmpty) {
+          return widget.neighborhoods;
+        }
+        return widget.neighborhoods.where(
+          (n) => n.name.toLowerCase().contains(query),
+        );
+      },
+      onSelected: (neighborhood) {
+        _internalController.text = neighborhood.name;
+        widget.onSelected(neighborhood.id);
+        // Fermer le focus pour fermer la dropdown
+        Future.microtask(() {
+          FocusScope.of(context).unfocus();
+        });
+      },
+      fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
+        // Synchronize the internal controller with Autocomplete's controller
+        controller.text = _internalController.text;
+
+        return SizedBox(
+          height: 32,
+          child: TextFormField(
+            controller: controller,
+            focusNode: focusNode,
+            style: Theme.of(context).textTheme.bodySmall,
+            decoration: InputDecoration(
+              hintText: ReportTexts.allNeighborhoods,
+              hintStyle: Theme.of(context).textTheme.bodySmall,
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              isDense: true,
+              suffixIcon: widget.selectedId != null
+                  ? IconButton(
+                      icon: const Icon(Icons.close, size: 16),
+                      onPressed: () {
+                        controller.clear();
+                        _internalController.clear();
+                        widget.onSelected(null);
+                      },
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      splashRadius: 14,
+                      tooltip: ReportTexts.allNeighborhoods,
+                    )
+                  : const Icon(Icons.arrow_drop_down, size: 18),
+            ),
+            onTap: () {
+              controller.selection = TextSelection(
+                baseOffset: 0,
+                extentOffset: controller.text.length,
+              );
+            },
+            onFieldSubmitted: (_) => onSubmitted(),
+          ),
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(8),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxHeight: 220,
+                maxWidth: 250,
+              ),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final neighborhood = options.elementAt(index);
+                  final isSelected = neighborhood.id == widget.selectedId;
+                  return ListTile(
+                    dense: true,
+                    title: Text(neighborhood.name),
+                    selected: isSelected,
+                    onTap: () => onSelected(neighborhood),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+

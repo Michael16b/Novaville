@@ -412,7 +412,30 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
 
   Widget _buildNeighborhoodFilter(ReportsState state) {
     final neighborhoods = state.neighborhoods;
-    if (neighborhoods.isEmpty) return const SizedBox.shrink();
+
+    // Show skeleton while loading
+    if (neighborhoods.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              ReportTexts.filterByNeighborhood,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.secondaryText,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ),
+          const SizedBox(
+            width: 250,
+            height: 32,
+            child: _NeighborhoodFilterSkeleton(),
+          ),
+        ],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1176,6 +1199,83 @@ class _ReportCardSkeletonState extends State<_ReportCardSkeleton>
                       ),
                     ),
                   ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ─── Neighborhood Filter Skeleton ────────────────────────────────
+
+class _NeighborhoodFilterSkeleton extends StatefulWidget {
+  const _NeighborhoodFilterSkeleton();
+
+  @override
+  State<_NeighborhoodFilterSkeleton> createState() =>
+      _NeighborhoodFilterSkeletonState();
+}
+
+class _NeighborhoodFilterSkeletonState
+    extends State<_NeighborhoodFilterSkeleton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1700),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final pulseValue = _pulseController.value;
+        final barColor = Color.lerp(
+          AppColors.secondaryText.withValues(alpha: 0.12),
+          AppColors.secondaryText.withValues(alpha: 0.24),
+          pulseValue,
+        );
+
+        return Container(
+          height: 32,
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: barColor ?? Colors.grey,
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 14,
+                    width: 80,
+                    color: barColor,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  height: 16,
+                  width: 16,
+                  color: barColor,
                 ),
               ],
             ),
