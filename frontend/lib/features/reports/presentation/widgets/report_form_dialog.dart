@@ -120,26 +120,10 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                   },
                 ),
                 const SizedBox(height: 16),
-                // Neighborhood dropdown
-                DropdownButtonFormField<int?>(
-                  initialValue: _selectedNeighborhood,
-                  decoration: const InputDecoration(
-                    labelText: ReportTexts.neighborhoodLabel,
-                    border: OutlineInputBorder(),
-                  ),
-                  items: [
-                    const DropdownMenuItem<int?>(
-                      child: Text(
-                        ReportTexts.selectNeighborhood,
-                      ),
-                    ),
-                    ...widget.neighborhoods.map(
-                      (n) => DropdownMenuItem<int?>(
-                        value: n.id,
-                        child: Text(n.name),
-                      ),
-                    ),
-                  ],
+                // Neighborhood autocomplete with search
+                _NeighborhoodAutocompleteField(
+                  neighborhoods: widget.neighborhoods,
+                  initialNeighborhoodId: _selectedNeighborhood,
                   onChanged: (value) {
                     _selectedNeighborhood = value;
                   },
@@ -175,3 +159,153 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
     Navigator.pop(context, result);
   }
 }
+
+// ─── Neighborhood Autocomplete Field ──────────────────────────────
+
+/// Autocomplete field for selecting a neighborhood with search.
+class _NeighborhoodAutocompleteField extends StatefulWidget {
+  const _NeighborhoodAutocompleteField({
+    required this.neighborhoods,
+    required this.initialNeighborhoodId,
+    required this.onChanged,
+  });
+
+  final List<Neighborhood> neighborhoods;
+  final int? initialNeighborhoodId;
+  final ValueChanged<int?> onChanged;
+
+  @override
+  State<_NeighborhoodAutocompleteField> createState() =>
+      _NeighborhoodAutocompleteFieldState();
+}
+
+class _NeighborhoodAutocompleteFieldState
+    extends State<_NeighborhoodAutocompleteField> {
+  late TextEditingController _controller;
+  int? _selectedId;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedId = widget.initialNeighborhoodId;
+    _controller = TextEditingController(text: _labelForId(_selectedId));
+  }
+
+  @override
+  void didUpdateWidget(covariant _NeighborhoodAutocompleteField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialNeighborhoodId != widget.initialNeighborhoodId) {
+      _selectedId = widget.initialNeighborhoodId;
+      _controller.text = _labelForId(_selectedId);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String _labelForId(int? id) {
+    if (id == null) return '';
+    return widget.neighborhoods
+            .where((n) => n.id == id)
+            .map((n) => n.name)
+            .firstOrNull ??
+        '';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Autocomplete<Neighborhood>(
+      displayStringForOption: (n) => n.name,
+      optionsBuilder: (textEditingValue) {
+        final query = textEditingValue.text.toLowerCase().trim();
+        if (query.isEmpty) {
+          return widget.neighborhoods;
+        }
+        return widget.neighborhoods.where(
+          (n) => n.name.toLowerCase().contains(query),
+        );
+      },
+      onSelected: (neighborhood) {
+        setState(() {
+          _selectedId = neighborhood.id;
+          _controller.text = neighborhood.name;
+        });
+        widget.onChanged(neighborhood.id);
+        // Fermer le focus pour fermer la dropdown
+        Future.microtask(() {
+          FocusScope.of(context).unfocus();
+        });
+      },
+      fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
+        // Synchronize the controller
+        controller.text = _controller.text;
+
+        return TextFormField(
+          controller: controller,
+          focusNode: focusNode,
+          decoration: InputDecoration(
+            labelText: ReportTexts.neighborhoodLabel,
+            hintText: ReportTexts.selectNeighborhood,
+            border: const OutlineInputBorder(),
+            suffixIcon: _selectedId != null
+                ? IconButton(
+                    icon: const Icon(Icons.close, size: 18),
+                    onPressed: () {
+                      setState(() {
+                        _selectedId = null;
+                        controller.clear();
+                        _controller.clear();
+                      });
+                      widget.onChanged(null);
+                    },
+                    tooltip: ReportTexts.selectNeighborhood,
+                  )
+                : const Icon(Icons.arrow_drop_down, size: 20),
+          ),
+          onTap: () {
+            controller.selection = TextSelection(
+              baseOffset: 0,
+              extentOffset: controller.text.length,
+            );
+          },
+          onFieldSubmitted: (_) => onSubmitted(),
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(8),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: 250,
+                minWidth: MediaQuery.of(context).size.width * 0.3,
+                maxWidth: MediaQuery.of(context).size.width * 0.9,
+              ),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final neighborhood = options.elementAt(index);
+                  final isSelected = neighborhood.id == _selectedId;
+                  return ListTile(
+                    dense: true,
+                    title: Text(neighborhood.name),
+                    selected: isSelected,
+                    onTap: () => onSelected(neighborhood),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
