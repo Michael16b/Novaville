@@ -126,15 +126,15 @@ class ReportViewSet(viewsets.ModelViewSet):
     )
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def update_status(self, request, pk=None):
-        """Update report status (staff only)"""
-        # Check if user is staff
-        if not request.user.is_staff:
+        """Update report status (owner or staff only)"""
+        report = self.get_object()
+        # Check if user is owner or staff
+        if not self._is_owner_or_staff(request.user, report):
             return Response(
-                {'error': 'Only staff members can update report status'},
+                {'error': 'Only the report owner or staff can update report status'},
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        report = self.get_object()
         new_status = request.data.get('status')
         
         if not new_status:

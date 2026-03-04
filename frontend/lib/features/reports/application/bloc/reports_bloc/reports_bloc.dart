@@ -129,6 +129,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     Emitter<ReportsState> emit,
   ) async {
     _filterProblemType = event.problemType;
+    _filterStatus = event.status;
     _filterNeighborhood = event.neighborhood;
     _pageCache.clear();
     await _loadPageWithCache(

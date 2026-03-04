@@ -122,7 +122,7 @@ class ReportCard extends StatelessWidget {
                 ],
               ),
               const Spacer(),
-              if (canModify || isStaff) ...[
+              if (canModify) ...[
                 const Divider(height: 20),
                 _buildActions(context, canModify),
               ],

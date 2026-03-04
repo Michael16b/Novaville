@@ -106,6 +106,20 @@ def report(citizen_user, neighborhood):
 
 
 @pytest.fixture
+def other_citizen_client(api_client, neighborhood):
+    """API client authenticated as a second citizen who does not own any reports"""
+    other_citizen = User.objects.create_user(
+        username="othercitizen",
+        email="othercitizen@test.com",
+        password="TestPass123",
+        role=RoleEnum.CITIZEN,
+        neighborhood=neighborhood,
+    )
+    api_client.force_authenticate(user=other_citizen)
+    return api_client
+
+
+@pytest.fixture
 def survey(elected_user):
     """Create a test survey"""
     return Survey.objects.create(
