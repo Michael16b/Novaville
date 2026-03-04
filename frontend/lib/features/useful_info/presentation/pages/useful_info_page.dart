@@ -29,8 +29,11 @@ class UsefulInfoPage extends StatelessWidget {
       return state.user?.isGlobalAdmin == true;
     });
 
+    final bg = Colors.grey.shade100;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Infos utiles')),
+      backgroundColor: bg,
+      appBar: null,
       body: BlocBuilder<UsefulInfoBloc, UsefulInfoState>(
         builder: (context, state) {
           if (state is UsefulInfoInitial) {
@@ -51,8 +54,24 @@ class UsefulInfoPage extends StatelessWidget {
           return Stack(
             children: [
               ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                 children: [
+                  // Header style "Signalements"
+                  Text(
+                    'Infos utiles',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Retrouvez les informations pratiques de la ville',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
                   _SectionCard(
                     title: 'Mairie',
                     icon: Icons.location_city_outlined,
@@ -124,20 +143,25 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(icon),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Text(title, style: Theme.of(context).textTheme.titleMedium),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             child,
           ],
         ),
@@ -152,13 +176,23 @@ class _CityHallBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textStyle = Theme.of(context).textTheme.bodyMedium;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(info.cityHallName),
-        Text(info.addressLine1),
-        if ((info.addressLine2 ?? "").isNotEmpty) Text(info.addressLine2!),
-        Text("${info.postalCode} ${info.city}"),
+        Text(info.cityHallName, style: Theme.of(context).textTheme.bodyLarge),
+        const SizedBox(height: 6),
+        Text(info.addressLine1, style: textStyle),
+        if ((info.addressLine2 ?? "").isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(info.addressLine2!, style: textStyle),
+          ),
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Text("${info.postalCode} ${info.city}", style: textStyle),
+        ),
       ],
     );
   }
