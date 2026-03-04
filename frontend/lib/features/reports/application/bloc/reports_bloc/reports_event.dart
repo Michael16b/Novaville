@@ -198,6 +198,7 @@ class ReportsFilterRequested extends ReportsEvent {
     this.status,
     this.problemType,
     this.neighborhood,
+    this.createdAfter,
     this.ordering,
     this.search,
   });
@@ -211,6 +212,9 @@ class ReportsFilterRequested extends ReportsEvent {
   /// Filter by neighborhood ID.
   final int? neighborhood;
 
+  /// Filter by creation date.
+  final DateTime? createdAfter;
+
   /// Current ordering.
   final String? ordering;
 
@@ -222,8 +226,8 @@ class ReportsFilterRequested extends ReportsEvent {
         status,
         problemType,
         neighborhood,
+        createdAfter,
         ordering,
         search,
       ];
 }
-

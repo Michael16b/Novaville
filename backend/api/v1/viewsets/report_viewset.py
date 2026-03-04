@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from core.db.models import Report, User, Neighborhood, RoleEnum, ReportStatusEnum
 from api.v1.serializers.report_serializer import ReportSerializer, ReportCreateSerializer
+from api.v1.filters import ReportFilter
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -19,6 +20,9 @@ from rest_framework.filters import OrderingFilter, SearchFilter
             OpenApiParameter(name='problem_type', description='Filter by problem type', required=False, type=str),
             OpenApiParameter(name='neighborhood', description='Filter by neighborhood ID', required=False, type=int),
             OpenApiParameter(name='search', description='Search in description', required=False, type=str),
+            OpenApiParameter(name='created_after', description='Filter reports created after this datetime (ISO 8601, e.g. 2025-01-01T00:00:00Z)', required=False, type=str),
+            OpenApiParameter(name='created_before', description='Filter reports created before this datetime (ISO 8601, e.g. 2025-12-31T23:59:59Z)', required=False, type=str),
+            OpenApiParameter(name='created_date', description='Filter reports created on this exact date (YYYY-MM-DD)', required=False, type=str),
         ]
     ),
     retrieve=extend_schema(
@@ -59,7 +63,7 @@ class ReportViewSet(viewsets.ModelViewSet):
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = '__all__'
+    filterset_class = ReportFilter
     search_fields = ['description', 'neighborhood__name', 'user__first_name', 'user__last_name']
     ordering_fields = ['created_at']
     ordering = ['-created_at']

@@ -8,6 +8,7 @@ import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/reports/application/bloc/reports_bloc/reports_bloc.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
+import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
 import 'package:frontend/features/reports/data/models/report_status.dart';
 import 'package:frontend/features/reports/data/report_repository.dart';
@@ -16,6 +17,14 @@ import 'package:frontend/features/reports/presentation/widgets/report_card.dart'
 import 'package:frontend/features/reports/presentation/widgets/report_form_dialog.dart';
 import 'package:frontend/features/reports/presentation/widgets/report_status_dialog.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
+
+/// Date filter periods
+enum DateFilterPeriod {
+  all,
+  today,
+  last7Days,
+  last30Days,
+}
 
 /// Reports feature page for citizen reports.
 class ReportsPage extends StatelessWidget {
@@ -61,6 +70,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
   String? _filterStatus;
   String? _filterProblemType;
   int? _filterNeighborhood;
+  DateFilterPeriod _filterDatePeriod = DateFilterPeriod.all;
 
   @override
   void dispose() {
@@ -284,7 +294,8 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
   ) {
     final hasActiveFilter = _filterStatus != null ||
         _filterProblemType != null ||
-        _filterNeighborhood != null;
+        _filterNeighborhood != null ||
+        _filterDatePeriod != DateFilterPeriod.all;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,10 +312,9 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
               ReportTexts.advancedFilters,
               style: Theme.of(context).textTheme.titleSmall,
             ),
-            if (hasActiveFilter) ...[
               const SizedBox(width: 8),
               TextButton.icon(
-                onPressed: _clearAllFilters,
+                onPressed: hasActiveFilter ?_clearAllFilters : null,
                 icon: const Icon(Icons.clear_all, size: 16),
                 label: const Text(ReportTexts.clearFilters),
                 style: TextButton.styleFrom(
@@ -314,13 +324,13 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
                   visualDensity: VisualDensity.compact,
                 ),
               ),
-            ],
           ],
         ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 10,
           runSpacing: 10,
+          crossAxisAlignment: WrapCrossAlignment.start,
           children: [
             _buildFilterChipGroup<String>(
               label: ReportTexts.filterByProblemType,
@@ -357,6 +367,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
               },
             ),
             _buildNeighborhoodFilter(state),
+            _buildDateFilter(),
           ],
         ),
       ],
@@ -418,28 +429,10 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
         ),
         SizedBox(
           width: 250,
-          child: DropdownButtonFormField<int?>(
-            value: _filterNeighborhood,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
-            ),
-            isExpanded: true,
-            items: [
-              const DropdownMenuItem<int?>(
-                child: Text(ReportTexts.allNeighborhoods),
-              ),
-              ...neighborhoods.map(
-                (n) => DropdownMenuItem<int?>(
-                  value: n.id,
-                  child: Text(n.name),
-                ),
-              ),
-            ],
-            onChanged: (value) {
+          child: _NeighborhoodAutocomplete(
+            neighborhoods: neighborhoods,
+            selectedId: _filterNeighborhood,
+            onSelected: (int? value) {
               setState(() => _filterNeighborhood = value);
               _applyFilters();
             },
@@ -449,13 +442,70 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     );
   }
 
+  Widget _buildDateFilter() {
+    final dateOptions = [
+      (label: ReportTexts.allDates, value: DateFilterPeriod.all),
+      (label: ReportTexts.today, value: DateFilterPeriod.today),
+      (label: ReportTexts.last7Days, value: DateFilterPeriod.last7Days),
+      (label: ReportTexts.last30Days, value: DateFilterPeriod.last30Days),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Text(
+            ReportTexts.filterByDate,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.secondaryText,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ),
+        Wrap(
+          spacing: 6,
+          runSpacing: 4,
+          children: dateOptions.map((option) {
+            final isSelected = _filterDatePeriod == option.value;
+            return ChoiceChip(
+              label: Text(option.label),
+              selected: isSelected,
+              onSelected: (_) {
+                setState(() => _filterDatePeriod = option.value);
+                _applyFilters();
+              },
+              visualDensity: VisualDensity.compact,
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
   void _applyFilters() {
     _flushSearchDebounce();
+    
+    DateTime? createdAfter;
+    final now = DateTime.now();
+    
+    switch (_filterDatePeriod) {
+      case DateFilterPeriod.today:
+        createdAfter = DateTime(now.year, now.month, now.day);
+      case DateFilterPeriod.last7Days:
+        createdAfter = now.subtract(const Duration(days: 7));
+      case DateFilterPeriod.last30Days:
+        createdAfter = now.subtract(const Duration(days: 30));
+      case DateFilterPeriod.all:
+        createdAfter = null;
+    }
+
     context.read<ReportsBloc>().add(
           ReportsFilterRequested(
             status: _filterStatus,
             problemType: _filterProblemType,
             neighborhood: _filterNeighborhood,
+            createdAfter: createdAfter,
             ordering: _currentOrdering,
             search: _searchQuery,
           ),
@@ -467,6 +517,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
       _filterStatus = null;
       _filterProblemType = null;
       _filterNeighborhood = null;
+      _filterDatePeriod = DateFilterPeriod.all;
     });
     _applyFilters();
   }
@@ -1134,3 +1185,162 @@ class _ReportCardSkeletonState extends State<_ReportCardSkeleton>
     );
   }
 }
+
+// ─── Neighborhood Autocomplete ────────────────────────────────────
+
+/// Autocomplete widget for selecting a neighborhood with search.
+class _NeighborhoodAutocomplete extends StatefulWidget {
+  const _NeighborhoodAutocomplete({
+    required this.neighborhoods,
+    required this.selectedId,
+    required this.onSelected,
+  });
+
+  /// Available neighborhoods.
+  final List<Neighborhood> neighborhoods;
+
+  /// Currently selected neighborhood ID (null = all).
+  final int? selectedId;
+
+  /// Callback when a neighborhood is selected or cleared.
+  final ValueChanged<int?> onSelected;
+
+  @override
+  State<_NeighborhoodAutocomplete> createState() =>
+      _NeighborhoodAutocompleteState();
+}
+
+class _NeighborhoodAutocompleteState
+    extends State<_NeighborhoodAutocomplete> {
+  late TextEditingController _internalController;
+
+  @override
+  void initState() {
+    super.initState();
+    _internalController = TextEditingController(
+      text: _labelForId(widget.selectedId),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _NeighborhoodAutocomplete oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedId != widget.selectedId) {
+      _internalController.text = _labelForId(widget.selectedId);
+    }
+  }
+
+  @override
+  void dispose() {
+    _internalController.dispose();
+    super.dispose();
+  }
+
+  String _labelForId(int? id) {
+    if (id == null) return '';
+    return widget.neighborhoods
+            .where((n) => n.id == id)
+            .map((n) => n.name)
+            .firstOrNull ??
+        '';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Autocomplete<Neighborhood>(
+      displayStringForOption: (n) => n.name,
+      optionsBuilder: (textEditingValue) {
+        final query = textEditingValue.text.toLowerCase().trim();
+        if (query.isEmpty) {
+          return widget.neighborhoods;
+        }
+        return widget.neighborhoods.where(
+          (n) => n.name.toLowerCase().contains(query),
+        );
+      },
+      onSelected: (neighborhood) {
+        _internalController.text = neighborhood.name;
+        widget.onSelected(neighborhood.id);
+        // Fermer le focus pour fermer la dropdown
+        Future.microtask(() {
+          FocusScope.of(context).unfocus();
+        });
+      },
+      fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
+        // Synchronize the internal controller with Autocomplete's controller
+        controller.text = _internalController.text;
+
+        return SizedBox(
+          height: 32,
+          child: TextFormField(
+            controller: controller,
+            focusNode: focusNode,
+            style: Theme.of(context).textTheme.bodySmall,
+            decoration: InputDecoration(
+              hintText: ReportTexts.allNeighborhoods,
+              hintStyle: Theme.of(context).textTheme.bodySmall,
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              isDense: true,
+              suffixIcon: widget.selectedId != null
+                  ? IconButton(
+                      icon: const Icon(Icons.close, size: 16),
+                      onPressed: () {
+                        controller.clear();
+                        _internalController.clear();
+                        widget.onSelected(null);
+                      },
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      splashRadius: 14,
+                      tooltip: ReportTexts.allNeighborhoods,
+                    )
+                  : const Icon(Icons.arrow_drop_down, size: 18),
+            ),
+            onTap: () {
+              controller.selection = TextSelection(
+                baseOffset: 0,
+                extentOffset: controller.text.length,
+              );
+            },
+            onFieldSubmitted: (_) => onSubmitted(),
+          ),
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(8),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxHeight: 220,
+                maxWidth: 250,
+              ),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final neighborhood = options.elementAt(index);
+                  final isSelected = neighborhood.id == widget.selectedId;
+                  return ListTile(
+                    dense: true,
+                    title: Text(neighborhood.name),
+                    selected: isSelected,
+                    onTap: () => onSelected(neighborhood),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+

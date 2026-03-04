@@ -22,6 +22,7 @@ class ReportRepositoryImpl implements IReportRepository {
     String? status,
     String? problemType,
     int? neighborhood,
+    DateTime? createdAfter,
   }) async {
     var url = '/api/v1/reports/?page=$page';
     if (ordering != null && ordering.isNotEmpty) {
@@ -38,6 +39,9 @@ class ReportRepositoryImpl implements IReportRepository {
     }
     if (neighborhood != null) {
       url += '&neighborhood=$neighborhood';
+    }
+    if (createdAfter != null) {
+      url += '&created_after=${createdAfter.toUtc().toIso8601String()}';
     }
 
     final response = await _apiClient.get(url);
@@ -181,4 +185,3 @@ class ReportRepositoryImpl implements IReportRepository {
     }
   }
 }
-

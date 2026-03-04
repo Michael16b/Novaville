@@ -218,5 +218,20 @@ class ReportTexts {
 
   /// Clear filters button.
   static const clearFilters = 'Réinitialiser les filtres';
+
+  /// Filter by date label.
+  static const filterByDate = 'Période';
+
+  /// All dates option.
+  static const allDates = 'Toutes les dates';
+
+  /// Today option.
+  static const today = "Aujourd'hui";
+
+  /// Last 7 days option.
+  static const last7Days = '7 derniers jours';
+
+  /// Last 30 days option.
+  static const last30Days = '30 derniers jours';
 }
 

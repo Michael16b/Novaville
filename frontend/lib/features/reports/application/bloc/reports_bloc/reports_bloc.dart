@@ -33,6 +33,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   String? _filterStatus;
   String? _filterProblemType;
   int? _filterNeighborhood;
+  DateTime? _filterCreatedAfter;
 
   static const Duration _revalidationInterval = Duration(seconds: 20);
   static const Duration _minimumSkeletonDuration =
@@ -131,6 +132,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     _filterProblemType = event.problemType;
     _filterStatus = event.status;
     _filterNeighborhood = event.neighborhood;
+    _filterStatus = event.status;
+    _filterCreatedAfter = event.createdAfter;
     _pageCache.clear();
     await _loadPageWithCache(
       emit: emit,
@@ -332,6 +335,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       status: _filterStatus,
       problemType: _filterProblemType,
       neighborhood: _filterNeighborhood,
+      createdAfter: _filterCreatedAfter,
     );
     final cached = _pageCache[key];
 
@@ -352,6 +356,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
               status: _filterStatus,
               problemType: _filterProblemType,
               neighborhood: _filterNeighborhood,
+              createdAfter: _filterCreatedAfter,
             );
             _pageCache[key] = _CachedReportPage(
               pageData: freshPage,
@@ -382,6 +387,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         status: _filterStatus,
         problemType: _filterProblemType,
         neighborhood: _filterNeighborhood,
+        createdAfter: _filterCreatedAfter,
       );
       _pageCache[key] = _CachedReportPage(
         pageData: reportPage,
@@ -451,6 +457,7 @@ class _ReportPageCacheKey extends Equatable {
     this.status,
     this.problemType,
     this.neighborhood,
+    this.createdAfter,
   });
 
   final int page;
@@ -459,6 +466,7 @@ class _ReportPageCacheKey extends Equatable {
   final String? status;
   final String? problemType;
   final int? neighborhood;
+  final DateTime? createdAfter;
 
   @override
   List<Object?> get props => [
@@ -468,6 +476,7 @@ class _ReportPageCacheKey extends Equatable {
         status,
         problemType,
         neighborhood,
+        createdAfter,
       ];
 }
 

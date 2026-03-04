@@ -46,6 +46,7 @@ abstract class IReportRepository {
     String? status,
     String? problemType,
     int? neighborhood,
+    DateTime? createdAfter,
   });
 
   /// Retrieves a single report by ID.
@@ -80,4 +81,3 @@ abstract class IReportRepository {
   /// Lists all available neighborhoods.
   Future<List<Neighborhood>> listNeighborhoods();
 }
-
