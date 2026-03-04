@@ -1,4 +1,5 @@
 """Tests for Reports API endpoints"""
+import datetime
 import pytest
 from rest_framework import status
 from core.db.models import Report, ProblemTypeEnum, ReportStatusEnum
@@ -251,8 +252,6 @@ class TestReportsAPI:
 
     def test_created_after_filter(self, authenticated_client, citizen_user, neighborhood):
         """Test filtering reports created after a given datetime"""
-        import datetime
-
         old_report = Report.objects.create(
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
@@ -281,8 +280,6 @@ class TestReportsAPI:
 
     def test_created_before_filter(self, authenticated_client, citizen_user, neighborhood):
         """Test filtering reports created before a given datetime"""
-        import datetime
-
         old_report = Report.objects.create(
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
