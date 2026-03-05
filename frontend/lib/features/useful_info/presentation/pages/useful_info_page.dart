@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_useful_info.dart';
 
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/useful_info/application/bloc/useful_info_bloc.dart';
@@ -29,7 +31,7 @@ class UsefulInfoPage extends StatelessWidget {
       return state.user?.isGlobalAdmin == true;
     });
 
-    final bg = Colors.grey.shade100;
+    final bg = Theme.of(context).scaffoldBackgroundColor;
 
     return Scaffold(
       backgroundColor: bg,
@@ -57,37 +59,51 @@ class UsefulInfoPage extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                 children: [
                   // Header style "Signalements"
-                  Text(
-                    'Infos utiles',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 35,
+                        color: AppColors.primary.withValues(alpha: 0.7),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        UsefulInfoTexts.title,
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    'Retrouvez les informations pratiques de la ville',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey.shade700,
+                  Padding(
+                    padding: const EdgeInsets.only(left: 35),
+                    child: Text(
+                      UsefulInfoTexts.description,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
 
                   _SectionCard(
-                    title: 'Mairie',
+                    title: UsefulInfoTexts.cityHallSection,
                     icon: Icons.location_city_outlined,
                     child: _CityHallBlock(info: info),
                   ),
                   const SizedBox(height: 16),
 
                   _SectionCard(
-                    title: 'Horaires d’ouverture',
+                    title: UsefulInfoTexts.openingHoursSection,
                     icon: Icons.schedule_outlined,
                     child: OpeningHoursTable(openingHours: info.openingHours),
                   ),
                   const SizedBox(height: 16),
 
                   _SectionCard(
-                    title: 'Contact',
+                    title: UsefulInfoTexts.contactSection,
                     icon: Icons.phone_outlined,
                     child: ContactActions(
                       phone: info.phone,
@@ -144,10 +160,12 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
-      color: Colors.white,
+      color: Theme.of(context).cardColor.withOpacity(0.85),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(
+          color: Theme.of(context).dividerColor.withOpacity(0.25),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
