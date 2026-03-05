@@ -31,6 +31,9 @@ class UsefulInfoPage extends StatelessWidget {
       floatingActionButton: isAdmin
           ? FloatingActionButton(
               heroTag: 'useful-info-fab',
+              tooltip: UsefulInfoTexts.edit,
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.white,
               onPressed: () async {
                 final bloc = context.read<UsefulInfoBloc>();
                 final currentState = bloc.state;
@@ -49,7 +52,7 @@ class UsefulInfoPage extends StatelessWidget {
                   bloc.add(UsefulInfoSaved(updated));
                 }
               },
-              child: const Icon(Icons.edit),
+              child: const Icon(Icons.edit_outlined),
             )
           : null,
       body: BlocBuilder<UsefulInfoBloc, UsefulInfoState>(
