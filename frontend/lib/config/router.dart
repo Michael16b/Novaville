@@ -10,7 +10,7 @@ import 'package:frontend/features/home/presentation/pages/home_page.dart';
 import 'package:frontend/features/news/presentation/pages/news_page.dart';
 import 'package:frontend/features/reports/presentation/pages/reports_page.dart';
 import 'package:frontend/features/surveys/presentation/pages/surveys_page.dart';
-import 'package:frontend/features/useful_info/presentation/pages/useful_info_page.dart';
+import 'package:frontend/features/useful_info/presentation/pages/useful_info_page_provider.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/presentation/pages/my_account_page.dart';
 import 'package:frontend/features/users/presentation/pages/user_accounts_page.dart';
@@ -165,7 +165,7 @@ GoRouter buildRouter(AuthBloc authBloc) {
           GoRoute(
             path: AppRoutes.usefulInfo,
             pageBuilder: (context, state) =>
-                _buildPage(state: state, child: const UsefulInfoPage()),
+                _buildPage(state: state, child: const UsefulInfoPageProvider()),
           ),
           GoRoute(
             path: AppRoutes.myAccount,

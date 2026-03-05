@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from core.db.models import (
-    User, Neighborhood, Report, Survey, SurveyOption, 
-    Vote, Event, ThemeEvent
+    User, Neighborhood, Report, Survey, SurveyOption,
+    Vote, Event, ThemeEvent, UsefulInfo
 )
 
 
@@ -82,3 +82,15 @@ class ThemeEventAdmin(admin.ModelAdmin):
     """Admin configuration for ThemeEvent model"""
     list_display = ['id', 'title']
     search_fields = ['title']
+
+@admin.register(UsefulInfo)
+class UsefulInfoAdmin(admin.ModelAdmin):
+    list_display = ("id",)
+
+    def has_add_permission(self, request):
+        # only allow a single row
+        return not UsefulInfo.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        # don't allow deletion via admin
+        return False
