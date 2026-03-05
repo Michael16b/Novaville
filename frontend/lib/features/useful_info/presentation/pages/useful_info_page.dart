@@ -76,7 +76,7 @@ class UsefulInfoPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Padding(
-                    padding: const EdgeInsets.only(left: 35),
+                    padding: const EdgeInsets.only(left: 45),
                     child: Text(
                       UsefulInfoTexts.description,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
