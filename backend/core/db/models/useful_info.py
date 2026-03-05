@@ -74,11 +74,17 @@ class UsefulInfo(models.Model):
         db_table = "useful_info"
 
     def save(self, *args, **kwargs):
-        # enforce singleton: always use primary key 1 regardless of what is passed
+        # enforce singleton
         self.pk = 1
+
         # Sort opening_hours by day order before saving
         if self.opening_hours:
             self.opening_hours = sort_opening_hours(self.opening_hours)
+
+        # If row already exists, avoid INSERT (which would violate UNIQUE pk=1)
+        if type(self).objects.filter(pk=1).exists() and self._state.adding:
+            kwargs["force_update"] = True
+
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
