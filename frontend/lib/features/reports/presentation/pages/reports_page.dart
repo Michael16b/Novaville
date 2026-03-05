@@ -8,7 +8,6 @@ import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/reports/application/bloc/reports_bloc/reports_bloc.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
-import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
 import 'package:frontend/features/reports/data/models/report_status.dart';
 import 'package:frontend/features/reports/data/report_repository.dart';
