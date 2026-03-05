@@ -273,9 +273,8 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(width: 8),
-            if (hasActiveFilter)
               TextButton.icon(
-                onPressed: _clearAllFilters,
+                onPressed: hasActiveFilter ? _clearAllFilters : null,
                 icon: const Icon(Icons.clear_all, size: 16),
                 label: const Text(ReportTexts.clearFilters),
                 style: TextButton.styleFrom(

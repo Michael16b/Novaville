@@ -261,20 +261,18 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
               UserTexts.advancedFilters,
               style: Theme.of(context).textTheme.titleSmall,
             ),
-            if (hasActiveFilter) ...[
-              const SizedBox(width: 8),
-              TextButton.icon(
-                onPressed: _clearAllFilters,
-                icon: const Icon(Icons.clear_all, size: 16),
-                label: const Text(UserTexts.clearFilters),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                  ),
-                  visualDensity: VisualDensity.compact,
+            const SizedBox(width: 8),
+            TextButton.icon(
+              onPressed: hasActiveFilter ? _clearAllFilters : null,
+              icon: const Icon(Icons.clear_all, size: 16),
+              label: const Text(UserTexts.clearFilters),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
                 ),
+                visualDensity: VisualDensity.compact,
               ),
-            ],
+            ),
           ],
         ),
         const SizedBox(height: 8),

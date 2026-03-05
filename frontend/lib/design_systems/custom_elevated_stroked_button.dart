@@ -27,17 +27,17 @@ class CustomElevatedStrokedButton extends StatelessWidget {
       onPressed: isLoading ? null : onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.page,
-        foregroundColor: AppColors.white,
+        foregroundColor: AppColors.primaryText, // Changed to primaryText to match previous behavior or theme
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(8), // Updated to match theme radius
           side: const BorderSide(
             color: AppColors.primary,
             width: 2,
           ),
         ),
         elevation: 2,
-        overlayColor: AppColors.white.withValues(alpha: 0.2),
+        overlayColor: AppColors.primary.withValues(alpha: 0.1), // Adjusted overlay for better feedback on light bg
       ),
       child: isLoading
           ? const SizedBox(
@@ -45,14 +45,14 @@ class CustomElevatedStrokedButton extends StatelessWidget {
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 1,
-                color: AppColors.white,
+                color: AppColors.primary, // Changed to primary for visibility on light bg
               ),
             )
           : (iconAsset == null && iconData == null)
           ? Text(
               text,
               style: const TextStyle(
-                color: AppColors.white,
+                color: AppColors.primaryText, // Explicitly set color if needed
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),

@@ -33,7 +33,15 @@ class AppBanner extends StatelessWidget {
                 child: Row(
                   spacing: 16,
                   children: [
-                    Image.asset(AppAssets.login_logo, height: 70, width: 70),
+                    InkWell(
+                      onTap: () => context.go(AppRoutes.home),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(
+                        AppAssets.login_logo,
+                        height: 70,
+                        width: 70,
+                      ),
+                    ),
                     if (isHomePage)
                       CustomElevatedFlatButton(
                         text: AppTextsNavigation.homeButton,
@@ -74,6 +82,8 @@ class AppBanner extends StatelessWidget {
             PopupMenuButton<String>(
               offset: const Offset(0, 45),
               icon: const Icon(Icons.account_circle_outlined),
+              color: Colors.white, // Force white background
+              surfaceTintColor: Colors.white, // Prevent Material 3 tint
               onSelected: (value) {
                 if (value == 'logout') {
                   context.read<AuthBloc>().add(const AuthLogoutRequested());

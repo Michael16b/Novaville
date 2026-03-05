@@ -8,5 +8,5 @@ class AppTextsGeneral {
   static const String retry = 'Réessayer';
   static const String save = 'Enregistrer';
   static const String saving = 'Enregistrement...';
-  static const String cancel = 'Annuler';
+  static const String reset = 'Réinitialiser';
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_reports.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
@@ -67,6 +68,8 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
         _isEditing ? ReportTexts.save : ReportTexts.create;
 
     return AlertDialog(
+      backgroundColor: AppColors.page, // Force white background
+      surfaceTintColor: AppColors.page, // Prevent Material 3 tint
       title: Text(title),
       content: SizedBox(
         width: 450,
@@ -283,6 +286,8 @@ class _NeighborhoodAutocompleteFieldState
           child: Material(
             elevation: 4,
             borderRadius: BorderRadius.circular(8),
+            color: AppColors.page, // Force white background for dropdown
+            surfaceTintColor: AppColors.page, // Prevent Material 3 tint
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 maxHeight: 250,
@@ -311,4 +316,3 @@ class _NeighborhoodAutocompleteFieldState
     );
   }
 }
-
