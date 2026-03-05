@@ -59,8 +59,6 @@ class UsefulInfoPage extends StatelessWidget {
             return const SizedBox.shrink();
           }
 
-          // Même logique que Reports: écran principal en scroll + overlay éventuellement.
-          // Ici on reste simple: skeleton/loading au centre.
           if (state is UsefulInfoLoading) {
             return const Center(
               child: CircularProgressIndicator(color: AppColors.primary),
@@ -150,7 +148,6 @@ class _SectionCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Text(
                   title,
-                  // 👇 même slot que "Signalements"
                   style:
                       textTheme.titleSmall ??
                       const TextStyle(
@@ -162,7 +159,6 @@ class _SectionCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             DefaultTextStyle.merge(
-              // 👇 force aussi la typo pour le contenu de la carte
               style: textTheme.bodyMedium ?? const TextStyle(fontSize: 14),
               child: child,
             ),

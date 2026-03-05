@@ -19,7 +19,6 @@ class UsefulInfoBloc extends Bloc<UsefulInfoEvent, UsefulInfoState> {
     UsefulInfoRequested event,
     Emitter<UsefulInfoState> emit,
   ) async {
-    // Si déjà chargé, on évite de recharger inutilement
     if (state is UsefulInfoLoaded) return;
 
     emit(const UsefulInfoLoading());
@@ -48,7 +47,6 @@ class UsefulInfoBloc extends Bloc<UsefulInfoEvent, UsefulInfoState> {
     UsefulInfoSaved event,
     Emitter<UsefulInfoState> emit,
   ) async {
-    // On garde l'ancien contenu si on l'a
     final previousInfo = switch (state) {
       UsefulInfoLoaded s => s.info,
       UsefulInfoSaving s => s.info,
@@ -60,11 +58,8 @@ class UsefulInfoBloc extends Bloc<UsefulInfoEvent, UsefulInfoState> {
     try {
       await repository.saveUsefulInfo(event.info);
 
-      // Après save, on affiche l'info sauvegardée.
-      // (Option: re-fetch serveur si tu veux être 100% sync)
       emit(UsefulInfoLoaded(event.info));
     } catch (e) {
-      // En cas d'erreur on revient à l'écran précédent si possible
       if (previousInfo != null) {
         emit(UsefulInfoLoaded(previousInfo));
       } else {
@@ -74,7 +69,6 @@ class UsefulInfoBloc extends Bloc<UsefulInfoEvent, UsefulInfoState> {
   }
 
   String _humanizeError(Object e) {
-    // Tu peux mapper tes erreurs réseau ici
     return e.toString();
   }
 }
