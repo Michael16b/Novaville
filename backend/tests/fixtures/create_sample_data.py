@@ -11,7 +11,7 @@ from django.utils import timezone
 from core.models import (
     User, RoleEnum, Neighborhood, ThemeEvent, Report, 
     ProblemTypeEnum, ReportStatusEnum, Survey, SurveyOption, 
-    Event, Vote
+    Event, Vote, UsefulInfo
 )
 
 print('🚀 Creating sample data for Novaville...\n')
@@ -62,6 +62,36 @@ if RESET_FIXTURE_TABLES:
     Neighborhood.objects.all().delete()
     # Also remove accumulated citizen users so they are recreated fresh
     User.objects.filter(role=RoleEnum.CITIZEN).delete()
+
+# 0. Create useful city information (singleton)
+print('ℹ️ Creating useful city information...')
+useful_info_defaults = {
+    'city_hall_name': 'Mairie de Novaville',
+    'address_line1': '1 Place de l\'Hotel de Ville',
+    'address_line2': '',
+    'postal_code': '75000',
+    'city': 'Novaville',
+    'phone': '+33 1 40 00 00 00',
+    'email': 'contact@novaville.fr',
+    'website': 'https://www.novaville.fr',
+    'opening_hours': {
+        'Lundi': ['09:00-12:00', '13:30-17:30'],
+        'Mardi': ['09:00-12:00', '13:30-17:30'],
+        'Mercredi': ['09:00-12:00', '13:30-17:30'],
+        'Jeudi': ['09:00-12:00', '13:30-17:30'],
+        'Vendredi': ['09:00-12:00', '13:30-16:30'],
+        'Samedi': [],
+        'Dimanche': [],
+    },
+}
+useful_info, useful_info_created = UsefulInfo.objects.update_or_create(
+    pk=1,
+    defaults=useful_info_defaults,
+)
+print(
+    f"  ✓ Useful info: {useful_info.city_hall_name} "
+    f"({'created' if useful_info_created else 'updated'})"
+)
 
 # 1. Create neighborhoods
 print('📍 Creating neighborhoods...')

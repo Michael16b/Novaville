@@ -18,6 +18,12 @@ class UsefulInfoTexts {
   static const titleDescription =
       'Consultez les informations pratiques de la ville';
 
+  /// Empty state title.
+  static const noUsefulInfo = 'Aucune information utile';
+
+  /// Empty state description.
+  static const noUsefulInfoFound = 'Aucune donnée disponible pour le moment';
+
   /// Generic error label (optional, if you want to standardize).
   static const error = 'Erreur';
 

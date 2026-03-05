@@ -70,6 +70,9 @@ class UsefulInfoPage extends StatelessWidget {
           }
 
           final info = (state as UsefulInfoLoaded).info;
+          if (_isInfoEmpty(info)) {
+            return const _EmptyState();
+          }
 
           return SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
@@ -116,6 +119,54 @@ class UsefulInfoPage extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+bool _isInfoEmpty(UsefulInfo info) {
+  final hasContactData =
+      (info.phone ?? '').trim().isNotEmpty ||
+      (info.email ?? '').trim().isNotEmpty ||
+      (info.website ?? '').trim().isNotEmpty;
+  final hasAddressData =
+      info.cityHallName.trim().isNotEmpty ||
+      info.addressLine1.trim().isNotEmpty ||
+      (info.addressLine2 ?? '').trim().isNotEmpty ||
+      info.postalCode.trim().isNotEmpty ||
+      info.city.trim().isNotEmpty;
+  final hasOpeningHours = info.openingHours.entries.any(
+    (entry) => entry.value.any((slot) => slot.trim().isNotEmpty),
+  );
+  final hasAdditionalInfo = (info.additionalInfo ?? '').trim().isNotEmpty;
+
+  return !hasContactData &&
+      !hasAddressData &&
+      !hasOpeningHours &&
+      !hasAdditionalInfo;
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.info_outline, size: 64, color: AppColors.primary),
+          const SizedBox(height: 16),
+          Text(
+            UsefulInfoTexts.noUsefulInfo,
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            UsefulInfoTexts.noUsefulInfoFound,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
       ),
     );
   }
