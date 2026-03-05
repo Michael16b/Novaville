@@ -74,16 +74,21 @@ class UsefulInfo(models.Model):
         db_table = "useful_info"
 
     def save(self, *args, **kwargs):
-        # enforce singleton
+    # enforce singleton
         self.pk = 1
 
         # Sort opening_hours by day order before saving
         if self.opening_hours:
             self.opening_hours = sort_opening_hours(self.opening_hours)
 
-        # If row already exists, avoid INSERT (which would violate UNIQUE pk=1)
-        if type(self).objects.filter(pk=1).exists() and self._state.adding:
-            kwargs["force_update"] = True
+        exists = type(self).objects.filter(pk=1).exists()
+
+        # If create() (or caller) set force_insert=True, remove it when we need update
+        if exists:
+            kwargs.pop("force_insert", None)
+            # If object is in "adding" state, it would try to INSERT -> force UPDATE instead
+            if self._state.adding:
+                kwargs["force_update"] = True
 
         super().save(*args, **kwargs)
 
