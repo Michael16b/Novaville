@@ -64,7 +64,7 @@ class UsefulInfoPage extends StatelessWidget {
                       Icon(
                         Icons.info_outline,
                         size: 35,
-                        color: AppColors.primary.withValues(alpha: 0.7),
+                        color: AppColors.primary.withValues(alpha: 1),
                       ),
                       const SizedBox(width: 10),
                       Text(
