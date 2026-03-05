@@ -11,11 +11,6 @@ class UsefulInfo extends Equatable {
   final String? email;
   final String? website;
 
-  /// Exemple :
-  /// {
-  ///   "Lundi": ["08:30-12:00", "13:30-17:00"],
-  ///   "Samedi": []
-  /// }
   final Map<String, List<String>> openingHours;
 
   final String? additionalInfo;
@@ -32,10 +27,6 @@ class UsefulInfo extends Equatable {
     required this.openingHours,
     this.additionalInfo,
   });
-
-  // =============================
-  // JSON
-  // =============================
 
   factory UsefulInfo.fromJson(Map<String, dynamic> json) {
     // backend uses snake_case for field names
