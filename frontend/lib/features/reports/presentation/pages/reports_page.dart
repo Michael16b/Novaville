@@ -19,6 +19,7 @@ import 'package:frontend/features/reports/presentation/widgets/report_status_dia
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 import 'package:frontend/ui/widgets/neighborhood_autocomplete.dart';
 import 'package:frontend/ui/widgets/neighborhood_filter_skeleton.dart';
+import 'package:frontend/ui/widgets/page_header.dart';
 
 /// Date filter periods
 enum DateFilterPeriod {
@@ -110,7 +111,11 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildAccessibleTitle(context),
+                    const PageHeader(
+                      title: ReportTexts.title,
+                      description: ReportTexts.titleDescription,
+                      icon: Icons.report_outlined,
+                    ),
                     const SizedBox(height: 16),
                     _buildControlsSection(context, state),
                     const SizedBox(height: 12),
@@ -132,54 +137,6 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
             ],
           );
         },
-      ),
-    );
-  }
-
-  // ─── Accessible Title ──────────────────────────────────────────
-
-  Widget _buildAccessibleTitle(BuildContext context) {
-    return Semantics(
-      header: true,
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.report_outlined,
-              size: 22,
-              color: AppColors.primary.withValues(alpha: 0.7),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              ReportTexts.title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primaryText,
-                    letterSpacing: 0.2,
-                  ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              width: 4,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.secondaryText.withValues(alpha: 0.4),
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                ReportTexts.titleDescription,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.secondaryText,
-                    ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1214,4 +1171,3 @@ class _ReportCardSkeletonState extends State<_ReportCardSkeleton>
     );
   }
 }
-
