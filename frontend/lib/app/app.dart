@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/config/router.dart';
-import 'package:frontend/constants/colors.dart';
+import 'package:frontend/config/theme.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -42,11 +42,7 @@ class _AppState extends State<App> {
     return MaterialApp.router(
       routerConfig: _router!,
       title: AppTextsGeneral.appName,
-      theme: ThemeData(
-        fontFamily: 'Montserrat',
-        useMaterial3: true,
-        scaffoldBackgroundColor: AppColors.page,
-      ),
+      theme: AppTheme.lightTheme,
     );
   }
 }

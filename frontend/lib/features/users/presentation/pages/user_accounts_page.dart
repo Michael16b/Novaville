@@ -9,13 +9,13 @@ import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/users/application/bloc/user_accounts_bloc/user_accounts_bloc.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
-import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
 import 'package:frontend/features/users/data/user_repository_factory.dart';
 import 'package:frontend/features/users/presentation/widgets/user_account_card.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 import 'package:frontend/ui/widgets/neighborhood_autocomplete.dart';
 import 'package:frontend/ui/widgets/neighborhood_filter_skeleton.dart';
+import 'package:frontend/ui/widgets/page_header.dart';
 
 /// User Accounts management page - accessible only to GLOBAL_ADMIN.
 ///
@@ -136,7 +136,11 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildAccessibleTitle(context),
+                    const PageHeader(
+                      title: UserTexts.title,
+                      description: UserTexts.titleDescription,
+                      icon: Icons.people_alt_outlined,
+                    ),
                     const SizedBox(height: 16),
                     _buildControlsSection(context, state),
                     const SizedBox(height: 12),
@@ -235,52 +239,6 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     );
   }
 
-  Widget _buildAccessibleTitle(BuildContext context) {
-    return Semantics(
-      header: true,
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.people_alt_outlined,
-              size: 22,
-              color: AppColors.primary.withValues(alpha: 0.7),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              UserTexts.title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primaryText,
-                    letterSpacing: 0.2,
-                  ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              width: 4,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.secondaryText.withValues(alpha: 0.4),
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                UserTexts.titleDescription,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.secondaryText,
-                    ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildAdvancedFilters(
     BuildContext context,
     UserAccountsState state,
@@ -303,20 +261,18 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
               UserTexts.advancedFilters,
               style: Theme.of(context).textTheme.titleSmall,
             ),
-            if (hasActiveFilter) ...[
-              const SizedBox(width: 8),
-              TextButton.icon(
-                onPressed: _clearAllFilters,
-                icon: const Icon(Icons.clear_all, size: 16),
-                label: const Text(UserTexts.clearFilters),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                  ),
-                  visualDensity: VisualDensity.compact,
+            const SizedBox(width: 8),
+            TextButton.icon(
+              onPressed: hasActiveFilter ? _clearAllFilters : null,
+              icon: const Icon(Icons.clear_all, size: 16),
+              label: const Text(UserTexts.clearFilters),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
                 ),
+                visualDensity: VisualDensity.compact,
               ),
-            ],
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -1028,4 +984,3 @@ class _UserCardSkeletonState extends State<_UserCardSkeleton>
     );
   }
 }
-

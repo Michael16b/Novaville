@@ -25,7 +25,7 @@ class CustomElevatedFlatButton extends StatelessWidget {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), // Updated to match theme radius
         elevation: 2,
         overlayColor: AppColors.white.withValues(alpha: 0.2),
       ),
