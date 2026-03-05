@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
+import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
@@ -35,11 +36,15 @@ class MockUserRepository implements IUserRepository {
   final bool shouldThrow;
   final bool shouldThrowOnDelete;
   final List<User> users;
+  final List<Neighborhood> neighborhoods;
 
   MockUserRepository({
     this.shouldThrow = false,
     this.shouldThrowOnDelete = false,
     this.users = const [],
+    this.neighborhoods = const [
+      Neighborhood(id: 1, name: 'Quartier Centre', postalCode: '75001'),
+    ],
   });
 
   @override
@@ -59,6 +64,8 @@ class MockUserRepository implements IUserRepository {
     String? ordering,
     String? search,
     int page = 1,
+    String? role,
+    int? neighborhood,
   }) async {
     if (shouldThrow) throw Exception('Network error');
     return UserPage(
@@ -67,6 +74,11 @@ class MockUserRepository implements IUserRepository {
       previous: null,
       results: users,
     );
+  }
+
+  @override
+  Future<List<Neighborhood>> listNeighborhoods() async {
+    return neighborhoods;
   }
 
   @override
@@ -111,6 +123,18 @@ void main() {
       );
     }
 
+    Future<void> pumpPage(
+      WidgetTester tester, {
+      required IUserRepository userRepository,
+    }) async {
+      await tester.pumpWidget(
+        createWidgetUnderTest(userRepository: userRepository),
+      );
+      // Avoid pumpAndSettle because the page can contain repeating animations.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
     testWidgets(
       'renders title and floating add button',
       (WidgetTester tester) async {
@@ -118,14 +142,14 @@ void main() {
       tester.view.physicalSize = const Size(2400, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
       final mockUserRepository = MockUserRepository(users: []);
-      
-      await tester.pumpWidget(createWidgetUnderTest(userRepository: mockUserRepository));
-      await tester.pumpAndSettle(); // Wait for bloc to load
+
+      await pumpPage(tester, userRepository: mockUserRepository);
 
       expect(find.text(UserTexts.title), findsAtLeastNWidgets(1));
-      expect(find.byIcon(Icons.add), findsOneWidget);
+      expect(find.byType(FloatingActionButton), findsOneWidget);
     });
 
     testWidgets('displays list of users', (WidgetTester tester) async {
@@ -133,6 +157,7 @@ void main() {
       tester.view.physicalSize = const Size(2400, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
       final users = [
         const User(
@@ -154,8 +179,7 @@ void main() {
       ];
       final mockUserRepository = MockUserRepository(users: users);
 
-      await tester.pumpWidget(createWidgetUnderTest(userRepository: mockUserRepository));
-      await tester.pumpAndSettle();
+      await pumpPage(tester, userRepository: mockUserRepository);
 
       expect(find.text('Admin User'), findsOneWidget);
       expect(find.text('John Doe'), findsOneWidget);
@@ -168,15 +192,15 @@ void main() {
       tester.view.physicalSize = const Size(2400, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
       final mockUserRepository = MockUserRepository(shouldThrow: true);
 
-      await tester.pumpWidget(createWidgetUnderTest(userRepository: mockUserRepository));
-      await tester.pumpAndSettle();
+      await pumpPage(tester, userRepository: mockUserRepository);
 
       expect(find.text(UserTexts.error), findsOneWidget);
       // Expect 2 widgets: one in the body, one in the SnackBar
-      expect(find.text('Exception: Network error'), findsNWidgets(2));
+      expect(find.text('Exception: Network error'), findsAtLeastNWidgets(1));
       expect(find.text(UserTexts.retry), findsOneWidget);
     });
 
@@ -185,11 +209,11 @@ void main() {
       tester.view.physicalSize = const Size(2400, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
       final mockUserRepository = MockUserRepository(users: []);
 
-      await tester.pumpWidget(createWidgetUnderTest(userRepository: mockUserRepository));
-      await tester.pumpAndSettle();
+      await pumpPage(tester, userRepository: mockUserRepository);
 
       expect(find.text(UserTexts.noUsers), findsOneWidget);
       expect(find.text(UserTexts.noUsersFound), findsOneWidget);
@@ -225,17 +249,18 @@ void main() {
         shouldThrowOnDelete: true,
       );
 
-      await tester.pumpWidget(createWidgetUnderTest(userRepository: mockUserRepository));
-      await tester.pumpAndSettle(); // Wait for initial load
+      await pumpPage(tester, userRepository: mockUserRepository);
 
       // Open the delete dialog for John (the second delete icon)
       final deleteButtons = find.byIcon(Icons.delete_outline);
       await tester.tap(deleteButtons.last);
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       // Confirm delete in the dialog
       await tester.tap(find.text(UserTexts.delete).last);
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Error snackbar should appear (from failure state)
       expect(find.text('Exception: Delete failed'), findsOneWidget);

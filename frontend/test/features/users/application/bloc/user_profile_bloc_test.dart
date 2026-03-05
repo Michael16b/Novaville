@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/application/bloc/user_profil_bloc/user_profile_bloc.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
@@ -32,7 +33,13 @@ class _FakeUserRepository implements IUserRepository {
   }
 
   @override
-  Future<UserPage> listUsers({String? ordering, String? search, int page = 1}) async {
+  Future<UserPage> listUsers({
+    String? ordering,
+    String? search,
+    int page = 1,
+    String? role,
+    int? neighborhood,
+  }) async {
     if (shouldThrow) throw Exception(errorMessage);
     return UserPage(
       count: 1,
@@ -40,6 +47,11 @@ class _FakeUserRepository implements IUserRepository {
       previous: null,
       results: [userToReturn ?? _defaultUser],
     );
+  }
+
+  @override
+  Future<List<Neighborhood>> listNeighborhoods() async {
+    return [];
   }
 
   @override

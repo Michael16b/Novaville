@@ -1,5 +1,5 @@
 class UserTexts {
-  static const title = 'Gestion des comptes utilisateurs';
+  static const title = 'Comptes utilisateurs';
   static const sortBy = 'Trier par';
   static const search = 'Rechercher';
   static const searchHint = 'Nom, prénom, nom d\'utilisateur ou email';
@@ -39,4 +39,13 @@ class UserTexts {
   static const addMultipleUsersDescription =
       'Ajout groupé de comptes utilisateurs.';
   static const featureComingSoon = editInProgress;
+
+  static const titleDescription =
+      'Gérez les comptes des utilisateurs de la plateforme';
+  static const advancedFilters = 'Filtres avancés';
+  static const filterByRole = 'Rôle';
+  static const allRoles = 'Tous les rôles';
+  static const filterByNeighborhood = 'Quartier';
+  static const allNeighborhoods = 'Tous les quartiers';
+  static const clearFilters = 'Réinitialiser les filtres';
 }

@@ -131,7 +131,7 @@ void main() {
       );
 
       expect(find.text(AppTextsHome.agenda), findsOneWidget);
-      expect(find.byIcon(Icons.calendar_today_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.calendar_month_outlined), findsOneWidget);
     });
 
     testWidgets('renders News menu card with correct icon and title', (WidgetTester tester) async {

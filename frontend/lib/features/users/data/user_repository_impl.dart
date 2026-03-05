@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:frontend/constants/texts/texts_my_account.dart';
 import 'package:frontend/core/network/api_client.dart';
+import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
 
@@ -29,6 +30,8 @@ class UserRepositoryImpl implements IUserRepository {
     String? ordering,
     String? search,
     int page = 1,
+    String? role,
+    int? neighborhood,
   }) async {
     String url = '/api/v1/users/?page=$page';
     if (ordering != null && ordering.isNotEmpty) {
@@ -36,6 +39,12 @@ class UserRepositoryImpl implements IUserRepository {
     }
     if (search != null && search.trim().isNotEmpty) {
       url += '&search=${Uri.encodeQueryComponent(search.trim())}';
+    }
+    if (role != null && role.isNotEmpty) {
+      url += '&role=$role';
+    }
+    if (neighborhood != null) {
+      url += '&neighborhood=$neighborhood';
     }
     final response = await _apiClient.get(url);
 
@@ -87,6 +96,28 @@ class UserRepositoryImpl implements IUserRepository {
     } else {
       throw Exception(
         '${AppTextsProfile.updateProfileError}: ${response.statusCode}',
+      );
+    }
+  }
+
+  @override
+  Future<List<Neighborhood>> listNeighborhoods() async {
+    final response = await _apiClient.get('/api/v1/neighborhoods/');
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final results = data is List
+          ? data
+          : (data as Map<String, dynamic>)['results'] as List? ?? [];
+      return results
+          .map(
+            (json) =>
+                Neighborhood.fromJson(json as Map<String, dynamic>),
+          )
+          .toList();
+    } else {
+      throw Exception(
+        'Failed to fetch neighborhoods: ${response.statusCode}',
       );
     }
   }

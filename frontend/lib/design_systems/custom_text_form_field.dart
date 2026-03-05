@@ -10,6 +10,8 @@ class CustomTextFormField extends StatefulWidget {
     this.obscureText = false,
     this.validator,
     this.isRequired = false,
+    this.textInputAction,
+    this.onFieldSubmitted,
   });
 
   final String? labelText;
@@ -18,6 +20,8 @@ class CustomTextFormField extends StatefulWidget {
   final bool obscureText;
   final FormFieldValidator<String>? validator;
   final bool isRequired;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onFieldSubmitted;
 
   @override
   State<CustomTextFormField> createState() => _CustomTextFormFieldState();
@@ -108,6 +112,8 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           controller: widget.controller,
           obscureText: widget.obscureText,
           keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
+          onFieldSubmitted: widget.onFieldSubmitted,
           decoration: InputDecoration(
             label: widget.labelText != null
                 ? Row(
