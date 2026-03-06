@@ -71,25 +71,22 @@ class WebDropHandler {
         return;
       }
 
-      final reader = html.FileReader();
       final completer = Completer<String>();
-
-      reader.onLoadEnd.listen((_) {
-        final result = reader.result;
-        if (result is String) {
-          completer.complete(result);
-          return;
-        }
-        completer.completeError(Exception(CsvDropTexts.unreadableFile));
-      });
-
-      reader.onError.listen((_) {
-            completer.completeError(
-              Exception(CsvDropTexts.dropReadFailed),
-            );
-      });
-
-      reader.readAsText(file, 'utf-8');
+      final reader = html.FileReader()
+        ..onLoadEnd.listen((_) {
+          final result = reader.result;
+          if (result is String) {
+            completer.complete(result);
+            return;
+          }
+          completer.completeError(Exception(CsvDropTexts.unreadableFile));
+        })
+        ..onError.listen((_) {
+          completer.completeError(
+            Exception(CsvDropTexts.dropReadFailed),
+          );
+        })
+        ..readAsText(file, 'utf-8');
 
       try {
         final content = await completer.future;

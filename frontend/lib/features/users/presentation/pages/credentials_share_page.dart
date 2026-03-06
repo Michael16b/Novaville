@@ -297,7 +297,7 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
                             ),
                           ),
                           onPressed: () async {
-                            const url = 'https://novaville.fr';
+                            const url = CredentialsShareTexts.novavilleUrl;
                             final uri = Uri.parse(url);
                             if (await url_launcher.canLaunchUrl(uri)) {
                               await url_launcher.launchUrl(
@@ -308,12 +308,12 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
                             } else {
                               CustomSnackBar.showError(
                                 context,
-                                'Impossible d’ouvrir le site.',
+                                CredentialsShareTexts.openSiteError,
                               );
                             }
                           },
                           icon: const Icon(Icons.open_in_new),
-                          label: const Text('Accéder au site'),
+                          label: const Text(CredentialsShareTexts.openSiteLabel),
                         ),
                       ),
                     ],

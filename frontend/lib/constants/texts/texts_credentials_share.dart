@@ -1,4 +1,7 @@
 class CredentialsShareTexts {
+  static const novavilleUrl = 'https://novaville.fr';
+  static const openSiteError = 'Impossible d’ouvrir le site.';
+  static const openSiteLabel = 'Accéder au site';
   static const pageTitle = 'Vos accès Novaville';
   static const subtitle =
       'Conservez ces informations de connexion en lieu sûr.';
