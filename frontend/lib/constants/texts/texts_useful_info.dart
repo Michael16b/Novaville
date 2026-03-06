@@ -36,4 +36,16 @@ class UsefulInfoTexts {
   static const emailLabel = 'Email :';
   static const phoneLabel = 'Téléphone :';
   static const websiteLabel = 'Site web :';
+
+  /// Admin edit page title.
+  static const editTitle = 'Modifier Infos utiles';
+
+  /// Form field labels.
+  static const nameLabel = 'Nom';
+  static const addressLabel = 'Adresse';
+  static const postalCodeLabel = 'Code postal';
+  static const cityLabel = 'Ville';
+
+  /// Required field error.
+  static const requiredField = 'Ce champ est obligatoire';
 }
