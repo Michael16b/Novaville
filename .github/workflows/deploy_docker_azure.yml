@@ -77,11 +77,19 @@ jobs:
       - name: Deploy Docker Compose
         env:
           AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
+          DJANGO_SUPERUSER_USERNAME: ${{ secrets.DJANGO_SUPERUSER_USERNAME }}
+          DJANGO_SUPERUSER_EMAIL: ${{ secrets.DJANGO_SUPERUSER_EMAIL }}
+          DJANGO_SUPERUSER_PASSWORD: ${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
         run: |
-          # Substitute ${AZURE_ACR_NAME} in the compose file (only that variable;
-          # all other ${...} references are Azure App Service Application Settings
-          # resolved at container runtime).
-          envsubst '${AZURE_ACR_NAME}' < docker-compose-azure.yml > /tmp/docker-compose-resolved.yml
+          # Substitute all ${VAR} references in the compose file with their values
+          # from the env block above. This ensures secrets reach the containers
+          # reliably without depending on Azure App Service's own variable resolution.
+          envsubst < docker-compose-azure.yml > /tmp/docker-compose-resolved.yml
           az webapp config container set \
             --name NovavilleApp \
             --resource-group Novaville \
