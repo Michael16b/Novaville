@@ -125,7 +125,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
               if (_showLoadingOverlay)
                 Positioned.fill(
                   child: ColoredBox(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: AppColors.overlay,
                     child: const Center(
                       child: CircularProgressIndicator(
                         color: AppColors.primary,
@@ -831,7 +831,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
           const Icon(
             Icons.error_outline,
             size: 64,
-            color: Colors.red,
+            color: AppColors.error,
           ),
           const SizedBox(height: 16),
           Text(

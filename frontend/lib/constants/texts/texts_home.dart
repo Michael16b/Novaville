@@ -8,7 +8,7 @@ class AppTextsHome {
   // Menu card labels
   static const String reports = 'Signalements';
   static const String surveys = 'Sondages';
-  static const String agenda = 'Agenda';
+  static const String agenda = 'Agenda participatif';
   static const String news = 'Actualités';
   static const String myAccount = 'Mon compte';
   static const String usefulInfo = 'Infos utiles';
