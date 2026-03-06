@@ -68,7 +68,16 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
         _isEditing ? ReportTexts.save : ReportTexts.create;
 
     return AlertDialog(
-      title: Text(title),
+      title: Row(
+        children: [
+          Expanded(child: Text(title)),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
+            tooltip: ReportTexts.cancel,
+          ),
+        ],
+      ),
       content: SizedBox(
         width: 450,
         child: Form(

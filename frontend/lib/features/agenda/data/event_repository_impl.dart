@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:frontend/constants/texts/texts_agenda.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/agenda/data/event_repository.dart';
 import 'package:frontend/features/agenda/data/models/community_event.dart';
@@ -26,13 +27,15 @@ class EventRepositoryImpl implements IEventRepository {
           decoded['results'] != null) {
         items = decoded['results'] as List<dynamic>;
       } else {
-        throw Exception('Invalid response format for themes');
+        throw Exception(AgendaTexts.invalidResponseFormat);
       }
       return items
           .map((e) => ThemeItem.fromJson(e as Map<String, dynamic>))
           .toList();
     } else {
-      throw Exception('Failed to load themes: ${response.statusCode}');
+      throw Exception(
+        '${AgendaTexts.fetchThemesError}: ${response.statusCode}',
+      );
     }
   }
 
@@ -70,14 +73,14 @@ class EventRepositoryImpl implements IEventRepository {
         if (decoded['results'] != null) {
           return EventPage.fromJson(decoded);
         }
-        throw Exception('Invalid response format');
+        throw Exception(AgendaTexts.invalidResponseFormat);
       }
       // The /events/ API may return a raw array (without pagination)
       // when the queryset is not paginated.
       if (decoded is List) {
         return EventPage(
-          count: (decoded as List<dynamic>).length,
-          results: (decoded as List<dynamic>)
+          count: decoded.length,
+          results: decoded
               .map(
                 (r) =>
                     CommunityEvent.fromJson(r as Map<String, dynamic>),
@@ -85,10 +88,10 @@ class EventRepositoryImpl implements IEventRepository {
               .toList(),
         );
       }
-      throw Exception('Invalid response format');
+      throw Exception(AgendaTexts.invalidResponseFormat);
     } else {
       throw Exception(
-        'Failed to load events: ${response.statusCode}',
+        '${AgendaTexts.fetchEventsError}: ${response.statusCode}',
       );
     }
   }
@@ -102,7 +105,7 @@ class EventRepositoryImpl implements IEventRepository {
       return CommunityEvent.fromJson(json);
     } else {
       throw Exception(
-        'Failed to load event: ${response.statusCode}',
+        '${AgendaTexts.fetchEventError}: ${response.statusCode}',
       );
     }
   }
@@ -130,7 +133,7 @@ class EventRepositoryImpl implements IEventRepository {
 
     if (response.statusCode != 201) {
       throw Exception(
-        'Failed to create event: ${response.statusCode}',
+        '${AgendaTexts.createEventError}: ${response.statusCode}',
       );
     }
   }
@@ -165,7 +168,7 @@ class EventRepositoryImpl implements IEventRepository {
       return CommunityEvent.fromJson(json);
     } else {
       throw Exception(
-        'Failed to update event: ${response.statusCode}',
+        '${AgendaTexts.updateEventError}: ${response.statusCode}',
       );
     }
   }
@@ -177,7 +180,7 @@ class EventRepositoryImpl implements IEventRepository {
 
     if (response.statusCode != 204) {
       throw Exception(
-        'Failed to delete event: ${response.statusCode}',
+        '${AgendaTexts.deleteEventError}: ${response.statusCode}',
       );
     }
   }

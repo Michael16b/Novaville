@@ -37,24 +37,19 @@ enum EventTheme {
 
   /// Creates an [EventTheme] from a backend string value.
   ///
-  /// Supports the enum key ('SPORT'), the French display label
-  /// ('Citoyenneté') and the English label ('Citizenship')
-  /// returned by the backend in `theme_detail.title`.
+  /// Matches against the enum key ('SPORT'), the Dart name ('sport'),
+  /// and the display label ('Citoyenneté') — all case-insensitive.
+  /// Falls back to [EventTheme.other] if no match is found.
   static EventTheme fromString(String value) {
     final normalized = value.trim().toLowerCase();
-    const lookup = <String, EventTheme>{
-      // Keys
-      'sport': EventTheme.sport,
-      'culture': EventTheme.culture,
-      'citizenship': EventTheme.citizenship,
-      'environment': EventTheme.environment,
-      'other': EventTheme.other,
-      // French labels
-      'citoyenneté': EventTheme.citizenship,
-      'environnement': EventTheme.environment,
-      'autre': EventTheme.other,
-    };
-    return lookup[normalized] ?? EventTheme.other;
+    for (final theme in EventTheme.values) {
+      if (theme.value.toLowerCase() == normalized ||
+          theme.label.toLowerCase() == normalized ||
+          theme.name.toLowerCase() == normalized) {
+        return theme;
+      }
+    }
+    return EventTheme.other;
   }
 
   /// Converts the enum to a string for the backend.

@@ -1,3 +1,5 @@
+import 'package:frontend/constants/texts/texts_general.dart';
+
 /// Text constants for the participatory agenda feature.
 /// Variable names are in English, values in French.
 class AgendaTexts {
@@ -7,8 +9,9 @@ class AgendaTexts {
   static const title = 'Agenda participatif';
 
   /// Page description.
-  static const titleDescription =
-      'Découvrez et participez aux événements de Novaville';
+  static String get titleDescription =>
+      'Découvrez et participez aux événements de '
+      '${AppTextsGeneral.appName}';
 
   /// Create event action label.
   static const createEvent = 'Créer un événement';
@@ -177,5 +180,55 @@ class AgendaTexts {
 
   /// Calendar format: week.
   static const formatWeek = 'Semaine';
-}
 
+  /// Upcoming events section title.
+  static const upcomingEvents = 'Événements à venir';
+
+  /// Upcoming events section description.
+  static String get upcomingEventsDescription =>
+      'Les prochains événements de ${AppTextsGeneral.appName}';
+
+  /// No upcoming events message.
+  static const noUpcomingEvents = 'Aucun événement à venir';
+
+  /// Day events modal title prefix.
+  static const eventsOf = 'Événements du';
+
+  /// Close button label.
+  static const close = 'Fermer';
+
+  /// Previous page tooltip.
+  static const previousPage = 'Page précédente';
+
+  /// Next page tooltip.
+  static const nextPage = 'Page suivante';
+
+  // ─── Repository error messages ─────────────────────────────────
+
+  /// Invalid API response format.
+  static const invalidResponseFormat = 'Format de réponse invalide';
+
+  /// Error loading themes.
+  static const fetchThemesError =
+      'Erreur lors du chargement des thématiques';
+
+  /// Error loading events.
+  static const fetchEventsError =
+      'Erreur lors du chargement des événements';
+
+  /// Error loading event detail.
+  static const fetchEventError =
+      "Erreur lors du chargement de l'événement";
+
+  /// Error creating an event.
+  static const createEventError =
+      "Erreur lors de la création de l'événement";
+
+  /// Error updating an event.
+  static const updateEventError =
+      "Erreur lors de la mise à jour de l'événement";
+
+  /// Error deleting an event.
+  static const deleteEventError =
+      "Erreur lors de la suppression de l'événement";
+}

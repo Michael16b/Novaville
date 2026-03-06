@@ -27,7 +27,16 @@ class _ReportStatusDialogState extends State<ReportStatusDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text(ReportTexts.updateStatus),
+      title: Row(
+        children: [
+          const Expanded(child: Text(ReportTexts.updateStatus)),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
+            tooltip: ReportTexts.cancel,
+          ),
+        ],
+      ),
       content: SizedBox(
         width: 350,
         child: Column(
