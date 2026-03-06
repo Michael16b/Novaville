@@ -39,6 +39,32 @@ class TestAllowedHosts:
             "novavilleapp.azurewebsites.net must be in ALLOWED_HOSTS"
         )
 
+    def test_azure_random_subdomain_is_covered_by_wildcard(self):
+        """Random Azure subdomains must be matched by a wildcard pattern in ALLOWED_HOSTS.
+
+        Azure App Service assigns a unique subdomain on every new deployment
+        (e.g. novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net).
+        The '.azurewebsites.net' entry (leading period = Django subdomain wildcard)
+        covers all such hostnames without requiring a code change when Azure
+        regenerates the subdomain.
+
+        The hostname used below is a representative example; any Azure-assigned
+        subdomain under azurewebsites.net will match the same wildcard pattern,
+        so this test remains valid even after a redeployment changes the hash part.
+
+        Note: '*.azurewebsites.net' is NOT a valid Django pattern — only a leading
+        period acts as a wildcard in ALLOWED_HOSTS.
+        """
+        from django.http.request import validate_host
+
+        representative_azure_host = (
+            "novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net"
+        )
+        assert validate_host(representative_azure_host, settings.ALLOWED_HOSTS), (
+            f"ALLOWED_HOSTS must match Azure random subdomains like '{representative_azure_host}'. "
+            "Add '.azurewebsites.net' (leading period) to ALLOWED_HOSTS."
+        )
+
     def test_docker_internal_backend_alias_is_allowed(self):
         """The 'backend' alias is used by Nginx to proxy to Django inside Docker."""
         assert "backend" in settings.ALLOWED_HOSTS

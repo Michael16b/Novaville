@@ -17,10 +17,11 @@ ALLOWED_HOSTS_ENV = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1"
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_ENV.split(",") if host.strip()]
 
 # Add Azure wildcard patterns for Web Apps
+# Django subdomain wildcards use a leading period (e.g. '.example.com' matches
+# 'sub.example.com'). The '*.' prefix is NOT a valid Django pattern.
 ALLOWED_HOSTS.extend([
     'novavilleapp.azurewebsites.net',
-    'novavilleapp-*.azurewebsites.net',  # Support for Azure random subdomains
-    '*.francecentral-01.azurewebsites.net',  # Support for region-specific subdomains
+    '.azurewebsites.net',  # Covers all Azure-assigned subdomains (e.g. novavilleapp-<hash>.francecentral-01.azurewebsites.net)
     'localhost',
     '127.0.0.1',
     'backend',  # For internal Docker network calls
