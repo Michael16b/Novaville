@@ -43,6 +43,7 @@ class EventRepositoryImpl implements IEventRepository {
     int page = 1,
     int? theme,
     DateTime? startDateGte,
+    DateTime? startDateLte,
   }) async {
     var url = '/api/v1/events/?page=$page';
     if (ordering != null && ordering.isNotEmpty) {
@@ -56,6 +57,9 @@ class EventRepositoryImpl implements IEventRepository {
     }
     if (startDateGte != null) {
       url += '&start_date__gte=${startDateGte.toUtc().toIso8601String()}';
+    }
+    if (startDateLte != null) {
+      url += '&start_date__lte=${startDateLte.toUtc().toIso8601String()}';
     }
 
     final response = await _apiClient.get(url);

@@ -7,11 +7,15 @@ import 'package:frontend/core/bloc/app_bloc_observer.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
 import 'package:frontend/features/auth/data/auth_repository_factory.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: '.env');
+  await dotenv.load();
+
+  // Initialize French locale for table_calendar day/month names.
+  await initializeDateFormatting('fr_FR');
 
   Bloc.observer = AppBlocObserver();
   runApp(

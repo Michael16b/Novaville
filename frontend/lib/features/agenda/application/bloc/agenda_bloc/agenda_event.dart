@@ -60,27 +60,6 @@ class AgendaSortRequested extends AgendaEvent {
   List<Object?> get props => [column, ascending, search];
 }
 
-/// Event to request a specific page.
-class AgendaPageRequested extends AgendaEvent {
-  /// Creates an [AgendaPageRequested].
-  const AgendaPageRequested({
-    required this.page,
-    this.ordering,
-    this.search,
-  });
-
-  /// Page number.
-  final int page;
-
-  /// Ordering field.
-  final String? ordering;
-
-  /// Current search query.
-  final String? search;
-
-  @override
-  List<Object?> get props => [page, ordering, search];
-}
 
 /// Event to refresh the events list.
 class AgendaRefreshRequested extends AgendaEvent {
