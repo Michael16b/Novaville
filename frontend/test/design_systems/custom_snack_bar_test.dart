@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/constants/colors.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 
 void main() {
@@ -29,7 +30,7 @@ void main() {
       final snackBarFinder = find.byType(SnackBar);
       expect(snackBarFinder, findsOneWidget);
       final snackBar = tester.widget<SnackBar>(snackBarFinder);
-      expect(snackBar.backgroundColor, Colors.green);
+      expect(snackBar.backgroundColor, AppColors.success);
     });
 
     testWidgets('showError displays correct snackbar', (WidgetTester tester) async {
@@ -55,7 +56,7 @@ void main() {
       final snackBarFinder = find.byType(SnackBar);
       expect(snackBarFinder, findsOneWidget);
       final snackBar = tester.widget<SnackBar>(snackBarFinder);
-      expect(snackBar.backgroundColor, Colors.red);
+      expect(snackBar.backgroundColor, AppColors.error);
     });
 
     testWidgets('showInfo displays correct snackbar', (WidgetTester tester) async {
@@ -81,7 +82,7 @@ void main() {
       final snackBarFinder = find.byType(SnackBar);
       expect(snackBarFinder, findsOneWidget);
       final snackBar = tester.widget<SnackBar>(snackBarFinder);
-      expect(snackBar.backgroundColor, Colors.blue);
+      expect(snackBar.backgroundColor, AppColors.info);
     });
 
     testWidgets('showWarning displays correct snackbar', (WidgetTester tester) async {
@@ -107,7 +108,7 @@ void main() {
       final snackBarFinder = find.byType(SnackBar);
       expect(snackBarFinder, findsOneWidget);
       final snackBar = tester.widget<SnackBar>(snackBarFinder);
-      expect(snackBar.backgroundColor, Colors.orange);
+      expect(snackBar.backgroundColor, AppColors.warning);
     });
   });
 }
