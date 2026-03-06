@@ -134,12 +134,12 @@ void main() {
   group('AgendaBloc', () {
     // ── Initial state ──────────────────────────────────────────────────────
 
-    test('initial state is AgendaStatus.initial with empty events', () {
+    test('initial state is AgendaStatus.initial with empty events', () async {
       final bloc = AgendaBloc(repository: _FakeEventRepository());
       expect(bloc.state.status, AgendaStatus.initial);
       expect(bloc.state.events, isEmpty);
       expect(bloc.state.error, isNull);
-      bloc.close();
+      await bloc.close();
     });
 
     // ── Load – success path ────────────────────────────────────────────────
@@ -227,16 +227,16 @@ void main() {
 
     // ── resolveThemeId ─────────────────────────────────────────────────────
 
-    test('resolveThemeId returns null for null input', () {
+    test('resolveThemeId returns null for null input', () async {
       final bloc = AgendaBloc(repository: _FakeEventRepository());
       expect(bloc.resolveThemeId(null), isNull);
-      bloc.close();
+      await bloc.close();
     });
 
-    test('resolveThemeId returns null when no themes are cached', () {
+    test('resolveThemeId returns null when no themes are cached', () async {
       final bloc = AgendaBloc(repository: _FakeEventRepository());
       expect(bloc.resolveThemeId('Sport'), isNull);
-      bloc.close();
+      await bloc.close();
     });
 
     test('resolveThemeId matches French label case-insensitively', () async {

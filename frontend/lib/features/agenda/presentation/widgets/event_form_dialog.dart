@@ -117,26 +117,30 @@ class _EventFormDialogState extends State<EventFormDialog> {
                 const SizedBox(height: 12),
 
                 // Theme
-                DropdownButtonFormField<EventTheme>(
-                  initialValue: _selectedTheme,
+                DropdownButtonFormField<EventTheme?>(
+                  value: _selectedTheme,
                   decoration: const InputDecoration(
                     labelText: AgendaTexts.themeLabel,
                   ),
-                  items: EventTheme.values
-                      .map(
-                        (t) => DropdownMenuItem<EventTheme>(
-                          value: t,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(t.icon, size: 18),
-                              const SizedBox(width: 8),
-                              Text(t.label),
-                            ],
-                          ),
+                  items: [
+                    const DropdownMenuItem<EventTheme?>(
+                      value: null,
+                      child: Text(AgendaTexts.noTheme),
+                    ),
+                    ...EventTheme.values.map(
+                      (t) => DropdownMenuItem<EventTheme?>(
+                        value: t,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(t.icon, size: 18),
+                            const SizedBox(width: 8),
+                            Text(t.label),
+                          ],
                         ),
-                      )
-                      .toList(),
+                      ),
+                    ),
+                  ],
                   onChanged: (value) =>
                       setState(() => _selectedTheme = value),
                 ),

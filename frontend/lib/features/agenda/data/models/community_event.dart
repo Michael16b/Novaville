@@ -25,8 +25,8 @@ class CommunityEvent extends Equatable {
       id: json['id'] as int,
       title: json['title'] as String,
       description: json['description'] as String,
-      startDate: DateTime.parse(json['start_date'] as String),
-      endDate: DateTime.parse(json['end_date'] as String),
+      startDate: DateTime.parse(json['start_date'] as String).toLocal(),
+      endDate: DateTime.parse(json['end_date'] as String).toLocal(),
       createdBy: User.fromJson(json['created_by'] as Map<String, dynamic>),
       themeId: json['theme'] as int?,
       theme: json['theme_detail'] != null

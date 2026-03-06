@@ -203,6 +203,9 @@ class AgendaTexts {
   /// Next page tooltip.
   static const nextPage = 'Page suivante';
 
+  /// No theme option label.
+  static const noTheme = 'Aucune thématique';
+
   // ─── Repository error messages ─────────────────────────────────
 
   /// Invalid API response format.
