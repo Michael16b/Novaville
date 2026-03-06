@@ -1,6 +1,6 @@
 FROM python:3.12-slim AS backend
 
-# 1. Variables techniques (OK de les laisser ici)
+# 1. Variables techniques
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -36,7 +36,6 @@ RUN set -eux; \
 # 4. Préparation des dossiers
 RUN mkdir -p "$DJANGO_STATIC_ROOT" "$DJANGO_MEDIA_ROOT" && chown -R app:app /app
 
-# --- NOTE : J'AI SUPPRIMÉ LE GROS BLOC ENV DB_... ICI ---
 # Azure injectera ces variables au runtime.
 
 VOLUME ["/app/staticfiles", "/app/media"]
