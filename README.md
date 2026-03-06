@@ -142,15 +142,26 @@ docker compose down --volumes
 
 ### GitHub Secrets (CI/CD)
 
-If you deploy from GitHub Actions, add these secrets in the repository settings:
+If you deploy from GitHub Actions, add these secrets in the **"Azure Cloud" GitHub Environment** (Settings → Environments → Azure Cloud):
 
-- `DJANGO_SECRET_KEY`
-- `JWT_SIGNING_KEY`
-- `AZURE_APP_URL` — the public URL of your Azure App Service (e.g. `https://novavilleapp.azurewebsites.net`). This is baked into the Flutter web build at compile time and used by the frontend to reach the backend API.
+**Azure infrastructure**
+- `AZURE_CREDENTIALS` — service principal JSON for `azure/login`
+- `AZURE_ACR_NAME` — Azure Container Registry name (without `.azurecr.io`)
+- `AZURE_ACR_USERNAME` — ACR username
+- `AZURE_ACR_PASSWORD` — ACR password
+- `AZURE_APP_URL` — public URL of your Azure App Service (e.g. `https://novavilleapp.azurewebsites.net`). Baked into the Flutter web build at compile time.
 
-Keep your existing Azure secrets (`AZURE_*`) as they are.
+**Application secrets** — pushed automatically to Azure App Service Application Settings on every deploy:
+- `DJANGO_SECRET_KEY` — Django secret key (at least 50 random characters)
+- `JWT_SIGNING_KEY` — JWT signing key (at least 50 random characters)
+- `DB_NAME` — PostgreSQL database name
+- `DB_USER` — PostgreSQL username
+- `DB_PASSWORD` — PostgreSQL password
+- `DJANGO_SUPERUSER_USERNAME` — Django admin username (e.g. `admin`)
+- `DJANGO_SUPERUSER_EMAIL` — Django admin e-mail
+- `DJANGO_SUPERUSER_PASSWORD` — Django admin password (strong, unique)
 
-If you use the "Azure Cloud" GitHub Environment, store these secrets there and make sure the workflow targets that environment so the secrets are injected at deploy time.
+The deploy workflow calls `az webapp config appsettings set` with all application secrets before starting the containers, so no manual configuration in the Azure Portal is required.
 
 ---
 
