@@ -65,16 +65,19 @@ class EventRepositoryImpl implements IEventRepository {
     final response = await _apiClient.get(url);
 
     if (response.statusCode == 200) {
-      final json = jsonDecode(response.body) as Map<String, dynamic>;
-      if (json['results'] != null) {
-        return EventPage.fromJson(json);
+      final decoded = jsonDecode(response.body);
+      if (decoded is Map<String, dynamic>) {
+        if (decoded['results'] != null) {
+          return EventPage.fromJson(decoded);
+        }
+        throw Exception('Invalid response format');
       }
       // The /events/ API may return a raw array (without pagination)
       // when the queryset is not paginated.
-      if (json is List) {
+      if (decoded is List) {
         return EventPage(
-          count: (json as List<dynamic>).length,
-          results: (json as List<dynamic>)
+          count: (decoded as List<dynamic>).length,
+          results: (decoded as List<dynamic>)
               .map(
                 (r) =>
                     CommunityEvent.fromJson(r as Map<String, dynamic>),
