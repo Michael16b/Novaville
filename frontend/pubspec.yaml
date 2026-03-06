@@ -35,6 +35,8 @@ dependencies:
   file_picker: ^10.3.2
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   flutter_bloc: ^8.1.4
   flutter_dotenv: ^5.1.0
   flutter_secure_storage: ^8.0.0
@@ -53,8 +55,6 @@ dependencies:
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1
   flutter_test:
-    sdk: flutter
-  flutter_localizations:
     sdk: flutter
 
   # The "very_good_analysis" package below contains a set of recommended lints to

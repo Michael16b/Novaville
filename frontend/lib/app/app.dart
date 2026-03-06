@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:frontend/config/router.dart';
 import 'package:frontend/config/theme.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
@@ -43,6 +44,15 @@ class _AppState extends State<App> {
       routerConfig: _router!,
       title: AppTextsGeneral.appName,
       theme: AppTheme.lightTheme,
+      locale: const Locale('fr', 'FR'),
+      supportedLocales: const [
+        Locale('fr', 'FR'),
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
     );
   }
 }
