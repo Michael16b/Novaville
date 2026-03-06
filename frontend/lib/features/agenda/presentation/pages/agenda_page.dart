@@ -471,9 +471,9 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
 
           // Calendar format button labels
           availableCalendarFormats: const {
-            CalendarFormat.month: AgendaTexts.format2Weeks,
-            CalendarFormat.twoWeeks: AgendaTexts.formatWeek,
-            CalendarFormat.week: AgendaTexts.formatMonth,
+            CalendarFormat.month: AgendaTexts.formatMonth,
+            CalendarFormat.twoWeeks: AgendaTexts.format2Weeks,
+            CalendarFormat.week: AgendaTexts.formatWeek,
           },
 
           // ── Styling ──
