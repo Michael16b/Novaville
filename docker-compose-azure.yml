@@ -56,8 +56,11 @@ services:
   frontend:
     image: novaville.azurecr.io/novaville-frontend:latest
     container_name: frontend
-    environment:
-      - FLUTTER_BACKEND_API=https://novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net
+    # NOTE: FLUTTER_BACKEND_API / API_BASE_URL are compile-time constants baked into
+    # the Flutter web build (--dart-define). They CANNOT be changed at runtime via
+    # environment variables. To update the backend URL, rebuild the image with the
+    # correct --build-arg FLUTTER_BACKEND_API=<url> passed to docker build (see the
+    # AZURE_APP_URL secret in the GitHub Actions workflow).
     ports:
       - "80:8080"
     networks:

@@ -18,11 +18,14 @@ ARG API_URL
 ARG ENVIRONMENT=production
 
 # --- SOLUTION AU PROBLÈME .ENV ---
-# On crée un fichier .env minimaliste pour satisfaire le compilateur Flutter
-# même si le fichier physique est absent du repo.
+# On crée un fichier .env avec la clé API_BASE_URL que AppConfig lit via flutter_dotenv.
+# FLUTTER_BACKEND_API (ou API_URL) doit être fourni comme build-arg au moment du build Docker
+# (ex: --build-arg FLUTTER_BACKEND_API=https://mondomaine.com).
+# Ne pas tenter de le surcharger via une variable d'environnement runtime : les valeurs
+# String.fromEnvironment et les assets Flutter sont figés à la compilation.
 RUN touch .env && \
   BACKEND_API="${FLUTTER_BACKEND_API:-${API_URL:-http://localhost:8000}}" && \
-  echo "FLUTTER_BACKEND_API=${BACKEND_API}" > .env && \
+  echo "API_BASE_URL=${BACKEND_API}" > .env && \
   echo "ENVIRONMENT=${ENVIRONMENT}" >> .env
 
 # Configuration et build web release

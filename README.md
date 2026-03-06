@@ -146,6 +146,7 @@ If you deploy from GitHub Actions, add these secrets in the repository settings:
 
 - `DJANGO_SECRET_KEY`
 - `JWT_SIGNING_KEY`
+- `AZURE_APP_URL` — the public URL of your Azure App Service (e.g. `https://novavilleapp.azurewebsites.net`). This is baked into the Flutter web build at compile time and used by the frontend to reach the backend API.
 
 Keep your existing Azure secrets (`AZURE_*`) as they are.
 
