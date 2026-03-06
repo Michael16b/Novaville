@@ -103,21 +103,26 @@ jobs:
             exit 1
           }
 
-      # ── No hardcoded Azure hostname in the deploy workflow ───────────────
-      # The Azure App Service URL must come from the AZURE_APP_URL secret so
-      # it can be updated without a code change when the hostname changes.
-      - name: Deploy workflow must use AZURE_APP_URL secret (not a hardcoded URL)
+      # ── No hardcoded or secret-driven Azure hostname in the deploy workflow ─
+      # The frontend must be built WITHOUT a FLUTTER_BACKEND_API build-arg so
+      # it uses relative API URLs (/api/...) that the browser resolves against
+      # the current page origin. Nginx proxies /api/ to the backend container.
+      # This approach is domain-agnostic: it works regardless of which Azure
+      # subdomain is assigned, eliminating the root cause of the login failure.
+      - name: Deploy workflow must use relative API URLs (no FLUTTER_BACKEND_API URL)
         run: |
-          grep -q 'AZURE_APP_URL' .github/workflows/deploy_docker_azure.yml || {
-            echo "ERROR: .github/workflows/deploy_docker_azure.yml must pass"
-            echo "       \${{ secrets.AZURE_APP_URL }} as FLUTTER_BACKEND_API build-arg."
-            echo "       A hardcoded hostname cannot be changed without a code commit."
+          # Reject any hardcoded http(s):// URL passed as FLUTTER_BACKEND_API
+          if grep 'FLUTTER_BACKEND_API' .github/workflows/deploy_docker_azure.yml | grep -qE 'https?://'; then
+            echo "ERROR: deploy_docker_azure.yml sets FLUTTER_BACKEND_API to a hardcoded URL."
+            echo "       Remove --build-arg FLUTTER_BACKEND_API. The frontend must use"
+            echo "       relative URLs (/api/...) proxied by Nginx to the backend container."
+            echo "       A hardcoded URL breaks whenever Azure regenerates the app subdomain."
             exit 1
-          }
-          # Also verify the known-bad hardcoded value is NOT present
-          if grep -q '"https://novavilleapp.azurewebsites.net"' .github/workflows/deploy_docker_azure.yml; then
-            echo "ERROR: Hardcoded Azure URL found in deploy_docker_azure.yml."
-            echo "       Replace it with \${{ secrets.AZURE_APP_URL }}."
+          fi
+          # Reject any secret-driven URL passed as FLUTTER_BACKEND_API
+          if grep -qF 'FLUTTER_BACKEND_API="${{ secrets.' .github/workflows/deploy_docker_azure.yml; then
+            echo "ERROR: deploy_docker_azure.yml passes FLUTTER_BACKEND_API via a secret."
+            echo "       Remove --build-arg FLUTTER_BACKEND_API. Use relative URLs instead."
             exit 1
           fi
 
