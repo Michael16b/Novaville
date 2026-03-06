@@ -969,7 +969,16 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text(ReportTexts.confirmDeleteTitle),
+        title: Row(
+          children: [
+            const Expanded(child: Text(ReportTexts.confirmDeleteTitle)),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.pop(dialogContext),
+              tooltip: ReportTexts.cancel,
+            ),
+          ],
+        ),
         content: const Text(
           '${ReportTexts.confirmDelete}\n\n'
           '${ReportTexts.irreversible}',

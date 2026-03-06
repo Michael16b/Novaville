@@ -6,12 +6,6 @@ import 'package:frontend/features/agenda/data/models/community_event.dart';
 part 'agenda_event.dart';
 part 'agenda_state.dart';
 
-/// BLoC for managing the participatory agenda.
-///
-/// Handles loading, searching, theme filtering,
-/// creation, update and deletion of events.
-/// For the calendar view, all pages are fetched in a loop
-/// (the Django backend returns a fixed page size of 20).
 class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
   /// Creates an [AgendaBloc].
   AgendaBloc({required IEventRepository repository})

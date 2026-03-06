@@ -31,25 +31,25 @@ class HomePage extends StatelessWidget {
               slivers: [
                 SliverToBoxAdapter(
                   child: Column(
-                    children: const [
-                      SizedBox(height: 24),
+                    children: [
+                      const SizedBox(height: 24),
                       Text(
                         AppTextsHome.homeTitle,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           fontStyle: FontStyle.italic,
                           color: AppColors.primary,
                         ),
                       ),
-                      SizedBox(height: 8),
-                      Text(
+                      const SizedBox(height: 8),
+                      const Text(
                         AppTextsHome.homeSubtitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 24, color: AppColors.secondaryText),
                       ),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),

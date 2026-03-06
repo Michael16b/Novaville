@@ -160,12 +160,20 @@ class EventCard extends StatelessWidget {
       runSpacing: 4,
       children: [
         // "Add to my calendar" button — visible to all users
+        // Styled in blue (AppColors.info) to match the info snackbar.
         TextButton.icon(
           onPressed: onAddToCalendar != null
               ? () => onAddToCalendar!(event)
               : null,
-          icon: const Icon(Icons.event_available, size: 18),
-          label: const Text(AgendaTexts.addToCalendar),
+          icon: const Icon(
+            Icons.event_available,
+            size: 18,
+            color: AppColors.info,
+          ),
+          label: const Text(
+            AgendaTexts.addToCalendar,
+            style: TextStyle(color: AppColors.info),
+          ),
         ),
 
         // Staff buttons: Edit / Delete

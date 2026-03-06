@@ -3,8 +3,11 @@ import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_agenda.dart';
 import 'package:frontend/features/agenda/data/models/community_event.dart';
 import 'package:frontend/features/agenda/data/models/event_theme.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
 /// Dialog for creating / editing an event.
+///
+/// Uses [OmniDateTimePicker] for a clean date+time selection.
 ///
 /// Accessibility:
 /// - Fields with explicit labels (not placeholder-only).
@@ -54,8 +57,22 @@ class _EventFormDialogState extends State<EventFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        _isEditing ? AgendaTexts.editEvent : AgendaTexts.createEvent,
+      backgroundColor: AppColors.page,
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              _isEditing
+                  ? AgendaTexts.editEvent
+                  : AgendaTexts.createEvent,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
+            tooltip: AgendaTexts.cancel,
+          ),
+        ],
       ),
       content: SizedBox(
         width: 500,
@@ -125,8 +142,8 @@ class _EventFormDialogState extends State<EventFormDialog> {
                 ),
                 const SizedBox(height: 16),
 
-                // Start date
-                _DatePickerField(
+                // Start date — using OmniDateTimePicker
+                _OmniDateTimeField(
                   label: AgendaTexts.startDateLabel,
                   value: _startDate,
                   onPicked: (date) =>
@@ -134,10 +151,11 @@ class _EventFormDialogState extends State<EventFormDialog> {
                 ),
                 const SizedBox(height: 12),
 
-                // End date
-                _DatePickerField(
+                // End date — using OmniDateTimePicker
+                _OmniDateTimeField(
                   label: AgendaTexts.endDateLabel,
                   value: _endDate,
+                  firstDate: _startDate,
                   onPicked: (date) =>
                       setState(() => _endDate = date),
                 ),
@@ -185,50 +203,50 @@ class _EventFormDialogState extends State<EventFormDialog> {
     Navigator.pop(context, <String, dynamic>{
       'title': _titleController.text.trim(),
       'description': _descriptionController.text.trim(),
-      'start_date': _startDate!,
-      'end_date': _endDate!,
+      'start_date': _startDate,
+      'end_date': _endDate,
       if (_selectedTheme != null) 'theme': _selectedTheme,
     });
   }
 }
 
-/// Date and time picker field.
+/// Date and time picker field using [OmniDateTimePicker].
 ///
-/// Seniors: large action button (48×48) with clear text label.
-/// Opens a date picker followed by a time picker to allow
-/// selecting both date and hour.
-class _DatePickerField extends StatefulWidget {
-  const _DatePickerField({
+/// Opens a single, clean picker combining date and time selection.
+///
+/// Accessibility:
+/// - Seniors: large action button (48×48) with clear text label.
+/// - The picker uses the application theme colors.
+class _OmniDateTimeField extends StatelessWidget {
+  const _OmniDateTimeField({
     required this.label,
     required this.value,
     required this.onPicked,
+    this.firstDate,
   });
 
+  /// Field label text.
   final String label;
+
+  /// Currently selected date-time value.
   final DateTime? value;
+
+  /// Callback when a date-time is picked.
   final ValueChanged<DateTime> onPicked;
 
-  @override
-  State<_DatePickerField> createState() => _DatePickerFieldState();
-}
+  /// Optional minimum date (e.g. start date for end date field).
+  final DateTime? firstDate;
 
-class _DatePickerFieldState extends State<_DatePickerField> {
   @override
   Widget build(BuildContext context) {
-    final displayText = widget.value != null
-        ? '${widget.value!.day.toString().padLeft(2, '0')}/'
-            '${widget.value!.month.toString().padLeft(2, '0')}/'
-            '${widget.value!.year} '
-            '${widget.value!.hour.toString().padLeft(2, '0')}:'
-            '${widget.value!.minute.toString().padLeft(2, '0')}'
-        : '';
+    final displayText = value != null ? _formatDateTime(value!) : '';
 
     return InkWell(
       borderRadius: BorderRadius.circular(8),
-      onTap: _pickDateTime,
+      onTap: () => _pickDateTime(context),
       child: InputDecorator(
         decoration: InputDecoration(
-          labelText: widget.label,
+          labelText: label,
           suffixIcon: const Icon(Icons.calendar_month_outlined),
         ),
         child: Text(
@@ -241,29 +259,33 @@ class _DatePickerFieldState extends State<_DatePickerField> {
     );
   }
 
-  Future<void> _pickDateTime() async {
+  Future<void> _pickDateTime(BuildContext context) async {
     final now = DateTime.now();
+    final initialDate = value ?? firstDate ?? now;
+    final minDate = firstDate ?? now.subtract(const Duration(days: 365));
 
-    // Step 1: Pick the date
-    final date = await showDatePicker(
+    final result = await showOmniDateTimePicker(
       context: context,
-      initialDate: widget.value ?? now,
-      firstDate: now.subtract(const Duration(days: 365)),
+      initialDate: initialDate,
+      firstDate: minDate,
       lastDate: now.add(const Duration(days: 730)),
+      is24HourMode: true,
+      borderRadius: BorderRadius.circular(12),
+      constraints: const BoxConstraints(maxWidth: 350, maxHeight: 650),
+      type: OmniDateTimePickerType.dateAndTime,
     );
-    if (date == null || !mounted) return;
 
-    // Step 2: Pick the time
-    final time = await showTimePicker(
-      context: context,
-      initialTime: widget.value != null
-          ? TimeOfDay.fromDateTime(widget.value!)
-          : TimeOfDay.now(),
-    );
-    if (time == null || !mounted) return;
+    if (result != null) {
+      onPicked(result);
+    }
+  }
 
-    widget.onPicked(
-      DateTime(date.year, date.month, date.day, time.hour, time.minute),
-    );
+  /// Formats a DateTime as DD/MM/YYYY HH:MM.
+  String _formatDateTime(DateTime dt) {
+    return '${dt.day.toString().padLeft(2, '0')}/'
+        '${dt.month.toString().padLeft(2, '0')}/'
+        '${dt.year} '
+        '${dt.hour.toString().padLeft(2, '0')}:'
+        '${dt.minute.toString().padLeft(2, '0')}';
   }
 }
