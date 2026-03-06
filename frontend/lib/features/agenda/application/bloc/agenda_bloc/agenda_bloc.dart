@@ -42,7 +42,10 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
   static const Duration _minimumSkeletonDuration =
       Duration(milliseconds: 300);
 
-  /// Resolves a theme title to its backend ID.
+  /// Resolves a theme display title to its backend ID.
+  ///
+  /// [title] should be the French display label as stored in the database
+  /// (e.g. 'Citoyenneté', 'Environnement'). Comparison is case-insensitive.
   /// Returns null if not found.
   int? resolveThemeId(String? title) {
     if (title == null) return null;
