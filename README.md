@@ -1,4 +1,26 @@
-# UniCity - Citizen Platform for Novaville
+# Novaville Platform
+
+A citizen participation and reporting platform built with Django (Backend), Flutter (Frontend), and PostgreSQL.
+
+> **📚 Full documentation available in English at http://localhost:3000**
+>
+> **Quick start:** `bash control-center.sh` → Choose option 1
+
+## Quick Start - Launch Documentation
+
+```bash
+# Interactive menu (easiest)
+bash control-center.sh
+
+# Or direct Docker
+cd docs && docker-compose up -d
+
+# Then access: http://localhost:3000 (English) or /fr (French)
+```
+
+---
+
+## UniCity - Citizen Platform for Novaville
 
 ## 📋 About the Project
 
@@ -131,7 +153,71 @@ If you use the "Azure Cloud" GitHub Environment, store these secrets there and m
 
 ---
 
-## 📚 Backend API Documentation
+## � Documentation
+
+### Complete Documentation Site
+
+A comprehensive documentation site built with **Docusaurus** is available, covering:
+
+- **📘 Getting Started Guide** - Installation, configuration, and setup
+- **🔧 Technical Documentation** - Architecture, backend, frontend, database
+- **🌐 API Reference** - Complete REST API documentation with examples
+- **📗 User Manual** - End-user guide for the application
+
+#### Accessing the Documentation
+
+- **Online**: `https://Michael16b.github.io/Novaville/` (after deployment)
+- **Locally with npm**:
+  ```bash
+  cd docs
+  npm install
+  npm start
+  # Visit http://localhost:3000
+  ```
+- **With Docker**:
+  ```bash
+  # From docs folder
+  cd docs && docker-compose up -d
+  
+  # From project root with profile
+  docker-compose --profile docs up -d
+  
+  # Visit http://localhost:3000
+  ```
+
+#### Multi-language Support
+
+The documentation supports multiple languages:
+- 🇫🇷 **French (fr)** - Default language
+- 🇬🇧 **English (en)** - Configured (translations in progress)
+
+Access different languages:
+- French: `http://localhost:3000/`
+- English: `http://localhost:3000/en/`
+
+A language selector is available in the navigation bar.
+
+#### Documentation Structure
+
+```
+docs/
+├── getting-started/     # Installation & configuration guides
+├── technical/          # Architecture & technical details
+├── api/                # REST API endpoints reference
+├── user-manual/        # End-user guides
+└── blog/               # Release notes & updates
+```
+
+For more information, see:
+- [DOCUMENTATION_GUIDE.md](DOCUMENTATION_GUIDE.md) - How to use and contribute to the documentation
+- [DOCUMENTATION_STATUS.md](DOCUMENTATION_STATUS.md) - Current status and roadmap
+- [docs/DOCKER_GUIDE.md](docs/DOCKER_GUIDE.md) - Docker deployment guide
+- [docs/I18N_GUIDE.md](docs/I18N_GUIDE.md) - Multi-language translation guide
+- [docs/TODO_DOCUMENTATION.md](docs/TODO_DOCUMENTATION.md) - Files to create
+
+---
+
+## �📚 Backend API Documentation
 
 The interactive API documentation is automatically generated with **drf-spectacular** and accessible via Swagger UI.
 

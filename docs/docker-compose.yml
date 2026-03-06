@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  docs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: novaville-docs
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    networks:
+      - novaville-network
+
+networks:
+  novaville-network:
+    driver: bridge
