@@ -68,8 +68,6 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
         _isEditing ? ReportTexts.save : ReportTexts.create;
 
     return AlertDialog(
-      backgroundColor: AppColors.page, // Force white background
-      surfaceTintColor: AppColors.page, // Prevent Material 3 tint
       title: Text(title),
       content: SizedBox(
         width: 450,
@@ -286,8 +284,6 @@ class _NeighborhoodAutocompleteFieldState
           child: Material(
             elevation: 4,
             borderRadius: BorderRadius.circular(8),
-            color: AppColors.page, // Force white background for dropdown
-            surfaceTintColor: AppColors.page, // Prevent Material 3 tint
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 maxHeight: 250,

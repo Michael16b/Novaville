@@ -20,4 +20,17 @@ class AppColors {
   static const Color success = Color(0xFF5DB075);
   static const Color warning = Color(0xFFFFA726);
   static const Color info = Color(0xFF29B6F6);
+
+  // Disabled state
+  static const Color disabled = Color(0xFF9E9E9E);
+
+  // Empty state icon color
+  static const Color emptyState = Color(0xFFBDBDBD);
+
+  // Skeleton / shimmer placeholder colors
+  static const Color skeletonDark = Color(0xFFE0E0E0);
+  static const Color skeletonLight = Color(0xFFEEEEEE);
+
+  // Overlay
+  static const Color overlay = Color(0x1A000000);
 }
