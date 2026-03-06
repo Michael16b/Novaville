@@ -214,12 +214,16 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
           context,
           state.error ?? AgendaTexts.error,
         );
+        break;
       case AgendaStatus.created:
         CustomSnackBar.showSuccess(context, AgendaTexts.createSuccess);
+        break;
       case AgendaStatus.deleted:
         CustomSnackBar.showSuccess(context, AgendaTexts.deleteSuccess);
+        break;
       case AgendaStatus.updated:
         CustomSnackBar.showSuccess(context, AgendaTexts.updateSuccess);
+        break;
       case AgendaStatus.initial:
       case AgendaStatus.loading:
       case AgendaStatus.loaded:
@@ -471,9 +475,9 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
 
           // Calendar format button labels
           availableCalendarFormats: const {
-            CalendarFormat.month: AgendaTexts.format2Weeks,
-            CalendarFormat.twoWeeks: AgendaTexts.formatWeek,
-            CalendarFormat.week: AgendaTexts.formatMonth,
+            CalendarFormat.month: AgendaTexts.formatMonth,
+            CalendarFormat.twoWeeks: AgendaTexts.format2Weeks,
+            CalendarFormat.week: AgendaTexts.formatWeek,
           },
 
           // ── Styling ──

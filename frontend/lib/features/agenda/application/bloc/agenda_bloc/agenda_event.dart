@@ -77,7 +77,9 @@ class AgendaFilterRequested extends AgendaEvent {
     this.search,
   });
 
-  /// Filter by theme title (e.g. 'Sport', 'Culture').
+  /// Filter by theme display title as stored in the backend database
+  /// (e.g. 'Sport', 'Citoyenneté'). Must match the French label used
+  /// when seeding the ThemeEvent table.
   final String? themeTitle;
 
   /// Filter by minimum start date.
