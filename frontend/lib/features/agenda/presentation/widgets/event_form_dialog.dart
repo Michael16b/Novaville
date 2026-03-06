@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_agenda.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/features/agenda/data/models/community_event.dart';
 import 'package:frontend/features/agenda/data/models/event_theme.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
@@ -86,7 +87,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
                 TextFormField(
                   controller: _titleController,
                   decoration: const InputDecoration(
-                    labelText: AgendaTexts.titleLabel,
+                    labelText: '${AgendaTexts.titleLabel} *',
                     hintText: AgendaTexts.titleHint,
                   ),
                   validator: (value) {
@@ -103,7 +104,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
                   controller: _descriptionController,
                   maxLines: 4,
                   decoration: const InputDecoration(
-                    labelText: AgendaTexts.descriptionLabel,
+                    labelText: '${AgendaTexts.descriptionLabel} *',
                     hintText: AgendaTexts.descriptionHint,
                     alignLabelWithHint: true,
                   ),
@@ -116,52 +117,90 @@ class _EventFormDialogState extends State<EventFormDialog> {
                 ),
                 const SizedBox(height: 12),
 
-                // Theme
-                DropdownButtonFormField<EventTheme?>(
-                  value: _selectedTheme,
+                // Theme — required field, no "none" option
+                DropdownButtonFormField<EventTheme>(
+                  initialValue: _selectedTheme,
                   decoration: const InputDecoration(
-                    labelText: AgendaTexts.themeLabel,
+                    labelText: '${AgendaTexts.themeLabel} *',
                   ),
-                  items: [
-                    const DropdownMenuItem<EventTheme?>(
-                      value: null,
-                      child: Text(AgendaTexts.noTheme),
-                    ),
-                    ...EventTheme.values.map(
-                      (t) => DropdownMenuItem<EventTheme?>(
-                        value: t,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(t.icon, size: 18),
-                            const SizedBox(width: 8),
-                            Text(t.label),
-                          ],
+                  items: EventTheme.values
+                      .map(
+                        (t) => DropdownMenuItem<EventTheme>(
+                          value: t,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(t.icon, size: 18),
+                              const SizedBox(width: 8),
+                              Text(t.label),
+                            ],
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
+                      )
+                      .toList(),
+                  validator: (value) {
+                    if (value == null) {
+                      return AgendaTexts.requiredTheme;
+                    }
+                    return null;
+                  },
                   onChanged: (value) =>
                       setState(() => _selectedTheme = value),
                 ),
                 const SizedBox(height: 16),
 
-                // Start date — using OmniDateTimePicker
-                _OmniDateTimeField(
-                  label: AgendaTexts.startDateLabel,
+                // Start date — required, validated inline
+                _OmniDateTimeFormField(
+                  label: '${AgendaTexts.startDateLabel} *',
                   value: _startDate,
+                  validator: (date) {
+                    if (date == null) {
+                      return AgendaTexts.requiredStartDate;
+                    }
+                    return null;
+                  },
                   onPicked: (date) =>
                       setState(() => _startDate = date),
                 ),
                 const SizedBox(height: 12),
 
-                // End date — using OmniDateTimePicker
-                _OmniDateTimeField(
-                  label: AgendaTexts.endDateLabel,
+                // End date — required, validated inline
+                _OmniDateTimeFormField(
+                  label: '${AgendaTexts.endDateLabel} *',
                   value: _endDate,
                   firstDate: _startDate,
+                  validator: (date) {
+                    if (date == null) {
+                      return AgendaTexts.requiredEndDate;
+                    }
+                    if (_startDate != null && date.isBefore(_startDate!)) {
+                      return AgendaTexts.invalidDate;
+                    }
+                    return null;
+                  },
                   onPicked: (date) =>
                       setState(() => _endDate = date),
+                ),
+                const SizedBox(height: 16),
+
+                // Required fields hint
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.info_outline,
+                      size: 14,
+                      color: AppColors.secondaryText,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      AppTextsGeneral.requiredFieldsHint,
+                      style:
+                          Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.secondaryText,
+                                fontStyle: FontStyle.italic,
+                              ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -186,47 +225,31 @@ class _EventFormDialogState extends State<EventFormDialog> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_startDate == null || _endDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(AgendaTexts.requiredField),
-        ),
-      );
-      return;
-    }
-
-    if (_endDate!.isBefore(_startDate!)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(AgendaTexts.invalidDate),
-        ),
-      );
-      return;
-    }
-
     Navigator.pop(context, <String, dynamic>{
       'title': _titleController.text.trim(),
       'description': _descriptionController.text.trim(),
       'start_date': _startDate,
       'end_date': _endDate,
-      if (_selectedTheme != null) 'theme': _selectedTheme,
+      'theme': _selectedTheme,
     });
   }
 }
 
 /// Date and time picker field using [OmniDateTimePicker].
 ///
-/// Opens a single, clean picker combining date and time selection.
+/// Wraps a [FormField] so that validation errors are displayed
+/// inline, just like [TextFormField] or [DropdownButtonFormField].
 ///
 /// Accessibility:
 /// - Seniors: large action button (48×48) with clear text label.
 /// - The picker uses the application theme colors.
-class _OmniDateTimeField extends StatelessWidget {
-  const _OmniDateTimeField({
+class _OmniDateTimeFormField extends StatelessWidget {
+  const _OmniDateTimeFormField({
     required this.label,
     required this.value,
     required this.onPicked,
     this.firstDate,
+    this.validator,
   });
 
   /// Field label text.
@@ -241,29 +264,49 @@ class _OmniDateTimeField extends StatelessWidget {
   /// Optional minimum date (e.g. start date for end date field).
   final DateTime? firstDate;
 
+  /// Validator returning an error string if invalid.
+  final String? Function(DateTime?)? validator;
+
   @override
   Widget build(BuildContext context) {
-    final displayText = value != null ? _formatDateTime(value!) : '';
+    return FormField<DateTime>(
+      initialValue: value,
+      validator: validator,
+      builder: (field) {
+        final displayText = value != null ? _formatDateTime(value!) : '';
+        final hasError = field.hasError;
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTap: () => _pickDateTime(context),
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          suffixIcon: const Icon(Icons.calendar_month_outlined),
-        ),
-        child: Text(
-          displayText,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.primaryText,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => _pickDateTime(context, field),
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: label,
+                  suffixIcon: const Icon(Icons.calendar_month_outlined),
+                  errorText: hasError ? field.errorText : null,
+                ),
+                child: Text(
+                  displayText,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.primaryText,
+                      ),
+                ),
               ),
-        ),
-      ),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Future<void> _pickDateTime(BuildContext context) async {
+  Future<void> _pickDateTime(
+    BuildContext context,
+    FormFieldState<DateTime> field,
+  ) async {
     final now = DateTime.now();
     final initialDate = value ?? firstDate ?? now;
     final minDate = firstDate ?? now.subtract(const Duration(days: 365));
@@ -281,6 +324,7 @@ class _OmniDateTimeField extends StatelessWidget {
 
     if (result != null) {
       onPicked(result);
+      field.didChange(result);
     }
   }
 

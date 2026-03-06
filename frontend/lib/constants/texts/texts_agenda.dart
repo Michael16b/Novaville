@@ -159,6 +159,16 @@ class AgendaTexts {
   /// Required field error.
   static const requiredField = 'Ce champ est obligatoire';
 
+
+  /// Required theme error.
+  static const requiredTheme = 'Veuillez sélectionner une thématique';
+
+  /// Required start date error.
+  static const requiredStartDate = 'Veuillez sélectionner une date de début';
+
+  /// Required end date error.
+  static const requiredEndDate = 'Veuillez sélectionner une date de fin';
+
   /// Invalid date error.
   static const invalidDate =
       'La date de fin doit être après la date de début';
@@ -202,11 +212,6 @@ class AgendaTexts {
 
   /// Next page tooltip.
   static const nextPage = 'Page suivante';
-
-  /// No theme option label.
-  static const noTheme = 'Aucune thématique';
-
-  // ─── Repository error messages ─────────────────────────────────
 
   /// Invalid API response format.
   static const invalidResponseFormat = 'Format de réponse invalide';
