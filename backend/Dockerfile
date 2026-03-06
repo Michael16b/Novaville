@@ -41,21 +41,16 @@ RUN mkdir -p "$DJANGO_STATIC_ROOT" "$DJANGO_MEDIA_ROOT" && chown -R app:app /app
 VOLUME ["/app/staticfiles", "/app/media"]
 EXPOSE 8000
 
+# 5. Entrypoint et CMD
+# docker-entrypoint.sh gère : wait_for_db, migrations, collectstatic, ensure_admin puis exec $@
+RUN chmod +x /app/docker-entrypoint.sh
+
 USER app
 
-# 5. CMD robuste
-# On utilise des valeurs par défaut directement dans le script shell au besoin
-CMD ["sh", "-c", " \
-    python wait_for_db.py && \
-    python manage.py migrate --noinput && \
-    python manage.py createsuperuser --noinput \
-        --username \"$DJANGO_SUPERUSER_USERNAME\" \
-        --email \"$DJANGO_SUPERUSER_EMAIL\" || echo 'Admin existe déjà' && \
-    python manage.py collectstatic --noinput && \
-    exec gunicorn ${DJANGO_WSGI_MODULE:-config.wsgi}:application \
-        --bind 0.0.0.0:${PORT} \
-        --workers ${GUNICORN_WORKERS:-3} \
-        --timeout ${GUNICORN_TIMEOUT:-120} \
-        --access-logfile - \
-        --error-logfile - \
-    "]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+CMD ["gunicorn", "config.wsgi:application", \
+     "--bind", "0.0.0.0:8000", \
+     "--workers", "3", \
+     "--timeout", "120", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-"]
