@@ -67,6 +67,7 @@ abstract class IEventRepository {
     int page = 1,
     int? theme,
     DateTime? startDateGte,
+    DateTime? startDateLte,
   });
 
   /// Retrieves a single event by ID.

@@ -33,4 +33,12 @@ class AppColors {
 
   // Overlay
   static const Color overlay = Color(0x1A000000);
+
+  // Calendar
+  /// Background highlight for today's date in the calendar.
+  static const Color calendarToday = Color(0x332E6B55);
+  static const Color calendarSelected = Color(0xFF2E6B55);
+  static const Color calendarMarker = Color(0xFFF9C846);
+  static const Color calendarWeekend = Color(0xFF9E9E9E);
+  static const Color calendarOutside = Color(0xFFBDBDBD);
 }

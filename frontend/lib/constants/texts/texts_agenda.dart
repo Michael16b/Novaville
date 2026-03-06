@@ -162,5 +162,20 @@ class AgendaTexts {
 
   /// Add actions tooltip.
   static const addActionsTooltip = 'Actions';
+
+  /// Calendar view: no events on selected day.
+  static const noEventsOnDay = 'Aucun événement ce jour';
+
+  /// Calendar view: events count for selected day.
+  static const eventsOnDay = 'événement(s) le';
+
+  /// Calendar format: month.
+  static const formatMonth = 'Mois';
+
+  /// Calendar format: 2 weeks.
+  static const format2Weeks = '2 semaines';
+
+  /// Calendar format: week.
+  static const formatWeek = 'Semaine';
 }
 

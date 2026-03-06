@@ -9,7 +9,9 @@ part 'agenda_state.dart';
 /// BLoC for managing the participatory agenda.
 ///
 /// Handles loading, searching, theme filtering,
-/// pagination, creation and deletion of events.
+/// creation, update and deletion of events.
+/// For the calendar view, all pages are fetched in a loop
+/// (the Django backend returns a fixed page size of 20).
 class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
   /// Creates an [AgendaBloc].
   AgendaBloc({required IEventRepository repository})
@@ -18,7 +20,6 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
     on<AgendaLoadRequested>(_onLoadRequested);
     on<AgendaSearchRequested>(_onSearchRequested);
     on<AgendaSortRequested>(_onSortRequested);
-    on<AgendaPageRequested>(_onPageRequested);
     on<AgendaRefreshRequested>(_onRefreshRequested);
     on<AgendaFilterRequested>(_onFilterRequested);
     on<AgendaEventCreateRequested>(_onCreateRequested);
@@ -31,6 +32,9 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
   // Active filters
   String? _filterThemeTitle;
   DateTime? _filterStartDateGte;
+
+  // Last ordering used for reload after CRUD
+  String? _lastOrdering;
 
   // Cached theme items from the backend (id ↔ title mapping).
   List<ThemeItem> _cachedThemes = [];
@@ -67,9 +71,9 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
         // can be resolved from loaded events.
       }
     }
-    await _loadPage(
+    _lastOrdering = event.ordering;
+    await _loadAllEvents(
       emit: emit,
-      page: 1,
       ordering: event.ordering,
       search: event.search ?? '',
     );
@@ -79,9 +83,10 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
     AgendaSearchRequested event,
     Emitter<AgendaState> emit,
   ) async {
-    await _loadPage(
+    emit(state.copyWith(status: AgendaStatus.loading));
+    _lastOrdering = event.ordering;
+    await _loadAllEvents(
       emit: emit,
-      page: 1,
       ordering: event.ordering,
       search: event.query,
     );
@@ -93,23 +98,11 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
   ) async {
     final ordering =
         event.ascending ? event.column : '-${event.column}';
-    await _loadPage(
-      emit: emit,
-      page: 1,
-      ordering: ordering,
-      search: event.search ?? state.search,
-    );
-  }
-
-  Future<void> _onPageRequested(
-    AgendaPageRequested event,
-    Emitter<AgendaState> emit,
-  ) async {
     emit(state.copyWith(status: AgendaStatus.loading));
-    await _loadPage(
+    _lastOrdering = ordering;
+    await _loadAllEvents(
       emit: emit,
-      page: event.page,
-      ordering: event.ordering,
+      ordering: ordering,
       search: event.search ?? state.search,
     );
   }
@@ -118,10 +111,10 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
     AgendaRefreshRequested event,
     Emitter<AgendaState> emit,
   ) async {
-    await _loadPage(
+    emit(state.copyWith(status: AgendaStatus.loading));
+    await _loadAllEvents(
       emit: emit,
-      page: state.page,
-      ordering: null,
+      ordering: _lastOrdering,
       search: state.search,
     );
   }
@@ -132,10 +125,10 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
   ) async {
     _filterThemeTitle = event.themeTitle;
     _filterStartDateGte = event.startDateGte;
+    _lastOrdering = event.ordering;
     emit(state.copyWith(status: AgendaStatus.loading));
-    await _loadPage(
+    await _loadAllEvents(
       emit: emit,
-      page: 1,
       ordering: event.ordering,
       search: event.search ?? state.search,
     );
@@ -157,11 +150,10 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
         theme: event.theme,
       );
       emit(state.copyWith(status: AgendaStatus.created));
-      // Reload the list
-      await _loadPage(
+      // Reload all events
+      await _loadAllEvents(
         emit: emit,
-        page: 1,
-        ordering: null,
+        ordering: _lastOrdering,
         search: state.search,
       );
     } catch (e) {
@@ -192,10 +184,9 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
         ),
       );
       // Reload to synchronize
-      await _loadPage(
+      await _loadAllEvents(
         emit: emit,
-        page: state.page,
-        ordering: null,
+        ordering: _lastOrdering,
         search: state.search,
       );
     } catch (e) {
@@ -223,10 +214,9 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
         theme: event.theme,
       );
       emit(state.copyWith(status: AgendaStatus.updated));
-      await _loadPage(
+      await _loadAllEvents(
         emit: emit,
-        page: state.page,
-        ordering: null,
+        ordering: _lastOrdering,
         search: state.search,
       );
     } catch (e) {
@@ -241,21 +231,35 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
 
   // ─── Internal helper ───────────────────────────────────────────
 
-  Future<void> _loadPage({
+  /// Loads ALL events by iterating through every page of the
+  /// Django paginated API (fixed page size of 20).
+  /// This is required for the calendar view to display markers
+  /// on every day that has events.
+  Future<void> _loadAllEvents({
     required Emitter<AgendaState> emit,
-    required int page,
     required String? ordering,
     required String search,
   }) async {
     final stopwatch = Stopwatch()..start();
     try {
-      final result = await _repository.listEvents(
-        page: page,
-        ordering: ordering,
-        search: search,
-        theme: resolveThemeId(_filterThemeTitle),
-        startDateGte: _filterStartDateGte,
-      );
+      final allEvents = <CommunityEvent>[];
+      var page = 1;
+      var hasMore = true;
+
+      while (hasMore) {
+        final result = await _repository.listEvents(
+          page: page,
+          ordering: ordering,
+          search: search,
+          theme: resolveThemeId(_filterThemeTitle),
+          startDateGte: _filterStartDateGte,
+        );
+        allEvents.addAll(result.results);
+
+        // If there is no next page URL, we have loaded everything.
+        hasMore = result.next != null;
+        page++;
+      }
 
       // Minimum skeleton duration to avoid flash
       final elapsed = stopwatch.elapsed;
@@ -265,11 +269,8 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
 
       emit(
         AgendaState.loaded(
-          result.results,
-          page: page,
-          count: result.count,
-          next: result.next,
-          previous: result.previous,
+          allEvents,
+          count: allEvents.length,
           search: search,
         ),
       );

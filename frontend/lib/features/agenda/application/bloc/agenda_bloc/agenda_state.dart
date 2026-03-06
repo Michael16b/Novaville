@@ -34,17 +34,17 @@ enum AgendaStatus {
 }
 
 /// State for the AgendaBloc.
+///
+/// All events are loaded at once (all pages fetched in a loop)
+/// so pagination fields (page, next, previous, pageSize) are no
+/// longer needed for the calendar view.
 class AgendaState extends Equatable {
   /// Creates an [AgendaState].
   const AgendaState({
     required this.status,
     this.events = const <CommunityEvent>[],
     this.error,
-    this.page = 1,
     this.count = 0,
-    this.next,
-    this.previous,
-    this.pageSize = 20,
     this.search = '',
   });
 
@@ -53,11 +53,7 @@ class AgendaState extends Equatable {
       : status = AgendaStatus.initial,
         events = const <CommunityEvent>[],
         error = null,
-        page = 1,
         count = 0,
-        next = null,
-        previous = null,
-        pageSize = 20,
         search = '';
 
   /// Loading state.
@@ -65,21 +61,13 @@ class AgendaState extends Equatable {
       : status = AgendaStatus.loading,
         events = const <CommunityEvent>[],
         error = null,
-        page = 1,
         count = 0,
-        next = null,
-        previous = null,
-        pageSize = 20,
         search = '';
 
-  /// Loaded state.
+  /// Loaded state with all events.
   const AgendaState.loaded(
     this.events, {
-    required this.page,
     required this.count,
-    this.next,
-    this.previous,
-    this.pageSize = 20,
     this.search = '',
   })  : status = AgendaStatus.loaded,
         error = null;
@@ -89,36 +77,20 @@ class AgendaState extends Equatable {
       : status = AgendaStatus.failure,
         events = const <CommunityEvent>[],
         error = message,
-        page = 1,
         count = 0,
-        next = null,
-        previous = null,
-        pageSize = 20,
         search = '';
 
   /// Current status.
   final AgendaStatus status;
 
-  /// List of events.
+  /// List of ALL events (loaded across all pages).
   final List<CommunityEvent> events;
 
   /// Optional error message.
   final String? error;
 
-  /// Current page.
-  final int page;
-
   /// Total event count.
   final int count;
-
-  /// Next page URL.
-  final String? next;
-
-  /// Previous page URL.
-  final String? previous;
-
-  /// Page size.
-  final int pageSize;
 
   /// Current search query.
   final String search;
@@ -128,22 +100,14 @@ class AgendaState extends Equatable {
     AgendaStatus? status,
     List<CommunityEvent>? events,
     String? error,
-    int? page,
     int? count,
-    String? next,
-    String? previous,
-    int? pageSize,
     String? search,
   }) {
     return AgendaState(
       status: status ?? this.status,
       events: events ?? this.events,
       error: error ?? this.error,
-      page: page ?? this.page,
       count: count ?? this.count,
-      next: next ?? this.next,
-      previous: previous ?? this.previous,
-      pageSize: pageSize ?? this.pageSize,
       search: search ?? this.search,
     );
   }
@@ -153,11 +117,7 @@ class AgendaState extends Equatable {
         status,
         events,
         error,
-        page,
         count,
-        next,
-        previous,
-        pageSize,
         search,
       ];
 }

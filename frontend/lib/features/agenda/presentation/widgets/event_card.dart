@@ -137,7 +137,7 @@ class EventCard extends StatelessWidget {
                   ],
                 ),
 
-                const Spacer(),
+                const SizedBox(height: 12),
 
                 // ── Actions ──
                 const Divider(height: 20),
