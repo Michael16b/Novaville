@@ -134,6 +134,12 @@ class ReportTexts {
   static const problemTypeRequired =
       'Le type de problème est obligatoire';
 
+  /// Neighborhood required validation message.
+  static const neighborhoodRequired = 'Le quartier est obligatoire';
+
+  /// Status required validation message.
+  static const statusRequired = 'Le statut est obligatoire';
+
   /// Report created success message.
   static const createSuccess = 'Signalement créé avec succès';
 

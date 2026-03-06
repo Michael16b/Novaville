@@ -276,6 +276,28 @@ class _MyAccountViewState extends State<_MyAccountView> {
                           ],
                         ),
                       ),
+                      // Required fields hint
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            size: 14,
+                            color: AppColors.secondaryText,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            AppTextsGeneral.requiredFieldsHint,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: AppColors.secondaryText,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                          ),
+                        ],
+                      ),
                       Row(
                         spacing: 16,
                         mainAxisAlignment: MainAxisAlignment.center,

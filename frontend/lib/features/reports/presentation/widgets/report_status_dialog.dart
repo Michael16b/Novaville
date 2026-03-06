@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_reports.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
 import 'package:frontend/features/reports/data/models/report_status.dart';
@@ -27,7 +29,16 @@ class _ReportStatusDialogState extends State<ReportStatusDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text(ReportTexts.updateStatus),
+      title: Row(
+        children: [
+          const Expanded(child: Text(ReportTexts.updateStatus)),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
+            tooltip: ReportTexts.cancel,
+          ),
+        ],
+      ),
       content: SizedBox(
         width: 350,
         child: Column(
@@ -36,7 +47,7 @@ class _ReportStatusDialogState extends State<ReportStatusDialog> {
             DropdownButtonFormField<ReportStatus>(
               initialValue: _selectedStatus,
               decoration: const InputDecoration(
-                labelText: ReportTexts.statusLabel,
+                labelText: '${ReportTexts.statusLabel} *',
                 border: OutlineInputBorder(),
               ),
               items: ReportStatus.values
@@ -52,6 +63,25 @@ class _ReportStatusDialogState extends State<ReportStatusDialog> {
                   _selectedStatus = value;
                 }
               },
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Icon(
+                  Icons.info_outline,
+                  size: 14,
+                  color: AppColors.secondaryText,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  AppTextsGeneral.requiredFieldsHint,
+                  style:
+                      Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.secondaryText,
+                            fontStyle: FontStyle.italic,
+                          ),
+                ),
+              ],
             ),
           ],
         ),

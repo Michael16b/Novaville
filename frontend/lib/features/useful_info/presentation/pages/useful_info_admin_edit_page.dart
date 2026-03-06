@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
+import 'package:frontend/constants/texts/texts_useful_info.dart';
 import '../../domain/useful_info.dart';
 
 class UsefulInfoAdminEditPage extends StatefulWidget {
@@ -67,7 +70,7 @@ class _UsefulInfoAdminEditPageState extends State<UsefulInfoAdminEditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Modifier Infos utiles"),
+        title: const Text(UsefulInfoTexts.editTitle),
         actions: [IconButton(icon: const Icon(Icons.save), onPressed: _save)],
       ),
       body: Form(
@@ -77,31 +80,93 @@ class _UsefulInfoAdminEditPageState extends State<UsefulInfoAdminEditPage> {
           children: [
             TextFormField(
               controller: _name,
-              decoration: const InputDecoration(labelText: "Nom"),
+              decoration: const InputDecoration(
+                labelText: '${UsefulInfoTexts.nameLabel} *',
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return UsefulInfoTexts.requiredField;
+                }
+                return null;
+              },
             ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _address,
-              decoration: const InputDecoration(labelText: "Adresse"),
+              decoration: const InputDecoration(
+                labelText: '${UsefulInfoTexts.addressLabel} *',
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return UsefulInfoTexts.requiredField;
+                }
+                return null;
+              },
             ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _postal,
-              decoration: const InputDecoration(labelText: "Code postal"),
+              decoration: const InputDecoration(
+                labelText: '${UsefulInfoTexts.postalCodeLabel} *',
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return UsefulInfoTexts.requiredField;
+                }
+                return null;
+              },
             ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _city,
-              decoration: const InputDecoration(labelText: "Ville"),
+              decoration: const InputDecoration(
+                labelText: '${UsefulInfoTexts.cityLabel} *',
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return UsefulInfoTexts.requiredField;
+                }
+                return null;
+              },
             ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _phone,
-              decoration: const InputDecoration(labelText: "Téléphone"),
+              decoration: InputDecoration(
+                labelText: UsefulInfoTexts.phoneLabel.replaceAll(' :', ''),
+              ),
             ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _email,
-              decoration: const InputDecoration(labelText: "Email"),
+              decoration: InputDecoration(
+                labelText: UsefulInfoTexts.emailLabel.replaceAll(' :', ''),
+              ),
             ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _website,
-              decoration: const InputDecoration(labelText: "Site web"),
+              decoration: InputDecoration(
+                labelText: UsefulInfoTexts.websiteLabel.replaceAll(' :', ''),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Icon(
+                  Icons.info_outline,
+                  size: 14,
+                  color: AppColors.secondaryText,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  AppTextsGeneral.requiredFieldsHint,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.secondaryText,
+                        fontStyle: FontStyle.italic,
+                      ),
+                ),
+              ],
             ),
           ],
         ),

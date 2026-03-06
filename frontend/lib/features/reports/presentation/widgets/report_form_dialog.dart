@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_reports.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
@@ -68,9 +69,16 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
         _isEditing ? ReportTexts.save : ReportTexts.create;
 
     return AlertDialog(
-      backgroundColor: AppColors.page, // Force white background
-      surfaceTintColor: AppColors.page, // Prevent Material 3 tint
-      title: Text(title),
+      title: Row(
+        children: [
+          Expanded(child: Text(title)),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
+            tooltip: ReportTexts.cancel,
+          ),
+        ],
+      ),
       content: SizedBox(
         width: 450,
         child: Form(
@@ -83,7 +91,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                 DropdownButtonFormField<ProblemType>(
                   initialValue: _selectedProblemType,
                   decoration: const InputDecoration(
-                    labelText: ReportTexts.problemTypeLabel,
+                    labelText: '${ReportTexts.problemTypeLabel} *',
                     border: OutlineInputBorder(),
                   ),
                   items: ProblemType.values
@@ -110,7 +118,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                   controller: _descriptionController,
                   maxLines: 4,
                   decoration: const InputDecoration(
-                    labelText: ReportTexts.descriptionLabel,
+                    labelText: '${ReportTexts.descriptionLabel} *',
                     hintText: ReportTexts.descriptionHint,
                     border: OutlineInputBorder(),
                     alignLabelWithHint: true,
@@ -130,6 +138,33 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                   onChanged: (value) {
                     _selectedNeighborhood = value;
                   },
+                  validator: (value) {
+                    if (value == null) {
+                      return ReportTexts.neighborhoodRequired;
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Required fields hint
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.info_outline,
+                      size: 14,
+                      color: AppColors.secondaryText,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      AppTextsGeneral.requiredFieldsHint,
+                      style:
+                          Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.secondaryText,
+                                fontStyle: FontStyle.italic,
+                              ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -155,8 +190,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
     final result = {
       'problem_type': _selectedProblemType!.toJson(),
       'description': _descriptionController.text.trim(),
-      if (_selectedNeighborhood != null)
-        'neighborhood': _selectedNeighborhood,
+      'neighborhood': _selectedNeighborhood!,
     };
 
     Navigator.pop(context, result);
@@ -171,11 +205,13 @@ class _NeighborhoodAutocompleteField extends StatefulWidget {
     required this.neighborhoods,
     required this.initialNeighborhoodId,
     required this.onChanged,
+    this.validator,
   });
 
   final List<Neighborhood> neighborhoods;
   final int? initialNeighborhoodId;
   final ValueChanged<int?> onChanged;
+  final String? Function(int?)? validator;
 
   @override
   State<_NeighborhoodAutocompleteField> createState() =>
@@ -252,8 +288,9 @@ class _NeighborhoodAutocompleteFieldState
         return TextFormField(
           controller: controller,
           focusNode: focusNode,
+          validator: (_) => widget.validator?.call(_selectedId),
           decoration: InputDecoration(
-            labelText: ReportTexts.neighborhoodLabel,
+            labelText: '${ReportTexts.neighborhoodLabel} *',
             hintText: ReportTexts.selectNeighborhood,
             border: const OutlineInputBorder(),
             suffixIcon: _selectedId != null
@@ -286,8 +323,6 @@ class _NeighborhoodAutocompleteFieldState
           child: Material(
             elevation: 4,
             borderRadius: BorderRadius.circular(8),
-            color: AppColors.page, // Force white background for dropdown
-            surfaceTintColor: AppColors.page, // Prevent Material 3 tint
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 maxHeight: 250,

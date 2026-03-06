@@ -778,7 +778,16 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(title),
+        title: Row(
+          children: [
+            Expanded(child: Text(title)),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.pop(dialogContext),
+              tooltip: UserTexts.close,
+            ),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -802,7 +811,16 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(UserTexts.editUserTitle),
+        title: Row(
+          children: [
+            const Expanded(child: Text(UserTexts.editUserTitle)),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.pop(context),
+              tooltip: UserTexts.close,
+            ),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -825,7 +843,18 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text(UserTexts.confirmDeleteTitle),
+        title: Row(
+          children: [
+            const Expanded(
+              child: Text(UserTexts.confirmDeleteTitle),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.pop(dialogContext),
+              tooltip: UserTexts.cancel,
+            ),
+          ],
+        ),
         content: Text(
           '${UserTexts.confirmDelete} ${user.firstName} ${user.lastName} (${user.username}) ?\n\n${UserTexts.irreversible}',
         ),

@@ -20,4 +20,25 @@ class AppColors {
   static const Color success = Color(0xFF5DB075);
   static const Color warning = Color(0xFFFFA726);
   static const Color info = Color(0xFF29B6F6);
+
+  // Disabled state
+  static const Color disabled = Color(0xFF9E9E9E);
+
+  // Empty state icon color
+  static const Color emptyState = Color(0xFFBDBDBD);
+
+  // Skeleton / shimmer placeholder colors
+  static const Color skeletonDark = Color(0xFFE0E0E0);
+  static const Color skeletonLight = Color(0xFFEEEEEE);
+
+  // Overlay
+  static const Color overlay = Color(0x1A000000);
+
+  // Calendar
+  /// Background highlight for today's date in the calendar.
+  static const Color calendarToday = Color(0x332E6B55);
+  static const Color calendarSelected = Color(0xFF2E6B55);
+  static const Color calendarMarker = Color(0xFFF9C846);
+  static const Color calendarWeekend = Color(0xFF9E9E9E);
+  static const Color calendarOutside = Color(0xFFBDBDBD);
 }

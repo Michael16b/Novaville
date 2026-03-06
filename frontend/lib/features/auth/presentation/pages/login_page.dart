@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_form_labels.dart';
 import 'package:frontend/constants/texts/texts_auth.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_validator_messages.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
@@ -88,6 +89,28 @@ class _LoginPageState extends State<LoginPage> {
                         decoration: const InputDecoration(
                           labelText: '${AppFormLabels.password} *',
                         ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Required fields hint
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            size: 14,
+                            color: AppColors.secondaryText,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            AppTextsGeneral.requiredFieldsHint,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: AppColors.secondaryText,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                       // Display the authentication error if present

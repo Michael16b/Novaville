@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/constants/colors.dart';
 
 /// Custom widget for displaying centered and styled SnackBars.
 class CustomSnackBar {
@@ -7,7 +8,7 @@ class CustomSnackBar {
     _show(
       context: context,
       message: message,
-      backgroundColor: Colors.green,
+      backgroundColor: AppColors.success,
       icon: Icons.check_circle_outline,
     );
   }
@@ -17,7 +18,7 @@ class CustomSnackBar {
     _show(
       context: context,
       message: message,
-      backgroundColor: Colors.red,
+      backgroundColor: AppColors.error,
       icon: Icons.error_outline,
     );
   }
@@ -27,7 +28,7 @@ class CustomSnackBar {
     _show(
       context: context,
       message: message,
-      backgroundColor: Colors.blue,
+      backgroundColor: AppColors.info,
       icon: Icons.info_outline,
     );
   }
@@ -37,7 +38,7 @@ class CustomSnackBar {
     _show(
       context: context,
       message: message,
-      backgroundColor: Colors.orange,
+      backgroundColor: AppColors.warning,
       icon: Icons.warning_amber_outlined,
     );
   }
@@ -56,14 +57,14 @@ class CustomSnackBar {
         content: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.white, size: 24),
+            Icon(icon, color: AppColors.white, size: 24),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),

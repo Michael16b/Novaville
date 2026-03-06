@@ -14,11 +14,17 @@ class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
         primary: AppColors.primary,
+        onPrimary: AppColors.white,
         secondary: AppColors.secondary,
         error: AppColors.error,
         surface: AppColors.white,
+        onSurface: AppColors.primaryText,
+        surfaceContainerHighest: AppColors.page,
+        surfaceContainerHigh: AppColors.page,
+        surfaceContainerLow: AppColors.page,
+        surfaceContainer: AppColors.page,
       ),
-      
+
       // Chip Theme
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.white,
@@ -138,6 +144,80 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
         ),
         margin: EdgeInsets.zero,
+      ),
+
+      // Dialog Theme
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.page,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: AppColors.page,
+        surfaceTintColor: Colors.transparent,
+        headerBackgroundColor: AppColors.primary,
+        headerForegroundColor: AppColors.white,
+        dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.white;
+          }
+          return AppColors.primaryText;
+        }),
+        dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.primary;
+          }
+          return null;
+        }),
+        todayForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.white;
+          }
+          return AppColors.primary;
+        }),
+        todayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.primary;
+          }
+          return null;
+        }),
+        todayBorder: const BorderSide(color: AppColors.primary),
+        yearForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.white;
+          }
+          return AppColors.primaryText;
+        }),
+        yearBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.primary;
+          }
+          return null;
+        }),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+
+      timePickerTheme: TimePickerThemeData(
+        backgroundColor: AppColors.page,
+        hourMinuteColor: AppColors.primary.withValues(alpha: 0.12),
+        hourMinuteTextColor: AppColors.primaryText,
+        dialHandColor: AppColors.primary,
+        dialBackgroundColor: AppColors.primary.withValues(alpha: 0.08),
+        dialTextColor: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.white;
+          }
+          return AppColors.primaryText;
+        }),
+        entryModeIconColor: AppColors.primary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }
