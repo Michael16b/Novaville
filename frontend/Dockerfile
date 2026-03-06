@@ -16,24 +16,20 @@ COPY . /app/
 ARG FLUTTER_BACKEND_API
 ARG ENVIRONMENT=production
 
-# --- SOLUTION AU PROBLÈME .ENV ---
+# --- CONFIGURATION DE L'URL DU BACKEND ---
 # On crée un fichier .env avec la clé API_BASE_URL que AppConfig lit via flutter_dotenv.
-# FLUTTER_BACKEND_API doit être fourni comme build-arg au moment du build Docker
-# (ex: --build-arg FLUTTER_BACKEND_API=https://mondomaine.com).
-# Ne pas tenter de le surcharger via une variable d'environnement runtime : les valeurs
-# String.fromEnvironment et les assets Flutter sont figés à la compilation.
+# Les valeurs String.fromEnvironment et les assets Flutter sont figés à la compilation.
+#
+# FLUTTER_BACKEND_API peut être :
+#   - Vide (défaut) : l'application utilise des URLs relatives (/api/...).
+#     Nginx proxie /api/ vers le conteneur backend. C'est le mode recommandé
+#     pour la production Azure car il est indépendant du domaine Azure.
+#   - http://localhost : Docker local, Nginx proxy sur le port 80.
+#   - https://votre-domaine.com : URL publique explicite (optionnel).
 #
 # IMPORTANT: localhost:8000 ne doit JAMAIS être utilisé — c'est le port interne du backend,
 # inaccessible depuis le navigateur des utilisateurs finaux en production.
-# Pour Docker local : utiliser http://localhost (Nginx proxy, port 80).
-# Pour la production : fournir l'URL publique via FLUTTER_BACKEND_API.
 RUN BACKEND_API="${FLUTTER_BACKEND_API:-}" && \
-    if [ -z "$BACKEND_API" ]; then \
-      echo "ERROR: Le build-arg FLUTTER_BACKEND_API est obligatoire." >&2 && \
-      echo "       Exemple : --build-arg FLUTTER_BACKEND_API=https://votre-domaine.com" >&2 && \
-      echo "       Pour Docker local : --build-arg FLUTTER_BACKEND_API=http://localhost" >&2 && \
-      exit 1; \
-    fi && \
     if echo "$BACKEND_API" | grep -qF 'localhost:8000'; then \
       echo "ERROR: FLUTTER_BACKEND_API ne doit pas être http://localhost:8000." >&2 && \
       echo "       localhost:8000 est le port interne du backend, inaccessible depuis" >&2 && \
