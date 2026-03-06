@@ -130,6 +130,7 @@ class UserRepositoryImpl implements IUserRepository {
     }
 
     throw Exception('Erreur lors de la création: ${response.body}');
+  @override
   Future<List<Neighborhood>> listNeighborhoods() async {
     final response = await _apiClient.get('/api/v1/neighborhoods/');
 
