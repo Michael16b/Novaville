@@ -38,7 +38,7 @@ jobs:
       - name: Build and push Frontend
         run: |
           docker build \
-            --build-arg FLUTTER_BACKEND_API="https://novavilleapp.azurewebsites.net" \
+            --build-arg FLUTTER_BACKEND_API="${{ secrets.AZURE_APP_URL }}" \
             --build-arg ENVIRONMENT="production" \
             -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-frontend:latest ./frontend
           docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-frontend:latest
