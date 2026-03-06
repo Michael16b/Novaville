@@ -83,9 +83,9 @@ class WebDropHandler {
       });
 
       reader.onError.listen((_) {
-        completer.completeError(
-          Exception('Lecture du fichier déposé impossible.'),
-        );
+            completer.completeError(
+              Exception(CsvDropTexts.dropReadFailed),
+            );
       });
 
       reader.readAsText(file, 'utf-8');
@@ -94,7 +94,7 @@ class WebDropHandler {
         final content = await completer.future;
         await onCsvDropped(fileName, content);
       } catch (_) {
-        onError('Lecture du fichier déposé impossible.');
+            onError(CsvDropTexts.dropReadFailed);
       }
     });
   }

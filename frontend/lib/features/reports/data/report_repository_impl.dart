@@ -4,6 +4,7 @@ import 'package:frontend/constants/texts/texts_reports.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
+import 'package:frontend/constants/texts/texts_report_repository_errors.dart';
 import 'package:frontend/features/reports/data/report_repository.dart';
 
 /// HTTP-based implementation of [IReportRepository].
@@ -51,11 +52,11 @@ class ReportRepositoryImpl implements IReportRepository {
       if (json['results'] != null) {
         return ReportPage.fromJson(json);
       } else {
-        throw Exception(ReportTexts.invalidResponseFormat);
+        throw Exception(ReportTextsErrors.invalidResponseFormat);
       }
     } else {
       throw Exception(
-        '${ReportTexts.fetchError}: ${response.statusCode}',
+        '${ReportTextsErrors.fetchError}: ${response.statusCode}',
       );
     }
   }
@@ -69,7 +70,7 @@ class ReportRepositoryImpl implements IReportRepository {
       return Report.fromJson(json);
     } else {
       throw Exception(
-        '${ReportTexts.fetchError}: ${response.statusCode}',
+        '${ReportTextsErrors.fetchError}: ${response.statusCode}',
       );
     }
   }
@@ -95,7 +96,7 @@ class ReportRepositoryImpl implements IReportRepository {
 
     if (response.statusCode != 201) {
       throw Exception(
-        '${ReportTexts.createError}: ${response.statusCode}',
+        '${ReportTextsErrors.createError}: ${response.statusCode}',
       );
     }
   }
@@ -124,7 +125,7 @@ class ReportRepositoryImpl implements IReportRepository {
       return Report.fromJson(json);
     } else {
       throw Exception(
-        '${ReportTexts.updateError}: ${response.statusCode}',
+        '${ReportTextsErrors.updateError}: ${response.statusCode}',
       );
     }
   }
@@ -135,7 +136,7 @@ class ReportRepositoryImpl implements IReportRepository {
 
     if (response.statusCode != 204 && response.statusCode != 200) {
       throw Exception(
-        '${ReportTexts.deleteError}: ${response.statusCode}',
+        '${ReportTextsErrors.deleteError}: ${response.statusCode}',
       );
     }
   }
