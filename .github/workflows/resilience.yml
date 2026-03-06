@@ -133,3 +133,30 @@ jobs:
             echo "       misleads operators into thinking they can hot-swap the backend URL."
             exit 1
           fi
+
+      # ── Dockerfile must not fall back to localhost:8000 ──────────────────
+      # When AZURE_APP_URL secret is not set, FLUTTER_BACKEND_API is empty and the
+      # Dockerfile must NOT silently fall back to http://localhost:8000 (unreachable
+      # from users' browsers). The Dockerfile must explicitly reject localhost:8000.
+      - name: Dockerfile must guard against localhost:8000 as FLUTTER_BACKEND_API
+        run: |
+          grep -qF "grep -qF 'localhost:8000'" frontend/Dockerfile || {
+            echo "ERROR: frontend/Dockerfile must contain an explicit guard that rejects"
+            echo "       FLUTTER_BACKEND_API=http://localhost:8000."
+            echo "       When AZURE_APP_URL is not initialised, the build must FAIL rather"
+            echo "       than silently deploying an app that calls localhost:8000 (which is"
+            echo "       the internal backend port, unreachable from end-users' browsers)."
+            exit 1
+          }
+
+      # ── docker-compose.yml must not pass localhost:8000 as build arg ─────
+      # The FLUTTER_BACKEND_API build arg for the local Docker setup must point to
+      # http://localhost (Nginx proxy, port 80), never to http://localhost:8000.
+      - name: docker-compose.yml must not set FLUTTER_BACKEND_API to localhost:8000
+        run: |
+          if grep -E 'FLUTTER_BACKEND_API=http://localhost:8000' docker-compose.yml; then
+            echo "ERROR: docker-compose.yml sets FLUTTER_BACKEND_API=http://localhost:8000."
+            echo "       localhost:8000 is the internal backend port, not accessible from"
+            echo "       end-users' browsers. Use http://localhost (Nginx proxy, port 80)."
+            exit 1
+          fi

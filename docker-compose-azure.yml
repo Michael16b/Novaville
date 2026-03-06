@@ -1,17 +1,31 @@
 version: '3.8'
 
+# Azure App Service – configuration multi-conteneurs.
+#
+# Les images sont pré-construites et poussées vers l'ACR par le workflow CI/CD
+# (job build-and-push dans deploy_docker_azure.yml) avant le déploiement.
+#
+# AZURE_ACR_NAME est substitué à la volée par `envsubst` dans le job deploy
+# du workflow CI/CD ; ce placeholder ne doit PAS être remplacé manuellement.
+#
+# NOTE : FLUTTER_BACKEND_API n'est PAS une variable d'environnement runtime
+# pour le service frontend. L'URL du backend est compilée dans l'application
+# Flutter Web au moment du build via :
+#   --build-arg FLUTTER_BACKEND_API=${{ secrets.AZURE_APP_URL }}
+# (voir le job build-and-push dans deploy_docker_azure.yml).
+
 services:
   # --- BASE DE DONNÉES ---
   postgres:
-    image: novaville.azurecr.io/bitnami-postgresql:15
+    image: ${AZURE_ACR_NAME}.azurecr.io/bitnami-postgresql:15
     container_name: postgres
     # Utiliser l'UID Bitnami pour que les fichiers créés lui appartiennent
     user: "1001"
     environment:
-      - POSTGRESQL_DATABASE=novaville_db
-      - POSTGRESQL_USERNAME=novaville_user
-      - POSTGRESQL_PASSWORD=YOUR_SECURE_PASSWORD
-      # On monte le volume sur /bitnami pour que Postgres crée son propre 
+      - POSTGRESQL_DATABASE=${DB_NAME}
+      - POSTGRESQL_USERNAME=${DB_USER}
+      - POSTGRESQL_PASSWORD=${DB_PASSWORD}
+      # On monte le volume sur /bitnami pour que Postgres crée son propre
       # sous-dossier 'postgresql' avec les bons droits à l'intérieur.
       - POSTGRESQL_VOLUME_DIR=/bitnami/postgresql
     volumes:
@@ -20,28 +34,30 @@ services:
       - novaville-net
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U novaville_user -d novaville_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   # --- DJANGO BACKEND ---
   backend:
-    image: novaville.azurecr.io/novaville-backend:latest
+    image: ${AZURE_ACR_NAME}.azurecr.io/novaville-backend:latest
     container_name: backend
+    # IMPORTANT : DJANGO_SECRET_KEY, JWT_SIGNING_KEY, DB_PASSWORD, DB_NAME et DB_USER
+    # doivent être configurés dans les "Application Settings" de l'Azure App Service
+    # AVANT le déploiement. La syntaxe ${VAR:?message} ci-dessous est honorée par
+    # Docker Compose en local mais peut ne pas bloquer le démarrage sur Azure ;
+    # les App Settings constituent la seule garantie en production.
     environment:
       - DB_ENGINE=django.db.backends.postgresql
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_NAME=novaville_db
-      - DB_USER=novaville_user
-      - DB_PASSWORD=YOUR_SECURE_PASSWORD
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
       - MIGRATE=1
-      - DJANGO_SUPERUSER_USERNAME=admin
-      - DJANGO_SUPERUSER_EMAIL=admin@example.com
-      - DJANGO_SUPERUSER_PASSWORD=ChangeMe123
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:?set_in_env}
-      - JWT_SIGNING_KEY=${JWT_SIGNING_KEY:?set_in_env}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY must be set in Azure App Settings}
+      - JWT_SIGNING_KEY=${JWT_SIGNING_KEY:?JWT_SIGNING_KEY must be set in Azure App Settings}
       - DJANGO_ALLOWED_HOSTS=novavilleapp.azurewebsites.net,novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net,backend,localhost
     depends_on:
       postgres:
@@ -54,13 +70,13 @@ services:
 
   # --- FRONTEND ---
   frontend:
-    image: novaville.azurecr.io/novaville-frontend:latest
+    image: ${AZURE_ACR_NAME}.azurecr.io/novaville-frontend:latest
     container_name: frontend
-    # NOTE: FLUTTER_BACKEND_API / API_BASE_URL are compile-time constants baked into
-    # the Flutter web build (--dart-define). They CANNOT be changed at runtime via
-    # environment variables. To update the backend URL, rebuild the image with the
-    # correct --build-arg FLUTTER_BACKEND_API=<url> passed to docker build (see the
-    # AZURE_APP_URL secret in the GitHub Actions workflow).
+    # NOTE : FLUTTER_BACKEND_API / API_BASE_URL sont des constantes compilées dans
+    # le build Flutter Web (--dart-define). Elles NE PEUVENT PAS être modifiées
+    # à l'exécution via des variables d'environnement. Pour mettre à jour l'URL du
+    # backend, reconstruire l'image avec le bon --build-arg FLUTTER_BACKEND_API=<url>
+    # (voir le secret AZURE_APP_URL dans le workflow GitHub Actions).
     ports:
       - "80:8080"
     networks:

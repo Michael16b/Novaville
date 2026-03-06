@@ -14,26 +14,43 @@ COPY . /app/
 
 # Build args (injectés depuis docker-compose ou GitHub Actions)
 ARG FLUTTER_BACKEND_API
-ARG API_URL
 ARG ENVIRONMENT=production
 
 # --- SOLUTION AU PROBLÈME .ENV ---
 # On crée un fichier .env avec la clé API_BASE_URL que AppConfig lit via flutter_dotenv.
-# FLUTTER_BACKEND_API (ou API_URL) doit être fourni comme build-arg au moment du build Docker
+# FLUTTER_BACKEND_API doit être fourni comme build-arg au moment du build Docker
 # (ex: --build-arg FLUTTER_BACKEND_API=https://mondomaine.com).
 # Ne pas tenter de le surcharger via une variable d'environnement runtime : les valeurs
 # String.fromEnvironment et les assets Flutter sont figés à la compilation.
-RUN touch .env && \
-  BACKEND_API="${FLUTTER_BACKEND_API:-${API_URL:-http://localhost:8000}}" && \
-  echo "API_BASE_URL=${BACKEND_API}" > .env && \
-  echo "ENVIRONMENT=${ENVIRONMENT}" >> .env
+#
+# IMPORTANT: localhost:8000 ne doit JAMAIS être utilisé — c'est le port interne du backend,
+# inaccessible depuis le navigateur des utilisateurs finaux en production.
+# Pour Docker local : utiliser http://localhost (Nginx proxy, port 80).
+# Pour la production : fournir l'URL publique via FLUTTER_BACKEND_API.
+RUN BACKEND_API="${FLUTTER_BACKEND_API:-}" && \
+    if [ -z "$BACKEND_API" ]; then \
+      echo "ERROR: Le build-arg FLUTTER_BACKEND_API est obligatoire." >&2 && \
+      echo "       Exemple : --build-arg FLUTTER_BACKEND_API=https://votre-domaine.com" >&2 && \
+      echo "       Pour Docker local : --build-arg FLUTTER_BACKEND_API=http://localhost" >&2 && \
+      exit 1; \
+    fi && \
+    if echo "$BACKEND_API" | grep -qF 'localhost:8000'; then \
+      echo "ERROR: FLUTTER_BACKEND_API ne doit pas être http://localhost:8000." >&2 && \
+      echo "       localhost:8000 est le port interne du backend, inaccessible depuis" >&2 && \
+      echo "       le navigateur des utilisateurs. Utilisez :" >&2 && \
+      echo "         - http://localhost  (Docker local, Nginx proxy sur le port 80)" >&2 && \
+      echo "         - https://votre-domaine.com  (production)" >&2 && \
+      exit 1; \
+    fi && \
+    echo "API_BASE_URL=${BACKEND_API}" > .env && \
+    echo "ENVIRONMENT=${ENVIRONMENT}" >> .env
 
 # Configuration et build web release
 # On utilise --dart-define pour injecter les variables directement dans le code
 RUN flutter config --enable-web && \
-    BACKEND_API="${FLUTTER_BACKEND_API:-${API_URL:-http://localhost:8000}}" && \
+    BACKEND_API="${FLUTTER_BACKEND_API:-}" && \
     flutter build web --release --verbose \
-  --pwa-strategy=offline-first \
+      --pwa-strategy=offline-first \
       --dart-define=FLUTTER_BACKEND_API=${BACKEND_API} \
       --dart-define=ENVIRONMENT=${ENVIRONMENT}
 
