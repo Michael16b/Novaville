@@ -8,6 +8,12 @@ set -euo pipefail
 
 echo "[entrypoint] starting with user: $(whoami)"
 
+# Wait for the database to be available
+if [ -f /app/wait_for_db.py ]; then
+  echo "[entrypoint] waiting for database..."
+  python /app/wait_for_db.py
+fi
+
 # Ensure STATIC_ROOT and MEDIA_ROOT directories exist and have correct ownership
 DJANGO_STATIC_ROOT=${DJANGO_STATIC_ROOT:-/app/staticfiles}
 DJANGO_MEDIA_ROOT=${DJANGO_MEDIA_ROOT:-/app/media}
@@ -54,18 +60,7 @@ fi
 
 echo "[entrypoint] executing: $@"
 
-
-# Création auto du superuser si variables présentes
-if [ "${DJANGO_SUPERUSER_USERNAME:-}" != "" ]; then
-  python manage.py shell -c "
-from django.contrib.auth import get_user_model
-User = get_user_model()
-u='${DJANGO_SUPERUSER_USERNAME}'
-e='${DJANGO_SUPERUSER_EMAIL:-admin@example.com}'
-p='${DJANGO_SUPERUSER_PASSWORD:-}'
-if p and not User.objects.filter(username=u).exists():
-    User.objects.create_superuser(u, e, p)
-"
-fi
+# Create/verify admin account (idempotent)
+run_as_appuser python manage.py ensure_admin
 
 exec "$@"

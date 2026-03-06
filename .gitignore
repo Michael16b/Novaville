@@ -24,3 +24,8 @@ backend/test.db
 .coverage
 coverage.xml
 htmlcov/
+
+# Local environment files – never commit secrets
+.env
+.env.local
+.env.*.local
