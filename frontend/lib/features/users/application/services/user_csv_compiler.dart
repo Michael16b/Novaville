@@ -1,5 +1,6 @@
 import 'package:csv/csv.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
+import 'package:frontend/constants/texts/texts_csv_drop.dart';
 
 class UserCsvCompiler {
   const UserCsvCompiler();
@@ -26,7 +27,7 @@ class UserCsvCompiler {
           CsvValidationError(
             line: 1,
             column: 'file',
-            message: 'Le fichier CSV est vide.',
+            message: CsvDropTexts.csvEmptyFile,
           ),
         ],
       );
@@ -48,7 +49,7 @@ class UserCsvCompiler {
             CsvValidationError(
               line: 1,
               column: 'file',
-              message: 'Le fichier CSV est vide.',
+              message: CsvDropTexts.csvEmptyFile,
             ),
           ],
         );
@@ -66,7 +67,7 @@ class UserCsvCompiler {
           CsvValidationError(
             line: 1,
             column: 'file',
-            message: 'Le fichier CSV est invalide ou mal formaté.',
+            message: CsvDropTexts.invalidOrMalformed,
           ),
         ],
       );
@@ -95,7 +96,7 @@ class UserCsvCompiler {
           CsvValidationError(
             line: 1,
             column: header,
-            message: 'Colonne dupliquée',
+            message: CsvDropTexts.duplicateColumn,
           ),
         );
       }
@@ -111,7 +112,7 @@ class UserCsvCompiler {
           CsvValidationError(
             line: 1,
             column: header,
-            message: 'Colonne non reconnue',
+            message: CsvDropTexts.unknownColumn,
           ),
         );
       }
@@ -123,7 +124,7 @@ class UserCsvCompiler {
           CsvValidationError(
             line: 1,
             column: requiredHeader,
-            message: 'Colonne obligatoire manquante',
+            message: CsvDropTexts.missingRequiredColumn,
           ),
         );
       }
@@ -186,37 +187,37 @@ class UserCsvCompiler {
       }
 
       if (firstName.isEmpty) {
-        addError('first_name', 'Valeur obligatoire manquante');
+        addError('first_name', CsvDropTexts.missingRequiredValue);
       }
       if (lastName.isEmpty) {
-        addError('last_name', 'Valeur obligatoire manquante');
+        addError('last_name', CsvDropTexts.missingRequiredValue);
       }
       if (username.isEmpty) {
-        addError('username', 'Valeur obligatoire manquante');
+        addError('username', CsvDropTexts.missingRequiredValue);
       }
       if (email.isEmpty) {
-        addError('email', 'Valeur obligatoire manquante');
+        addError('email', CsvDropTexts.missingRequiredValue);
       }
 
       if (username.contains(RegExp(r'\s'))) {
-        addError('username', 'Ne doit pas contenir d\'espace');
+        addError('username', CsvDropTexts.noWhitespaceAllowed);
       }
 
       if (email.isNotEmpty && !_isValidEmail(email)) {
-        addError('email', 'Format invalide');
+        addError('email', CsvDropTexts.invalidFormat);
       }
 
       if (roleRaw.isNotEmpty) {
         if (roleRaw != roleRaw.toLowerCase()) {
           addError(
             'role',
-            'Le rôle doit être en minuscule (ex: citizen, elected, agent)',
+            CsvDropTexts.roleLowercase,
           );
         }
         if (!_allowedRoles.contains(roleRaw.toLowerCase())) {
           addError(
             'role',
-            'Valeur invalide. Valeurs autorisées: citizen, elected, agent',
+            CsvDropTexts.invalidRoleValue,
           );
         }
       }
@@ -225,10 +226,10 @@ class UserCsvCompiler {
       final normalizedEmail = email.toLowerCase();
 
       if (username.isNotEmpty && usernames.contains(normalizedUsername)) {
-        addError('username', 'Doublon détecté (liste actuelle/fichier)');
+        addError('username', CsvDropTexts.duplicateDetected);
       }
       if (email.isNotEmpty && emails.contains(normalizedEmail)) {
-        addError('email', 'Doublon détecté (liste actuelle/fichier)');
+        addError('email', CsvDropTexts.duplicateDetected);
       }
 
       if (errors.any((error) => error.line == lineNumber)) {

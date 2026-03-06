@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:universal_html/html.dart' as html;
+import 'package:frontend/constants/texts/texts_csv_drop.dart';
 
 typedef CsvDropCallback =
     Future<void> Function(String fileName, String content);
@@ -66,7 +67,7 @@ class WebDropHandler {
       final file = files.first;
       final fileName = file.name;
       if (!fileName.toLowerCase().endsWith('.csv')) {
-        onError('Déposez un fichier .csv uniquement.');
+        onError(CsvDropTexts.onlyCsvDrop);
         return;
       }
 
@@ -79,7 +80,7 @@ class WebDropHandler {
           completer.complete(result);
           return;
         }
-        completer.completeError(Exception('Le fichier CSV est illisible.'));
+        completer.completeError(Exception(CsvDropTexts.unreadableFile));
       });
 
       reader.onError.listen((_) {
