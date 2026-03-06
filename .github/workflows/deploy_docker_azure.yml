@@ -72,6 +72,6 @@ jobs:
             --resource-group Novaville \
             --multicontainer-config-type COMPOSE \
             --multicontainer-config-file /tmp/docker-compose-resolved.yml \
-            --docker-registry-server-url https://${{ secrets.AZURE_ACR_NAME }}.azurecr.io \
-            --docker-registry-server-user ${{ secrets.AZURE_ACR_USERNAME }} \
-            --docker-registry-server-password ${{ secrets.AZURE_ACR_PASSWORD }}
+            --container-registry-url https://${{ secrets.AZURE_ACR_NAME }}.azurecr.io \
+            --container-registry-user ${{ secrets.AZURE_ACR_USERNAME }} \
+            --container-registry-password ${{ secrets.AZURE_ACR_PASSWORD }}
