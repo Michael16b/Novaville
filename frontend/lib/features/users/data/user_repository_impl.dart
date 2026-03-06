@@ -3,7 +3,9 @@ import 'package:frontend/constants/texts/texts_my_account.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user.dart';
+import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
+import 'package:frontend/constants/texts/texts_user_repository_errors.dart';
 
 /// HTTP-based implementation of [IUserRepository].
 class UserRepositoryImpl implements IUserRepository {
@@ -53,7 +55,7 @@ class UserRepositoryImpl implements IUserRepository {
       if (json['results'] != null) {
         return UserPage.fromJson(json);
       } else {
-        throw Exception('Invalid response format');
+        throw Exception(AppTextsUserRepositoryErrors.invalidResponseFormat);
       }
     } else {
       throw Exception(
@@ -67,7 +69,7 @@ class UserRepositoryImpl implements IUserRepository {
     final response = await _apiClient.delete('/api/v1/users/$userId/');
 
     if (response.statusCode != 204 && response.statusCode != 200) {
-      throw Exception('Erreur lors de la suppression: ${response.statusCode}');
+      throw Exception('${AppTextsUserRepositoryErrors.deleteUserError}: ${response.statusCode}');
     }
   }
 
@@ -101,6 +103,37 @@ class UserRepositoryImpl implements IUserRepository {
   }
 
   @override
+  Future<User> createUser({
+    required String username,
+    required String email,
+    required String firstName,
+    required String lastName,
+    required String password,
+    UserRole role = UserRole.citizen,
+    int? neighborhoodId,
+  }) async {
+    final response = await _apiClient.post(
+      '/api/v1/users/',
+      body: {
+        'username': username,
+        'email': email,
+        'first_name': firstName,
+        'last_name': lastName,
+        'password': password,
+        'role': role.toJson(),
+        if (neighborhoodId != null) 'neighborhood': neighborhoodId,
+      },
+    );
+
+    if (response.statusCode == 201) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return User.fromJson(json);
+    }
+
+    throw Exception('${AppTextsUserRepositoryErrors.createUserError}: ${response.body}');
+  }
+
+  @override
   Future<List<Neighborhood>> listNeighborhoods() async {
     final response = await _apiClient.get('/api/v1/neighborhoods/');
 
@@ -117,7 +150,7 @@ class UserRepositoryImpl implements IUserRepository {
           .toList();
     } else {
       throw Exception(
-        'Failed to fetch neighborhoods: ${response.statusCode}',
+        '${AppTextsUserRepositoryErrors.fetchNeighborhoodsError}: ${response.statusCode}',
       );
     }
   }

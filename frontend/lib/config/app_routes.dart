@@ -13,5 +13,6 @@ class AppRoutes {
   static const String myAccount = '/account';
   static const String loading = '/loading';
   static const String userAccounts = '/user-accounts';
+  static const String bulkUserCreation = '/user-accounts/bulk-create';
+  static const String credentialsShare = '/credentials-share';
 }
-

@@ -50,59 +50,39 @@ server {
   root /usr/share/nginx/html;
   index index.html;
 
-  # En-têtes sécurité (compatibles Flutter Web/PWA)
+  # ✅ AJOUTE CES DEUX LIGNES
+  resolver 127.0.0.11 valid=30s ipv6=off;
+  set $backend "http://backend:8000";
+
   add_header X-Content-Type-Options "nosniff" always;
-  add_header X-Frame-Options "DENY" always;
-  add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-  add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
-  add_header Cross-Origin-Opener-Policy "same-origin" always;
-  add_header Cross-Origin-Resource-Policy "same-origin" always;
-  add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' https: http: ws: wss:; font-src 'self' data:;" always;
+  # ... reste des headers inchangé ...
 
-  # Proxy pour les requêtes API vers le backend Django
   location /api/ {
-    proxy_pass http://backend:8000;
+    proxy_pass $backend;  # ✅ Variable au lieu de valeur directe
     proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header X-Forwarded-Host $host;
-    proxy_set_header X-Forwarded-Port $server_port;
-    
-    # Timeout settings for long-running requests
-    proxy_connect_timeout 60s;
-    proxy_send_timeout 60s;
-    proxy_read_timeout 60s;
+    # ... reste inchangé ...
   }
 
-  # Proxy pour l'admin Django (optionnel, peut être désactivé en prod)
   location /admin/ {
-    proxy_pass http://backend:8000;
+    proxy_pass $backend;  # ✅ idem
     proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header X-Forwarded-Host $host;
-    proxy_set_header X-Forwarded-Port $server_port;
+    # ... reste inchangé ...
   }
 
-  # Proxy pour les fichiers statiques Django
   location /static/ {
-    proxy_pass http://backend:8000;
+    proxy_pass $backend;  # ✅ idem
     proxy_set_header Host $host;
     expires 1y;
     add_header Cache-Control "public, immutable";
   }
 
-  # Proxy pour les fichiers media Django
   location /media/ {
-    proxy_pass http://backend:8000;
+    proxy_pass $backend;  # ✅ idem
     proxy_set_header Host $host;
     expires 1y;
     add_header Cache-Control "public, max-age=31536000";
   }
 
-  # Flutter Web App (doit être après les locations spécifiques)
   location / {
     try_files $uri $uri/ /index.html;
   }

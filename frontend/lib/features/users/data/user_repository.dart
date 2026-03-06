@@ -1,5 +1,6 @@
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user.dart';
+import 'package:frontend/features/users/data/models/user_role.dart';
 
 class UserPage {
   final int count;
@@ -52,6 +53,16 @@ abstract class IUserRepository {
   /// Deletes a user.
   Future<void> deleteUser({required int userId});
 
+  /// Creates a new user account.
+  Future<User> createUser({
+    required String username,
+    required String email,
+    required String firstName,
+    required String lastName,
+    required String password,
+    UserRole role = UserRole.citizen,
+    int? neighborhoodId,
+  });
   /// Lists all available neighborhoods.
   Future<List<Neighborhood>> listNeighborhoods();
 }
