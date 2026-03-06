@@ -32,7 +32,7 @@ IEventRepository createEventRepository({http.Client? client}) {
           return decoded['access'] as String?;
         }
         return null;
-      } catch (e) {
+      } catch (_) {
         return null;
       }
     },
