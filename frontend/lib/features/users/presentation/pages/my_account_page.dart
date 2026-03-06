@@ -5,9 +5,7 @@ import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_my_account.dart';
 import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
-import 'package:frontend/design_systems/custom_outlined_button.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
-import 'package:frontend/design_systems/custom_text_form_field.dart';
 import 'package:frontend/features/users/application/bloc/user_profil_bloc/user_profile_bloc.dart';
 import 'package:frontend/features/users/data/user_repository_factory.dart';
 
@@ -170,17 +168,17 @@ class _MyAccountViewState extends State<_MyAccountView> {
                           spacing: 16,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
+                            const Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.person_outline,
                                   color: AppColors.primary,
                                   size: 24,
                                 ),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8),
                                 Text(
                                   AppTextsProfile.personalInformation,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.primary,
@@ -188,33 +186,33 @@ class _MyAccountViewState extends State<_MyAccountView> {
                                 ),
                               ],
                             ),
-                            CustomTextFormField(
+                            TextFormField(
                               controller: _firstNameController,
-                              labelText: AppTextsProfile.firstName,
-                              isRequired: true,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return AppTextsProfile.firstNameRequired;
                                 }
                                 return null;
                               },
+                              decoration: const InputDecoration(
+                                labelText: '${AppTextsProfile.firstName} *',
+                              ),
                             ),
-                            CustomTextFormField(
+                            TextFormField(
                               controller: _lastNameController,
-                              labelText: AppTextsProfile.lastName,
-                              isRequired: true,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return AppTextsProfile.lastNameRequired;
                                 }
                                 return null;
                               },
+                              decoration: const InputDecoration(
+                                labelText: '${AppTextsProfile.lastName} *',
+                              ),
                             ),
-                            CustomTextFormField(
+                            TextFormField(
                               controller: _emailController,
-                              labelText: AppTextsProfile.email,
                               keyboardType: TextInputType.emailAddress,
-                              isRequired: true,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return AppTextsProfile.emailRequired;
@@ -224,6 +222,9 @@ class _MyAccountViewState extends State<_MyAccountView> {
                                 }
                                 return null;
                               },
+                              decoration: const InputDecoration(
+                                labelText: '${AppTextsProfile.email} *',
+                              ),
                             ),
                           ],
                         ),
@@ -242,17 +243,17 @@ class _MyAccountViewState extends State<_MyAccountView> {
                           spacing: 16,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
+                            const Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.lock_outline,
                                   color: AppColors.primary,
                                   size: 24,
                                 ),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8),
                                 Text(
                                   AppTextsProfile.connectionInformation,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.primary,
@@ -260,16 +261,17 @@ class _MyAccountViewState extends State<_MyAccountView> {
                                 ),
                               ],
                             ),
-                            CustomTextFormField(
+                            TextFormField(
                               controller: _usernameController,
-                              labelText: AppTextsProfile.username,
-                              isRequired: true,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return AppTextsProfile.usernameRequired;
                                 }
                                 return null;
                               },
+                              decoration: const InputDecoration(
+                                labelText: '${AppTextsProfile.username} *',
+                              ),
                             ),
                           ],
                         ),
@@ -278,7 +280,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
                         spacing: 16,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          CustomOutlinedButton(
+                          TextButton.icon(
                             onPressed: state.status == UserProfileStatus.updating
                                 ? null
                                 : () {
@@ -289,7 +291,8 @@ class _MyAccountViewState extends State<_MyAccountView> {
                                     _usernameController.text = state.user!.username;
                                     _emailController.text = state.user!.email;
                                   },
-                            text: AppTextsGeneral.cancel,
+                            icon: const Icon(Icons.refresh_outlined),
+                            label: const Text(AppTextsGeneral.reset),
                           ),
                           CustomElevatedFlatButton(
                             isLoading:

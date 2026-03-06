@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/features/auth/data/auth_api.dart';
 import 'package:frontend/features/auth/data/auth_repository_impl.dart';
+import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
@@ -35,8 +36,15 @@ class _StubUserRepository implements IUserRepository {
     String? ordering,
     String? search,
     int page = 1,
+    String? role,
+    int? neighborhood,
   }) async {
     throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Neighborhood>> listNeighborhoods() async {
+    return [];
   }
 
   @override
@@ -232,8 +240,15 @@ class _SequentialUserRepository implements IUserRepository {
     String? ordering,
     String? search,
     int page = 1,
+    String? role,
+    int? neighborhood,
   }) async {
     throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Neighborhood>> listNeighborhoods() async {
+    return [];
   }
 
   @override

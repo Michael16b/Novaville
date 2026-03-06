@@ -2,11 +2,12 @@
 import pytest
 from django.db import IntegrityError
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from datetime import timedelta
 from django.utils import timezone
 from core.db.models import (
     Neighborhood, Report, Survey, SurveyOption, Event, 
-    ThemeEvent, Vote, RoleEnum, ProblemTypeEnum, 
+    ThemeEvent, Vote, UsefulInfo, RoleEnum, ProblemTypeEnum, 
     ReportStatusEnum, ThemeEnum
 )
 
@@ -194,6 +195,106 @@ class TestSurveyModel:
             end_date=timezone.now() - timedelta(days=1)
         )
         assert expired.is_active is False
+
+
+
+
+class TestUsefulInfoModel:
+    """Tests to ensure UsefulInfo behaves as a singleton"""
+
+    def test_save_enforces_singleton(self):
+        # creating first instance sets pk=1
+        info1 = UsefulInfo.objects.create(
+            city_hall_name="A",
+            address_line1="Addr A",
+            postal_code="00000",
+            city="Novaville",
+            phone="000",
+            email="a@novaville",
+            website="http://example.com",
+        )
+        assert info1.pk == 1
+        # creating a second object should not create a new row but overwrite
+        info2 = UsefulInfo.objects.create(
+            city_hall_name="B",
+            address_line1="Addr B",
+            postal_code="11111",
+            city="Other",
+            phone="111",
+            email="b@novaville",
+            website="http://example.org",
+        )
+        assert info2.pk == 1
+        assert UsefulInfo.objects.count() == 1
+        # latest values have replaced previous
+        obj = UsefulInfo.objects.first()
+        assert obj.city_hall_name == "B"
+        assert obj.city == "Other"
+
+    def test_delete_noop(self):
+        info = UsefulInfo.objects.create(
+            city_hall_name="C",
+            address_line1="Addr C",
+            postal_code="22222",
+            city="CityC",
+            phone="222",
+            email="c@novaville",
+            website="http://example.net",
+        )
+        info.delete()
+        # record should still exist
+        assert UsefulInfo.objects.count() == 1
+
+    def test_opening_hours_validation_correct_format(self):
+        """Test that valid opening_hours passes validation."""
+        valid_hours = {
+            "Monday": ["09:00-12:00", "13:00-17:00"],
+            "Tuesday": ["09:00-17:00"],
+            "Saturday": [],
+        }
+        info = UsefulInfo(
+            city_hall_name="Test",
+            address_line1="Addr",
+            postal_code="00000",
+            city="City",
+            phone="111",
+            email="test@example.com",
+            website="http://example.com",
+            opening_hours=valid_hours,
+        )
+        info.full_clean()  # Should not raise
+        info.save()
+        assert info.pk == 1
+
+    def test_opening_hours_validation_rejects_string(self):
+        """Test that a simple string for opening_hours is rejected."""
+        info = UsefulInfo(
+            city_hall_name="Test",
+            address_line1="Addr",
+            postal_code="00000",
+            city="City",
+            phone="111",
+            email="test@example.com",
+            website="http://example.com",
+            opening_hours="09:00-16:00",  # Wrong: string instead of dict
+        )
+        with pytest.raises(ValidationError):
+            info.full_clean()
+
+    def test_opening_hours_validation_rejects_list_values(self):
+        """Test that non-list values in opening_hours are rejected."""
+        info = UsefulInfo(
+            city_hall_name="Test",
+            address_line1="Addr",
+            postal_code="00000",
+            city="City",
+            phone="111",
+            email="test@example.com",
+            website="http://example.com",
+            opening_hours={"Monday": "09:00-16:00"},  # Wrong: string value instead of list
+        )
+        with pytest.raises(ValidationError):
+            info.full_clean()
 
 
 class TestVoteModel:

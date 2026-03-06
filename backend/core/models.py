@@ -8,6 +8,7 @@ from core.db.models import (
     Vote,
     Event,
     ThemeEvent,
+    UsefulInfo,
     RoleEnum,
     ProblemTypeEnum,
     ReportStatusEnum,
@@ -27,4 +28,5 @@ __all__ = [
     'ProblemTypeEnum',
     'ReportStatusEnum',
     'ThemeEnum',
+    'UsefulInfo',
 ]

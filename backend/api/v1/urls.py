@@ -26,8 +26,12 @@ router.register(r"votes", VoteViewSet, basename="vote")
 router.register(r"events", EventViewSet, basename="event")
 router.register(r"event-themes", ThemeEventViewSet, basename="event-theme")
 
+# custom endpoints (not part of router)
+from api.v1.viewsets.useful_info_view import UsefulInfoView
+
 # URL patterns: router URLs + authentication endpoints
 urlpatterns = router.urls + [
-	path("auth/token/", LoginView.as_view(), name="token_obtain_pair"),
-	path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("useful-info/", UsefulInfoView.as_view(), name="useful_info"),
+    path("auth/token/", LoginView.as_view(), name="token_obtain_pair"),
+    path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]

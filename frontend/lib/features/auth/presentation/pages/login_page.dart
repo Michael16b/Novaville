@@ -5,7 +5,6 @@ import 'package:frontend/constants/texts/texts_form_labels.dart';
 import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/constants/texts/texts_validator_messages.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
-import 'package:frontend/design_systems/custom_text_form_field.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/ui/assets.dart';
 
@@ -66,22 +65,29 @@ class _LoginPageState extends State<LoginPage> {
                         fit: BoxFit.contain,
                       ),
                       const SizedBox(height: 24),
-                      CustomTextFormField(
-                        labelText: AppFormLabels.username,
+                      TextFormField(
                         controller: _usernameController,
                         keyboardType: TextInputType.name,
+                        textInputAction: TextInputAction.next,
                         validator: (v) => (v == null || v.isEmpty)
                             ? AppValidatorMessages.usernameRequired
                             : null,
+                        decoration: const InputDecoration(
+                          labelText: '${AppFormLabels.username} *',
+                        ),
                       ),
                       const SizedBox(height: 24),
-                      CustomTextFormField(
-                        labelText: AppFormLabels.password,
+                      TextFormField(
                         controller: _passwordController,
                         obscureText: true,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => _submit(),
                         validator: (v) => (v == null || v.isEmpty)
                             ? AppValidatorMessages.passwordRequired
                             : null,
+                        decoration: const InputDecoration(
+                          labelText: '${AppFormLabels.password} *',
+                        ),
                       ),
                       const SizedBox(height: 12),
                       // Display the authentication error if present

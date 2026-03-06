@@ -13,6 +13,8 @@ class UserAccountsState extends Equatable {
     this.previous,
     this.pageSize = 20,
     this.search = '',
+    this.neighborhoods = const <Neighborhood>[],
+    this.neighborhoodsLoaded = false,
   });
 
   const UserAccountsState.initial()
@@ -24,7 +26,9 @@ class UserAccountsState extends Equatable {
       next = null,
       previous = null,
       pageSize = 20,
-      search = '';
+      search = '',
+      neighborhoods = const <Neighborhood>[],
+      neighborhoodsLoaded = false;
 
   const UserAccountsState.loading()
     : status = UserAccountsStatus.loading,
@@ -35,25 +39,22 @@ class UserAccountsState extends Equatable {
       next = null,
       previous = null,
       pageSize = 20,
-      search = '';
+      search = '',
+      neighborhoods = const <Neighborhood>[],
+      neighborhoodsLoaded = false;
 
   const UserAccountsState.loaded(
-    List<User> users, {
-    required int page,
-    required int count,
-    String? next,
-    String? previous,
-    int pageSize = 20,
-    String search = '',
+    this.users, {
+    required this.page,
+    required this.count,
+    this.next,
+    this.previous,
+    this.pageSize = 20,
+    this.search = '',
+    this.neighborhoods = const <Neighborhood>[],
+    this.neighborhoodsLoaded = false,
   }) : status = UserAccountsStatus.loaded,
-       users = users,
-       error = null,
-       page = page,
-       count = count,
-       next = next,
-       previous = previous,
-       pageSize = pageSize,
-       search = search;
+       error = null;
 
   const UserAccountsState.failure(String message)
     : status = UserAccountsStatus.failure,
@@ -64,7 +65,9 @@ class UserAccountsState extends Equatable {
       next = null,
       previous = null,
       pageSize = 20,
-      search = '';
+      search = '',
+      neighborhoods = const <Neighborhood>[],
+      neighborhoodsLoaded = false;
 
   final UserAccountsStatus status;
   final List<User> users;
@@ -75,6 +78,10 @@ class UserAccountsState extends Equatable {
   final String? previous;
   final int pageSize;
   final String search;
+  final List<Neighborhood> neighborhoods;
+
+  /// Whether neighborhoods have been loaded (even if the list is empty).
+  final bool neighborhoodsLoaded;
 
   UserAccountsState copyWith({
     UserAccountsStatus? status,
@@ -86,6 +93,8 @@ class UserAccountsState extends Equatable {
     String? previous,
     int? pageSize,
     String? search,
+    List<Neighborhood>? neighborhoods,
+    bool? neighborhoodsLoaded,
   }) {
     return UserAccountsState(
       status: status ?? this.status,
@@ -97,6 +106,8 @@ class UserAccountsState extends Equatable {
       previous: previous ?? this.previous,
       pageSize: pageSize ?? this.pageSize,
       search: search ?? this.search,
+      neighborhoods: neighborhoods ?? this.neighborhoods,
+      neighborhoodsLoaded: neighborhoodsLoaded ?? this.neighborhoodsLoaded,
     );
   }
 
@@ -111,5 +122,7 @@ class UserAccountsState extends Equatable {
     previous,
     pageSize,
     search,
+    neighborhoods,
+    neighborhoodsLoaded,
   ];
 }

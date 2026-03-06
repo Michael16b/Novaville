@@ -19,3 +19,5 @@ backend/.coverage
 backend/coverage.xml
 backend/htmlcov/
 backend/test.db
+
+.vscode/

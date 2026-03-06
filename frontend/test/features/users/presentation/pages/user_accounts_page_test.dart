@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
+import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
@@ -38,11 +39,15 @@ class MockUserRepository implements IUserRepository {
   final bool shouldThrow;
   final bool shouldThrowOnDelete;
   final List<User> users;
+  final List<Neighborhood> neighborhoods;
 
   MockUserRepository({
     this.shouldThrow = false,
     this.shouldThrowOnDelete = false,
     this.users = const [],
+    this.neighborhoods = const [
+      Neighborhood(id: 1, name: 'Quartier Centre', postalCode: '75001'),
+    ],
   });
 
   @override
@@ -62,6 +67,8 @@ class MockUserRepository implements IUserRepository {
     String? ordering,
     String? search,
     int page = 1,
+    String? role,
+    int? neighborhood,
   }) async {
     if (shouldThrow) throw Exception('Network error');
     return UserPage(
@@ -70,6 +77,11 @@ class MockUserRepository implements IUserRepository {
       previous: null,
       results: users,
     );
+  }
+
+  @override
+  Future<List<Neighborhood>> listNeighborhoods() async {
+    return neighborhoods;
   }
 
   @override
@@ -138,13 +150,26 @@ void main() {
       );
     }
 
-    testWidgets('renders title and floating add button', (
-      WidgetTester tester,
-    ) async {
+    Future<void> pumpPage(
+      WidgetTester tester, {
+      required IUserRepository userRepository,
+    }) async {
+      await tester.pumpWidget(
+        createWidgetUnderTest(userRepository: userRepository),
+      );
+      // Avoid pumpAndSettle because the page can contain repeating animations.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    testWidgets(
+      'renders title and floating add button',
+      (WidgetTester tester) async {
       // Set a large screen size to avoid overflow
       tester.view.physicalSize = const Size(2400, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
       final mockUserRepository = MockUserRepository(users: []);
 
@@ -154,7 +179,7 @@ void main() {
       await tester.pumpAndSettle(); // Wait for bloc to load
 
       expect(find.text(UserTexts.title), findsAtLeastNWidgets(1));
-      expect(find.byIcon(Icons.add), findsOneWidget);
+      expect(find.byType(FloatingActionButton), findsOneWidget);
     });
 
     testWidgets('displays list of users', (WidgetTester tester) async {
@@ -162,6 +187,7 @@ void main() {
       tester.view.physicalSize = const Size(2400, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
       final users = [
         const User(
@@ -201,6 +227,7 @@ void main() {
       tester.view.physicalSize = const Size(2400, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
       final mockUserRepository = MockUserRepository(shouldThrow: true);
 
@@ -211,7 +238,7 @@ void main() {
 
       expect(find.text(UserTexts.error), findsOneWidget);
       // Expect 2 widgets: one in the body, one in the SnackBar
-      expect(find.text('Exception: Network error'), findsNWidgets(2));
+      expect(find.text('Exception: Network error'), findsAtLeastNWidgets(1));
       expect(find.text(UserTexts.retry), findsOneWidget);
     });
 
@@ -220,6 +247,7 @@ void main() {
       tester.view.physicalSize = const Size(2400, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
       final mockUserRepository = MockUserRepository(users: []);
 

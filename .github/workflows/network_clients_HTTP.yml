@@ -1,4 +1,4 @@
-name: Tests Réseaux
+name: Network Tests
 
 on:
   push:
@@ -42,3 +42,7 @@ jobs:
       - name: Test authenticated_client_factory
         working-directory: frontend
         run: flutter test test/core/network/authenticated_client_factory_test.dart
+
+      - name: Test config router
+        working-directory: frontend
+        run: flutter test test/config/router_test.dart
