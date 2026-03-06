@@ -203,24 +203,28 @@ class EventCard extends StatelessWidget {
 
   /// Formats a date as DD/MM/YYYY.
   String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/'
-        '${date.month.toString().padLeft(2, '0')}/'
-        '${date.year}';
+    final localDate = date.toLocal();
+    return '${localDate.day.toString().padLeft(2, '0')}/'
+        '${localDate.month.toString().padLeft(2, '0')}/'
+        '${localDate.year}';
   }
 
   /// Formats a human-readable date range.
   String _formatDateRange(DateTime start, DateTime end) {
+    final localStart = start.toLocal();
+    final localEnd = end.toLocal();
+
     final startStr = _formatDate(start);
     final startTime =
-        '${start.hour.toString().padLeft(2, '0')}:'
-        '${start.minute.toString().padLeft(2, '0')}';
+        '${localStart.hour.toString().padLeft(2, '0')}:'
+        '${localStart.minute.toString().padLeft(2, '0')}';
     final endTime =
-        '${end.hour.toString().padLeft(2, '0')}:'
-        '${end.minute.toString().padLeft(2, '0')}';
+        '${localEnd.hour.toString().padLeft(2, '0')}:'
+        '${localEnd.minute.toString().padLeft(2, '0')}';
 
-    if (start.year == end.year &&
-        start.month == end.month &&
-        start.day == end.day) {
+    if (localStart.year == localEnd.year &&
+        localStart.month == localEnd.month &&
+        localStart.day == localEnd.day) {
       return '$startStr · $startTime – $endTime';
     }
 

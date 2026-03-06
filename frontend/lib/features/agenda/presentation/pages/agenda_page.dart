@@ -90,7 +90,8 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
 
 
   DateTime _normalizeDate(DateTime date) {
-    return DateTime(date.year, date.month, date.day);
+    final localDate = date.toLocal();
+    return DateTime(localDate.year, localDate.month, localDate.day);
   }
 
   /// Builds a map of ALL events (past + future) grouped by day.
