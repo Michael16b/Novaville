@@ -60,12 +60,18 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Docker Compose
+        env:
+          AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
         run: |
+          # Substitute ${AZURE_ACR_NAME} in the compose file (only that variable;
+          # all other ${...} references are Azure App Service Application Settings
+          # resolved at container runtime).
+          envsubst '${AZURE_ACR_NAME}' < docker-compose-azure.yml > /tmp/docker-compose-resolved.yml
           az webapp config container set \
             --name NovavilleApp \
             --resource-group Novaville \
             --multicontainer-config-type COMPOSE \
-            --multicontainer-config-file docker-compose-azure.yml \
+            --multicontainer-config-file /tmp/docker-compose-resolved.yml \
             --docker-registry-server-url https://${{ secrets.AZURE_ACR_NAME }}.azurecr.io \
             --docker-registry-server-user ${{ secrets.AZURE_ACR_USERNAME }} \
             --docker-registry-server-password ${{ secrets.AZURE_ACR_PASSWORD }}

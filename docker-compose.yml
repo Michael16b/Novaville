@@ -66,11 +66,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - FLUTTER_BACKEND_API=/api
+        # http://localhost = origine Nginx (port 80) qui proxy /api/ vers le backend.
+        # Ne jamais utiliser http://localhost:8000 ici : c'est le port interne du backend,
+        # inaccessible depuis le navigateur des utilisateurs finaux.
+        - FLUTTER_BACKEND_API=http://localhost
         - ENVIRONMENT=${ENVIRONMENT:-production}
     container_name: novaville-frontend
-    environment:
-      - FLUTTER_BACKEND_API=http://localhost:8000
     ports:
       - "80:8080"
     depends_on:
