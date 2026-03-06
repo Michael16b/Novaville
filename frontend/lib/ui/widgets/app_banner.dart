@@ -79,50 +79,86 @@ class AppBanner extends StatelessWidget {
                 ),
               ),
             ),
-            PopupMenuButton<String>(
-              offset: const Offset(0, 45),
-              icon: const Icon(Icons.account_circle_outlined),
-              color: Colors.white, // Force white background
-              surfaceTintColor: Colors.white, // Prevent Material 3 tint
-              onSelected: (value) {
-                if (value == 'logout') {
-                  context.read<AuthBloc>().add(const AuthLogoutRequested());
-                } else if (value == 'personal_info') {
-                  context.go(AppRoutes.myAccount);
-                }
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                final user = state.user;
+                final fullName = user != null
+                    ? '${user.firstName} ${user.lastName}'
+                    : AppTextsNavigation.myAccount;
+                final roleLabel = user?.role?.label ?? '';
+
+                return PopupMenuButton<String>(
+                  offset: const Offset(0, 45),
+                  color: Colors.white, // Force white background
+                  surfaceTintColor: Colors.white, // Prevent Material 3 tint
+                  onSelected: (value) {
+                    if (value == 'logout') {
+                      context.read<AuthBloc>().add(const AuthLogoutRequested());
+                    } else if (value == 'personal_info') {
+                      context.go(AppRoutes.myAccount);
+                    }
+                  },
+                  itemBuilder: (BuildContext context) => [
+                    const PopupMenuItem<String>(
+                      value: 'personal_info',
+                      child: Row(
+                        children: [
+                          Icon(Icons.person_outline, color: AppColors.primary),
+                          SizedBox(width: 12),
+                          Flexible(
+                            child: Text(
+                              AppTextsNavigation.personalInfo,
+                              style: TextStyle(color: AppColors.primaryText),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'logout',
+                      child: Row(
+                        children: [
+                          Icon(Icons.logout, color: AppColors.error),
+                          SizedBox(width: 12),
+                          Flexible(
+                            child: Text(
+                              AppTextsAuth.logout,
+                              style: TextStyle(color: AppColors.error),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  child: Row(
+                    children: [
+                      const Icon(Icons.account_circle_outlined),
+                      const SizedBox(width: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            fullName,
+                            style: const TextStyle(
+                              color: AppColors.primaryText,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (roleLabel.isNotEmpty)
+                            Text(
+                              roleLabel,
+                              style: const TextStyle(
+                                color: AppColors.secondaryText,
+                                fontSize: 12,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
               },
-              itemBuilder: (BuildContext context) => [
-                const PopupMenuItem<String>(
-                  value: 'personal_info',
-                  child: Row(
-                    children: [
-                      Icon(Icons.person_outline, color: AppColors.primary),
-                      SizedBox(width: 12),
-                      Flexible(
-                        child: Text(
-                          AppTextsNavigation.personalInfo,
-                          style: TextStyle(color: AppColors.primaryText),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem<String>(
-                  value: 'logout',
-                  child: Row(
-                    children: [
-                      Icon(Icons.logout, color: AppColors.error),
-                      SizedBox(width: 12),
-                      Flexible(
-                        child: Text(
-                          AppTextsAuth.logout,
-                          style: TextStyle(color: AppColors.error),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ),
           ],
         ),
