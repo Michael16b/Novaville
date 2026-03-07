@@ -19,7 +19,7 @@ from rest_framework.filters import OrderingFilter, SearchFilter
             OpenApiParameter(name='status', description='Filter by status', required=False, type=str),
             OpenApiParameter(name='problem_type', description='Filter by problem type', required=False, type=str),
             OpenApiParameter(name='neighborhood', description='Filter by neighborhood ID', required=False, type=int),
-            OpenApiParameter(name='search', description='Search in title, description', required=False, type=str),
+            OpenApiParameter(name='search', description='Search in title, description, and reporter first/last name', required=False, type=str),
             OpenApiParameter(name='created_after', description='Filter reports created after this datetime (ISO 8601, e.g. 2025-01-01T00:00:00Z)', required=False, type=str),
             OpenApiParameter(name='created_before', description='Filter reports created before this datetime (ISO 8601, e.g. 2025-12-31T23:59:59Z)', required=False, type=str),
             OpenApiParameter(name='created_date', description='Filter reports created on this exact date (YYYY-MM-DD)', required=False, type=str),

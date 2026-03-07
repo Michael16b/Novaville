@@ -396,12 +396,13 @@ class TestModelStrMethods:
         """Test Report __str__ method"""
         report = Report.objects.create(
             user=citizen_user,
+            title="Road pothole issue",
             problem_type='ROADS',
             status='RECORDED',
             description='Test',
             neighborhood=neighborhood
         )
-        expected = f"Report #{report.id} - Roads ({report.get_status_display()})"
+        expected = f"Report #{report.id} - Road pothole issue ({report.get_status_display()})"
         assert str(report) == expected
     
     def test_survey_str(self, survey_with_options):

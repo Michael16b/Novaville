@@ -249,7 +249,7 @@ class TestNeighborhoodsAPI:
         """Test listing neighborhoods"""
         response = authenticated_client.get("/api/v1/neighborhoods/")
         assert response.status_code == status.HTTP_200_OK
-        results = response.data.get('results', response.data)
+        results = response.data
         assert len(results) >= 1
     
     def test_create_neighborhood(self, admin_client):
@@ -294,7 +294,7 @@ class TestNeighborhoodsAPI:
             f"/api/v1/neighborhoods/?id={neighborhood.id}&postal_code={neighborhood.postal_code}"
         )
         assert response.status_code == status.HTTP_200_OK
-        results = response.data.get('results', response.data)
+        results = response.data
 
         assert len(results) >= 1
         for neighborhood_data in results:

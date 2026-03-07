@@ -95,6 +95,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                 // Title
                 TextFormField(
                   controller: _titleController,
+                  maxLength: 255,
                   decoration: const InputDecoration(
                     labelText: '${ReportTexts.titleLabel} *',
                     border: OutlineInputBorder(),
