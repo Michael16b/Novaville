@@ -298,7 +298,7 @@ void main() {
         await tester.pumpAndSettle(); // Wait for initial load
 
         // Open the delete dialog for John (the second delete icon)
-        final deleteButtons = find.byIcon(Icons.delete_outline);
+        final deleteButtons = find.byIcon(Icons.delete_outline_rounded);
         await tester.tap(deleteButtons.last);
         await tester.pumpAndSettle();
 
