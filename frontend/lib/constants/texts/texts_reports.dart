@@ -33,8 +33,8 @@ class ReportTexts {
   /// Status form label.
   static const statusLabel = 'Statut';
 
-  /// Citizen target form label.
-  static const citizenTargetLabel = 'Destinataire';
+  /// Title form label.
+  static const titleLabel = 'Titre';
 
   /// Placeholder for problem type dropdown.
   static const selectProblemType = 'Sélectionnez un type de problème';
@@ -70,7 +70,7 @@ class ReportTexts {
   static const search = 'Rechercher';
 
   /// Search field hint.
-  static const searchHint = 'Description, quartier...';
+  static const searchHint = 'Titre, description, nom ou prénom du rapporteur';
 
   /// Sort by label.
   static const sortBy = 'Trier par';
@@ -129,6 +129,9 @@ class ReportTexts {
 
   /// Description required validation message.
   static const descriptionRequired = 'La description est obligatoire';
+
+  /// Title required validation message.
+  static const titleRequired = 'Le titre est obligatoire';
 
   /// Problem type required validation message.
   static const problemTypeRequired =

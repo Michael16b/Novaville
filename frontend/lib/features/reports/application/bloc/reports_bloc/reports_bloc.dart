@@ -152,10 +152,10 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     emit(state.copyWith(status: ReportsStatus.creating));
     try {
       await _repository.createReport(
+        title: event.title,
         problemType: event.problemType,
         description: event.description,
         neighborhood: event.neighborhood,
-        citizenTarget: event.citizenTarget,
       );
       _pageCache.clear();
       emit(state.copyWith(status: ReportsStatus.created));
@@ -271,10 +271,10 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     try {
       final updatedReport = await _repository.updateReport(
         reportId: event.reportId,
+        title: event.title,
         description: event.description,
         neighborhood: event.neighborhood,
         problemType: event.problemType,
-        citizenTarget: event.citizenTarget,
       );
       _pageCache.clear();
 
