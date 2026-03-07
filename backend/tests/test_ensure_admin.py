@@ -14,16 +14,32 @@ pytestmark = pytest.mark.django_db
 class TestEnsureAdminCommand:
     """Tests for the ensure_admin management command."""
 
-    def test_skips_when_password_not_set(self, monkeypatch):
-        """Command does nothing when DJANGO_SUPERUSER_PASSWORD is not set."""
+    def test_creates_superuser_with_auto_generated_password_when_env_not_set(self, monkeypatch):
+        """Command auto-generates a password and creates the superuser when DJANGO_SUPERUSER_PASSWORD is absent."""
         monkeypatch.delenv("DJANGO_SUPERUSER_PASSWORD", raising=False)
-        monkeypatch.setenv("DJANGO_SUPERUSER_USERNAME", "admin")
+        monkeypatch.setenv("DJANGO_SUPERUSER_USERNAME", "autoadmin")
 
-        stderr = StringIO()
-        call_command("ensure_admin", stderr=stderr)
+        stdout = StringIO()
+        call_command("ensure_admin", stdout=stdout)
 
-        assert not User.objects.filter(is_superuser=True).exists()
-        assert "DJANGO_SUPERUSER_PASSWORD is not set" in stderr.getvalue()
+        assert User.objects.filter(username="autoadmin", is_superuser=True).exists()
+        user = User.objects.get(username="autoadmin")
+        assert user.has_usable_password(), "Auto-generated password must be usable."
+        output = stdout.getvalue()
+        assert "created successfully" in output
+        assert "Auto-generated password" in output, (
+            "The auto-generated password must be printed to stdout so the operator can retrieve it."
+        )
+        # Extract and verify the printed password actually authenticates
+        for line in output.splitlines():
+            if "Auto-generated password for" in line and ":" in line:
+                printed_password = line.split(":", 1)[1].strip()
+                assert user.check_password(printed_password), (
+                    "The password printed to stdout must match the one set on the user account."
+                )
+                break
+        else:
+            pytest.fail("Could not find the auto-generated password line in command output.")
 
     def test_creates_superuser_when_none_exists(self, monkeypatch):
         """Command creates a superuser using the provided env variables."""
