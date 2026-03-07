@@ -13,6 +13,7 @@ import 'package:frontend/features/reports/data/models/report_status.dart';
 import 'package:frontend/features/reports/data/report_repository.dart';
 import 'package:frontend/features/reports/data/report_repository_factory.dart';
 import 'package:frontend/features/reports/presentation/widgets/report_card.dart';
+import 'package:frontend/ui/widgets/styled_dialog.dart';
 import 'package:frontend/features/reports/presentation/widgets/report_form_dialog.dart';
 import 'package:frontend/features/reports/presentation/widgets/report_status_dialog.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
@@ -968,39 +969,44 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
   void _showDeleteDialog(BuildContext context, Report report) {
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Row(
-          children: [
-            const Expanded(child: Text(ReportTexts.confirmDeleteTitle)),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => Navigator.pop(dialogContext),
-              tooltip: ReportTexts.cancel,
-            ),
-          ],
-        ),
-        content: const Text(
-          '${ReportTexts.confirmDelete}\n\n'
-          '${ReportTexts.irreversible}',
-        ),
+      builder: (dialogContext) => StyledDialog(
+        title: ReportTexts.confirmDeleteTitle,
+        icon: Icons.warning_amber_rounded,
+        accentColor: AppColors.error,
+        closeTooltip: ReportTexts.cancel,
+        maxWidth: 420,
         actions: [
-          TextButton(
+          StyledDialog.cancelButton(
+            label: ReportTexts.cancel,
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(ReportTexts.cancel),
           ),
-          TextButton(
+          StyledDialog.destructiveButton(
+            label: ReportTexts.delete,
             onPressed: () {
               Navigator.pop(dialogContext);
               context.read<ReportsBloc>().add(
                     ReportDeleteRequested(reportId: report.id),
                   );
             },
-            child: const Text(
-              ReportTexts.delete,
-              style: TextStyle(color: Colors.red),
-            ),
           ),
         ],
+        body: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              ReportTexts.confirmDelete,
+              style: Theme.of(dialogContext).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              ReportTexts.irreversible,
+              style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }

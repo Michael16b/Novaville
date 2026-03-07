@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
-import 'package:frontend/constants/texts/texts_user_accounts.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 
@@ -12,6 +11,7 @@ class UserAccountCard extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.getRoleColor,
+    this.neighborhoodName,
     super.key,
   });
 
@@ -21,29 +21,43 @@ class UserAccountCard extends StatelessWidget {
   final ValueChanged<User> onDelete;
   final Color Function(UserRole? role) getRoleColor;
 
+  /// The resolved neighborhood name for this user, if available.
+  final String? neighborhoodName;
+
   @override
   Widget build(BuildContext context) {
     final fullName = '${user.firstName} ${user.lastName}'.trim();
     final initials =
         '${_firstChar(user.firstName)}${_firstChar(user.lastName)}';
+    final roleColor = getRoleColor(user.role);
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Header: colored accent bar + avatar + name + role badge ──
+          Container(
+            decoration: BoxDecoration(
+              color: roleColor.withValues(alpha: 0.08),
+            ),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+            child: Row(
               children: [
                 CircleAvatar(
-                  radius: 20,
-                  backgroundColor: AppColors.highlight,
+                  radius: 22,
+                  backgroundColor: roleColor.withValues(alpha: 0.18),
                   child: Text(
                     initials.toUpperCase(),
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
+                    style: TextStyle(
+                      color: roleColor,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
                     ),
                   ),
                 ),
@@ -53,90 +67,196 @@ class UserAccountCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        fullName,
+                        fullName.isNotEmpty ? fullName : user.username,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user.username,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.secondaryText,
+                      const SizedBox(height: 2),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: roleColor,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          user.role?.label ?? '-',
+                          style: const TextStyle(
+                            color: AppColors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: getRoleColor(user.role),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    user.role?.label ?? '-',
-                    style: const TextStyle(
-                      color: AppColors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              user.email,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const Spacer(),
-            const Divider(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: () => onEdit(user),
-                    icon: const Icon(Icons.edit_outlined, size: 18),
-                    label: const Text(UserTexts.edit),
-                  ),
-                ),
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: isCurrentUser ? null : () => onDelete(user),
-                    icon: Icon(
-                      Icons.delete_outline,
-                      size: 18,
-                      color: isCurrentUser ? Colors.grey : AppColors.error,
-                    ),
-                    label: Text(
-                      UserTexts.delete,
-                      style: TextStyle(
-                        color: isCurrentUser ? Colors.grey : AppColors.error,
+                if (isCurrentUser)
+                  Tooltip(
+                    message: 'Votre compte',
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.person,
+                        size: 16,
+                        color: AppColors.primary,
                       ),
                     ),
                   ),
+              ],
+            ),
+          ),
+
+          // ── Body: info rows with icons ──
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Column(
+                children: [
+                  _InfoRow(
+                    icon: Icons.alternate_email,
+                    text: user.username,
+                  ),
+                  const SizedBox(height: 8),
+                  _InfoRow(
+                    icon: Icons.mail_outline_rounded,
+                    text: user.email,
+                  ),
+                  if (neighborhoodName != null) ...[
+                    const SizedBox(height: 8),
+                    _InfoRow(
+                      icon: Icons.location_on_outlined,
+                      text: neighborhoodName!,
+                    ),
+                  ],
+                  const Spacer(),
+                ],
+              ),
+            ),
+          ),
+
+          // ── Footer: action buttons ──
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _ActionButton(
+                    icon: Icons.edit_outlined,
+                    label: 'Modifier',
+                    color: isCurrentUser
+                        ? AppColors.disabled
+                        : AppColors.primary,
+                    onTap: isCurrentUser ? null : () => onEdit(user),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: _ActionButton(
+                    icon: Icons.delete_outline_rounded,
+                    label: 'Supprimer',
+                    color: isCurrentUser
+                        ? AppColors.disabled
+                        : AppColors.error,
+                    onTap: isCurrentUser ? null : () => onDelete(user),
+                  ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   String _firstChar(String value) {
     final trimmed = value.trim();
-    if (trimmed.isEmpty) {
-      return '';
-    }
+    if (trimmed.isEmpty) return '';
     return trimmed.substring(0, 1);
   }
 }
+
+/// A single info row with a leading icon and text.
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: AppColors.secondaryText),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.primaryText,
+                  height: 1.3,
+                ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A compact action button used in the card footer.
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+

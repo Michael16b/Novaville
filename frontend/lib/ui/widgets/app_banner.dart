@@ -99,13 +99,25 @@ class AppBanner extends StatelessWidget {
                     }
                   },
                   itemBuilder: (BuildContext context) => [
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'personal_info',
                       child: Row(
                         children: [
-                          Icon(Icons.person_outline, color: AppColors.primary),
-                          SizedBox(width: 12),
-                          Flexible(
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color:
+                                  AppColors.primary.withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.person,
+                              size: 16,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Flexible(
                             child: Text(
                               AppTextsNavigation.personalInfo,
                               style: TextStyle(color: AppColors.primaryText),
@@ -114,13 +126,24 @@ class AppBanner extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'logout',
                       child: Row(
                         children: [
-                          Icon(Icons.logout, color: AppColors.error),
-                          SizedBox(width: 12),
-                          Flexible(
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: AppColors.error.withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.logout,
+                              size: 16,
+                              color: AppColors.error,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Flexible(
                             child: Text(
                               AppTextsAuth.logout,
                               style: TextStyle(color: AppColors.error),
@@ -132,7 +155,18 @@ class AppBanner extends StatelessWidget {
                   ],
                   child: Row(
                     children: [
-                      const Icon(Icons.account_circle_outlined),
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          size: 18,
+                          color: AppColors.primary,
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

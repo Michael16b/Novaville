@@ -18,6 +18,7 @@ import 'package:frontend/features/agenda/presentation/widgets/event_form_dialog.
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
+import 'package:frontend/ui/widgets/styled_dialog.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 /// Participatory agenda page using [TableCalendar].
@@ -652,91 +653,82 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
     showDialog<void>(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: AppColors.page,
-          title: Row(
-            children: [
-              const Icon(Icons.event_note, color: AppColors.primary),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '${AgendaTexts.eventsOf} $dayStr',
-                  style: const TextStyle(fontSize: 18),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(dialogContext),
-                tooltip: AgendaTexts.close,
-              ),
-            ],
-          ),
-          content: SizedBox(
-            width: 500,
-            child: dayEvents.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 32),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.event_busy,
-                          size: 48,
-                          color: AppColors.emptyState,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          AgendaTexts.noEventsOnDay,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(
-                                color: AppColors.secondaryText,
-                                height: 1.5,
-                              ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 500),
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      itemCount: dayEvents.length,
-                      separatorBuilder: (_, __) =>
-                          const SizedBox(height: 8),
-                      itemBuilder: (_, index) {
-                        final event = dayEvents[index];
-                        return EventCard(
-                          event: event,
-                          isStaff: isStaff,
-                          onEdit: isStaff
-                              ? (e) {
-                                  Navigator.pop(dialogContext);
-                                  _showEditDialog(context, e);
-                                }
-                              : null,
-                          onDelete: isStaff
-                              ? (e) {
-                                  Navigator.pop(dialogContext);
-                                  _showDeleteDialog(context, e);
-                                }
-                              : null,
-                          onAddToCalendar: (e) {
-                            _handleAddToCalendar(e);
-                          },
-                        );
-                      },
-                    ),
-                  ),
-          ),
+        return StyledDialog(
+          title: '${AgendaTexts.eventsOf} $dayStr',
+          icon: Icons.event_note,
+          closeTooltip: AgendaTexts.close,
+          maxWidth: 700,
           actions: [
-            TextButton(
+            StyledDialog.cancelButton(
+              label: AgendaTexts.close,
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text(AgendaTexts.close),
             ),
           ],
+          body: dayEvents.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppColors.emptyState
+                              .withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.event_busy,
+                          size: 36,
+                          color: AppColors.emptyState,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        AgendaTexts.noEventsOnDay,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.copyWith(
+                              color: AppColors.secondaryText,
+                              height: 1.5,
+                            ),
+                      ),
+                    ],
+                  ),
+                )
+              : ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 500),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: dayEvents.length,
+                    separatorBuilder: (_, __) =>
+                        const SizedBox(height: 8),
+                    itemBuilder: (_, index) {
+                      final event = dayEvents[index];
+                      return EventCard(
+                        event: event,
+                        isStaff: isStaff,
+                        onEdit: isStaff
+                            ? (e) {
+                                Navigator.pop(dialogContext);
+                                _showEditDialog(context, e);
+                              }
+                            : null,
+                        onDelete: isStaff
+                            ? (e) {
+                                Navigator.pop(dialogContext);
+                                _showDeleteDialog(context, e);
+                              }
+                            : null,
+                        onAddToCalendar: (e) {
+                          _handleAddToCalendar(e);
+                        },
+                      );
+                    },
+                  ),
+                ),
         );
       },
     );
@@ -1226,42 +1218,44 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
   void _showDeleteDialog(BuildContext context, CommunityEvent event) {
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.page,
-        title: Row(
-          children: [
-            const Expanded(
-              child: Text(AgendaTexts.confirmDeleteTitle),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => Navigator.pop(dialogContext),
-              tooltip: AgendaTexts.cancel,
-            ),
-          ],
-        ),
-        content: const Text(
-          '${AgendaTexts.confirmDelete}\n\n'
-          '${AgendaTexts.irreversible}',
-        ),
+      builder: (dialogContext) => StyledDialog(
+        title: AgendaTexts.confirmDeleteTitle,
+        icon: Icons.warning_amber_rounded,
+        accentColor: AppColors.error,
+        closeTooltip: AgendaTexts.cancel,
+        maxWidth: 420,
         actions: [
-          TextButton(
+          StyledDialog.cancelButton(
+            label: AgendaTexts.cancel,
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(AgendaTexts.cancel),
           ),
-          TextButton(
+          StyledDialog.destructiveButton(
+            label: AgendaTexts.delete,
             onPressed: () {
               Navigator.pop(dialogContext);
               context.read<AgendaBloc>().add(
                     AgendaEventDeleteRequested(eventId: event.id),
                   );
             },
-            child: const Text(
-              AgendaTexts.delete,
-              style: TextStyle(color: AppColors.error),
-            ),
           ),
         ],
+        body: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              AgendaTexts.confirmDelete,
+              style: Theme.of(dialogContext).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              AgendaTexts.irreversible,
+              style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1270,100 +1264,95 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
   void _handleAddToCalendar(CommunityEvent event) {
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.page,
-        title: Row(
-          children: [
-            const Expanded(
-              child: Text(AgendaTexts.chooseCalendar),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => Navigator.pop(dialogContext),
-              tooltip: AgendaTexts.close,
-            ),
-          ],
-        ),
-        content: Column(
+      builder: (dialogContext) => StyledDialog(
+        title: AgendaTexts.chooseCalendar,
+        icon: Icons.event_available_outlined,
+        accentColor: AppColors.info,
+        closeTooltip: AgendaTexts.close,
+        maxWidth: 400,
+        body: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Google Calendar option
-            ListTile(
-              leading: const GoogleCalendarIcon(size: 40),
-              title: const Text(
-                AgendaTexts.googleCalendar,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+            Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              child: ListTile(
+                leading: const GoogleCalendarIcon(size: 36),
+                title: const Text(
+                  AgendaTexts.googleCalendar,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
                 ),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              onTap: () async {
-                Navigator.pop(dialogContext);
-                final success =
-                    await CalendarExportHelper.exportToGoogleCalendar(
-                  event,
-                );
-                if (!mounted) return;
-                if (success) {
-                  CustomSnackBar.showSuccess(
-                    context,
-                    AgendaTexts.calendarExportSuccess,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.grey.shade200),
+                ),
+                onTap: () async {
+                  Navigator.pop(dialogContext);
+                  final success =
+                      await CalendarExportHelper.exportToGoogleCalendar(
+                    event,
                   );
-                } else {
-                  CustomSnackBar.showError(
-                    context,
-                    AgendaTexts.calendarExportError,
-                  );
-                }
-              },
+                  if (!mounted) return;
+                  if (success) {
+                    CustomSnackBar.showSuccess(
+                      context,
+                      AgendaTexts.calendarExportSuccess,
+                    );
+                  } else {
+                    CustomSnackBar.showError(
+                      context,
+                      AgendaTexts.calendarExportError,
+                    );
+                  }
+                },
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             // Apple Calendar option (ICS file)
-            ListTile(
-              leading: const AppleCalendarIcon(size: 40),
-              title: const Text(
-                AgendaTexts.appleCalendar,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+            Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              child: ListTile(
+                leading: const AppleCalendarIcon(size: 36),
+                title: const Text(
+                  AgendaTexts.appleCalendar,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
                 ),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              onTap: () async {
-                Navigator.pop(dialogContext);
-                final success =
-                    await CalendarExportHelper.exportToIcsCalendar(
-                  event,
-                );
-                if (!mounted) return;
-                if (success) {
-                  CustomSnackBar.showSuccess(
-                    context,
-                    AgendaTexts.calendarExportSuccess,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.grey.shade200),
+                ),
+                onTap: () async {
+                  Navigator.pop(dialogContext);
+                  final success =
+                      await CalendarExportHelper.exportToIcsCalendar(
+                    event,
                   );
-                } else {
-                  CustomSnackBar.showError(
-                    context,
-                    AgendaTexts.calendarExportError,
-                  );
-                }
-              },
+                  if (!mounted) return;
+                  if (success) {
+                    CustomSnackBar.showSuccess(
+                      context,
+                      AgendaTexts.calendarExportSuccess,
+                    );
+                  } else {
+                    CustomSnackBar.showError(
+                      context,
+                      AgendaTexts.calendarExportError,
+                    );
+                  }
+                },
+              ),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(AgendaTexts.close),
-          ),
-        ],
       ),
     );
   }
 }
-

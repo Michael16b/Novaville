@@ -140,10 +140,17 @@ class _MyAccountViewState extends State<_MyAccountView> {
                     spacing: 24,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Icon(
-                        Icons.account_circle,
-                        size: 80,
-                        color: AppColors.primary,
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          size: 44,
+                          color: AppColors.primary,
+                        ),
                       ),
                       const Text(
                         AppTextsProfile.myProfile,
@@ -168,15 +175,23 @@ class _MyAccountViewState extends State<_MyAccountView> {
                           spacing: 16,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Row(
+                            Row(
                               children: [
-                                Icon(
-                                  Icons.person_outline,
-                                  color: AppColors.primary,
-                                  size: 24,
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary
+                                        .withValues(alpha: 0.12),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
                                 ),
-                                SizedBox(width: 8),
-                                Text(
+                                const SizedBox(width: 8),
+                                const Text(
                                   AppTextsProfile.personalInformation,
                                   style: TextStyle(
                                     fontSize: 18,
@@ -243,15 +258,23 @@ class _MyAccountViewState extends State<_MyAccountView> {
                           spacing: 16,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Row(
+                            Row(
                               children: [
-                                Icon(
-                                  Icons.lock_outline,
-                                  color: AppColors.primary,
-                                  size: 24,
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary
+                                        .withValues(alpha: 0.12),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.lock_outline,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
                                 ),
-                                SizedBox(width: 8),
-                                Text(
+                                const SizedBox(width: 8),
+                                const Text(
                                   AppTextsProfile.connectionInformation,
                                   style: TextStyle(
                                     fontSize: 18,
