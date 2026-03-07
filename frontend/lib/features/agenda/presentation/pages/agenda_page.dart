@@ -10,6 +10,9 @@ import 'package:frontend/features/agenda/data/event_repository.dart';
 import 'package:frontend/features/agenda/data/event_repository_factory.dart';
 import 'package:frontend/features/agenda/data/models/community_event.dart';
 import 'package:frontend/features/agenda/data/models/event_theme.dart';
+import 'package:frontend/features/agenda/presentation/helpers/calendar_export_helper.dart';
+import 'package:frontend/features/agenda/presentation/widgets/calendar_icons/apple_icon.dart';
+import 'package:frontend/features/agenda/presentation/widgets/calendar_icons/google_icon.dart';
 import 'package:frontend/features/agenda/presentation/widgets/event_card.dart';
 import 'package:frontend/features/agenda/presentation/widgets/event_form_dialog.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
@@ -1265,9 +1268,101 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
 
 
   void _handleAddToCalendar(CommunityEvent event) {
-    CustomSnackBar.showInfo(
-      context,
-      '${AgendaTexts.addToCalendar} : ${event.title}',
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.page,
+        title: Row(
+          children: [
+            const Expanded(
+              child: Text(AgendaTexts.chooseCalendar),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.pop(dialogContext),
+              tooltip: AgendaTexts.close,
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Google Calendar option
+            ListTile(
+              leading: const GoogleCalendarIcon(size: 40),
+              title: const Text(
+                AgendaTexts.googleCalendar,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              onTap: () async {
+                Navigator.pop(dialogContext);
+                final success =
+                    await CalendarExportHelper.exportToGoogleCalendar(
+                  event,
+                );
+                if (!mounted) return;
+                if (success) {
+                  CustomSnackBar.showSuccess(
+                    context,
+                    AgendaTexts.calendarExportSuccess,
+                  );
+                } else {
+                  CustomSnackBar.showError(
+                    context,
+                    AgendaTexts.calendarExportError,
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+            // Apple Calendar option (ICS file)
+            ListTile(
+              leading: const AppleCalendarIcon(size: 40),
+              title: const Text(
+                AgendaTexts.appleCalendar,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              onTap: () async {
+                Navigator.pop(dialogContext);
+                final success =
+                    await CalendarExportHelper.exportToIcsCalendar(
+                  event,
+                );
+                if (!mounted) return;
+                if (success) {
+                  CustomSnackBar.showSuccess(
+                    context,
+                    AgendaTexts.calendarExportSuccess,
+                  );
+                } else {
+                  CustomSnackBar.showError(
+                    context,
+                    AgendaTexts.calendarExportError,
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text(AgendaTexts.close),
+          ),
+        ],
+      ),
     );
   }
 }
