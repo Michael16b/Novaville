@@ -209,9 +209,11 @@ SIMPLE_JWT = {
 }
 
 # WhiteNoise staticfiles storage: compressed + manifest for caching
+# Note: Using CompressedStaticFilesStorage instead of CompressedManifestStaticFilesStorage
+# to avoid issues with Grappelli CSS references
 STATICFILES_STORAGE = os.environ.get(
     "DJANGO_STATICFILES_STORAGE",
-    "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    "whitenoise.storage.CompressedStaticFilesStorage",
 )
 
 # drf-spectacular OpenAPI settings

@@ -73,26 +73,31 @@ server {
   add_header X-Content-Type-Options "nosniff" always;
   # ... reste des headers inchangé ...
 
-  location /api/ {
+  location ^~ /api/ {
     proxy_pass $backend;  # ✅ Variable au lieu de valeur directe
     proxy_set_header Host $host;
     # ... reste inchangé ...
   }
 
-  location /admin/ {
+  location ^~ /admin/ {
     proxy_pass $backend;  # ✅ idem
     proxy_set_header Host $host;
     # ... reste inchangé ...
   }
 
-  location /static/ {
+  location ^~ /grappelli/ {
+    proxy_pass $backend;
+    proxy_set_header Host $host;
+  }
+
+  location ^~ /static/ {
     proxy_pass $backend;  # ✅ idem
     proxy_set_header Host $host;
     expires 1y;
     add_header Cache-Control "public, immutable";
   }
 
-  location /media/ {
+  location ^~ /media/ {
     proxy_pass $backend;  # ✅ idem
     proxy_set_header Host $host;
     expires 1y;
