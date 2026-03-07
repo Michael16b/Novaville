@@ -136,7 +136,8 @@ jobs:
               DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
               DJANGO_SUPERUSER_USERNAME="${{ secrets.DJANGO_SUPERUSER_USERNAME }}" \
               DJANGO_SUPERUSER_EMAIL="${{ secrets.DJANGO_SUPERUSER_EMAIL }}" \
-              DJANGO_SUPERUSER_PASSWORD="${{ secrets.DJANGO_SUPERUSER_PASSWORD }}"
+              DJANGO_SUPERUSER_PASSWORD="${{ secrets.DJANGO_SUPERUSER_PASSWORD }}" \
+              DJANGO_RESET_ADMIN_ON_DEPLOY="${{ secrets.DJANGO_RESET_ADMIN_ON_DEPLOY }}"
 
       - name: Deploy Docker Compose
         env:
@@ -149,6 +150,7 @@ jobs:
           DJANGO_SUPERUSER_USERNAME: ${{ secrets.DJANGO_SUPERUSER_USERNAME }}
           DJANGO_SUPERUSER_EMAIL: ${{ secrets.DJANGO_SUPERUSER_EMAIL }}
           DJANGO_SUPERUSER_PASSWORD: ${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
+          DJANGO_RESET_ADMIN_ON_DEPLOY: ${{ secrets.DJANGO_RESET_ADMIN_ON_DEPLOY }}
         run: |
           # Substitute all ${VAR} references in the compose file with their values
           # from the env block above. This ensures secrets reach the containers
