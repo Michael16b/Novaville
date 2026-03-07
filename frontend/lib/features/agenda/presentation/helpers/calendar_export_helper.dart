@@ -11,8 +11,8 @@ class CalendarExportHelper {
 
   /// Opens Google Calendar with a pre-filled event creation form.
   static Future<bool> exportToGoogleCalendar(CommunityEvent event) async {
-    final start = _formatGoogleDate(event.startDate);
-    final end = _formatGoogleDate(event.endDate);
+    final start = formatGoogleDate(event.startDate);
+    final end = formatGoogleDate(event.endDate);
     final title = Uri.encodeComponent(event.title);
     final description = Uri.encodeComponent(event.description);
 
@@ -38,7 +38,7 @@ class CalendarExportHelper {
   /// invisible anchor element (bypasses canLaunchUrl limitation).
   /// On mobile: opens a data: URI which the OS handles natively.
   static Future<bool> exportToIcsCalendar(CommunityEvent event) async {
-    final icsContent = _generateIcs(event);
+    final icsContent = generateIcs(event);
 
     try {
       if (kIsWeb) {
@@ -80,7 +80,8 @@ class CalendarExportHelper {
 
   /// Formats a [DateTime] to Google Calendar date format (UTC).
   /// Example: 20260307T140000Z
-  static String _formatGoogleDate(DateTime date) {
+  @visibleForTesting
+  static String formatGoogleDate(DateTime date) {
     final utc = date.toUtc();
     return '${utc.year}'
         '${utc.month.toString().padLeft(2, '0')}'
@@ -93,15 +94,16 @@ class CalendarExportHelper {
   }
 
   /// Generates ICS file content for the given event.
-  static String _generateIcs(CommunityEvent event) {
+  @visibleForTesting
+  static String generateIcs(CommunityEvent event) {
     final now = DateTime.now().toUtc();
-    final stamp = _formatGoogleDate(now);
-    final start = _formatGoogleDate(event.startDate);
-    final end = _formatGoogleDate(event.endDate);
+    final stamp = formatGoogleDate(now);
+    final start = formatGoogleDate(event.startDate);
+    final end = formatGoogleDate(event.endDate);
 
     // Escape special characters for ICS format
-    final title = _escapeIcs(event.title);
-    final description = _escapeIcs(event.description);
+    final title = escapeIcs(event.title);
+    final description = escapeIcs(event.description);
 
     return 'BEGIN:VCALENDAR\r\n'
         'VERSION:2.0\r\n'
@@ -121,7 +123,8 @@ class CalendarExportHelper {
   }
 
   /// Escapes special ICS characters.
-  static String _escapeIcs(String text) {
+  @visibleForTesting
+  static String escapeIcs(String text) {
     return text
         .replaceAll(r'\', r'\\')
         .replaceAll(',', r'\,')
