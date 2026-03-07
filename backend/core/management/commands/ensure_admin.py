@@ -42,11 +42,11 @@ class Command(BaseCommand):
         """Execute the command."""
         User = get_user_model()
 
-        username = os.environ.get("DJANGO_SUPERUSER_USERNAME", "admin")
-        email = os.environ.get("DJANGO_SUPERUSER_EMAIL", "admin@novaville.fr")
+        username = os.environ.get("DJANGO_SUPERUSER_USERNAME", "admin") or "admin"
+        email = os.environ.get("DJANGO_SUPERUSER_EMAIL", "admin@novaville.fr") or "admin@novaville.fr"
         password = os.environ.get("DJANGO_SUPERUSER_PASSWORD", "")
-        first_name = os.environ.get("DJANGO_SUPERUSER_FIRST_NAME", "Admin")
-        last_name = os.environ.get("DJANGO_SUPERUSER_LAST_NAME", "Novaville")
+        first_name = os.environ.get("DJANGO_SUPERUSER_FIRST_NAME", "Admin") or "Admin"
+        last_name = os.environ.get("DJANGO_SUPERUSER_LAST_NAME", "Novaville") or "Novaville"
         reset_admin = os.environ.get("DJANGO_RESET_ADMIN_ON_DEPLOY", "0").lower() in (
             "1",
             "true",
