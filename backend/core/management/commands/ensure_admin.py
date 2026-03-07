@@ -4,16 +4,23 @@ Management command to ensure a superuser/admin account exists.
 Creates a superuser if none is present in the database, using credentials
 from environment variables. Safe to run multiple times (idempotent).
 
+The created account mirrors the fixture schema: role is set to GLOBAL_ADMIN,
+and first/last name can be customised via environment variables.
+
 Environment variables:
-  DJANGO_SUPERUSER_USERNAME  – username for the admin (default: admin)
-  DJANGO_SUPERUSER_EMAIL     – e-mail address           (default: admin@example.com)
-  DJANGO_SUPERUSER_PASSWORD  – password (required; command is skipped when absent)
+  DJANGO_SUPERUSER_USERNAME    – username for the admin (default: admin)
+  DJANGO_SUPERUSER_EMAIL       – e-mail address         (default: admin@novaville.fr)
+  DJANGO_SUPERUSER_PASSWORD    – password (required; command is skipped when absent)
+  DJANGO_SUPERUSER_FIRST_NAME  – first name              (default: Admin)
+  DJANGO_SUPERUSER_LAST_NAME   – last name               (default: Novaville)
 """
 
 import os
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
+
+from core.db.enums import RoleEnum
 
 
 class Command(BaseCommand):
@@ -26,8 +33,10 @@ class Command(BaseCommand):
         User = get_user_model()
 
         username = os.environ.get("DJANGO_SUPERUSER_USERNAME", "admin")
-        email = os.environ.get("DJANGO_SUPERUSER_EMAIL", "admin@example.com")
+        email = os.environ.get("DJANGO_SUPERUSER_EMAIL", "admin@novaville.fr")
         password = os.environ.get("DJANGO_SUPERUSER_PASSWORD", "")
+        first_name = os.environ.get("DJANGO_SUPERUSER_FIRST_NAME", "Admin")
+        last_name = os.environ.get("DJANGO_SUPERUSER_LAST_NAME", "Novaville")
 
         if not password:
             self.stderr.write(
@@ -52,7 +61,14 @@ class Command(BaseCommand):
             )
             return
 
-        User.objects.create_superuser(username=username, email=email, password=password)
+        User.objects.create_superuser(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            role=RoleEnum.GLOBAL_ADMIN,
+        )
         self.stdout.write(
             self.style.SUCCESS(f"[ensure_admin] Superuser '{username}' created successfully.")
         )

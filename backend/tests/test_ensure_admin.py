@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from io import StringIO
 
+from core.db.enums import RoleEnum
+
 User = get_user_model()
 
 pytestmark = pytest.mark.django_db
@@ -26,7 +28,7 @@ class TestEnsureAdminCommand:
     def test_creates_superuser_when_none_exists(self, monkeypatch):
         """Command creates a superuser using the provided env variables."""
         monkeypatch.setenv("DJANGO_SUPERUSER_USERNAME", "admintest")
-        monkeypatch.setenv("DJANGO_SUPERUSER_EMAIL", "admintest@example.com")
+        monkeypatch.setenv("DJANGO_SUPERUSER_EMAIL", "admintest@novaville.fr")
         monkeypatch.setenv("DJANGO_SUPERUSER_PASSWORD", "StrongPass123!")
 
         stdout = StringIO()
@@ -34,6 +36,45 @@ class TestEnsureAdminCommand:
 
         assert User.objects.filter(username="admintest", is_superuser=True).exists()
         assert "created successfully" in stdout.getvalue()
+
+    def test_created_superuser_has_global_admin_role(self, monkeypatch):
+        """Superuser created by ensure_admin must have role=GLOBAL_ADMIN, matching the fixture."""
+        monkeypatch.setenv("DJANGO_SUPERUSER_USERNAME", "adminrole")
+        monkeypatch.setenv("DJANGO_SUPERUSER_EMAIL", "adminrole@novaville.fr")
+        monkeypatch.setenv("DJANGO_SUPERUSER_PASSWORD", "StrongPass123!")
+
+        call_command("ensure_admin")
+
+        user = User.objects.get(username="adminrole", is_superuser=True)
+        assert user.role == RoleEnum.GLOBAL_ADMIN, (
+            "Superuser created by ensure_admin must have role=GLOBAL_ADMIN to match the fixture schema."
+        )
+
+    def test_created_superuser_has_default_first_and_last_name(self, monkeypatch):
+        """Superuser created with default env values should have first_name='Admin', last_name='Novaville'."""
+        monkeypatch.setenv("DJANGO_SUPERUSER_USERNAME", "adminfullname")
+        monkeypatch.setenv("DJANGO_SUPERUSER_PASSWORD", "StrongPass123!")
+        monkeypatch.delenv("DJANGO_SUPERUSER_FIRST_NAME", raising=False)
+        monkeypatch.delenv("DJANGO_SUPERUSER_LAST_NAME", raising=False)
+
+        call_command("ensure_admin")
+
+        user = User.objects.get(username="adminfullname", is_superuser=True)
+        assert user.first_name == "Admin"
+        assert user.last_name == "Novaville"
+
+    def test_created_superuser_respects_custom_first_and_last_name(self, monkeypatch):
+        """Superuser created with custom FIRST/LAST name env vars should use them."""
+        monkeypatch.setenv("DJANGO_SUPERUSER_USERNAME", "admincustom")
+        monkeypatch.setenv("DJANGO_SUPERUSER_PASSWORD", "StrongPass123!")
+        monkeypatch.setenv("DJANGO_SUPERUSER_FIRST_NAME", "Marie")
+        monkeypatch.setenv("DJANGO_SUPERUSER_LAST_NAME", "Dupont")
+
+        call_command("ensure_admin")
+
+        user = User.objects.get(username="admincustom", is_superuser=True)
+        assert user.first_name == "Marie"
+        assert user.last_name == "Dupont"
 
     def test_idempotent_when_superuser_already_exists(self, monkeypatch):
         """Command does nothing when a superuser already exists."""
