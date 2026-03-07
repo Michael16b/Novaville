@@ -43,105 +43,201 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final displayTheme = event.theme ?? EventTheme.other;
+    final themeColor = _themeColor(displayTheme);
+    final authorName =
+        '${event.createdBy.firstName} ${event.createdBy.lastName}'.trim();
+    final isPast = event.endDate.isBefore(DateTime.now());
 
-    // TV / Desktop accessibility: Focus for keyboard / D-Pad navigation
     return Focus(
       child: Semantics(
         label: '${AgendaTexts.eventDate} ${_formatDate(event.startDate)}, '
             '${event.title}',
-        child: Card(
-          elevation: 2,
-          child: Padding(
-            // Generous spacing comfortable for seniors
-            padding: const EdgeInsets.all(16),
+        child: Opacity(
+          opacity: isPast ? 0.55 : 1.0,
+          child: Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Colors.grey.shade200),
+            ),
+            clipBehavior: Clip.antiAlias,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // ── Header: theme chip ──
-                _ThemeChip(theme: event.theme),
-                const SizedBox(height: 10),
-
-                // ── Title ──
-                // Dyslexia: left-aligned, large font, no justification
-                Text(
-                  event.title,
-                  textAlign: TextAlign.left,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    height: 1.4,
-                    color: AppColors.primaryText,
+                // ── Header: theme accent + title + theme badge ──
+                Container(
+                  decoration: BoxDecoration(
+                    color: themeColor.withValues(alpha: 0.08),
                   ),
-                ),
-                const SizedBox(height: 6),
-
-                // ── Description ──
-                // Dyslexia: line height ≥ 1.5, overflow limited
-                // to 3 lines to keep the card compact
-                Text(
-                  event.description,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.left,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    height: 1.5,
-                    color: AppColors.primaryText,
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // ── Date ──
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.calendar_today,
-                      size: 16,
-                      color: AppColors.secondaryText,
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        _formatDateRange(event.startDate, event.endDate),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: AppColors.secondaryText,
-                          height: 1.4,
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: themeColor.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          displayTheme.icon,
+                          size: 20,
+                          color: themeColor,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              event.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.left,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.4,
+                                  ),
+                            ),
+                            const SizedBox(height: 2),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: themeColor,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                displayTheme.label,
+                                style: const TextStyle(
+                                  color: AppColors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Date chip
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.calendar_today_outlined,
+                              size: 12,
+                              color: AppColors.secondaryText,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatDate(event.startDate),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.secondaryText,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 4),
 
-                // ── Author ──
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.person_outline,
-                      size: 16,
-                      color: AppColors.secondaryText,
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        '${AgendaTexts.createdBy} '
-                        '${event.createdBy.firstName} '
-                        '${event.createdBy.lastName}'.trim(),
-                        maxLines: 1,
+                // ── Body: description + info rows ──
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Description — dyslexia-friendly
+                      Text(
+                        event.description,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: AppColors.secondaryText,
-                          height: 1.4,
+                        textAlign: TextAlign.left,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(height: 1.5),
+                      ),
+                      const SizedBox(height: 10),
+                      _InfoRow(
+                        icon: Icons.schedule_outlined,
+                        text: _formatDateRange(
+                          event.startDate,
+                          event.endDate,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 6),
+                      _InfoRow(
+                        icon: Icons.person_outline_rounded,
+                        text: authorName.isNotEmpty
+                            ? authorName
+                            : event.createdBy.username,
+                      ),
+                    ],
+                  ),
                 ),
 
-                const SizedBox(height: 12),
-
-                // ── Actions ──
-                const Divider(height: 20),
-                _buildActions(context),
+                // ── Footer: action buttons ──
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                  child: Row(
+                    children: [
+                      // Calendar button — visible to all
+                      Expanded(
+                        child: _ActionButton(
+                          icon: Icons.event_available_outlined,
+                          label: AgendaTexts.addToCalendar,
+                          color: AppColors.info,
+                          onTap: onAddToCalendar != null
+                              ? () => onAddToCalendar!(event)
+                              : null,
+                        ),
+                      ),
+                      if (isStaff) ...[
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: _ActionButton(
+                            icon: Icons.edit_outlined,
+                            label: AgendaTexts.edit,
+                            color: AppColors.primary,
+                            onTap: onEdit != null
+                                ? () => onEdit!(event)
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: _ActionButton(
+                            icon: Icons.delete_outline_rounded,
+                            label: AgendaTexts.delete,
+                            color: AppColors.error,
+                            onTap: onDelete != null
+                                ? () => onDelete!(event)
+                                : null,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -150,55 +246,20 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  /// Builds the action buttons.
-  ///
-  /// Seniors: minimum 48×48 hit-box (Material default constraint
-  /// on TextButton.icon). Clearly labeled buttons.
-  Widget _buildActions(BuildContext context) {
-    return Wrap(
-      spacing: 4,
-      runSpacing: 4,
-      children: [
-        // "Add to my calendar" button — visible to all users
-        // Styled in blue (AppColors.info) to match the info snackbar.
-        TextButton.icon(
-          onPressed: onAddToCalendar != null
-              ? () => onAddToCalendar!(event)
-              : null,
-          icon: const Icon(
-            Icons.event_available,
-            size: 18,
-            color: AppColors.info,
-          ),
-          label: const Text(
-            AgendaTexts.addToCalendar,
-            style: TextStyle(color: AppColors.info),
-          ),
-        ),
-
-        // Staff buttons: Edit / Delete
-        if (isStaff) ...[
-          TextButton.icon(
-            onPressed: onEdit != null ? () => onEdit!(event) : null,
-            icon: const Icon(Icons.edit_outlined, size: 18),
-            label: const Text(AgendaTexts.edit),
-          ),
-          TextButton.icon(
-            onPressed:
-                onDelete != null ? () => onDelete!(event) : null,
-            icon: const Icon(
-              Icons.delete_outline,
-              size: 18,
-              color: AppColors.error,
-            ),
-            label: const Text(
-              AgendaTexts.delete,
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ],
-    );
+  /// Returns a color associated with the event theme.
+  Color _themeColor(EventTheme theme) {
+    switch (theme) {
+      case EventTheme.sport:
+        return AppColors.info;
+      case EventTheme.culture:
+        return const Color(0xFF9C27B0); // purple
+      case EventTheme.citizenship:
+        return AppColors.primary;
+      case EventTheme.environment:
+        return AppColors.success;
+      case EventTheme.other:
+        return AppColors.warning;
+    }
   }
 
   /// Formats a date as DD/MM/YYYY.
@@ -233,32 +294,80 @@ class EventCard extends StatelessWidget {
   }
 }
 
-/// Chip displaying the theme with icon and label.
-///
-/// Color-blind accessibility: both the icon AND the text label identify
-/// the theme — color is never the sole indicator.
-class _ThemeChip extends StatelessWidget {
-  const _ThemeChip({this.theme});
+/// A single info row with a leading icon and text.
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.icon, required this.text});
 
-  final EventTheme? theme;
+  final IconData icon;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    final displayTheme = theme ?? EventTheme.other;
-
-    return Semantics(
-      label: 'Theme: ${displayTheme.label}',
-      child: Chip(
-        avatar: Icon(displayTheme.icon, size: 18),
-        label: Text(
-          displayTheme.label,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                height: 1.4,
-              ),
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: AppColors.secondaryText),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.primaryText,
+                  height: 1.4,
+                ),
+          ),
         ),
-        visualDensity: VisualDensity.compact,
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ],
+    );
+  }
+}
+
+/// A compact action button used in the card footer.
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveColor = onTap != null ? color : AppColors.disabled;
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: effectiveColor),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: effectiveColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

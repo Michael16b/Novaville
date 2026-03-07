@@ -89,7 +89,7 @@ class HomePage extends StatelessWidget {
                         onTap: () => context.go(AppRoutes.usefulInfo),
                       ),
                       MenuCard(
-                        icon: Icons.account_circle_outlined,
+                        icon: Icons.person,
                         title: AppTextsHome.myAccount,
                         onTap: () => context.go(AppRoutes.myAccount),
                       ),
