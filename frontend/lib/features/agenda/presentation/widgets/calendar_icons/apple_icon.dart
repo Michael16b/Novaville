@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AppleCalendarIcon extends StatelessWidget {
@@ -12,12 +11,17 @@ class AppleCalendarIcon extends StatelessWidget {
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(painter: _AppleCalendarPainter()),
+      child: CustomPaint(painter: _AppleCalendarPainter(date: DateTime.now())),
     );
   }
 }
 
 class _AppleCalendarPainter extends CustomPainter {
+  _AppleCalendarPainter({required this.date});
+
+  /// The date displayed on the icon (used for staleness checks).
+  final DateTime date;
+
   @override
   void paint(Canvas canvas, Size size) {
     final s = size.width;
@@ -71,7 +75,7 @@ class _AppleCalendarPainter extends CustomPainter {
     );
 
     // Day number
-    final dayNumber = DateTime.now().day.toString();
+    final dayNumber = date.day.toString();
     final numberText = TextPainter(
       text: TextSpan(
         text: dayNumber,
@@ -94,10 +98,12 @@ class _AppleCalendarPainter extends CustomPainter {
 
   String _shortDayName() {
     const days = ['LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM', 'DIM'];
-    return days[DateTime.now().weekday - 1];
+    return days[date.weekday - 1];
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _AppleCalendarPainter oldDelegate) {
+    return date.day != oldDelegate.date.day;
+  }
 }
 

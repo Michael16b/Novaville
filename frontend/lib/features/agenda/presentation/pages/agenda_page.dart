@@ -176,7 +176,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: List.generate(
-                      dayEvents.length.clamp(0, 3),
+                      dayEvents.length.clamp(0, 3).toInt(),
                       (_) => Container(
                         width: 5,
                         height: 5,
