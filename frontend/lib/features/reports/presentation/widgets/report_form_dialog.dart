@@ -30,6 +30,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
   ProblemType? _selectedProblemType;
   int? _selectedNeighborhood;
   late final TextEditingController _descriptionController;
+  late final TextEditingController _titleController;
 
   bool get _isEditing => widget.report != null;
 
@@ -52,11 +53,15 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
     _descriptionController = TextEditingController(
       text: widget.report?.description ?? '',
     );
+    _titleController = TextEditingController(
+      text: widget.report?.title ?? '',
+    );
   }
 
   @override
   void dispose() {
     _descriptionController.dispose();
+    _titleController.dispose();
     super.dispose();
   }
 
@@ -183,6 +188,37 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                         validator: (value) {
                           if (value == null) {
                             return ReportTexts.problemTypeRequired;
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // Title
+                      Text(
+                        '${ReportTexts.titleLabel} *',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.secondaryText,
+                            ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          hintText: ReportTexts.titleLabel,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.all(14),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return ReportTexts.titleRequired;
                           }
                           return null;
                         },
@@ -368,6 +404,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
     if (!_formKey.currentState!.validate()) return;
 
     final result = {
+      'title': _titleController.text.trim(),
       'problem_type': _selectedProblemType!.toJson(),
       'description': _descriptionController.text.trim(),
       'neighborhood': _selectedNeighborhood!,
