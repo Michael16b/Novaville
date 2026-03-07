@@ -17,6 +17,8 @@ Environment variables:
   DJANGO_SUPERUSER_PASSWORD    – password (auto-generated when absent)
   DJANGO_SUPERUSER_FIRST_NAME  – first name              (default: Admin)
   DJANGO_SUPERUSER_LAST_NAME   – last name               (default: Novaville)
+    DJANGO_RESET_ADMIN_ON_DEPLOY – when true, delete existing admin/superusers
+                                                                 before recreating the admin account
 """
 
 import os
@@ -45,6 +47,22 @@ class Command(BaseCommand):
         password = os.environ.get("DJANGO_SUPERUSER_PASSWORD", "")
         first_name = os.environ.get("DJANGO_SUPERUSER_FIRST_NAME", "Admin")
         last_name = os.environ.get("DJANGO_SUPERUSER_LAST_NAME", "Novaville")
+        reset_admin = os.environ.get("DJANGO_RESET_ADMIN_ON_DEPLOY", "0").lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+
+        if reset_admin:
+            deleted_superusers, _ = User.objects.filter(is_superuser=True).delete()
+            deleted_same_username, _ = User.objects.filter(username=username).delete()
+            self.stdout.write(
+                self.style.WARNING(
+                    "[ensure_admin] DJANGO_RESET_ADMIN_ON_DEPLOY enabled: "
+                    f"deleted {deleted_superusers} superuser(s) and "
+                    f"{deleted_same_username} user(s) named '{username}'."
+                )
+            )
 
         auto_generated = False
         if not password:
