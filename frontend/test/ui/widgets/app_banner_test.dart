@@ -112,7 +112,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(createWidgetUnderTest());
 
-      expect(find.byIcon(Icons.account_circle_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.person), findsOneWidget);
     });
 
     testWidgets('opens menu when account icon is tapped', (
@@ -125,7 +125,7 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Tap the account icon to open the menu
-      await tester.tap(find.byIcon(Icons.account_circle_outlined));
+      await tester.tap(find.byIcon(Icons.person));
       await tester.pumpAndSettle();
 
       // Verify menu items are displayed
@@ -143,11 +143,12 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Open the menu
-      await tester.tap(find.byIcon(Icons.account_circle_outlined));
+      await tester.tap(find.byIcon(Icons.person));
       await tester.pumpAndSettle();
 
       // Verify personal info menu item has the correct icon
-      expect(find.byIcon(Icons.person_outline), findsOneWidget);
+      // Icons.person is used in both the banner button and the menu item
+      expect(find.byIcon(Icons.person), findsNWidgets(2));
       expect(find.text(AppTextsNavigation.personalInfo), findsOneWidget);
     });
 
@@ -161,7 +162,7 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Open the menu
-      await tester.tap(find.byIcon(Icons.account_circle_outlined));
+      await tester.tap(find.byIcon(Icons.person));
       await tester.pumpAndSettle();
 
       // Verify logout menu item has the correct icon
@@ -179,7 +180,7 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Open the menu
-      await tester.tap(find.byIcon(Icons.account_circle_outlined));
+      await tester.tap(find.byIcon(Icons.person));
       await tester.pumpAndSettle();
 
       // Tap the logout option
