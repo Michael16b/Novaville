@@ -4,7 +4,17 @@ from api.v1.serializers.user_serializer import UserPublicSerializer
 from api.v1.serializers.neighborhood_serializer import NeighborhoodSerializer
 
 
-class ReportSerializer(serializers.ModelSerializer):
+class _TitleValidationMixin:
+    """Mixin that rejects blank or missing report titles."""
+
+    def validate_title(self, value):
+        """Reject blank titles."""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Title is required and cannot be blank.")
+        return value
+
+
+class ReportSerializer(_TitleValidationMixin, serializers.ModelSerializer):
     """Serializer for Report model"""
     user = UserPublicSerializer(read_only=True)
     neighborhood_detail = NeighborhoodSerializer(source='neighborhood', read_only=True)
@@ -18,7 +28,7 @@ class ReportSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'user']
 
 
-class ReportCreateSerializer(serializers.ModelSerializer):
+class ReportCreateSerializer(_TitleValidationMixin, serializers.ModelSerializer):
     """Serializer for creating a report"""
     
     class Meta:
