@@ -27,6 +27,19 @@ ALLOWED_HOSTS.extend([
     'backend',  # For internal Docker network calls
 ])
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://novavilleapp.azurewebsites.net',
+    'https://novavilleapp-ghfkbnb7caa0c3g9.francecentral-01.azurewebsites.net',
+    'http://localhost',
+    'http://localhost:8000',
+    'http://localhost:8080',
+    'http://127.0.0.1:8000',
+]
+
+# Support for Azure reverse proxy (terminates SSL before reaching Django)
+# This tells Django to trust the X-Forwarded-Proto header from the Azure proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 INSTALLED_APPS = [
     # Add corsheaders for cross-origin requests from the frontend (dev)
