@@ -44,9 +44,12 @@ class NeighborhoodViewSet(viewsets.ModelViewSet):
     
     Read access for all authenticated users.
     Write access for admin only.
+    Pagination is disabled because neighborhoods are reference data
+    with a small, bounded count.
     """
-    queryset = Neighborhood.objects.all()
+    queryset = Neighborhood.objects.all().order_by('name')
     serializer_class = NeighborhoodSerializer
+    pagination_class = None
     filterset_fields = '__all__'
     
     def get_permissions(self):
