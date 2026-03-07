@@ -142,7 +142,7 @@ class AgendaTexts {
       'Il n\'y a pas encore d\'événement prévu.';
 
   /// Add to calendar button label.
-  static const addToCalendar = 'Ajouter à mon calendrier';
+  static const addToCalendar = 'Ajouter à mon agenda';
 
   /// Created by label.
   static const createdBy = 'Par';
@@ -239,4 +239,20 @@ class AgendaTexts {
   /// Error deleting an event.
   static const deleteEventError =
       "Erreur lors de la suppression de l'événement";
+
+  /// Calendar export dialog title.
+  static const chooseCalendar = 'Ajouter à quel agenda ?';
+
+  /// Google Calendar option label.
+  static const googleCalendar = 'Google Agenda';
+
+  /// Apple Calendar option label.
+  static const appleCalendar = 'Calendrier Apple';
+
+  /// Calendar export success message.
+  static const calendarExportSuccess = 'Ouverture de l\'agenda...';
+
+  /// Calendar export error message.
+  static const calendarExportError =
+      'Impossible d\'ouvrir le lien de l\'agenda';
 }

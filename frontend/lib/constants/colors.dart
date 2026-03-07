@@ -41,4 +41,8 @@ class AppColors {
   static const Color calendarMarker = Color(0xFFF9C846);
   static const Color calendarWeekend = Color(0xFF9E9E9E);
   static const Color calendarOutside = Color(0xFFBDBDBD);
+
+  // External services
+  /// Google brand blue color.
+  static const Color googleBlue = Color(0xFF4285F4);
 }

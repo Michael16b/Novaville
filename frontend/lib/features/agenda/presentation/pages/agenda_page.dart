@@ -10,6 +10,9 @@ import 'package:frontend/features/agenda/data/event_repository.dart';
 import 'package:frontend/features/agenda/data/event_repository_factory.dart';
 import 'package:frontend/features/agenda/data/models/community_event.dart';
 import 'package:frontend/features/agenda/data/models/event_theme.dart';
+import 'package:frontend/features/agenda/presentation/helpers/calendar_export_helper.dart';
+import 'package:frontend/features/agenda/presentation/widgets/calendar_icons/apple_icon.dart';
+import 'package:frontend/features/agenda/presentation/widgets/calendar_icons/google_icon.dart';
 import 'package:frontend/features/agenda/presentation/widgets/event_card.dart';
 import 'package:frontend/features/agenda/presentation/widgets/event_form_dialog.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
@@ -125,6 +128,72 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
           ? a.startDate.compareTo(b.startDate)
           : b.startDate.compareTo(a.startDate));
     return upcoming;
+  }
+
+  /// Material ripple effect on tap (similar to Angular MatRipple).
+  Widget _buildRippleDay(
+    BuildContext context,
+    DateTime day,
+    Map<DateTime, List<CommunityEvent>> eventsByDay, {
+    required Color textColor,
+    BoxDecoration? decoration,
+    FontWeight fontWeight = FontWeight.normal,
+    double fontSize = 15,
+    bool enabled = true,
+  }) {
+    final dayEvents = _getEventsForDay(day, eventsByDay);
+    final hasEvents = dayEvents.isNotEmpty;
+
+    return Padding(
+      padding: const EdgeInsets.all(4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          splashColor: AppColors.primary.withValues(alpha: 0.3),
+          highlightColor: AppColors.primary.withValues(alpha: 0.1),
+          onTap: enabled
+              ? () {
+                  setState(() => _focusedDay = day);
+                  _showDayEventsModal(context, day, dayEvents);
+                }
+              : null,
+          child: Container(
+            decoration: decoration,
+            alignment: Alignment.center,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '${day.day}',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: fontSize,
+                    fontWeight: fontWeight,
+                  ),
+                ),
+                if (hasEvents)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(
+                      dayEvents.length.clamp(0, 3).toInt(),
+                      (_) => Container(
+                        width: 5,
+                        height: 5,
+                        margin: const EdgeInsets.symmetric(horizontal: 0.5),
+                        decoration: const BoxDecoration(
+                          color: AppColors.calendarMarker,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
 
@@ -424,6 +493,8 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
           eventLoader: (day) => _getEventsForDay(day, eventsByDay),
 
           // Open modal on day tap
+          // Open modal on day tap — handled by custom builders' InkWell.
+          // onDaySelected only updates focusedDay for calendar navigation.
           onDaySelected: (selectedDay, focusedDay) {
             setState(() => _focusedDay = focusedDay);
             final dayEvents = _getEventsForDay(selectedDay, eventsByDay);
@@ -443,6 +514,40 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
             CalendarFormat.twoWeeks: AgendaTexts.format2Weeks,
             CalendarFormat.week: AgendaTexts.formatWeek,
           },
+
+          calendarBuilders: CalendarBuilders<CommunityEvent>(
+            defaultBuilder: (context, day, focusedDay) {
+              return _buildRippleDay(
+                context, day, eventsByDay,
+                textColor: AppColors.primaryText,
+              );
+            },
+            todayBuilder: (context, day, focusedDay) {
+              return _buildRippleDay(
+                context, day, eventsByDay,
+                textColor: AppColors.primaryText,
+                decoration: const BoxDecoration(
+                  color: AppColors.calendarToday,
+                  shape: BoxShape.circle,
+                ),
+                fontWeight: FontWeight.bold,
+              );
+            },
+            outsideBuilder: (context, day, focusedDay) {
+              return _buildRippleDay(
+                context, day, eventsByDay,
+                textColor: AppColors.calendarOutside,
+                fontSize: 14,
+              );
+            },
+            disabledBuilder: (context, day, focusedDay) {
+              return _buildRippleDay(
+                context, day, eventsByDay,
+                textColor: AppColors.calendarOutside.withValues(alpha: 0.5),
+                enabled: false,
+              );
+            },
+          ),
 
           calendarStyle: const CalendarStyle(
             todayDecoration: BoxDecoration(
@@ -479,9 +584,9 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
               color: AppColors.calendarMarker,
               shape: BoxShape.circle,
             ),
-            markerSize: 7,
-            markersMaxCount: 3,
-            markerMargin: EdgeInsets.symmetric(horizontal: 1),
+            markerSize: 0,
+            markersMaxCount: 0,
+            markerMargin: EdgeInsets.zero,
             cellMargin: EdgeInsets.all(4),
           ),
 
@@ -1163,9 +1268,101 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
 
 
   void _handleAddToCalendar(CommunityEvent event) {
-    CustomSnackBar.showInfo(
-      context,
-      '${AgendaTexts.addToCalendar} : ${event.title}',
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.page,
+        title: Row(
+          children: [
+            const Expanded(
+              child: Text(AgendaTexts.chooseCalendar),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.pop(dialogContext),
+              tooltip: AgendaTexts.close,
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Google Calendar option
+            ListTile(
+              leading: const GoogleCalendarIcon(size: 40),
+              title: const Text(
+                AgendaTexts.googleCalendar,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              onTap: () async {
+                Navigator.pop(dialogContext);
+                final success =
+                    await CalendarExportHelper.exportToGoogleCalendar(
+                  event,
+                );
+                if (!mounted) return;
+                if (success) {
+                  CustomSnackBar.showSuccess(
+                    context,
+                    AgendaTexts.calendarExportSuccess,
+                  );
+                } else {
+                  CustomSnackBar.showError(
+                    context,
+                    AgendaTexts.calendarExportError,
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+            // Apple Calendar option (ICS file)
+            ListTile(
+              leading: const AppleCalendarIcon(size: 40),
+              title: const Text(
+                AgendaTexts.appleCalendar,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              onTap: () async {
+                Navigator.pop(dialogContext);
+                final success =
+                    await CalendarExportHelper.exportToIcsCalendar(
+                  event,
+                );
+                if (!mounted) return;
+                if (success) {
+                  CustomSnackBar.showSuccess(
+                    context,
+                    AgendaTexts.calendarExportSuccess,
+                  );
+                } else {
+                  CustomSnackBar.showError(
+                    context,
+                    AgendaTexts.calendarExportError,
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text(AgendaTexts.close),
+          ),
+        ],
+      ),
     );
   }
 }
