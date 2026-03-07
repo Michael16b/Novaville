@@ -72,3 +72,25 @@ class TestEnsureAdminCommand:
         # The regular user should not have been promoted to superuser
         assert not User.objects.filter(username="admin", is_superuser=True).exists()
         assert "already exists but is not a superuser" in stderr.getvalue()
+
+    def test_created_superuser_has_usable_non_null_password(self, monkeypatch):
+        """Superuser created by ensure_admin must have a usable, non-null password.
+
+        This guards against silent misconfigurations where the admin account is
+        created with an unusable password (e.g. set_unusable_password()) or an
+        empty password, which would prevent login on first production deployment.
+        """
+        monkeypatch.setenv("DJANGO_SUPERUSER_USERNAME", "adminprod")
+        monkeypatch.setenv("DJANGO_SUPERUSER_EMAIL", "adminprod@example.com")
+        monkeypatch.setenv("DJANGO_SUPERUSER_PASSWORD", "StrongProdPass123!")
+
+        call_command("ensure_admin")
+
+        user = User.objects.get(username="adminprod", is_superuser=True)
+        assert user.has_usable_password(), (
+            "Superuser created by ensure_admin must have a usable password. "
+            "Ensure DJANGO_SUPERUSER_PASSWORD is set to a non-empty value."
+        )
+        assert user.check_password("StrongProdPass123!"), (
+            "Superuser password must match the value provided in DJANGO_SUPERUSER_PASSWORD."
+        )
