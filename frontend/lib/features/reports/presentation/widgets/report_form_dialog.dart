@@ -209,6 +209,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                       const SizedBox(height: 6),
                       TextFormField(
                         controller: _titleController,
+                        maxLength: 255,
                         decoration: InputDecoration(
                           hintText: ReportTexts.titleLabel,
                           border: OutlineInputBorder(
