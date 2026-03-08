@@ -50,103 +50,104 @@ class _LoginPageState extends State<LoginPage> {
             state.status == AuthStatus.authenticating ||
                 state.status == AuthStatus.checking;
         return Scaffold(
+          resizeToAvoidBottomInset: true,
           body: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  keyboardDismissBehavior:
-                  ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: const EdgeInsets.all(16),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight - 32,
-                      maxWidth: 400,
-                    ),
-                    child: Center(
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Image.asset(
-                              AppAssets.login_logo,
-                              height: 300,
-                              fit: BoxFit.contain,
-                            ),
-                            const SizedBox(height: 24),
-                            TextFormField(
-                              controller: _usernameController,
-                              keyboardType: TextInputType.name,
-                              textInputAction: TextInputAction.next,
-                              validator: (v) => (v == null || v.isEmpty)
-                                  ? AppValidatorMessages.usernameRequired
-                                  : null,
-                              decoration: const InputDecoration(
-                                labelText: '${AppFormLabels.username} *',
+            child: CustomScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 400),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.asset(
+                                AppAssets.login_logo,
+                                height: 300,
+                                fit: BoxFit.contain,
                               ),
-                            ),
-                            const SizedBox(height: 24),
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: true,
-                              textInputAction: TextInputAction.done,
-                              onFieldSubmitted: (_) => _submit(),
-                              validator: (v) => (v == null || v.isEmpty)
-                                  ? AppValidatorMessages.passwordRequired
-                                  : null,
-                              decoration: const InputDecoration(
-                                labelText: '${AppFormLabels.password} *',
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            // Required fields hint
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.info_outline,
-                                  size: 14,
-                                  color: AppColors.secondaryText,
+                              const SizedBox(height: 24),
+                              TextFormField(
+                                controller: _usernameController,
+                                keyboardType: TextInputType.name,
+                                textInputAction: TextInputAction.next,
+                                validator: (v) => (v == null || v.isEmpty)
+                                    ? AppValidatorMessages.usernameRequired
+                                    : null,
+                                decoration: const InputDecoration(
+                                  labelText: '${AppFormLabels.username} *',
                                 ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  AppTextsGeneral.requiredFieldsHint,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
+                              ),
+                              const SizedBox(height: 24),
+                              TextFormField(
+                                controller: _passwordController,
+                                obscureText: true,
+                                textInputAction: TextInputAction.done,
+                                onFieldSubmitted: (_) => _submit(),
+                                validator: (v) => (v == null || v.isEmpty)
+                                    ? AppValidatorMessages.passwordRequired
+                                    : null,
+                                decoration: const InputDecoration(
+                                  labelText: '${AppFormLabels.password} *',
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              // Required fields hint
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.info_outline,
+                                    size: 14,
                                     color: AppColors.secondaryText,
-                                    fontStyle: FontStyle.italic,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    AppTextsGeneral.requiredFieldsHint,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                      color: AppColors.secondaryText,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              // Display the authentication error if present
+                              if (state.status == AuthStatus.failure &&
+                                  state.error != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Text(
+                                    state.error!,
+                                    style:
+                                    const TextStyle(color: AppColors.error),
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            // Display the authentication error if present
-                            if (state.status == AuthStatus.failure &&
-                                state.error != null)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: Text(
-                                  state.error!,
-                                  style: const TextStyle(color: AppColors.error),
+                              const SizedBox(height: 24),
+                              SizedBox(
+                                width: double.infinity,
+                                child: CustomElevatedFlatButton(
+                                  text: AppTextsAuth.login,
+                                  isLoading: isLoading,
+                                  onPressed: _submit,
                                 ),
                               ),
-                            const SizedBox(height: 24),
-                            SizedBox(
-                              width: double.infinity,
-                              child: CustomElevatedFlatButton(
-                                text: AppTextsAuth.login,
-                                isLoading: isLoading,
-                                onPressed: _submit,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                );
-              },
+                ),
+              ],
             ),
           ),
         );
