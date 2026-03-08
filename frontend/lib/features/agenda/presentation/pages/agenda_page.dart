@@ -776,7 +776,14 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
         // Section header
         Row(
           children: [
-            const Icon(Icons.upcoming, size: 22, color: AppColors.primary),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.upcoming_rounded, size: 20, color: AppColors.primary),
+            ),
             const SizedBox(width: 8),
             Text(
               AgendaTexts.upcomingEvents,
