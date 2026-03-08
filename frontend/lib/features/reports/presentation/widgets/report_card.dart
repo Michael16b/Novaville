@@ -50,19 +50,43 @@ class ReportCard extends StatelessWidget {
     return Opacity(
       opacity: isResolved ? 0.55 : 1.0,
       child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.grey.shade200),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ── Header: colored accent + problem type icon + status ──
-            Container(
-              decoration: BoxDecoration(
-                color: typeColor.withValues(alpha: 0.08),
+        color: isResolved
+            ? Theme.of(context).cardColor.withValues(alpha: 0.85)
+            : null,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header row: problem type chip + status badge
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _ProblemTypeChip(problemType: report.problemType),
+                  const Spacer(),
+                  _StatusBadge(status: report.status),
+                ],
+              ),
+              const SizedBox(height: 10),
+              // Title
+              if (report.title.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(
+                    report.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ),
+              // Description
+              Text(
+                report.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
               child: Row(

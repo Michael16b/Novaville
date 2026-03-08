@@ -29,6 +29,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
   final _formKey = GlobalKey<FormState>();
   ProblemType? _selectedProblemType;
   int? _selectedNeighborhood;
+  late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
   late final TextEditingController _titleController;
 
@@ -50,6 +51,9 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
             ? reportNeighborhoodId
             : null;
 
+    _titleController = TextEditingController(
+      text: widget.report?.title ?? '',
+    );
     _descriptionController = TextEditingController(
       text: widget.report?.description ?? '',
     );
@@ -60,6 +64,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
 
   @override
   void dispose() {
+    _titleController.dispose();
     _descriptionController.dispose();
     _titleController.dispose();
     super.dispose();
