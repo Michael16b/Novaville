@@ -53,4 +53,5 @@ class UserTexts {
   static const copyConnectionLink = 'Copier le lien de connexion';
   static const copied = 'Copié !';
   static const copy = 'Copier';
+  static const create = 'Créer';
 }
