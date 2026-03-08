@@ -605,6 +605,9 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
 
     return DropdownButtonFormField<int?>(
       value: selectedValue,
+      isExpanded: true,
+      menuMaxHeight: 300,
+      borderRadius: BorderRadius.circular(12),
       decoration: const InputDecoration(
         labelText: ReportTexts.cardsPerRow,
         border: OutlineInputBorder(),

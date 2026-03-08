@@ -13,6 +13,7 @@ import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
 import 'package:frontend/features/users/data/user_repository_factory.dart';
+import 'package:frontend/features/users/presentation/widgets/single_user_creation_dialog.dart';
 import 'package:frontend/features/users/presentation/widgets/user_account_card.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 import 'package:frontend/ui/widgets/neighborhood_autocomplete.dart';
@@ -37,12 +38,15 @@ class UserAccountsPage extends StatelessWidget {
     // Setup repository with authenticated client
     final repository = userRepository ?? _createDefaultRepository();
 
-    return BlocProvider(
-      create: (context) =>
-          UserAccountsBloc(repository: repository)
-            ..add(const UserAccountsLoadRequested(ordering: 'first_name'))
-            ..add(const UserAccountsNeighborhoodsLoadRequested()),
-      child: const _UserAccountsPageContent(),
+    return RepositoryProvider.value(
+      value: repository,
+      child: BlocProvider(
+        create: (context) =>
+            UserAccountsBloc(repository: repository)
+              ..add(const UserAccountsLoadRequested(ordering: 'first_name'))
+              ..add(const UserAccountsNeighborhoodsLoadRequested()),
+        child: const _UserAccountsPageContent(),
+      ),
     );
   }
 
@@ -96,11 +100,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
           FabMenuAction(
             label: UserTexts.addUser,
             icon: Icons.person_add_alt_1,
-            onPressed: () => _showAddInProgressDialog(
-              context,
-              title: UserTexts.addUser,
-              description: UserTexts.addSingleUserDescription,
-            ),
+            onPressed: () => _showAddUserDialog(context),
           ),
           FabMenuAction(
             label: UserTexts.addUsers,
@@ -487,6 +487,9 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     return DropdownButtonFormField<int?>(
       value: selectedValue,
       isDense: true,
+      isExpanded: true,
+      menuMaxHeight: 300,
+      borderRadius: BorderRadius.circular(12),
       decoration: const InputDecoration(
         labelText: UserTexts.cardsPerRow,
         border: OutlineInputBorder(),
@@ -779,67 +782,27 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     );
   }
 
-  void _showAddInProgressDialog(
-    BuildContext context, {
-    required String title,
-    required String description,
-  }) {
+  void _showAddUserDialog(BuildContext context) {
+    final bloc = context.read<UserAccountsBloc>();
+    final neighborhoods = bloc.state.neighborhoods;
+    final repository = context.read<IUserRepository>();
+
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => StyledDialog(
-        title: title,
-        icon: Icons.info_outline,
-        closeTooltip: UserTexts.close,
-        maxWidth: 420,
-        actions: [
-          StyledDialog.cancelButton(
-            label: UserTexts.close,
-            onPressed: () => Navigator.pop(dialogContext),
-          ),
-        ],
-        body: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              description,
-              style: Theme.of(dialogContext).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.construction,
-                    size: 16,
-                    color: AppColors.warning,
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      UserTexts.featureComingSoon,
-                      style: TextStyle(
-                        color: AppColors.warning,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+      builder: (context) => SingleUserCreationDialog(
+        userRepository: repository,
+        neighborhoods: neighborhoods,
       ),
-    );
+    ).then((_) {
+      // Reload list after dialog closes (in case user was created)
+      // Ideally the dialog should return true if created, but reloading anyway is safe
+      bloc.add(
+        UserAccountsLoadRequested(
+          ordering: _sortAscending ? _sortColumnKey : '-$_sortColumnKey',
+          search: _searchQuery,
+        ),
+      );
+    });
   }
 
   void _showEditDialog(BuildContext context, User user) {

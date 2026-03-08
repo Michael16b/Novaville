@@ -153,7 +153,11 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                       const SizedBox(height: 6),
                       DropdownButtonFormField<ProblemType>(
                         value: _selectedProblemType,
+                        isExpanded: true,
+                        menuMaxHeight: 300,
+                        borderRadius: BorderRadius.circular(12),
                         decoration: InputDecoration(
+                          hintText: ReportTexts.selectProblemType,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

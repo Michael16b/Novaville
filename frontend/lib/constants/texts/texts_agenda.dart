@@ -40,6 +40,9 @@ class AgendaTexts {
   /// Theme placeholder.
   static const selectTheme = 'Sélectionnez une thématique';
 
+  /// Date placeholder.
+  static const selectDate = 'Sélectionnez une date';
+
   /// Description hint.
   static const descriptionHint = 'Décrivez l\'événement...';
 

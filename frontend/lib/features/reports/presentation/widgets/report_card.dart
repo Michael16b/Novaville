@@ -50,6 +50,7 @@ class ReportCard extends StatelessWidget {
     return Opacity(
       opacity: isResolved ? 0.55 : 1.0,
       child: Card(
+        clipBehavior: Clip.antiAlias,
         color: isResolved
             ? Theme.of(context).cardColor.withValues(alpha: 0.85)
             : null,
@@ -58,7 +59,10 @@ class ReportCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // ── Header ──
-            Padding(
+            Container(
+              decoration: BoxDecoration(
+                color: typeColor.withValues(alpha: 0.08),
+              ),
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
               child: Row(
                 children: [
@@ -127,7 +131,7 @@ class ReportCard extends StatelessWidget {
 
             // ── Body ──
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
