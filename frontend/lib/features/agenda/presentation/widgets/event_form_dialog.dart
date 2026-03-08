@@ -4,6 +4,7 @@ import 'package:frontend/constants/texts/texts_agenda.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/features/agenda/data/models/community_event.dart';
 import 'package:frontend/features/agenda/data/models/event_theme.dart';
+import 'package:frontend/ui/widgets/styled_dialog.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
 /// Dialog for creating / editing an event.
@@ -57,169 +58,178 @@ class _EventFormDialogState extends State<EventFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: AppColors.page,
-      title: Row(
-        children: [
-          Expanded(
-            child: Text(
-              _isEditing
-                  ? AgendaTexts.editEvent
-                  : AgendaTexts.createEvent,
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
-            tooltip: AgendaTexts.cancel,
-          ),
-        ],
-      ),
-      content: SizedBox(
-        width: 500,
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Title
-                TextFormField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(
-                    labelText: '${AgendaTexts.titleLabel} *',
-                    hintText: AgendaTexts.titleHint,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return AgendaTexts.requiredField;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
+    final title = _isEditing
+        ? AgendaTexts.editEvent
+        : AgendaTexts.createEvent;
+    final actionLabel =
+        _isEditing ? AgendaTexts.save : AgendaTexts.validate;
 
-                // Description
-                TextFormField(
-                  controller: _descriptionController,
-                  maxLines: 4,
-                  decoration: const InputDecoration(
-                    labelText: '${AgendaTexts.descriptionLabel} *',
-                    hintText: AgendaTexts.descriptionHint,
-                    alignLabelWithHint: true,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return AgendaTexts.requiredField;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                // Theme — required field, no "none" option
-                DropdownButtonFormField<EventTheme>(
-                  initialValue: _selectedTheme,
-                  decoration: const InputDecoration(
-                    labelText: '${AgendaTexts.themeLabel} *',
-                  ),
-                  items: EventTheme.values
-                      .map(
-                        (t) => DropdownMenuItem<EventTheme>(
-                          value: t,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(t.icon, size: 18),
-                              const SizedBox(width: 8),
-                              Text(t.label),
-                            ],
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  validator: (value) {
-                    if (value == null) {
-                      return AgendaTexts.requiredTheme;
-                    }
-                    return null;
-                  },
-                  onChanged: (value) =>
-                      setState(() => _selectedTheme = value),
-                ),
-                const SizedBox(height: 16),
-
-                // Start date — required, validated inline
-                _OmniDateTimeFormField(
-                  label: '${AgendaTexts.startDateLabel} *',
-                  value: _startDate,
-                  validator: (date) {
-                    if (date == null) {
-                      return AgendaTexts.requiredStartDate;
-                    }
-                    return null;
-                  },
-                  onPicked: (date) =>
-                      setState(() => _startDate = date),
-                ),
-                const SizedBox(height: 12),
-
-                // End date — required, validated inline
-                _OmniDateTimeFormField(
-                  label: '${AgendaTexts.endDateLabel} *',
-                  value: _endDate,
-                  firstDate: _startDate,
-                  validator: (date) {
-                    if (date == null) {
-                      return AgendaTexts.requiredEndDate;
-                    }
-                    if (_startDate != null && date.isBefore(_startDate!)) {
-                      return AgendaTexts.invalidDate;
-                    }
-                    return null;
-                  },
-                  onPicked: (date) =>
-                      setState(() => _endDate = date),
-                ),
-                const SizedBox(height: 16),
-
-                // Required fields hint
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.info_outline,
-                      size: 14,
-                      color: AppColors.secondaryText,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      AppTextsGeneral.requiredFieldsHint,
-                      style:
-                          Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.secondaryText,
-                                fontStyle: FontStyle.italic,
-                              ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return StyledDialog(
+      title: title,
+      icon: _isEditing
+          ? Icons.edit_outlined
+          : Icons.add_circle_outline,
+      closeTooltip: AgendaTexts.cancel,
+      maxWidth: 520,
       actions: [
-        TextButton(
+        StyledDialog.cancelButton(
+          label: AgendaTexts.cancel,
           onPressed: () => Navigator.pop(context),
-          child: const Text(AgendaTexts.cancel),
         ),
-        ElevatedButton(
+        StyledDialog.primaryButton(
+          label: actionLabel,
+          icon: _isEditing ? Icons.check : Icons.send_outlined,
           onPressed: _submit,
-          child: Text(
-            _isEditing ? AgendaTexts.save : AgendaTexts.validate,
-          ),
         ),
       ],
+      body: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Title
+            _FieldLabel(label: '${AgendaTexts.titleLabel} *'),
+            const SizedBox(height: 6),
+            TextFormField(
+              controller: _titleController,
+              decoration: InputDecoration(
+                hintText: AgendaTexts.titleHint,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return AgendaTexts.requiredField;
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 18),
+
+            // Description
+            _FieldLabel(label: '${AgendaTexts.descriptionLabel} *'),
+            const SizedBox(height: 6),
+            TextFormField(
+              controller: _descriptionController,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: AgendaTexts.descriptionHint,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.all(14),
+                alignLabelWithHint: true,
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return AgendaTexts.requiredField;
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 18),
+
+            // Theme
+            _FieldLabel(label: '${AgendaTexts.themeLabel} *'),
+            const SizedBox(height: 6),
+            DropdownButtonFormField<EventTheme>(
+              initialValue: _selectedTheme,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+              ),
+              items: EventTheme.values
+                  .map(
+                    (t) => DropdownMenuItem<EventTheme>(
+                      value: t,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(t.icon, size: 18, color: _themeColor(t)),
+                          const SizedBox(width: 8),
+                          Text(t.label),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList(),
+              validator: (value) {
+                if (value == null) {
+                  return AgendaTexts.requiredTheme;
+                }
+                return null;
+              },
+              onChanged: (value) =>
+                  setState(() => _selectedTheme = value),
+            ),
+            const SizedBox(height: 18),
+
+            // Start date
+            _OmniDateTimeFormField(
+              label: '${AgendaTexts.startDateLabel} *',
+              value: _startDate,
+              validator: (date) {
+                if (date == null) {
+                  return AgendaTexts.requiredStartDate;
+                }
+                return null;
+              },
+              onPicked: (date) =>
+                  setState(() => _startDate = date),
+            ),
+            const SizedBox(height: 14),
+
+            // End date
+            _OmniDateTimeFormField(
+              label: '${AgendaTexts.endDateLabel} *',
+              value: _endDate,
+              firstDate: _startDate,
+              validator: (date) {
+                if (date == null) {
+                  return AgendaTexts.requiredEndDate;
+                }
+                if (_startDate != null && date.isBefore(_startDate!)) {
+                  return AgendaTexts.invalidDate;
+                }
+                return null;
+              },
+              onPicked: (date) =>
+                  setState(() => _endDate = date),
+            ),
+            const SizedBox(height: 14),
+
+            // Required fields hint
+            _RequiredFieldsHint(),
+          ],
+        ),
+      ),
     );
+  }
+
+  Color _themeColor(EventTheme theme) {
+    switch (theme) {
+      case EventTheme.sport:
+        return AppColors.info;
+      case EventTheme.culture:
+        return const Color(0xFF9C27B0);
+      case EventTheme.citizenship:
+        return AppColors.primary;
+      case EventTheme.environment:
+        return AppColors.success;
+      case EventTheme.other:
+        return AppColors.warning;
+    }
   }
 
   void _submit() {
@@ -337,3 +347,52 @@ class _OmniDateTimeFormField extends StatelessWidget {
         '${dt.minute.toString().padLeft(2, '0')}';
   }
 }
+
+/// Small field label widget for form consistency.
+class _FieldLabel extends StatelessWidget {
+  const _FieldLabel({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppColors.secondaryText,
+          ),
+    );
+  }
+}
+
+/// Required fields hint row.
+class _RequiredFieldsHint extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            color: AppColors.secondaryText.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.info_outline,
+            size: 12,
+            color: AppColors.secondaryText,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          AppTextsGeneral.requiredFieldsHint,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.secondaryText,
+                fontStyle: FontStyle.italic,
+              ),
+        ),
+      ],
+    );
+  }
+}
+

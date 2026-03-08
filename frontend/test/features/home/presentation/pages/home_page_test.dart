@@ -155,7 +155,7 @@ void main() {
       );
 
       expect(find.text(AppTextsHome.myAccount), findsOneWidget);
-      expect(find.byIcon(Icons.account_circle_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.person), findsOneWidget);
     });
 
     testWidgets('renders Useful Info menu card with correct icon and title', (WidgetTester tester) async {

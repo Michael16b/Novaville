@@ -18,6 +18,7 @@ import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 import 'package:frontend/ui/widgets/neighborhood_autocomplete.dart';
 import 'package:frontend/ui/widgets/neighborhood_filter_skeleton.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
+import 'package:frontend/ui/widgets/styled_dialog.dart';
 
 /// User Accounts management page - accessible only to GLOBAL_ADMIN.
 ///
@@ -592,6 +593,10 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
 
   Widget _buildUsersGrid(BuildContext context, List<User> users) {
     final currentUser = context.read<AuthBloc>().state.user;
+    final state = context.read<UserAccountsBloc>().state;
+    final neighborhoodMap = {
+      for (final n in state.neighborhoods) n.id: n.name,
+    };
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -611,9 +616,13 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
           ),
           itemBuilder: (context, index) {
             final user = users[index];
+            final neighborhoodName = user.neighborhoodId != null
+                ? neighborhoodMap[user.neighborhoodId]
+                : null;
             return UserAccountCard(
               user: user,
               isCurrentUser: user.id == currentUser?.id,
+              neighborhoodName: neighborhoodName,
               onEdit: (value) => _showEditDialog(context, value),
               onDelete: (value) => _showDeleteDialog(context, value),
               getRoleColor: _getRoleColor,
@@ -777,32 +786,58 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   }) {
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Row(
-          children: [
-            Expanded(child: Text(title)),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => Navigator.pop(dialogContext),
-              tooltip: UserTexts.close,
-            ),
-          ],
-        ),
-        content: Column(
+      builder: (dialogContext) => StyledDialog(
+        title: title,
+        icon: Icons.info_outline,
+        closeTooltip: UserTexts.close,
+        maxWidth: 420,
+        actions: [
+          StyledDialog.cancelButton(
+            label: UserTexts.close,
+            onPressed: () => Navigator.pop(dialogContext),
+          ),
+        ],
+        body: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(description),
+            Text(
+              description,
+              style: Theme.of(dialogContext).textTheme.bodyMedium,
+            ),
             const SizedBox(height: 12),
-            const Text(UserTexts.featureComingSoon),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.construction,
+                    size: 16,
+                    color: AppColors.warning,
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      UserTexts.featureComingSoon,
+                      style: TextStyle(
+                        color: AppColors.warning,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(UserTexts.close),
-          ),
-        ],
       ),
     );
   }
@@ -810,31 +845,57 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   void _showEditDialog(BuildContext context, User user) {
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
+      builder: (context) => StyledDialog(
+        title: UserTexts.editUserTitle,
+        icon: Icons.edit_outlined,
+        closeTooltip: UserTexts.close,
+        maxWidth: 420,
+        actions: [
+          StyledDialog.cancelButton(
+            label: UserTexts.close,
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+        body: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Expanded(child: Text(UserTexts.editUserTitle)),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => Navigator.pop(context),
-              tooltip: UserTexts.close,
+            Text(
+              '${UserTexts.editUser} ${user.username}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.construction,
+                    size: 16,
+                    color: AppColors.warning,
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      UserTexts.editInProgress,
+                      style: TextStyle(
+                        color: AppColors.warning,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('${UserTexts.editUser} ${user.username}'),
-            const SizedBox(height: 16),
-            const Text(UserTexts.editInProgress),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(UserTexts.close),
-          ),
-        ],
       ),
     );
   }
@@ -842,28 +903,19 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   void _showDeleteDialog(BuildContext context, User user) {
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Row(
-          children: [
-            const Expanded(
-              child: Text(UserTexts.confirmDeleteTitle),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => Navigator.pop(dialogContext),
-              tooltip: UserTexts.cancel,
-            ),
-          ],
-        ),
-        content: Text(
-          '${UserTexts.confirmDelete} ${user.firstName} ${user.lastName} (${user.username}) ?\n\n${UserTexts.irreversible}',
-        ),
+      builder: (dialogContext) => StyledDialog(
+        title: UserTexts.confirmDeleteTitle,
+        icon: Icons.warning_amber_rounded,
+        accentColor: AppColors.error,
+        closeTooltip: UserTexts.cancel,
+        maxWidth: 420,
         actions: [
-          TextButton(
+          StyledDialog.cancelButton(
+            label: UserTexts.cancel,
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(UserTexts.cancel),
           ),
-          TextButton(
+          StyledDialog.destructiveButton(
+            label: UserTexts.delete,
             onPressed: () {
               Navigator.pop(dialogContext);
               setState(() {
@@ -873,12 +925,25 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                 UserAccountsDeleteRequested(userId: user.id),
               );
             },
-            child: const Text(
-              UserTexts.delete,
-              style: TextStyle(color: Colors.red),
-            ),
           ),
         ],
+        body: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${UserTexts.confirmDelete} ${user.firstName} ${user.lastName} (${user.username}) ?',
+              style: Theme.of(dialogContext).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              UserTexts.irreversible,
+              style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }

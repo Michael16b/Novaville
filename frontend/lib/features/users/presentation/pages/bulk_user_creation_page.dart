@@ -14,6 +14,7 @@ import 'package:frontend/features/users/presentation/pages/web_drop_handler.dart
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
+import 'package:frontend/ui/widgets/styled_dialog.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
 import 'package:frontend/features/users/data/user_repository_factory.dart';
@@ -176,19 +177,25 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
   Future<void> _clearDrafts() async {
     final shouldClear = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(BulkUserCreationTexts.clearPendingTitle),
-        content: const Text(BulkUserCreationTexts.clearPendingMessage),
+      builder: (context) => StyledDialog(
+        title: BulkUserCreationTexts.clearPendingTitle,
+        icon: Icons.warning_amber_rounded,
+        accentColor: AppColors.error,
+        maxWidth: 420,
         actions: [
-          TextButton(
+          StyledDialog.cancelButton(
+            label: BulkUserCreationTexts.cancel,
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(BulkUserCreationTexts.cancel),
           ),
-          TextButton(
+          StyledDialog.destructiveButton(
+            label: BulkUserCreationTexts.delete,
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(BulkUserCreationTexts.delete),
           ),
         ],
+        body: Text(
+          BulkUserCreationTexts.clearPendingMessage,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
       ),
     );
 
@@ -542,82 +549,82 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: Row(
+        return StyledDialog(
+          title: BulkUserCreationTexts.csvCompilationDialogTitle(
+            errors.length,
+          ),
+          icon: Icons.error_outline,
+          accentColor: AppColors.error,
+          maxWidth: 720,
+          actions: [
+            StyledDialog.cancelButton(
+              label: BulkUserCreationTexts.close,
+              onPressed: () => Navigator.of(dialogContext).pop(),
+            ),
+          ],
+          body: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.error_outline, color: AppColors.error),
-              const SizedBox(width: 8),
-              Text(
-                BulkUserCreationTexts.csvCompilationDialogTitle(errors.length),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.highlight,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text(
+                  BulkUserCreationTexts.csvCompilationDialogMessage,
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 320,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      for (var index = 0;
+                          index < errors.length;
+                          index++) ...[
+                        Builder(
+                          builder: (context) {
+                            final error = errors[index];
+                            return ListTile(
+                              dense: true,
+                              leading: CircleAvatar(
+                                radius: 14,
+                                backgroundColor:
+                                    AppColors.error.withValues(
+                                  alpha: 0.15,
+                                ),
+                                child: Text(
+                                  '${error.line}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
+                              ),
+                              title: Text(error.message),
+                              subtitle: Text(
+                                BulkUserCreationTexts.csvLineAndColumn(
+                                  error.line,
+                                  error.column,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        if (index < errors.length - 1)
+                          const Divider(height: 1),
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
-          content: SizedBox(
-            width: 720,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.highlight,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    BulkUserCreationTexts.csvCompilationDialogMessage,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 320,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        for (var index = 0; index < errors.length; index++) ...[
-                          Builder(
-                            builder: (context) {
-                              final error = errors[index];
-                              return ListTile(
-                                dense: true,
-                                leading: CircleAvatar(
-                                  radius: 14,
-                                  backgroundColor: AppColors.error.withValues(
-                                    alpha: 0.2,
-                                  ),
-                                  child: Text(
-                                    '${error.line}',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.labelSmall,
-                                  ),
-                                ),
-                                title: Text(error.message),
-                                subtitle: Text(
-                                  BulkUserCreationTexts.csvLineAndColumn(
-                                    error.line,
-                                    error.column,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          if (index < errors.length - 1)
-                            const Divider(height: 1),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text(BulkUserCreationTexts.close),
-            ),
-          ],
         );
       },
     );
@@ -639,21 +646,25 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
 
     final shouldSubmit = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(BulkUserCreationTexts.finalValidationTitle),
-        content: Text(
-          BulkUserCreationTexts.finalValidationMessage(_draftUsers.length),
-        ),
+      builder: (context) => StyledDialog(
+        title: BulkUserCreationTexts.finalValidationTitle,
+        icon: Icons.check_circle_outline,
+        maxWidth: 420,
         actions: [
-          TextButton(
+          StyledDialog.cancelButton(
+            label: BulkUserCreationTexts.cancel,
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(BulkUserCreationTexts.cancel),
           ),
-          ElevatedButton(
+          StyledDialog.primaryButton(
+            label: BulkUserCreationTexts.create,
+            icon: Icons.send_outlined,
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(BulkUserCreationTexts.create),
           ),
         ],
+        body: Text(
+          BulkUserCreationTexts.finalValidationMessage(_draftUsers.length),
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
       ),
     );
 
@@ -726,18 +737,21 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       );
       await showDialog<void>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text(BulkUserCreationTexts.creationErrorsTitle),
-          content: SizedBox(
-            width: 520,
-            child: SingleChildScrollView(child: Text(errors.join('\n'))),
-          ),
+        builder: (context) => StyledDialog(
+          title: BulkUserCreationTexts.creationErrorsTitle,
+          icon: Icons.error_outline,
+          accentColor: AppColors.error,
+          maxWidth: 540,
           actions: [
-            TextButton(
+            StyledDialog.cancelButton(
+              label: BulkUserCreationTexts.close,
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text(BulkUserCreationTexts.close),
             ),
           ],
+          body: Text(
+            errors.join('\n'),
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
         ),
       );
     }
