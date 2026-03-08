@@ -9,8 +9,8 @@ from core.db.models import (
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     """Admin configuration for custom User model"""
-    list_display = ['username', 'email', 'first_name', 'last_name', 'role', 'is_active', 'is_staff']
-    list_filter = ['role', 'is_active', 'is_staff', 'is_superuser']
+    list_display = ['username', 'email', 'first_name', 'last_name', 'role', 'is_staff']
+    list_filter = ['role', 'is_staff', 'is_superuser']
     search_fields = ['username', 'email', 'first_name', 'last_name']
     
     fieldsets = BaseUserAdmin.fieldsets + (
@@ -32,9 +32,9 @@ class NeighborhoodAdmin(admin.ModelAdmin):
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
     """Admin configuration for Report model"""
-    list_display = ['id', 'problem_type', 'status', 'user', 'neighborhood', 'created_at']
-    list_filter = ['status', 'problem_type', 'created_at']
-    search_fields = ['description', 'user__username', 'neighborhood__name']
+    list_display = ['id', 'title', 'problem_type', 'status', 'user', 'neighborhood', 'created_at']
+    list_filter = ['status', 'problem_type', 'neighborhood', 'created_at']
+    search_fields = ['title', 'description', 'user__first_name', 'user__last_name']
     date_hierarchy = 'created_at'
     raw_id_fields = ['user', 'neighborhood']
 
@@ -42,8 +42,8 @@ class ReportAdmin(admin.ModelAdmin):
 @admin.register(Survey)
 class SurveyAdmin(admin.ModelAdmin):
     """Admin configuration for Survey model"""
-    list_display = ['title', 'created_by', 'start_date', 'end_date', 'created_at']
-    list_filter = ['created_at', 'start_date', 'end_date']
+    list_display = ['title', 'citizen_target', 'created_by', 'start_date', 'end_date', 'created_at']
+    list_filter = ['citizen_target', 'created_at', 'start_date', 'end_date']
     search_fields = ['title', 'description']
     date_hierarchy = 'created_at'
     raw_id_fields = ['created_by']

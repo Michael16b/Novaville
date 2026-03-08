@@ -92,11 +92,14 @@ class ReportsRefreshRequested extends ReportsEvent {
 class ReportCreateRequested extends ReportsEvent {
   /// Creates a [ReportCreateRequested].
   const ReportCreateRequested({
+    required this.title,
     required this.problemType,
     required this.description,
     this.neighborhood,
-    this.citizenTarget,
   });
+
+  /// Title of the report.
+  final String title;
 
   /// Problem type value.
   final String problemType;
@@ -107,15 +110,12 @@ class ReportCreateRequested extends ReportsEvent {
   /// Neighborhood ID.
   final int? neighborhood;
 
-  /// Citizen target role.
-  final String? citizenTarget;
-
   @override
   List<Object?> get props => [
+        title,
         problemType,
         description,
         neighborhood,
-        citizenTarget,
       ];
 }
 
@@ -154,14 +154,17 @@ class ReportUpdateRequested extends ReportsEvent {
   /// Creates a [ReportUpdateRequested].
   const ReportUpdateRequested({
     required this.reportId,
+    this.title,
     this.description,
     this.neighborhood,
     this.problemType,
-    this.citizenTarget,
   });
 
   /// ID of the report to update.
   final int reportId;
+
+  /// Updated title.
+  final String? title;
 
   /// Updated description.
   final String? description;
@@ -172,16 +175,13 @@ class ReportUpdateRequested extends ReportsEvent {
   /// Updated problem type.
   final String? problemType;
 
-  /// Updated citizen target.
-  final String? citizenTarget;
-
   @override
   List<Object?> get props => [
         reportId,
+        title,
         description,
         neighborhood,
         problemType,
-        citizenTarget,
       ];
 }
 

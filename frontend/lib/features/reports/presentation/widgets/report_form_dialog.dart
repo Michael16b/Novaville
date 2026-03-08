@@ -29,6 +29,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
   final _formKey = GlobalKey<FormState>();
   ProblemType? _selectedProblemType;
   int? _selectedNeighborhood;
+  late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
 
   bool get _isEditing => widget.report != null;
@@ -49,6 +50,9 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
             ? reportNeighborhoodId
             : null;
 
+    _titleController = TextEditingController(
+      text: widget.report?.title ?? '',
+    );
     _descriptionController = TextEditingController(
       text: widget.report?.description ?? '',
     );
@@ -56,6 +60,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
 
   @override
   void dispose() {
+    _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -87,6 +92,22 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Title
+                TextFormField(
+                  controller: _titleController,
+                  maxLength: 255,
+                  decoration: const InputDecoration(
+                    labelText: '${ReportTexts.titleLabel} *',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return ReportTexts.titleRequired;
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
                 // Problem type dropdown
                 DropdownButtonFormField<ProblemType>(
                   initialValue: _selectedProblemType,
@@ -188,6 +209,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
     if (!_formKey.currentState!.validate()) return;
 
     final result = {
+      'title': _titleController.text.trim(),
       'problem_type': _selectedProblemType!.toJson(),
       'description': _descriptionController.text.trim(),
       'neighborhood': _selectedNeighborhood!,

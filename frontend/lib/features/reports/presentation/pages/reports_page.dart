@@ -931,6 +931,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     if (result != null && mounted) {
       bloc.add(
         ReportCreateRequested(
+          title: result['title'] as String,
           problemType: result['problem_type'] as String,
           description: result['description'] as String,
           neighborhood: result['neighborhood'] as int?,
@@ -957,6 +958,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
       bloc.add(
         ReportUpdateRequested(
           reportId: report.id,
+          title: result['title'] as String?,
           problemType: result['problem_type'] as String?,
           description: result['description'] as String?,
           neighborhood: result['neighborhood'] as int?,

@@ -117,7 +117,7 @@ themes_data = [
     'Citoyenneté',
     'Environnement',
     'Autre',
-] + [f'Thème {index:02d}' for index in range(6, TARGET_COUNT + 1)]
+]
 
 themes = []
 for title in themes_data:
@@ -228,6 +228,34 @@ report_statuses = [
     ReportStatusEnum.RESOLVED,
 ]
 
+report_titles = [
+    'Nid de poule dangereux',
+    'Lampadaire en panne',
+    'Déchets abandonnés',
+    'Trottoir dégradé',
+    'Éclairage défaillant',
+    'Graffitis sur mur public',
+    'Fuite d\'eau sur la chaussée',
+    'Panneau de signalisation tordu',
+    'Banc public cassé',
+    'Poubelle débordante',
+    'Route fissurée',
+    'Passage piéton effacé',
+    'Dépôt sauvage en bordure',
+    'Câble électrique au sol',
+    'Arbre dangereux à élaguer',
+    'Bouche d\'égout obstruée',
+    'Éclairage clignotant',
+    'Détritus dans le parc',
+    'Chaussée inondée',
+    'Mobilier urbain dégradé',
+    'Marquage au sol usé',
+    'Lampadaire cassé',
+    'Encombrants sur le trottoir',
+    'Route glissante',
+    'Container incendié',
+]
+
 reports_data = []
 for index in range(1, TARGET_COUNT + 1):
     reporter = citizens[(index - 1) % len(citizens)] if citizens else admin
@@ -237,10 +265,10 @@ for index in range(1, TARGET_COUNT + 1):
     reports_data.append(
         {
             'user': reporter,
+            'title': report_titles[(index - 1) % len(report_titles)],
             'problem_type': problem_type,
-            # Use a stable index-only key for the lookup so neighborhood changes
-            # between runs don't create duplicate reports
-            'description': f'Signalement #{index:02d}',
+            'description': f'Description détaillée du signalement #{index:02d} — '
+                           f'{report_titles[(index - 1) % len(report_titles)].lower()}.',
             'status': report_status,
             'neighborhood': neighborhood,
         }
@@ -249,15 +277,16 @@ for index in range(1, TARGET_COUNT + 1):
 for data in reports_data:
     report, created = Report.objects.update_or_create(
         user=data['user'],
-        problem_type=data['problem_type'],
-        description=data['description'],
+        title=data['title'],
         defaults={
+            'problem_type': data['problem_type'],
+            'description': data['description'],
             'status': data['status'],
             'neighborhood': data['neighborhood'],
         }
     )
     print(
-        f"  ✓ Report: {report.get_problem_type_display()} - {report.get_status_display()} "
+        f"  ✓ Report: {report.title} - {report.get_status_display()} "
         f"({'created' if created else 'updated'})"
     )
 
@@ -266,7 +295,10 @@ print('\n📊 Creating sample surveys...')
 now = timezone.now()
 surveys = []
 survey_options_map = {}
+# Rotate citizen_target: None means open to everyone
+citizen_targets = [None, RoleEnum.CITIZEN, RoleEnum.ELECTED, RoleEnum.AGENT]
 for index in range(1, TARGET_COUNT + 1):
+    target = citizen_targets[(index - 1) % len(citizen_targets)]
     survey, created = Survey.objects.update_or_create(
         title=f'Consultation citoyenne #{index:02d}',
         defaults={
@@ -274,6 +306,7 @@ for index in range(1, TARGET_COUNT + 1):
             'created_by': elected,
             'start_date': now - timedelta(days=(index % 10)),
             'end_date': now + timedelta(days=30 + index),
+            'citizen_target': target,
         }
     )
     print(f"  ✓ Survey: {survey.title} ({'created' if created else 'updated'})")

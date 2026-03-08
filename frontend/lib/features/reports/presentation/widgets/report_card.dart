@@ -67,6 +67,19 @@ class ReportCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
+              // Title
+              if (report.title.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(
+                    report.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ),
               // Description
               Text(
                 report.description,

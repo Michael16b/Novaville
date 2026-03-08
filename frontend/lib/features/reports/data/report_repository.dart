@@ -54,19 +54,19 @@ abstract class IReportRepository {
 
   /// Creates a new report.
   Future<void> createReport({
+    required String title,
     required String problemType,
     required String description,
     int? neighborhood,
-    String? citizenTarget,
   });
 
   /// Updates an existing report.
   Future<Report> updateReport({
     required int reportId,
+    String? title,
     String? description,
     int? neighborhood,
     String? problemType,
-    String? citizenTarget,
   });
 
   /// Deletes a report.

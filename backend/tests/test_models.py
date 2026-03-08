@@ -99,12 +99,14 @@ class TestNeighborhoodModel:
         """Test reports relationship and count"""
         Report.objects.create(
             user=citizen_user,
+            title="Report 1",
             problem_type=ProblemTypeEnum.ROADS,
             description="Report 1",
             neighborhood=neighborhood
         )
         Report.objects.create(
             user=citizen_user,
+            title="Report 2",
             problem_type=ProblemTypeEnum.LIGHTING,
             description="Report 2",
             neighborhood=neighborhood
@@ -119,6 +121,7 @@ class TestReportModel:
         """Test creating a report"""
         report = Report.objects.create(
             user=citizen_user,
+            title="Road pothole",
             problem_type=ProblemTypeEnum.ROADS,
             description="Pothole on main street",
             neighborhood=neighborhood
@@ -139,12 +142,14 @@ class TestReportModel:
         """Test reports are ordered by creation date descending"""
         report1 = Report.objects.create(
             user=citizen_user,
+            title="First report",
             problem_type=ProblemTypeEnum.ROADS,
             description="First",
             neighborhood=neighborhood
         )
         report2 = Report.objects.create(
             user=citizen_user,
+            title="Second report",
             problem_type=ProblemTypeEnum.LIGHTING,
             description="Second",
             neighborhood=neighborhood
@@ -391,12 +396,13 @@ class TestModelStrMethods:
         """Test Report __str__ method"""
         report = Report.objects.create(
             user=citizen_user,
+            title="Road pothole issue",
             problem_type='ROADS',
             status='RECORDED',
             description='Test',
             neighborhood=neighborhood
         )
-        expected = f"Report #{report.id} - Roads ({report.get_status_display()})"
+        expected = f"Report #{report.id} - Road pothole issue ({report.get_status_display()})"
         assert str(report) == expected
     
     def test_survey_str(self, survey_with_options):

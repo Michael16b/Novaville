@@ -98,6 +98,7 @@ def report(citizen_user, neighborhood):
     """Create a test report"""
     return Report.objects.create(
         user=citizen_user,
+        title="Test report",
         problem_type=ProblemTypeEnum.ROADS,
         description="Test report description",
         status=ReportStatusEnum.RECORDED,

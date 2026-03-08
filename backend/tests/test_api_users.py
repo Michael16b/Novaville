@@ -26,22 +26,6 @@ class TestUsersAPI:
         assert len(results) >= 1
         assert all(user["role"] == "ELECTED" for user in results)
 
-    def test_filter_users_by_is_active(self, authenticated_client):
-        """Test filtering users by active status"""
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        User.objects.create_user(
-            username="inactiveuser",
-            email="inactive@test.com",
-            password="TestPass123",
-            is_active=False,
-        )
-
-        response = authenticated_client.get("/api/v1/users/?is_active=false")
-        assert response.status_code == status.HTTP_200_OK
-        results = response.data.get('results', response.data)
-        assert len(results) >= 1
-        assert all(user["is_active"] is False for user in results)
 
     def test_search_users(self, authenticated_client):
         """Test searching users by text fields"""
@@ -76,7 +60,7 @@ class TestUsersAPI:
         assert usernames == sorted(usernames)
 
     def test_filter_users_with_multiple_attributes(self, authenticated_client, neighborhood):
-        """Test combining role, is_active, neighborhood and search filters"""
+        """Test combining role, neighborhood and search filters"""
         from django.contrib.auth import get_user_model
         from core.db.models import Neighborhood, RoleEnum
 
@@ -94,7 +78,6 @@ class TestUsersAPI:
             first_name="Multi",
             last_name="MultiAttrToken",
             role=RoleEnum.CITIZEN,
-            is_active=True,
             neighborhood=neighborhood,
         )
 
@@ -105,23 +88,11 @@ class TestUsersAPI:
             first_name="Multi",
             last_name="MultiAttrToken",
             role=RoleEnum.CITIZEN,
-            is_active=True,
             neighborhood=other_neighborhood,
         )
 
-        User.objects.create_user(
-            username="multi_wrong_status",
-            email="multi.status@test.com",
-            password="TestPass123",
-            first_name="Multi",
-            last_name="MultiAttrToken",
-            role=RoleEnum.CITIZEN,
-            is_active=False,
-            neighborhood=neighborhood,
-        )
-
         response = authenticated_client.get(
-            f"/api/v1/users/?role=CITIZEN&is_active=true&neighborhood={neighborhood.id}&search=multiattrtoken"
+            f"/api/v1/users/?role=CITIZEN&neighborhood={neighborhood.id}&search=multiattrtoken"
         )
         assert response.status_code == status.HTTP_200_OK
         results = response.data.get('results', response.data)
@@ -131,7 +102,6 @@ class TestUsersAPI:
 
         for user in results:
             assert user["role"] == "CITIZEN"
-            assert user["is_active"] is True
             assert user["neighborhood"] == neighborhood.id
     
     def test_create_user(self, api_client, neighborhood):
@@ -279,7 +249,7 @@ class TestNeighborhoodsAPI:
         """Test listing neighborhoods"""
         response = authenticated_client.get("/api/v1/neighborhoods/")
         assert response.status_code == status.HTTP_200_OK
-        results = response.data.get('results', response.data)
+        results = response.data
         assert len(results) >= 1
     
     def test_create_neighborhood(self, admin_client):
@@ -324,7 +294,7 @@ class TestNeighborhoodsAPI:
             f"/api/v1/neighborhoods/?id={neighborhood.id}&postal_code={neighborhood.postal_code}"
         )
         assert response.status_code == status.HTTP_200_OK
-        results = response.data.get('results', response.data)
+        results = response.data
 
         assert len(results) >= 1
         for neighborhood_data in results:

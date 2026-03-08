@@ -5,11 +5,16 @@ Report model.
 from django.conf import settings
 from django.db import models
 
-from core.db.enums import ProblemTypeEnum, ReportStatusEnum, RoleEnum
+from core.db.enums import ProblemTypeEnum, ReportStatusEnum
 
 
 class Report(models.Model):
     """Citizen report about city issues"""
+    title = models.CharField(
+        max_length=255,
+        help_text="Title of the report",
+        default="",
+    )
     problem_type = models.CharField(
         max_length=20,
         choices=ProblemTypeEnum.choices,
@@ -22,13 +27,6 @@ class Report(models.Model):
         choices=ReportStatusEnum.choices,
         default=ReportStatusEnum.RECORDED,
         help_text="Current status of the report"
-    )
-    citizen_target = models.CharField(
-        max_length=20,
-        choices=RoleEnum.choices,
-        blank=True,
-        null=True,
-        help_text="Target role for this report"
     )
     # Foreign keys
     user = models.ForeignKey(
@@ -53,4 +51,4 @@ class Report(models.Model):
         verbose_name_plural = 'Reports'
     
     def __str__(self):
-        return f"Report #{self.id} - {self.get_problem_type_display()} ({self.get_status_display()})"
+        return f"Report #{self.id} - {self.title} ({self.get_status_display()})"

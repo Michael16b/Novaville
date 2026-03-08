@@ -28,7 +28,8 @@ class SurveySerializer(serializers.ModelSerializer):
         model = Survey
         fields = [
             'id', 'title', 'description', 'created_at', 'start_date',
-            'end_date', 'created_by', 'options', 'is_active', 'total_votes'
+            'end_date', 'citizen_target', 'created_by', 'options',
+            'is_active', 'total_votes'
         ]
         read_only_fields = ['id', 'created_at', 'created_by']
     
@@ -47,7 +48,10 @@ class SurveyCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Survey
-        fields = ['id', 'title', 'description', 'start_date', 'end_date', 'options']
+        fields = [
+            'id', 'title', 'description', 'start_date', 'end_date',
+            'citizen_target', 'options',
+        ]
         read_only_fields = ['id']
     
     def validate_options(self, value):

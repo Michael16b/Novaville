@@ -16,7 +16,6 @@ from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiPara
         tags=["Users"],
         parameters=[
             OpenApiParameter(name='role', description='Filter by role (e.g. CITIZEN, ELECTED, AGENT, GLOBAL_ADMIN)', required=False, type=str),
-            OpenApiParameter(name='is_active', description='Filter by active status (true/false)', required=False, type=bool),
             OpenApiParameter(name='neighborhood', description='Filter by neighborhood ID', required=False, type=int),
             OpenApiParameter(name='search', description='Search in username, first_name, last_name, email', required=False, type=str),
             OpenApiParameter(name='ordering', description='Order by first_name, username, email, role, date_joined', required=False, type=str),

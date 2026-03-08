@@ -77,17 +77,17 @@ class ReportRepositoryImpl implements IReportRepository {
 
   @override
   Future<void> createReport({
+    required String title,
     required String problemType,
     required String description,
     int? neighborhood,
-    String? citizenTarget,
   }) async {
     final body = <String, dynamic>{
+      'title': title,
       'problem_type': problemType,
       'description': description,
     };
     if (neighborhood != null) body['neighborhood'] = neighborhood;
-    if (citizenTarget != null) body['citizen_target'] = citizenTarget;
 
     final response = await _apiClient.post(
       '/api/v1/reports/',
@@ -104,16 +104,16 @@ class ReportRepositoryImpl implements IReportRepository {
   @override
   Future<Report> updateReport({
     required int reportId,
+    String? title,
     String? description,
     int? neighborhood,
     String? problemType,
-    String? citizenTarget,
   }) async {
     final body = <String, dynamic>{};
+    if (title != null) body['title'] = title;
     if (description != null) body['description'] = description;
     if (neighborhood != null) body['neighborhood'] = neighborhood;
     if (problemType != null) body['problem_type'] = problemType;
-    if (citizenTarget != null) body['citizen_target'] = citizenTarget;
 
     final response = await _apiClient.patch(
       '/api/v1/reports/$reportId/',

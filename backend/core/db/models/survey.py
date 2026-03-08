@@ -5,6 +5,8 @@ Survey-related models.
 from django.conf import settings
 from django.db import models
 
+from core.db.enums import RoleEnum
+
 
 class Survey(models.Model):
     """Public survey/consultation"""
@@ -13,6 +15,13 @@ class Survey(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, help_text="Survey creation date")
     start_date = models.DateTimeField(help_text="Survey start date")
     end_date = models.DateTimeField(help_text="Survey end date")
+    citizen_target = models.CharField(
+        max_length=20,
+        choices=RoleEnum.choices,
+        blank=True,
+        null=True,
+        help_text="Target role for this survey"
+    )
     # Foreign keys
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

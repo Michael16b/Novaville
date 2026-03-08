@@ -20,6 +20,7 @@ class TestReportsAPI:
     def test_create_report(self, authenticated_client, neighborhood):
         """Test creating a report"""
         data = {
+            "title": "Street cleanliness issue",
             "problem_type": "CLEANLINESS",
             "description": "Trash on the street",
             "neighborhood": neighborhood.id
