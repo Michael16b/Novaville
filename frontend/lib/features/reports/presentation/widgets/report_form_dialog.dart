@@ -31,7 +31,6 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
   int? _selectedNeighborhood;
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
-  late final TextEditingController _titleController;
 
   bool get _isEditing => widget.report != null;
 
@@ -57,16 +56,12 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
     _descriptionController = TextEditingController(
       text: widget.report?.description ?? '',
     );
-    _titleController = TextEditingController(
-      text: widget.report?.title ?? '',
-    );
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _titleController.dispose();
     super.dispose();
   }
 
@@ -117,8 +112,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                     child: Text(
                       title,
                       style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
+                          .textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
@@ -150,8 +144,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                       Text(
                         '${ReportTexts.problemTypeLabel} *',
                         style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
+                            .textTheme.bodySmall
                             ?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: AppColors.secondaryText,
@@ -159,7 +152,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                       ),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<ProblemType>(
-                        initialValue: _selectedProblemType,
+                        value: _selectedProblemType,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -188,7 +181,9 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                             )
                             .toList(),
                         onChanged: (value) {
-                          _selectedProblemType = value;
+                          setState(() {
+                            _selectedProblemType = value;
+                          });
                         },
                         validator: (value) {
                           if (value == null) {
@@ -204,8 +199,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                       Text(
                         '${ReportTexts.titleLabel} *',
                         style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
+                            .textTheme.bodySmall
                             ?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: AppColors.secondaryText,
@@ -236,8 +230,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                       Text(
                         '${ReportTexts.descriptionLabel} *',
                         style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
+                            .textTheme.bodySmall
                             ?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: AppColors.secondaryText,
@@ -269,8 +262,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                       Text(
                         '${ReportTexts.neighborhoodLabel} *',
                         style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
+                            .textTheme.bodySmall
                             ?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: AppColors.secondaryText,
@@ -313,8 +305,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                           Text(
                             AppTextsGeneral.requiredFieldsHint,
                             style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
+                                .textTheme.bodySmall
                                 ?.copyWith(
                                   color: AppColors.secondaryText,
                                   fontStyle: FontStyle.italic,
