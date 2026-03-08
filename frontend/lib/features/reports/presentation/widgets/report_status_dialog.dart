@@ -61,7 +61,11 @@ class _ReportStatusDialogState extends State<ReportStatusDialog> {
           const SizedBox(height: 6),
           DropdownButtonFormField<ReportStatus>(
             initialValue: _selectedStatus,
+            isExpanded: true,
+            menuMaxHeight: 300,
+            borderRadius: BorderRadius.circular(12),
             decoration: InputDecoration(
+              hintText: ReportTexts.selectStatus,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

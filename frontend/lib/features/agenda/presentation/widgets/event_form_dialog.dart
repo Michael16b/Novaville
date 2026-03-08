@@ -140,7 +140,11 @@ class _EventFormDialogState extends State<EventFormDialog> {
             const SizedBox(height: 6),
             DropdownButtonFormField<EventTheme>(
               initialValue: _selectedTheme,
+              isExpanded: true,
+              menuMaxHeight: 300,
+              borderRadius: BorderRadius.circular(12),
               decoration: InputDecoration(
+                hintText: AgendaTexts.selectTheme,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -299,12 +303,19 @@ class _OmniDateTimeFormField extends StatelessWidget {
                   suffixIcon: const Icon(Icons.calendar_month_outlined),
                   errorText: hasError ? field.errorText : null,
                 ),
-                child: Text(
-                  displayText,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.primaryText,
+                child: value != null
+                    ? Text(
+                        displayText,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: AppColors.primaryText,
+                            ),
+                      )
+                    : Text(
+                        AgendaTexts.selectDate,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: AppColors.secondaryText,
+                            ),
                       ),
-                ),
               ),
             ),
           ],

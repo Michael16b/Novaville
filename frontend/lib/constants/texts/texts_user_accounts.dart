@@ -48,4 +48,15 @@ class UserTexts {
   static const filterByNeighborhood = 'Quartier';
   static const allNeighborhoods = 'Tous les quartiers';
   static const clearFilters = 'Réinitialiser les filtres';
+
+  static const neighborhoodLabel = 'Quartier';
+  static const selectNeighborhood = 'Sélectionner un quartier';
+  static const userCreatedSuccess = 'Utilisateur créé avec succès';
+  static const userCreatedSuccessMessage =
+      'Le compte utilisateur a été créé. Voici les informations de connexion :';
+  static const password = 'Mot de passe';
+  static const copyConnectionLink = 'Copier le lien de connexion';
+  static const copied = 'Copié !';
+  static const copy = 'Copier';
+  static const create = 'Créer';
 }
