@@ -352,38 +352,6 @@ class _CredentialsDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            UserTexts.userCreatedSuccessMessage,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Column(
-              children: [
-                _buildCredentialRow(
-                  context,
-                  UserTexts.username,
-                  username,
-                  Icons.person_outline,
-                ),
-                const Divider(height: 24),
-                _buildCredentialRow(
-                  context,
-                  UserTexts.password,
-                  password,
-                  Icons.lock_outline,
-                  isPassword: true,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
           OutlinedButton.icon(
             onPressed: () => _copyLink(context),
             icon: const Icon(Icons.link),
@@ -394,50 +362,6 @@ class _CredentialsDialog extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildCredentialRow(
-    BuildContext context,
-    String label,
-    String value,
-    IconData icon, {
-    bool isPassword = false,
-  }) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: AppColors.secondaryText),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.secondaryText,
-                    ),
-              ),
-              const SizedBox(height: 2),
-              SelectableText(
-                value,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontFamily: isPassword ? 'Monospace' : null,
-                    ),
-              ),
-            ],
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.copy, size: 18),
-          onPressed: () {
-            Clipboard.setData(ClipboardData(text: value));
-            CustomSnackBar.showSuccess(context, UserTexts.copied);
-          },
-          tooltip: UserTexts.copy,
-        ),
-      ],
     );
   }
 
