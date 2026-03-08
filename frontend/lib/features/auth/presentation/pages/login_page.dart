@@ -50,16 +50,24 @@ class _LoginPageState extends State<LoginPage> {
             state.status == AuthStatus.authenticating ||
             state.status == AuthStatus.checking;
         return Scaffold(
-          body: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+          body: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.all(16),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight - 32,
+                      maxWidth: 400,
+                    ),
+                    child: Center(
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
                       Image.asset(
                         AppAssets.login_logo,
                         height: 300,
@@ -136,6 +144,9 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+            ),
+          );
+              },
             ),
           ),
         );
