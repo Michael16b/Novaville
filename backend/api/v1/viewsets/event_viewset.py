@@ -11,7 +11,7 @@ from api.v1.serializers.event_serializer import (
 from api.v1.permissions import IsStaffOrReadOnly, IsAdminOrReadOnly
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
 from django.utils import timezone
 
 
@@ -23,6 +23,7 @@ from django.utils import timezone
         parameters=[
             OpenApiParameter(name='theme', description='Filter by theme ID', required=False, type=int),
             OpenApiParameter(name='start_date__gte', description='Filter events starting after this date', required=False, type=str),
+            OpenApiParameter(name='search', description='Search events by title or description', required=False, type=str),
         ]
     ),
     retrieve=extend_schema(
@@ -61,8 +62,9 @@ class EventViewSet(viewsets.ModelViewSet):
     """
     queryset = Event.objects.select_related('created_by', 'theme').all()
     serializer_class = EventSerializer
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
     filterset_fields = '__all__'
+    search_fields = ['title', 'description']
     ordering_fields = ['start_date', 'end_date']
     ordering = ['start_date']
     
