@@ -50,7 +50,7 @@ class AgendaTexts {
   static const search = 'Rechercher';
 
   /// Search field hint.
-  static const searchHint = 'Titre, description...';
+  static const searchHint = 'Titre ou description';
 
   /// Sort by label.
   static const sortBy = 'Trier par';
