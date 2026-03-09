@@ -423,7 +423,6 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
   bool _obscureCurrent = true;
   bool _obscureNew = true;
   bool _obscureConfirm = true;
-  String? _passwordValidationMessage;
 
   @override
   void dispose() {
@@ -505,6 +504,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                 decoration: InputDecoration(
                   labelText: AppTextsProfile.newPassword,
                   border: const OutlineInputBorder(),
+                  errorMaxLines: 3,
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscureNew ? Icons.visibility : Icons.visibility_off,
@@ -517,28 +517,11 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                     return AppTextsProfile.passwordRequired;
                   }
                   if (!ValidationPatterns.password.hasMatch(value)) {
-                    setState(() {
-                      _passwordValidationMessage = AppTextsProfile.passwordTooWeak;
-                    });
-                    return null;
+                    return AppTextsProfile.passwordTooWeak;
                   }
-                  setState(() {
-                    _passwordValidationMessage = null;
-                  });
                   return null;
                 },
               ),
-              if (_passwordValidationMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8, bottom: 8),
-                  child: Text(
-                    _passwordValidationMessage!,
-                    style: const TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
-                    maxLines: 3,
-                    overflow: TextOverflow.visible,
-                  ),
-                ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _confirmPasswordController,
