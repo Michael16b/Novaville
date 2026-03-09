@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_useful_info.dart';
 
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
@@ -11,12 +12,26 @@ import 'package:frontend/features/useful_info/domain/useful_info.dart';
 
 import 'package:frontend/ui/widgets/page_header.dart';
 
-import '../widgets/opening_hours_table.dart';
 import '../widgets/contact_actions.dart';
-import 'useful_info_admin_edit_page.dart';
+import '../widgets/opening_hours_table.dart';
 
-class UsefulInfoPage extends StatelessWidget {
+class UsefulInfoPage extends StatefulWidget {
   const UsefulInfoPage({super.key});
+
+  @override
+  State<UsefulInfoPage> createState() => _UsefulInfoPageState();
+}
+
+class _UsefulInfoPageState extends State<UsefulInfoPage> {
+  bool _isEditing = false;
+
+  void _startEditing() {
+    setState(() => _isEditing = true);
+  }
+
+  void _stopEditing() {
+    setState(() => _isEditing = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,99 +46,345 @@ class UsefulInfoPage extends StatelessWidget {
       floatingActionButton: isAdmin
           ? FloatingActionButton(
               heroTag: 'useful-info-fab',
-              tooltip: UsefulInfoTexts.edit,
+              tooltip: _isEditing ? 'Fermer' : UsefulInfoTexts.edit,
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.white,
-              onPressed: () async {
-                final bloc = context.read<UsefulInfoBloc>();
-                final currentState = bloc.state;
+              onPressed: () {
+                final blocState = context.read<UsefulInfoBloc>().state;
+                if (blocState is! UsefulInfoLoaded) return;
 
-                if (currentState is! UsefulInfoLoaded) return;
-
-                final updated = await Navigator.push<UsefulInfo>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        UsefulInfoAdminEditPage(initial: currentState.info),
-                  ),
-                );
-
-                if (updated != null && context.mounted) {
-                  bloc.add(UsefulInfoSaved(updated));
+                if (_isEditing) {
+                  _stopEditing();
+                } else {
+                  _startEditing();
                 }
               },
-              child: const Icon(Icons.edit_outlined),
+              child: Icon(_isEditing ? Icons.close : Icons.edit_outlined),
             )
           : null,
-      body: BlocBuilder<UsefulInfoBloc, UsefulInfoState>(
-        builder: (context, state) {
-          if (state is UsefulInfoInitial) {
-            context.read<UsefulInfoBloc>().add(const UsefulInfoRequested());
-            return const SizedBox.shrink();
-          }
-
-          if (state is UsefulInfoLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            );
+      body: BlocListener<UsefulInfoBloc, UsefulInfoState>(
+        listener: (context, state) {
+          if (state is UsefulInfoLoaded && _isEditing) {
+            _stopEditing();
           }
 
           if (state is UsefulInfoFailure) {
-            return Center(child: Text(state.message));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
+        },
+        child: BlocBuilder<UsefulInfoBloc, UsefulInfoState>(
+          builder: (context, state) {
+            if (state is UsefulInfoInitial) {
+              context.read<UsefulInfoBloc>().add(const UsefulInfoRequested());
+              return const SizedBox.shrink();
+            }
 
-          final info = (state as UsefulInfoLoaded).info;
-          if (_isInfoEmpty(info)) {
-            return const _EmptyState();
-          }
+            if (state is UsefulInfoLoading || state is UsefulInfoSaving) {
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              );
+            }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const PageHeader(
-                  title: UsefulInfoTexts.title,
-                  description: UsefulInfoTexts.description,
-                  icon: Icons.info_outline,
+            if (state is UsefulInfoFailure) {
+              return Center(child: Text(state.message));
+            }
+
+            if (state is! UsefulInfoLoaded) {
+              return const SizedBox.shrink();
+            }
+
+            final info = state.info;
+
+            if (_isEditing && isAdmin) {
+              return _UsefulInfoEditView(
+                info: info,
+                onCancel: _stopEditing,
+                onSave: (updated) {
+                  context.read<UsefulInfoBloc>().add(UsefulInfoSaved(updated));
+                },
+              );
+            }
+
+            if (_isInfoEmpty(info)) {
+              return const _EmptyState();
+            }
+
+            return _UsefulInfoReadView(info: info);
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _UsefulInfoReadView extends StatelessWidget {
+  final UsefulInfo info;
+
+  const _UsefulInfoReadView({required this.info});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const PageHeader(
+            title: UsefulInfoTexts.title,
+            description: UsefulInfoTexts.description,
+            icon: Icons.info_outline,
+          ),
+          const SizedBox(height: 16),
+          Column(
+            children: [
+              _SectionCard(
+                title: UsefulInfoTexts.cityHallSection,
+                icon: Icons.location_city_outlined,
+                child: _CityHallBlock(info: info),
+              ),
+              const SizedBox(height: 12),
+              _SectionCard(
+                title: UsefulInfoTexts.openingHoursSection,
+                icon: Icons.schedule_outlined,
+                child: OpeningHoursTable(openingHours: info.openingHours),
+              ),
+              const SizedBox(height: 12),
+              _SectionCard(
+                title: UsefulInfoTexts.contactSection,
+                icon: Icons.phone_outlined,
+                child: ContactActions(
+                  phone: info.phone,
+                  email: info.email,
+                  website: info.website,
                 ),
-                const SizedBox(height: 16),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-                Column(
-                  children: [
-                    _SectionCard(
-                      title: UsefulInfoTexts.cityHallSection,
-                      icon: Icons.location_city_outlined,
-                      child: _CityHallBlock(info: info),
+class _UsefulInfoEditView extends StatefulWidget {
+  final UsefulInfo info;
+  final ValueChanged<UsefulInfo> onSave;
+  final VoidCallback onCancel;
+
+  const _UsefulInfoEditView({
+    required this.info,
+    required this.onSave,
+    required this.onCancel,
+  });
+
+  @override
+  State<_UsefulInfoEditView> createState() => _UsefulInfoEditViewState();
+}
+
+class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
+  final _formKey = GlobalKey<FormState>();
+
+  late final TextEditingController _nameController;
+  late final TextEditingController _addressController;
+  late final TextEditingController _postalController;
+  late final TextEditingController _cityController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _websiteController;
+
+  @override
+  void initState() {
+    super.initState();
+    final info = widget.info;
+
+    _nameController = TextEditingController(text: info.cityHallName);
+    _addressController = TextEditingController(text: info.addressLine1);
+    _postalController = TextEditingController(text: info.postalCode);
+    _cityController = TextEditingController(text: info.city);
+    _phoneController = TextEditingController(text: info.phone ?? '');
+    _emailController = TextEditingController(text: info.email ?? '');
+    _websiteController = TextEditingController(text: info.website ?? '');
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _addressController.dispose();
+    _postalController.dispose();
+    _cityController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _websiteController.dispose();
+    super.dispose();
+  }
+
+  void _handleSave() {
+    if (!_formKey.currentState!.validate()) return;
+
+    final updated = widget.info.copyWith(
+      cityHallName: _nameController.text.trim(),
+      addressLine1: _addressController.text.trim(),
+      postalCode: _postalController.text.trim(),
+      city: _cityController.text.trim(),
+      phone: _emptyToNull(_phoneController.text),
+      email: _emptyToNull(_emailController.text),
+      website: _emptyToNull(_websiteController.text),
+    );
+
+    widget.onSave(updated);
+  }
+
+  String? _emptyToNull(String value) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const PageHeader(
+              title: UsefulInfoTexts.editTitle,
+              description: UsefulInfoTexts.description,
+              icon: Icons.edit_outlined,
+            ),
+            const SizedBox(height: 16),
+            _SectionCard(
+              title: UsefulInfoTexts.cityHallSection,
+              icon: Icons.location_city_outlined,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(
+                      labelText: '${UsefulInfoTexts.nameLabel} *',
                     ),
-
-                    const SizedBox(height: 12),
-
-                    _SectionCard(
-                      title: UsefulInfoTexts.openingHoursSection,
-                      icon: Icons.schedule_outlined,
-                      child: OpeningHoursTable(openingHours: info.openingHours),
+                    validator: _requiredValidator,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _addressController,
+                    decoration: const InputDecoration(
+                      labelText: '${UsefulInfoTexts.addressLabel} *',
                     ),
-
-                    const SizedBox(height: 12),
-
-                    _SectionCard(
-                      title: UsefulInfoTexts.contactSection,
-                      icon: Icons.phone_outlined,
-                      child: ContactActions(
-                        phone: info.phone,
-                        email: info.email,
-                        website: info.website,
+                    validator: _requiredValidator,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _postalController,
+                    decoration: const InputDecoration(
+                      labelText: '${UsefulInfoTexts.postalCodeLabel} *',
+                    ),
+                    validator: _requiredValidator,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _cityController,
+                    decoration: const InputDecoration(
+                      labelText: '${UsefulInfoTexts.cityLabel} *',
+                    ),
+                    validator: _requiredValidator,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            _SectionCard(
+              title: UsefulInfoTexts.contactSection,
+              icon: Icons.phone_outlined,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _phoneController,
+                    decoration: InputDecoration(
+                      labelText: UsefulInfoTexts.phoneLabel.replaceAll(
+                        ' :',
+                        '',
                       ),
                     ),
-                  ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: UsefulInfoTexts.emailLabel.replaceAll(
+                        ' :',
+                        '',
+                      ),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _websiteController,
+                    decoration: InputDecoration(
+                      labelText: UsefulInfoTexts.websiteLabel.replaceAll(
+                        ' :',
+                        '',
+                      ),
+                    ),
+                    keyboardType: TextInputType.url,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Icon(
+                  Icons.info_outline,
+                  size: 14,
+                  color: AppColors.secondaryText,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    AppTextsGeneral.requiredFieldsHint,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.secondaryText,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
                 ),
               ],
             ),
-          );
-        },
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: widget.onCancel,
+                    child: const Text('Annuler'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _handleSave,
+                    icon: const Icon(Icons.save_outlined),
+                    label: const Text('Enregistrer'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  String? _requiredValidator(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return UsefulInfoTexts.requiredField;
+    }
+    return null;
   }
 }
 
@@ -132,15 +393,18 @@ bool _isInfoEmpty(UsefulInfo info) {
       (info.phone ?? '').trim().isNotEmpty ||
       (info.email ?? '').trim().isNotEmpty ||
       (info.website ?? '').trim().isNotEmpty;
+
   final hasAddressData =
       info.cityHallName.trim().isNotEmpty ||
       info.addressLine1.trim().isNotEmpty ||
       (info.addressLine2 ?? '').trim().isNotEmpty ||
       info.postalCode.trim().isNotEmpty ||
       info.city.trim().isNotEmpty;
+
   final hasOpeningHours = info.openingHours.entries.any(
     (entry) => entry.value.any((slot) => slot.trim().isNotEmpty),
   );
+
   final hasAdditionalInfo = (info.additionalInfo ?? '').trim().isNotEmpty;
 
   return !hasContactData &&
@@ -225,6 +489,7 @@ class _SectionCard extends StatelessWidget {
 
 class _CityHallBlock extends StatelessWidget {
   final UsefulInfo info;
+
   const _CityHallBlock({required this.info});
 
   @override
@@ -237,14 +502,14 @@ class _CityHallBlock extends StatelessWidget {
         Text(info.cityHallName, style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: 6),
         Text(info.addressLine1, style: textStyle),
-        if ((info.addressLine2 ?? "").isNotEmpty)
+        if ((info.addressLine2 ?? '').isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: Text(info.addressLine2!, style: textStyle),
           ),
         Padding(
           padding: const EdgeInsets.only(top: 2),
-          child: Text("${info.postalCode} ${info.city}", style: textStyle),
+          child: Text('${info.postalCode} ${info.city}', style: textStyle),
         ),
       ],
     );
