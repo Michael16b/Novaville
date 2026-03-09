@@ -75,6 +75,16 @@ class _StubUserRepository implements IUserRepository {
   }) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> updatePassword({
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    // Stub: ne fait rien
+    return;
+  }
 }
 
 AuthRepositoryImpl _buildRepo({
@@ -278,5 +288,15 @@ class _SequentialUserRepository implements IUserRepository {
     int? neighborhoodId,
   }) async {
     throw UnimplementedError();
+  }
+
+  @override
+  Future<void> updatePassword({
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    // Stub: ne fait rien
+    return;
   }
 }

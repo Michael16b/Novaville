@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_reports.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
@@ -50,6 +51,7 @@ class ReportCard extends StatelessWidget {
     return Opacity(
       opacity: isResolved ? 0.55 : 1.0,
       child: Card(
+        clipBehavior: Clip.antiAlias,
         color: isResolved
             ? Theme.of(context).cardColor.withValues(alpha: 0.85)
             : null,
@@ -58,7 +60,10 @@ class ReportCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // ── Header ──
-            Padding(
+            Container(
+              decoration: BoxDecoration(
+                color: typeColor.withValues(alpha: 0.08),
+              ),
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
               child: Row(
                 children: [
@@ -127,7 +132,7 @@ class ReportCard extends StatelessWidget {
 
             // ── Body ──
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -192,7 +197,7 @@ class ReportCard extends StatelessWidget {
                     Expanded(
                       child: _ActionButton(
                         icon: Icons.edit_outlined,
-                        label: ReportTexts.edit,
+                        label: AppTextsGeneral.edit,
                         color: AppColors.primary,
                         onTap: onEdit != null ? () => onEdit!(report) : null,
                       ),
@@ -201,7 +206,7 @@ class ReportCard extends StatelessWidget {
                     Expanded(
                       child: _ActionButton(
                         icon: Icons.delete_outline_rounded,
-                        label: ReportTexts.delete,
+                        label: AppTextsGeneral.delete,
                         color: AppColors.error,
                         onTap:
                             onDelete != null ? () => onDelete!(report) : null,

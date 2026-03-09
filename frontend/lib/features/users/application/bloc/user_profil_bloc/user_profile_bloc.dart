@@ -13,6 +13,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         super(const UserProfileState.initial()) {
     on<UserProfileLoadRequested>(_onLoadRequested);
     on<UserProfileUpdateRequested>(_onUpdateRequested);
+    on<UserProfilePasswordUpdateRequested>(_onPasswordUpdateRequested);
   }
 
   final IUserRepository _repository;
@@ -50,6 +51,26 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
     } catch (e) {
       final message = e.toString().replaceFirst('Exception: ', '');
       emit(UserProfileState.failure(message, user: currentUser, isUpdate: true));
+    }
+  }
+
+  Future<void> _onPasswordUpdateRequested(
+    UserProfilePasswordUpdateRequested event,
+    Emitter<UserProfileState> emit,
+  ) async {
+    final currentUser = state.user;
+    if (currentUser == null) return;
+    emit(UserProfileState.updating(currentUser));
+    try {
+      await _repository.updatePassword(
+        userId: event.userId,
+        currentPassword: event.currentPassword,
+        newPassword: event.newPassword,
+      );
+      emit(UserProfileState.loaded(currentUser, isPasswordUpdate: true));
+    } catch (e) {
+      final message = e.toString().replaceFirst('Exception: ', '');
+      emit(UserProfileState.failure(message, user: currentUser, isPasswordUpdate: true));
     }
   }
 }

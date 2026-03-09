@@ -8,7 +8,6 @@ class UserTexts {
   static const ascending = 'Ordre croissant';
   static const descending = 'Ordre décroissant';
   static const error = 'Erreur';
-  static const retry = 'Réessayer';
   static const noUsers = 'Aucun utilisateur';
   static const noUsersFound = 'Aucun compte utilisateur trouvé';
   static const firstNameLastName = 'Nom complet';
@@ -16,8 +15,6 @@ class UserTexts {
   static const email = 'Email';
   static const role = 'Rôle';
   static const actions = 'Actions';
-  static const edit = 'Modifier';
-  static const delete = 'Supprimer';
   static const cannotDeleteSelf = 'Impossible de supprimer votre compte';
   static const confirmDeleteTitle = 'Supprimer l\'utilisateur';
   static const confirmDelete = 'Êtes-vous sûr de vouloir supprimer';
@@ -26,8 +23,6 @@ class UserTexts {
   static const editUserTitle = 'Modifier l\'utilisateur';
   static const editUser = 'Édition du compte de';
   static const editInProgress = 'Fonctionnalité en cours de développement';
-  static const close = 'Fermer';
-  static const cancel = 'Annuler';
   static const previous = 'Précédent';
   static const next = 'Suivant';
   static const on = 'sur';
@@ -48,4 +43,14 @@ class UserTexts {
   static const filterByNeighborhood = 'Quartier';
   static const allNeighborhoods = 'Tous les quartiers';
   static const clearFilters = 'Réinitialiser les filtres';
+
+  static const neighborhoodLabel = 'Quartier';
+  static const selectNeighborhood = 'Sélectionner un quartier';
+  static const userCreatedSuccess = 'Utilisateur créé avec succès';
+  static const userCreatedSuccessMessage =
+      'Le compte utilisateur a été créé. Voici les informations de connexion :';
+  static const password = 'Mot de passe';
+  static const copyConnectionLink = 'Copier le lien de connexion';
+  static const copied = 'Copié !';
+  static const copy = 'Copier';
 }

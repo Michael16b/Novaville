@@ -32,3 +32,19 @@ class UserProfileUpdateRequested extends UserProfileEvent {
   @override
   List<Object?> get props => [userId, firstName, lastName, username, email];
 }
+
+/// Event to update the user password.
+class UserProfilePasswordUpdateRequested extends UserProfileEvent {
+  const UserProfilePasswordUpdateRequested({
+    required this.userId,
+    required this.currentPassword,
+    required this.newPassword,
+  });
+
+  final int userId;
+  final String currentPassword;
+  final String newPassword;
+
+  @override
+  List<Object?> get props => [userId, currentPassword, newPassword];
+}

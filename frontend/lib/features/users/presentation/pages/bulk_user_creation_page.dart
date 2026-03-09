@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/features/users/application/services/user_csv_compiler.dart';
 import 'package:frontend/features/users/presentation/pages/web_drop_handler.dart';
 import 'package:frontend/config/app_routes.dart';
@@ -184,11 +185,11 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
         maxWidth: 420,
         actions: [
           StyledDialog.cancelButton(
-            label: BulkUserCreationTexts.cancel,
+            label: AppTextsGeneral.cancel,
             onPressed: () => Navigator.of(context).pop(false),
           ),
           StyledDialog.destructiveButton(
-            label: BulkUserCreationTexts.delete,
+            label: AppTextsGeneral.delete,
             onPressed: () => Navigator.of(context).pop(true),
           ),
         ],
@@ -558,7 +559,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           maxWidth: 720,
           actions: [
             StyledDialog.cancelButton(
-              label: BulkUserCreationTexts.close,
+              label: AppTextsGeneral.close,
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
           ],
@@ -652,7 +653,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
         maxWidth: 420,
         actions: [
           StyledDialog.cancelButton(
-            label: BulkUserCreationTexts.cancel,
+            label: AppTextsGeneral.cancel,
             onPressed: () => Navigator.of(context).pop(false),
           ),
           StyledDialog.primaryButton(
@@ -744,7 +745,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           maxWidth: 540,
           actions: [
             StyledDialog.cancelButton(
-              label: BulkUserCreationTexts.close,
+              label: AppTextsGeneral.close,
               onPressed: () => Navigator.of(context).pop(),
             ),
           ],
@@ -1657,13 +1658,13 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                 children: [
                   TextButton(
                     onPressed: _cancelEditingDraft,
-                    child: const Text(BulkUserCreationTexts.cancel),
+                    child: const Text(AppTextsGeneral.cancel),
                   ),
                   const SizedBox(width: 8),
                   FilledButton.icon(
                     onPressed: _saveEditingDraft,
                     icon: const Icon(Icons.save),
-                    label: const Text(BulkUserCreationTexts.save),
+                    label: const Text(AppTextsGeneral.save),
                   ),
                 ],
               ),
@@ -1701,12 +1702,12 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
               ),
             ),
             IconButton(
-              tooltip: BulkUserCreationTexts.edit,
+              tooltip: AppTextsGeneral.edit,
               onPressed: () => _startEditingDraft(index),
               icon: const Icon(Icons.edit_outlined),
             ),
             IconButton(
-              tooltip: BulkUserCreationTexts.delete,
+              tooltip: AppTextsGeneral.delete,
               onPressed: () async {
                 if (_editingDraftIndex == index) {
                   _cancelEditingDraft();

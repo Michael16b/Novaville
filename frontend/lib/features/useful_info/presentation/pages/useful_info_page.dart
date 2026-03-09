@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_useful_info.dart';
 
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
@@ -31,7 +32,7 @@ class UsefulInfoPage extends StatelessWidget {
       floatingActionButton: isAdmin
           ? FloatingActionButton(
               heroTag: 'useful-info-fab',
-              tooltip: UsefulInfoTexts.edit,
+              tooltip: AppTextsGeneral.edit,
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.white,
               onPressed: () async {
