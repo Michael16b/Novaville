@@ -125,18 +125,6 @@ class AgendaTexts {
   /// Irreversible action warning.
   static const irreversible = 'Cette action est irréversible.';
 
-  /// Cancel button label.
-  static const cancel = 'Annuler';
-
-  /// Delete button label.
-  static const delete = 'Supprimer';
-
-  /// Edit button label.
-  static const edit = 'Modifier';
-
-  /// Retry button label.
-  static const retry = 'Réessayer';
-
   /// No events message.
   static const noEvents = 'Aucun événement à afficher';
 
@@ -152,12 +140,6 @@ class AgendaTexts {
 
   /// Event date label.
   static const eventDate = 'Le';
-
-  /// Validate button label.
-  static const validate = 'Valider';
-
-  /// Save button label.
-  static const save = 'Enregistrer';
 
   /// Required field error.
   static const requiredField = 'Ce champ est obligatoire';
@@ -206,9 +188,6 @@ class AgendaTexts {
 
   /// Day events modal title prefix.
   static const eventsOf = 'Événements du';
-
-  /// Close button label.
-  static const close = 'Fermer';
 
   /// Previous page tooltip.
   static const previousPage = 'Page précédente';

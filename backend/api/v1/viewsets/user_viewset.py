@@ -1,3 +1,4 @@
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -7,6 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from core.db.models import User
 from api.v1.serializers.user_serializer import UserSerializer, UserPublicSerializer
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
+from rest_framework import serializers
 
 
 @extend_schema_view(
@@ -120,3 +122,46 @@ class UserViewSet(viewsets.ModelViewSet):
         """Get current user's profile"""
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], url_path='change_password', permission_classes=[IsAuthenticated])
+    def change_password(self, request, pk=None):
+        """Allow a user to change their password"""
+
+        user = self.get_object()
+
+        if user != request.user and not request.user.is_staff:
+            return Response(
+                {"code": "forbidden"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+
+        if not current_password or not new_password:
+            return Response(
+                {"code": "password_fields_required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not user.check_password(current_password):
+            return Response(
+                {"code": "incorrect_password"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            validate_password(new_password, user)
+        except serializers.ValidationError:
+            return Response(
+                {"code": "password_invalid"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.set_password(new_password)
+        user.save()
+
+        return Response(
+            {"detail": "password_updated"},
+            status=status.HTTP_200_OK
+        )

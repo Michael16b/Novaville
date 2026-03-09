@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:go_router/go_router.dart';
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
@@ -775,7 +776,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
               );
             },
             icon: const Icon(Icons.refresh),
-            label: const Text(UserTexts.retry),
+            label: const Text(AppTextsGeneral.retry),
           ),
         ],
       ),
@@ -811,11 +812,11 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
       builder: (context) => StyledDialog(
         title: UserTexts.editUserTitle,
         icon: Icons.edit_outlined,
-        closeTooltip: UserTexts.close,
+        closeTooltip: AppTextsGeneral.close,
         maxWidth: 420,
         actions: [
           StyledDialog.cancelButton(
-            label: UserTexts.close,
+            label: AppTextsGeneral.close,
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -870,15 +871,15 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
         title: UserTexts.confirmDeleteTitle,
         icon: Icons.warning_amber_rounded,
         accentColor: AppColors.error,
-        closeTooltip: UserTexts.cancel,
+        closeTooltip: AppTextsGeneral.cancel,
         maxWidth: 420,
         actions: [
           StyledDialog.cancelButton(
-            label: UserTexts.cancel,
+            label: AppTextsGeneral.cancel,
             onPressed: () => Navigator.pop(dialogContext),
           ),
           StyledDialog.destructiveButton(
-            label: UserTexts.delete,
+            label: AppTextsGeneral.delete,
             onPressed: () {
               Navigator.pop(dialogContext);
               setState(() {

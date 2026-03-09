@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
@@ -58,11 +59,11 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
       maxWidth: 500,
       actions: [
         StyledDialog.cancelButton(
-          label: UserTexts.cancel,
+          label: AppTextsGeneral.cancel,
           onPressed: () => Navigator.pop(context),
         ),
         StyledDialog.primaryButton(
-          label: UserTexts.create,
+          label: AppTextsGeneral.create,
           icon: _isSubmitting ? null : Icons.check,
           onPressed: _isSubmitting ? null : () => _onSubmit(),
         ),
@@ -344,7 +345,7 @@ class _CredentialsDialog extends StatelessWidget {
       maxWidth: 450,
       actions: [
         StyledDialog.primaryButton(
-          label: UserTexts.close,
+          label: AppTextsGeneral.close,
           onPressed: () => Navigator.pop(context),
         ),
       ],

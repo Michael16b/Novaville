@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_agenda.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/agenda/application/bloc/agenda_bloc/agenda_bloc.dart';
 import 'package:frontend/features/agenda/data/event_repository.dart';
@@ -656,11 +657,11 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
         return StyledDialog(
           title: '${AgendaTexts.eventsOf} $dayStr',
           icon: Icons.event_note,
-          closeTooltip: AgendaTexts.close,
+          closeTooltip: AppTextsGeneral.close,
           maxWidth: 700,
           actions: [
             StyledDialog.cancelButton(
-              label: AgendaTexts.close,
+              label: AppTextsGeneral.close,
               onPressed: () => Navigator.pop(dialogContext),
             ),
           ],
@@ -1130,7 +1131,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                   );
             },
             icon: const Icon(Icons.refresh),
-            label: const Text(AgendaTexts.retry),
+            label: const Text(AppTextsGeneral.retry),
           ),
         ],
       ),
@@ -1229,15 +1230,15 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
         title: AgendaTexts.confirmDeleteTitle,
         icon: Icons.warning_amber_rounded,
         accentColor: AppColors.error,
-        closeTooltip: AgendaTexts.cancel,
+        closeTooltip: AppTextsGeneral.cancel,
         maxWidth: 420,
         actions: [
           StyledDialog.cancelButton(
-            label: AgendaTexts.cancel,
+            label: AppTextsGeneral.cancel,
             onPressed: () => Navigator.pop(dialogContext),
           ),
           StyledDialog.destructiveButton(
-            label: AgendaTexts.delete,
+            label: AppTextsGeneral.delete,
             onPressed: () {
               Navigator.pop(dialogContext);
               context.read<AgendaBloc>().add(
@@ -1275,7 +1276,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
         title: AgendaTexts.chooseCalendar,
         icon: Icons.event_available_outlined,
         accentColor: AppColors.info,
-        closeTooltip: AgendaTexts.close,
+        closeTooltip: AppTextsGeneral.close,
         maxWidth: 400,
         body: Column(
           mainAxisSize: MainAxisSize.min,
