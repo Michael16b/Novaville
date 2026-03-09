@@ -80,12 +80,16 @@ class UserRepositoryImpl implements IUserRepository {
     String? lastName,
     String? username,
     String? email,
+    UserRole? role,
+    int? neighborhoodId,
   }) async {
     final body = <String, dynamic>{};
     if (firstName != null) body['first_name'] = firstName;
     if (lastName != null) body['last_name'] = lastName;
     if (username != null) body['username'] = username;
     if (email != null) body['email'] = email;
+    if (role != null) body['role'] = role.toJson();
+    if (neighborhoodId != null) body['neighborhood'] = neighborhoodId;
 
     final response = await _apiClient.patch(
       '/api/v1/users/$userId/',
@@ -134,6 +138,23 @@ class UserRepositoryImpl implements IUserRepository {
 
       throw Exception(AppTextsProfile.updatePasswordError);
     }
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception(AppTextsProfile.updatePasswordError);
+    }
+  }
+
+  @override
+  Future<void> resetPassword({
+    required int userId,
+    required String newPassword,
+  }) async {
+    final response = await _apiClient.post(
+      '/api/v1/users/$userId/reset_password/',
+      body: {
+        'new_password': newPassword,
+      },
+    );
 
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw Exception(AppTextsProfile.updatePasswordError);

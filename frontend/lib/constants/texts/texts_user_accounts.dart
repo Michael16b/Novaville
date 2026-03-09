@@ -53,4 +53,14 @@ class UserTexts {
   static const copyConnectionLink = 'Copier le lien de connexion';
   static const copied = 'Copié !';
   static const copy = 'Copier';
+
+  static const userUpdatedSuccess = 'Utilisateur mis à jour avec succès';
+  static const resetPassword = 'Réinitialiser le mot de passe';
+  static const resetPasswordTitle = 'Réinitialisation du mot de passe';
+  static const resetPasswordWarning =
+      'Attention, cette action va générer un nouveau mot de passe aléatoire pour cet utilisateur. L\'ancien mot de passe ne sera plus valide.';
+  static const resetPasswordConfirm = 'Réinitialiser';
+  static const passwordResetSuccess = 'Mot de passe réinitialisé';
+  static const passwordResetSuccessMessage =
+      'Le mot de passe a été réinitialisé avec succès. Voici le lien contenant les nouvelles informations de connexion :';
 }

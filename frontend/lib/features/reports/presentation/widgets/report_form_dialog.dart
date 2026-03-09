@@ -5,6 +5,7 @@ import 'package:frontend/constants/texts/texts_reports.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
+import 'package:frontend/ui/widgets/styled_dialog.dart';
 
 /// Dialog for creating or editing a report.
 class ReportFormDialog extends StatefulWidget {
@@ -72,309 +73,182 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
         : ReportTexts.createReport;
     final actionLabel =
         _isEditing ? AppTextsGeneral.save : AppTextsGeneral.create;
-    const accentColor = AppColors.primary;
 
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 500),
+    return StyledDialog(
+      title: title,
+      icon: _isEditing ? Icons.edit_outlined : Icons.add_circle_outline,
+      closeTooltip: AppTextsGeneral.cancel,
+      maxWidth: 500,
+      actions: [
+        StyledDialog.cancelButton(
+          label: AppTextsGeneral.cancel,
+          onPressed: () => Navigator.pop(context),
+        ),
+        StyledDialog.primaryButton(
+          label: actionLabel,
+          icon: _isEditing ? Icons.check : Icons.send_outlined,
+          onPressed: _onSubmit,
+        ),
+      ],
+      body: Form(
+        key: _formKey,
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Header ──
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(20, 18, 12, 18),
-              decoration: BoxDecoration(
-                color: accentColor.withValues(alpha: 0.08),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: accentColor.withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      _isEditing
-                          ? Icons.edit_outlined
-                          : Icons.add_circle_outline,
-                      size: 22,
-                      color: accentColor,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: Theme.of(context)
-                          .textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                    tooltip: AppTextsGeneral.cancel,
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.grey.shade200,
-                      minimumSize: const Size(36, 36),
-                      padding: EdgeInsets.zero,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Form body ──
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Problem type
-                      Text(
-                        '${ReportTexts.problemTypeLabel} *',
-                        style: Theme.of(context)
-                            .textTheme.bodySmall
-                            ?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.secondaryText,
-                            ),
-                      ),
-                      const SizedBox(height: 6),
-                      DropdownButtonFormField<ProblemType>(
-                        value: _selectedProblemType,
-                        isExpanded: true,
-                        menuMaxHeight: 300,
-                        borderRadius: BorderRadius.circular(12),
-                        decoration: InputDecoration(
-                          hintText: ReportTexts.selectProblemType,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 12,
-                          ),
-                        ),
-                        items: ProblemType.values
-                            .map(
-                              (type) => DropdownMenuItem<ProblemType>(
-                                value: type,
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      _problemTypeIcon(type),
-                                      size: 18,
-                                      color: _problemTypeColor(type),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(type.label),
-                                  ],
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedProblemType = value;
-                          });
-                        },
-                        validator: (value) {
-                          if (value == null) {
-                            return ReportTexts.problemTypeRequired;
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      // Title
-                      Text(
-                        '${ReportTexts.titleLabel} *',
-                        style: Theme.of(context)
-                            .textTheme.bodySmall
-                            ?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.secondaryText,
-                            ),
-                      ),
-                      const SizedBox(height: 6),
-                      TextFormField(
-                        controller: _titleController,
-                        maxLength: 255,
-                        decoration: InputDecoration(
-                          hintText: ReportTexts.titleLabel,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          contentPadding: const EdgeInsets.all(14),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return ReportTexts.titleRequired;
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      // Description
-                      Text(
-                        '${ReportTexts.descriptionLabel} *',
-                        style: Theme.of(context)
-                            .textTheme.bodySmall
-                            ?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.secondaryText,
-                            ),
-                      ),
-                      const SizedBox(height: 6),
-                      TextFormField(
-                        controller: _descriptionController,
-                        maxLines: 4,
-                        decoration: InputDecoration(
-                          hintText: ReportTexts.descriptionHint,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          contentPadding: const EdgeInsets.all(14),
-                          alignLabelWithHint: true,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return ReportTexts.descriptionRequired;
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      // Neighborhood
-                      Text(
-                        '${ReportTexts.neighborhoodLabel} *',
-                        style: Theme.of(context)
-                            .textTheme.bodySmall
-                            ?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.secondaryText,
-                            ),
-                      ),
-                      const SizedBox(height: 6),
-                      _NeighborhoodAutocompleteField(
-                        neighborhoods: widget.neighborhoods,
-                        initialNeighborhoodId: _selectedNeighborhood,
-                        onChanged: (value) {
-                          _selectedNeighborhood = value;
-                        },
-                        validator: (value) {
-                          if (value == null) {
-                            return ReportTexts.neighborhoodRequired;
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // Required fields hint
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                              color: AppColors.secondaryText
-                                  .withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.info_outline,
-                              size: 12,
-                              color: AppColors.secondaryText,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            AppTextsGeneral.requiredFieldsHint,
-                            style: Theme.of(context)
-                                .textTheme.bodySmall
-                                ?.copyWith(
-                                  color: AppColors.secondaryText,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+            // Problem type
+            _buildLabel('${ReportTexts.problemTypeLabel} *'),
+            DropdownButtonFormField<ProblemType>(
+              value: _selectedProblemType,
+              isExpanded: true,
+              menuMaxHeight: 300,
+              borderRadius: BorderRadius.circular(12),
+              decoration: InputDecoration(
+                hintText: ReportTexts.selectProblemType,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
                 ),
               ),
+              items: ProblemType.values
+                  .map(
+                    (type) => DropdownMenuItem<ProblemType>(
+                      value: type,
+                      child: Row(
+                        children: [
+                          Icon(
+                            _problemTypeIcon(type),
+                            size: 18,
+                            color: _problemTypeColor(type),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(type.label),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedProblemType = value;
+                });
+              },
+              validator: (value) {
+                if (value == null) {
+                  return ReportTexts.problemTypeRequired;
+                }
+                return null;
+              },
             ),
 
-            // ── Footer actions ──
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        side: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      child: const Text(
-                        AppTextsGeneral.cancel,
-                        style: TextStyle(
-                          color: AppColors.secondaryText,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton.icon(
-                      onPressed: _onSubmit,
-                      icon: Icon(
-                        _isEditing ? Icons.check : Icons.send_outlined,
-                        size: 18,
-                      ),
-                      label: Text(actionLabel),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: accentColor,
-                        foregroundColor: AppColors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        textStyle: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 18),
+
+            // Title
+            _buildLabel('${ReportTexts.titleLabel} *'),
+            TextFormField(
+              controller: _titleController,
+              maxLength: 255,
+              decoration: InputDecoration(
+                hintText: ReportTexts.titleLabel,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.all(14),
               ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return ReportTexts.titleRequired;
+                }
+                return null;
+              },
+            ),
+
+            const SizedBox(height: 18),
+
+            // Description
+            _buildLabel('${ReportTexts.descriptionLabel} *'),
+            TextFormField(
+              controller: _descriptionController,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: ReportTexts.descriptionHint,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.all(14),
+                alignLabelWithHint: true,
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return ReportTexts.descriptionRequired;
+                }
+                return null;
+              },
+            ),
+
+            const SizedBox(height: 18),
+
+            // Neighborhood
+            _buildLabel('${ReportTexts.neighborhoodLabel} *'),
+            _NeighborhoodAutocompleteField(
+              neighborhoods: widget.neighborhoods,
+              initialNeighborhoodId: _selectedNeighborhood,
+              onChanged: (value) {
+                _selectedNeighborhood = value;
+              },
+              validator: (value) {
+                if (value == null) {
+                  return ReportTexts.neighborhoodRequired;
+                }
+                return null;
+              },
+            ),
+
+            const SizedBox(height: 14),
+
+            // Required fields hint
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondaryText.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.info_outline,
+                    size: 12,
+                    color: AppColors.secondaryText,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  AppTextsGeneral.requiredFieldsHint,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.secondaryText,
+                        fontStyle: FontStyle.italic,
+                      ),
+                ),
+              ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.secondaryText,
+              fontWeight: FontWeight.w600,
+            ),
       ),
     );
   }
