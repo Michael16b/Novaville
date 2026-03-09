@@ -89,8 +89,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Title
-            _FieldLabel(label: '${AgendaTexts.titleLabel} *'),
-            const SizedBox(height: 6),
+            _buildLabel(context, '${AgendaTexts.titleLabel} *'),
             TextFormField(
               controller: _titleController,
               decoration: InputDecoration(
@@ -113,8 +112,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
             const SizedBox(height: 18),
 
             // Description
-            _FieldLabel(label: '${AgendaTexts.descriptionLabel} *'),
-            const SizedBox(height: 6),
+            _buildLabel(context, '${AgendaTexts.descriptionLabel} *'),
             TextFormField(
               controller: _descriptionController,
               maxLines: 4,
@@ -136,8 +134,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
             const SizedBox(height: 18),
 
             // Theme
-            _FieldLabel(label: '${AgendaTexts.themeLabel} *'),
-            const SizedBox(height: 6),
+            _buildLabel(context, '${AgendaTexts.themeLabel} *'),
             DropdownButtonFormField<EventTheme>(
               initialValue: _selectedTheme,
               isExpanded: true,
@@ -221,6 +218,19 @@ class _EventFormDialogState extends State<EventFormDialog> {
     );
   }
 
+  Widget _buildLabel(BuildContext context, String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.secondaryText,
+              fontWeight: FontWeight.w600,
+            ),
+      ),
+    );
+  }
+
   Color _themeColor(EventTheme theme) {
     switch (theme) {
       case EventTheme.sport:
@@ -294,14 +304,21 @@ class _OmniDateTimeFormField extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            _buildLabel(context, label),
             InkWell(
               borderRadius: BorderRadius.circular(8),
               onTap: () => _pickDateTime(context, field),
               child: InputDecorator(
                 decoration: InputDecoration(
-                  labelText: label,
-                  suffixIcon: const Icon(Icons.calendar_month_outlined),
                   errorText: hasError ? field.errorText : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  suffixIcon: const Icon(Icons.calendar_month_outlined),
                 ),
                 child: value != null
                     ? Text(
@@ -321,6 +338,19 @@ class _OmniDateTimeFormField extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildLabel(BuildContext context, String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.secondaryText,
+              fontWeight: FontWeight.w600,
+            ),
+      ),
     );
   }
 
@@ -359,23 +389,6 @@ class _OmniDateTimeFormField extends StatelessWidget {
   }
 }
 
-/// Small field label widget for form consistency.
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel({required this.label});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: AppColors.secondaryText,
-          ),
-    );
-  }
-}
-
 /// Required fields hint row.
 class _RequiredFieldsHint extends StatelessWidget {
   @override
@@ -406,4 +419,3 @@ class _RequiredFieldsHint extends StatelessWidget {
     );
   }
 }
-

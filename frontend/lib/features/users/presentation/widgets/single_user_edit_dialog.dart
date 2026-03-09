@@ -10,37 +10,48 @@ import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
+import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
 
-class SingleUserCreationDialog extends StatefulWidget {
-  const SingleUserCreationDialog({
+class SingleUserEditDialog extends StatefulWidget {
+  const SingleUserEditDialog({
     required this.userRepository,
     required this.neighborhoods,
+    required this.user,
     super.key,
   });
 
   final IUserRepository userRepository;
   final List<Neighborhood> neighborhoods;
+  final User user;
 
   @override
-  State<SingleUserCreationDialog> createState() =>
-      _SingleUserCreationDialogState();
+  State<SingleUserEditDialog> createState() => _SingleUserEditDialogState();
 }
 
-class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
+class _SingleUserEditDialogState extends State<SingleUserEditDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _usernameController = TextEditingController();
-  final _emailController = TextEditingController();
+  late final TextEditingController _firstNameController;
+  late final TextEditingController _lastNameController;
+  late final TextEditingController _usernameController;
+  late final TextEditingController _emailController;
 
-  UserRole _selectedRole = UserRole.citizen;
+  late UserRole _selectedRole;
   int? _selectedNeighborhoodId;
   bool _isSubmitting = false;
-  bool _usernameWasManuallyEdited = false;
-  bool _isProgrammaticUsernameUpdate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _firstNameController = TextEditingController(text: widget.user.firstName);
+    _lastNameController = TextEditingController(text: widget.user.lastName);
+    _usernameController = TextEditingController(text: widget.user.username);
+    _emailController = TextEditingController(text: widget.user.email);
+    _selectedRole = widget.user.role ?? UserRole.citizen;
+    _selectedNeighborhoodId = widget.user.neighborhoodId;
+  }
 
   @override
   void dispose() {
@@ -54,8 +65,8 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
   @override
   Widget build(BuildContext context) {
     return StyledDialog(
-      title: UserTexts.addUser,
-      icon: Icons.person_add_alt_1,
+      title: UserTexts.editUserTitle,
+      icon: Icons.edit_outlined,
       maxWidth: 500,
       actions: [
         StyledDialog.cancelButton(
@@ -63,8 +74,8 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
           onPressed: () => Navigator.pop(context),
         ),
         StyledDialog.primaryButton(
-          label: AppTextsGeneral.create,
-          icon: _isSubmitting ? null : Icons.send_outlined,
+          label: AppTextsGeneral.save,
+          icon: _isSubmitting ? null : Icons.check,
           onPressed: _isSubmitting ? null : () => _onSubmit(),
         ),
       ],
@@ -93,7 +104,6 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
                           }
                           return null;
                         },
-                        onChanged: (_) => _applyAutoUsernameIfNeeded(),
                       ),
                     ],
                   ),
@@ -116,7 +126,6 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
                           }
                           return null;
                         },
-                        onChanged: (_) => _applyAutoUsernameIfNeeded(),
                       ),
                     ],
                   ),
@@ -127,14 +136,9 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
             _buildLabel('${BulkUserCreationTexts.usernameLabel} *'),
             TextFormField(
               controller: _usernameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: BulkUserCreationTexts.usernameLabel,
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  tooltip: BulkUserCreationTexts.randomUsernameTooltip,
-                  onPressed: _applyRandomUsernameSuggestion,
-                  icon: const Icon(Icons.casino_outlined),
-                ),
+                border: OutlineInputBorder(),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -144,10 +148,6 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
                   return BulkUserCreationTexts.usernameInvalidWhitespace;
                 }
                 return null;
-              },
-              onChanged: (value) {
-                if (_isProgrammaticUsernameUpdate) return;
-                _usernameWasManuallyEdited = value.trim().isNotEmpty;
               },
             ),
             const SizedBox(height: 16),
@@ -211,6 +211,19 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
             ),
             const SizedBox(height: 14),
             _RequiredFieldsHint(),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: _isSubmitting ? null : _onResetPassword,
+              icon: const Icon(Icons.lock_reset),
+              label: const Text(UserTexts.resetPassword),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.error,
+                side: const BorderSide(color: AppColors.error),
+                minimumSize: const Size(double.infinity, 48),
+              ),
+            ),
           ],
         ),
       ),
@@ -228,51 +241,6 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
             ),
       ),
     );
-  }
-
-  void _applyAutoUsernameIfNeeded() {
-    if (_usernameWasManuallyEdited) return;
-
-    final suggestion = _buildUsernameFromNames(
-      _firstNameController.text,
-      _lastNameController.text,
-    );
-
-    if (suggestion == _usernameController.text.trim()) return;
-
-    _isProgrammaticUsernameUpdate = true;
-    _usernameController.text = suggestion;
-    _usernameController.selection = TextSelection.collapsed(
-      offset: _usernameController.text.length,
-    );
-    _isProgrammaticUsernameUpdate = false;
-  }
-
-  void _applyRandomUsernameSuggestion() {
-    final base = _buildUsernameFromNames(
-      _firstNameController.text,
-      _lastNameController.text,
-    );
-    final random = Random.secure();
-    final suffix = (100 + random.nextInt(900)).toString();
-    final suggestion = '${base.isEmpty ? 'user' : base}$suffix';
-
-    _isProgrammaticUsernameUpdate = true;
-    _usernameController.text = suggestion;
-    _usernameController.selection = TextSelection.collapsed(
-      offset: _usernameController.text.length,
-    );
-    _isProgrammaticUsernameUpdate = false;
-    _usernameWasManuallyEdited = true;
-  }
-
-  String _buildUsernameFromNames(String firstName, String lastName) {
-    final cleanedFirstName = firstName.trim().toLowerCase();
-    final cleanedLastName = lastName.trim().toLowerCase().replaceAll(' ', '');
-
-    if (cleanedFirstName.isEmpty || cleanedLastName.isEmpty) return '';
-
-    return '${cleanedFirstName[0]}$cleanedLastName';
   }
 
   String _generatePassword() {
@@ -294,44 +262,88 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
     return chars.join();
   }
 
-  Future<void> _onSubmit() async {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _onResetPassword() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => StyledDialog(
+        title: UserTexts.resetPasswordTitle,
+        icon: Icons.warning_amber_rounded,
+        accentColor: AppColors.error,
+        closeTooltip: AppTextsGeneral.cancel,
+        maxWidth: 400,
+        actions: [
+          StyledDialog.cancelButton(
+            label: AppTextsGeneral.cancel,
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          StyledDialog.destructiveButton(
+            label: UserTexts.resetPasswordConfirm,
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+        body: Text(
+          UserTexts.resetPasswordWarning,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
 
     setState(() => _isSubmitting = true);
 
-    final password = _generatePassword();
-    final username = _usernameController.text.trim();
-    final email = _emailController.text.trim();
-    final firstName = _firstNameController.text.trim();
-    final lastName = _lastNameController.text.trim();
+    final newPassword = _generatePassword();
 
     try {
-      await widget.userRepository.createUser(
-        username: username,
-        email: email,
-        firstName: firstName,
-        lastName: lastName,
-        password: password,
-        role: _selectedRole,
-        neighborhoodId: _selectedNeighborhoodId,
+      await widget.userRepository.resetPassword(
+        userId: widget.user.id,
+        newPassword: newPassword,
       );
 
       if (!mounted) return;
-
-      Navigator.pop(context); // Close creation dialog
 
       // Show credentials dialog
       await showDialog<void>(
         context: context,
         barrierDismissible: false,
         builder: (context) => _CredentialsDialog(
-          firstName: firstName,
-          lastName: lastName,
-          username: username,
-          password: password,
-          email: email,
+          firstName: _firstNameController.text.trim(),
+          lastName: _lastNameController.text.trim(),
+          username: _usernameController.text.trim(),
+          password: newPassword,
+          email: _emailController.text.trim(),
         ),
       );
+    } catch (e) {
+      if (!mounted) return;
+      CustomSnackBar.showError(context, e.toString());
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  Future<void> _onSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      await widget.userRepository.updateUser(
+        userId: widget.user.id,
+        username: _usernameController.text.trim(),
+        email: _emailController.text.trim(),
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        role: _selectedRole,
+        neighborhoodId: _selectedNeighborhoodId,
+      );
+
+      if (!mounted) return;
+
+      Navigator.pop(context);
+      CustomSnackBar.showSuccess(context, UserTexts.userUpdatedSuccess);
     } catch (e) {
       if (!mounted) return;
       CustomSnackBar.showError(context, e.toString());
@@ -358,7 +370,7 @@ class _CredentialsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StyledDialog(
-      title: UserTexts.userCreatedSuccess,
+      title: UserTexts.passwordResetSuccess,
       icon: Icons.check_circle_outline,
       accentColor: AppColors.success,
       maxWidth: 450,
@@ -372,6 +384,11 @@ class _CredentialsDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            UserTexts.passwordResetSuccessMessage,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16),
           OutlinedButton.icon(
             onPressed: () => _copyLink(context),
             icon: const Icon(Icons.link),

@@ -15,6 +15,7 @@ import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
 import 'package:frontend/features/users/data/user_repository_factory.dart';
 import 'package:frontend/features/users/presentation/widgets/single_user_creation_dialog.dart';
+import 'package:frontend/features/users/presentation/widgets/single_user_edit_dialog.dart';
 import 'package:frontend/features/users/presentation/widgets/user_account_card.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 import 'package:frontend/ui/widgets/neighborhood_autocomplete.dart';
@@ -807,61 +808,26 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   }
 
   void _showEditDialog(BuildContext context, User user) {
+    final bloc = context.read<UserAccountsBloc>();
+    final neighborhoods = bloc.state.neighborhoods;
+    final repository = context.read<IUserRepository>();
+
     showDialog<void>(
       context: context,
-      builder: (context) => StyledDialog(
-        title: UserTexts.editUserTitle,
-        icon: Icons.edit_outlined,
-        closeTooltip: AppTextsGeneral.close,
-        maxWidth: 420,
-        actions: [
-          StyledDialog.cancelButton(
-            label: AppTextsGeneral.close,
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
-        body: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '${UserTexts.editUser} ${user.username}',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.construction,
-                    size: 16,
-                    color: AppColors.warning,
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      UserTexts.editInProgress,
-                      style: TextStyle(
-                        color: AppColors.warning,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+      builder: (context) => SingleUserEditDialog(
+        userRepository: repository,
+        neighborhoods: neighborhoods,
+        user: user,
       ),
-    );
+    ).then((_) {
+      // Reload list after dialog closes (in case user was updated)
+      bloc.add(
+        UserAccountsLoadRequested(
+          ordering: _sortAscending ? _sortColumnKey : '-$_sortColumnKey',
+          search: _searchQuery,
+        ),
+      );
+    });
   }
 
   void _showDeleteDialog(BuildContext context, User user) {
