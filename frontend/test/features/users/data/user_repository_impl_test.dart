@@ -126,7 +126,7 @@ void main() {
     test('updatePassword envoie les bons paramètres et réussit (200)', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, anyOf(['POST', 'PATCH', 'PUT']));
-        expect(request.url.path, '/api/v1/users/1/set_password/');
+        expect(request.url.path, '/api/v1/users/1/change_password/');
         expect(request.headers['Content-Type'], contains('application/json'));
         expect(request.body, contains('"current_password":"oldpass"'));
         expect(request.body, contains('"new_password":"newpass"'));
