@@ -8,6 +8,7 @@ import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
+import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
@@ -162,8 +163,7 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
                 if (value == null || value.trim().isEmpty) {
                   return BulkUserCreationTexts.emailMissing;
                 }
-                final emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-                if (!emailPattern.hasMatch(value)) {
+                if (!ValidationPatterns.email.hasMatch(value)) {
                   return BulkUserCreationTexts.emailInvalid;
                 }
                 return null;
@@ -340,7 +340,7 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
   }
 }
 
-class _CredentialsDialog extends StatelessWidget {
+class _CredentialsDialog extends StatefulWidget {
   const _CredentialsDialog({
     required this.firstName,
     required this.lastName,
@@ -354,6 +354,65 @@ class _CredentialsDialog extends StatelessWidget {
   final String username;
   final String password;
   final String email;
+
+  @override
+  State<_CredentialsDialog> createState() => _CredentialsDialogState();
+}
+
+class _CredentialsDialogState extends State<_CredentialsDialog> {
+  late final TextEditingController _linkController;
+  bool _isCopied = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _linkController = TextEditingController(text: _generateLink());
+  }
+
+  @override
+  void dispose() {
+    _linkController.dispose();
+    super.dispose();
+  }
+
+  String _generateLink() {
+    final payload = jsonEncode({
+      'v': 1,
+      'first_name': widget.firstName,
+      'last_name': widget.lastName,
+      'username': widget.username,
+      'email': widget.email,
+      'password': widget.password,
+    });
+    final encodedShareRef =
+        base64Url.encode(utf8.encode(payload)).replaceAll('=', '');
+
+    final routeUri = Uri(
+      path: AppRoutes.credentialsShare,
+      queryParameters: {
+        BulkUserCreationTexts.shareReferenceKey: encodedShareRef,
+      },
+    );
+
+    final currentUri = Uri.base;
+    final usesHashRouting = currentUri.fragment.startsWith('/');
+
+    return usesHashRouting
+        ? '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#${routeUri.toString()}'
+        : currentUri.resolveUri(routeUri).toString();
+  }
+
+  void _copyLink() {
+    if (_isCopied) return;
+
+    Clipboard.setData(ClipboardData(text: _linkController.text));
+    setState(() => _isCopied = true);
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() => _isCopied = false);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -372,48 +431,37 @@ class _CredentialsDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          OutlinedButton.icon(
-            onPressed: () => _copyLink(context),
-            icon: const Icon(Icons.link),
-            label: const Text(UserTexts.copyConnectionLink),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 48),
-            ),
+          Text(
+            UserTexts.userCreatedSuccessMessage,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _linkController,
+                  readOnly: true,
+                  decoration: const InputDecoration(
+                    labelText: UserTexts.copyConnectionLink,
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                onPressed: _copyLink,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(110, 56),
+                ),
+                icon: Icon(_isCopied ? Icons.check : Icons.copy, size: 20),
+                label: Text(_isCopied ? UserTexts.copied : UserTexts.copy),
+              ),
+            ],
           ),
         ],
       ),
     );
-  }
-
-  void _copyLink(BuildContext context) {
-    final payload = jsonEncode({
-      'v': 1,
-      'first_name': firstName,
-      'last_name': lastName,
-      'username': username,
-      'email': email,
-      'password': password,
-    });
-    final encodedShareRef = base64Url
-        .encode(utf8.encode(payload))
-        .replaceAll('=', '');
-
-    final routeUri = Uri(
-      path: AppRoutes.credentialsShare,
-      queryParameters: {
-        BulkUserCreationTexts.shareReferenceKey: encodedShareRef,
-      },
-    );
-
-    final currentUri = Uri.base;
-    final usesHashRouting = currentUri.fragment.startsWith('/');
-
-    final link = usesHashRouting
-        ? '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#${routeUri.toString()}'
-        : currentUri.resolveUri(routeUri).toString();
-
-    Clipboard.setData(ClipboardData(text: link));
-    CustomSnackBar.showSuccess(context, BulkUserCreationTexts.linkCopied);
   }
 }
 

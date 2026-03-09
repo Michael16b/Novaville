@@ -12,7 +12,7 @@ class BulkUserCreationTexts {
   static const lastNameMissing = 'last_name manquant';
   static const usernameMissing = 'username manquant';
   static const emailMissing = 'email manquant';
-  static const emailInvalid = 'email invalide';
+  static const emailInvalid = 'Email invalide';
   static const usernameInvalidWhitespace =
       'username invalide (espaces interdits)';
   static const usernameAlreadyUsed = 'username déjà utilisé';
