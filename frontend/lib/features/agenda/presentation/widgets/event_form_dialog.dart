@@ -62,18 +62,18 @@ class _EventFormDialogState extends State<EventFormDialog> {
         ? AgendaTexts.editEvent
         : AgendaTexts.createEvent;
     final actionLabel =
-        _isEditing ? AgendaTexts.save : AgendaTexts.validate;
+        _isEditing ? AppTextsGeneral.save : AppTextsGeneral.validate;
 
     return StyledDialog(
       title: title,
       icon: _isEditing
           ? Icons.edit_outlined
           : Icons.add_circle_outline,
-      closeTooltip: AgendaTexts.cancel,
+      closeTooltip: AppTextsGeneral.cancel,
       maxWidth: 520,
       actions: [
         StyledDialog.cancelButton(
-          label: AgendaTexts.cancel,
+          label: AppTextsGeneral.cancel,
           onPressed: () => Navigator.pop(context),
         ),
         StyledDialog.primaryButton(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
@@ -67,7 +68,7 @@ class UserDataSource extends DataTableSource {
             children: [
               IconButton(
                 icon: const Icon(Icons.edit, size: 18),
-                tooltip: UserTexts.edit,
+                tooltip: AppTextsGeneral.edit,
                 onPressed: () => onEdit(user),
               ),
               IconButton(
@@ -77,7 +78,7 @@ class UserDataSource extends DataTableSource {
                   color: isCurrentUser ? Colors.grey : Colors.red,
                 ),
                 tooltip:
-                    isCurrentUser ? UserTexts.cannotDeleteSelf : UserTexts.delete,
+                    isCurrentUser ? UserTexts.cannotDeleteSelf : AppTextsGeneral.delete,
                 onPressed: isCurrentUser ? null : () => onDelete(user),
               ),
             ],

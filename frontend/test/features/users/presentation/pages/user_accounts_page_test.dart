@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
@@ -123,6 +124,15 @@ class MockUserRepository implements IUserRepository {
       neighborhoodId: neighborhoodId,
     );
   }
+
+  @override
+  Future<void> updatePassword({
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    return;
+  }
 }
 
 void main() {
@@ -239,7 +249,7 @@ void main() {
       expect(find.text(UserTexts.error), findsOneWidget);
       // Expect 2 widgets: one in the body, one in the SnackBar
       expect(find.text('Exception: Network error'), findsAtLeastNWidgets(1));
-      expect(find.text(UserTexts.retry), findsOneWidget);
+      expect(find.text(AppTextsGeneral.retry), findsOneWidget);
     });
 
     testWidgets('shows empty state when no users', (WidgetTester tester) async {
@@ -303,7 +313,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Confirm delete in the dialog
-        await tester.tap(find.text(UserTexts.delete).last);
+        await tester.tap(find.text(AppTextsGeneral.delete).last);
         await tester.pumpAndSettle();
 
         // Error snackbar should appear (from failure state)

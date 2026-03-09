@@ -1,3 +1,5 @@
+import 'package:frontend/constants/texts/texts_general.dart';
+
 /// Text constants for the reports feature.
 /// Variable names are in English, values in French.
 class ReportTexts {
@@ -102,8 +104,6 @@ class ReportTexts {
   /// Generic error label.
   static const error = 'Erreur';
 
-  /// Retry button label.
-  static const retry = 'Réessayer';
 
   /// Delete confirmation dialog title.
   static const confirmDeleteTitle = 'Supprimer le signalement';
@@ -114,18 +114,6 @@ class ReportTexts {
 
   /// Irreversible action warning.
   static const irreversible = 'Cette action est irréversible.';
-
-  /// Cancel button label.
-  static const cancel = 'Annuler';
-
-  /// Close button label.
-  static const close = 'Fermer';
-
-  /// Save button label.
-  static const save = 'Enregistrer';
-
-  /// Create button label.
-  static const create = 'Créer';
 
   /// Description required validation message.
   static const descriptionRequired = 'La description est obligatoire';
@@ -188,11 +176,6 @@ class ReportTexts {
   /// Created at label.
   static const createdAt = 'Le';
 
-  /// Edit button label.
-  static const edit = 'Modifier';
-
-  /// Delete button label.
-  static const delete = 'Supprimer';
 
   /// No neighborhood label.
   static const noNeighborhood = 'Non spécifié';
@@ -243,4 +226,3 @@ class ReportTexts {
   /// Last 30 days option.
   static const last30Days = '30 derniers jours';
 }
-

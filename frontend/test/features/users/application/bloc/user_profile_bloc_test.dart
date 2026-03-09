@@ -99,6 +99,16 @@ class _FakeUserRepository implements IUserRepository {
       neighborhoodId: neighborhoodId,
     );
   }
+
+  @override
+  Future<void> updatePassword({
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    // Stub: ne fait rien
+    return;
+  }
 }
 
 void main() {

@@ -71,7 +71,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
         ? ReportTexts.editReport
         : ReportTexts.createReport;
     final actionLabel =
-        _isEditing ? ReportTexts.save : ReportTexts.create;
+        _isEditing ? AppTextsGeneral.save : AppTextsGeneral.create;
     const accentColor = AppColors.primary;
 
     return Dialog(
@@ -119,7 +119,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
-                    tooltip: ReportTexts.cancel,
+                    tooltip: AppTextsGeneral.cancel,
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.grey.shade200,
                       minimumSize: const Size(36, 36),
@@ -339,7 +339,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                         side: BorderSide(color: Colors.grey.shade300),
                       ),
                       child: const Text(
-                        ReportTexts.cancel,
+                        AppTextsGeneral.cancel,
                         style: TextStyle(
                           color: AppColors.secondaryText,
                           fontWeight: FontWeight.w600,

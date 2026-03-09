@@ -5,9 +5,6 @@ class BulkUserCreationTexts {
   static const clearPendingTitle = 'Supprimer la liste en attente';
   static const clearPendingMessage =
       'Voulez-vous supprimer tous les utilisateurs en attente de création ?';
-  static const cancel = 'Annuler';
-  static const delete = 'Supprimer';
-  static const close = 'Fermer';
 
   static const userAddedToList = 'Utilisateur ajouté à la liste.';
   static const userUpdated = 'Utilisateur modifié.';
@@ -78,8 +75,6 @@ class BulkUserCreationTexts {
   static const pendingUsersTitle = 'Utilisateurs en attente';
   static const noPendingUsers = 'Aucun utilisateur en attente.';
   static String editUserTitle(int number) => 'Modification utilisateur $number';
-  static const save = 'Enregistrer';
-  static const edit = 'Modifier';
   static const noCreatedUsersToExport = 'Aucun utilisateur créé à exporter.';
   static const linkCopied = 'Lien copié dans le presse-papiers.';
   static const linkGenerationFailed = 'Génération du lien impossible.';

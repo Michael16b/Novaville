@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_reports.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
@@ -862,7 +863,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
                   );
             },
             icon: const Icon(Icons.refresh),
-            label: const Text(ReportTexts.retry),
+            label: const Text(AppTextsGeneral.retry),
           ),
         ],
       ),
@@ -978,15 +979,15 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
         title: ReportTexts.confirmDeleteTitle,
         icon: Icons.warning_amber_rounded,
         accentColor: AppColors.error,
-        closeTooltip: ReportTexts.cancel,
+        closeTooltip: AppTextsGeneral.cancel,
         maxWidth: 420,
         actions: [
           StyledDialog.cancelButton(
-            label: ReportTexts.cancel,
+            label: AppTextsGeneral.cancel,
             onPressed: () => Navigator.pop(dialogContext),
           ),
           StyledDialog.destructiveButton(
-            label: ReportTexts.delete,
+            label: AppTextsGeneral.delete,
             onPressed: () {
               Navigator.pop(dialogContext);
               context.read<ReportsBloc>().add(

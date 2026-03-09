@@ -103,6 +103,44 @@ class UserRepositoryImpl implements IUserRepository {
   }
 
   @override
+  Future<void> updatePassword({
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final response = await _apiClient.post(
+      '/api/v1/users/$userId/change_password/',
+      body: {
+        'current_password': currentPassword,
+        'new_password': newPassword,
+      },
+    );
+
+    if (response.statusCode == 400 || response.statusCode == 403) {
+      final errorBody = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (errorBody.containsKey('code')) {
+        throw Exception(errorBody['code']);
+      }
+      if (errorBody.containsKey('current_password')) {
+        throw Exception(errorBody['current_password'][0]);
+      }
+      if (errorBody.containsKey('new_password')) {
+        throw Exception(errorBody['new_password'][0]);
+      }
+      if (errorBody.containsKey('detail')) {
+        throw Exception(errorBody['detail']);
+      }
+
+      throw Exception(AppTextsProfile.updatePasswordError);
+    }
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception(AppTextsProfile.updatePasswordError);
+    }
+  }
+
+  @override
   Future<User> createUser({
     required String username,
     required String email,
