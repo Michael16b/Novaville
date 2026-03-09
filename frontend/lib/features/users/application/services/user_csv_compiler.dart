@@ -1,4 +1,5 @@
 import 'package:csv/csv.dart';
+import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/constants/texts/texts_csv_drop.dart';
 
@@ -278,8 +279,7 @@ class UserCsvCompiler {
   }
 
   bool _isValidEmail(String value) {
-    final emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-    return emailPattern.hasMatch(value);
+    return ValidationPatterns.email.hasMatch(value);
   }
 
   UserRole _parseRole(String raw) {

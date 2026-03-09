@@ -92,6 +92,8 @@ class MockUserRepository implements IUserRepository {
     String? lastName,
     String? username,
     String? email,
+    UserRole? role,
+    int? neighborhoodId,
   }) async {
     throw UnimplementedError();
   }
@@ -129,6 +131,14 @@ class MockUserRepository implements IUserRepository {
   Future<void> updatePassword({
     required int userId,
     required String currentPassword,
+    required String newPassword,
+  }) async {
+    return;
+  }
+
+  @override
+  Future<void> resetPassword({
+    required int userId,
     required String newPassword,
   }) async {
     return;

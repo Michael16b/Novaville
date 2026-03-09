@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
+import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/features/users/application/services/user_csv_compiler.dart';
 import 'package:frontend/features/users/presentation/pages/web_drop_handler.dart';
 import 'package:frontend/config/app_routes.dart';
@@ -632,8 +633,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
   }
 
   bool _isValidEmail(String value) {
-    final emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-    return emailPattern.hasMatch(value);
+    return ValidationPatterns.email.hasMatch(value);
   }
 
   Future<void> _submitDrafts() async {
