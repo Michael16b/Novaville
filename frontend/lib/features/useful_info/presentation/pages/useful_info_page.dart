@@ -47,7 +47,9 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
       floatingActionButton: isAdmin
           ? FloatingActionButton(
               heroTag: 'useful-info-fab',
-              tooltip: _isEditing ? 'Fermer' : UsefulInfoTexts.edit,
+              tooltip: _isEditing
+                  ? AppTextsGeneral.close
+                  : AppTextsGeneral.edit,
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.white,
               onPressed: () {
