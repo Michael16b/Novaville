@@ -214,6 +214,18 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
   late final TextEditingController _facebookController;
   late final TextEditingController _xController;
 
+  static const List<String> _dayOrder = [
+    'Lundi',
+    'Mardi',
+    'Mercredi',
+    'Jeudi',
+    'Vendredi',
+    'Samedi',
+    'Dimanche',
+  ];
+
+  late Map<String, List<_TimeRange>> _openingHours;
+
   @override
   void initState() {
     super.initState();
@@ -229,6 +241,10 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
     _instagramController = TextEditingController(text: info.instagram ?? '');
     _facebookController = TextEditingController(text: info.facebook ?? '');
     _xController = TextEditingController(text: info.x ?? '');
+    _openingHours = {
+      for (final day in _dayOrder)
+        day: _parseTimeRanges(widget.info.openingHours[day] ?? []),
+    };
   }
 
   @override
@@ -249,6 +265,14 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
   void _handleSave() {
     if (!_formKey.currentState!.validate()) return;
 
+    final openingHoursError = _validateOpeningHours();
+    if (openingHoursError != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(openingHoursError)));
+      return;
+    }
+
     final updated = widget.info.copyWith(
       cityHallName: _nameController.text.trim(),
       addressLine1: _addressController.text.trim(),
@@ -260,6 +284,7 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
       instagram: _emptyToNull(_instagramController.text),
       facebook: _emptyToNull(_facebookController.text),
       x: _emptyToNull(_xController.text),
+      openingHours: _buildOpeningHoursMap(),
     );
 
     widget.onSave(updated);
@@ -268,6 +293,78 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
   String? _emptyToNull(String value) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? null : trimmed;
+  }
+
+  List<_TimeRange> _parseTimeRanges(List<String> slots) {
+    return slots
+        .map((slot) => _TimeRange.tryParse(slot))
+        .whereType<_TimeRange>()
+        .toList();
+  }
+
+  Map<String, List<String>> _buildOpeningHoursMap() {
+    return {
+      for (final day in _dayOrder)
+        day: _openingHours[day]!
+            .where((range) => range.isComplete)
+            .map((range) => range.toDisplayString())
+            .toList(),
+    };
+  }
+
+  Future<void> _pickTime({
+    required String day,
+    required int index,
+    required bool isStart,
+  }) async {
+    final currentRange = _openingHours[day]![index];
+
+    final initialTime = isStart
+        ? (currentRange.start ?? const TimeOfDay(hour: 8, minute: 0))
+        : (currentRange.end ?? const TimeOfDay(hour: 17, minute: 0));
+
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+    );
+
+    if (picked == null) return;
+
+    setState(() {
+      if (isStart) {
+        currentRange.start = picked;
+      } else {
+        currentRange.end = picked;
+      }
+    });
+  }
+
+  void _addSlot(String day) {
+    setState(() {
+      _openingHours[day]!.add(_TimeRange());
+    });
+  }
+
+  void _removeSlot(String day, int index) {
+    setState(() {
+      _openingHours[day]!.removeAt(index);
+    });
+  }
+
+  String? _validateOpeningHours() {
+    for (final entry in _openingHours.entries) {
+      for (final range in entry.value) {
+        if (!range.isComplete) {
+          return 'Chaque créneau doit avoir une heure de début et de fin.';
+        }
+
+        if (!range.isValid) {
+          return 'L’heure de fin doit être après l’heure de début.';
+        }
+      }
+    }
+
+    return null;
   }
 
   @override
@@ -324,6 +421,119 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            _SectionCard(
+              title: UsefulInfoTexts.openingHoursSection,
+              icon: Icons.schedule_outlined,
+              child: Column(
+                children: _dayOrder.map((day) {
+                  final slots = _openingHours[day]!;
+                  final isClosed = slots.isEmpty;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                day,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Switch(
+                              value: !isClosed,
+                              onChanged: (isOpen) {
+                                setState(() {
+                                  if (isOpen) {
+                                    if (_openingHours[day]!.isEmpty) {
+                                      _openingHours[day]!.add(_TimeRange());
+                                    }
+                                  } else {
+                                    _openingHours[day] = [];
+                                  }
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        if (isClosed)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 4),
+                            child: Text('Fermé'),
+                          )
+                        else ...[
+                          ...List.generate(slots.length, (index) {
+                            final slot = slots[index];
+
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () => _pickTime(
+                                        day: day,
+                                        index: index,
+                                        isStart: true,
+                                      ),
+                                      child: Text(
+                                        slot.start != null
+                                            ? '${slot.start!.hour.toString().padLeft(2, '0')}:${slot.start!.minute.toString().padLeft(2, '0')}'
+                                            : 'Début',
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                    ),
+                                    child: Text('à'),
+                                  ),
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () => _pickTime(
+                                        day: day,
+                                        index: index,
+                                        isStart: false,
+                                      ),
+                                      child: Text(
+                                        slot.end != null
+                                            ? '${slot.end!.hour.toString().padLeft(2, '0')}:${slot.end!.minute.toString().padLeft(2, '0')}'
+                                            : 'Fin',
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () => _removeSlot(day, index),
+                                    icon: const Icon(Icons.delete_outline),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              onPressed: () => _addSlot(day),
+                              icon: const Icon(Icons.add),
+                              label: const Text('Ajouter un créneau'),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+
+            const SizedBox(height: 12),
             const SizedBox(height: 12),
             _SectionCard(
               title: UsefulInfoTexts.contactSection,
@@ -419,20 +629,18 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
             ),
             const SizedBox(height: 20),
             Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: widget.onCancel,
-                    child: const Text('Annuler'),
-                  ),
+                OutlinedButton(
+                  onPressed: widget.onCancel,
+                  child: const Text('Annuler'),
                 ),
+
                 const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _handleSave,
-                    icon: const Icon(Icons.save_outlined),
-                    label: const Text('Enregistrer'),
-                  ),
+                ElevatedButton.icon(
+                  onPressed: _handleSave,
+                  icon: const Icon(Icons.save_outlined),
+                  label: const Text('Enregistrer'),
                 ),
               ],
             ),
@@ -580,5 +788,58 @@ class _CityHallBlock extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _TimeRange {
+  TimeOfDay? start;
+  TimeOfDay? end;
+
+  _TimeRange({this.start, this.end});
+
+  bool get isComplete => start != null && end != null;
+
+  bool get isValid {
+    if (!isComplete) return false;
+
+    final startMinutes = start!.hour * 60 + start!.minute;
+    final endMinutes = end!.hour * 60 + end!.minute;
+
+    return endMinutes > startMinutes;
+  }
+
+  String toDisplayString() {
+    if (!isComplete) return '';
+    return '${_formatTime(start!)} - ${_formatTime(end!)}';
+  }
+
+  static _TimeRange? tryParse(String value) {
+    final regex = RegExp(r'^\s*(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})\s*$');
+    final match = regex.firstMatch(value);
+
+    if (match == null) return null;
+
+    final startHour = int.tryParse(match.group(1)!);
+    final startMinute = int.tryParse(match.group(2)!);
+    final endHour = int.tryParse(match.group(3)!);
+    final endMinute = int.tryParse(match.group(4)!);
+
+    if (startHour == null ||
+        startMinute == null ||
+        endHour == null ||
+        endMinute == null) {
+      return null;
+    }
+
+    return _TimeRange(
+      start: TimeOfDay(hour: startHour, minute: startMinute),
+      end: TimeOfDay(hour: endHour, minute: endMinute),
+    );
+  }
+
+  static String _formatTime(TimeOfDay time) {
+    final h = time.hour.toString().padLeft(2, '0');
+    final m = time.minute.toString().padLeft(2, '0');
+    return '$h:$m';
   }
 }
