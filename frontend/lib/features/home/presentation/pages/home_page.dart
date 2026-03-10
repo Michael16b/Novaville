@@ -579,31 +579,32 @@ class MenuCard extends StatelessWidget {
       bottomLeft: Radius.circular(30),
     );
 
+    // On garde un Container externe uniquement pour l'ombre (BoxShadow)
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.primary, // Base color
         borderRadius: borderRadius,
-        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1), // Subtle rim light
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4)
+          ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: borderRadius,
-        child: Stack(
-          children: <Widget>[
-            style == MenuCardStyle.large ? _buildLargeCard() : _buildCompactCard(),
-            Positioned.fill(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  splashColor: Colors.white.withOpacity(0.2), // Softer ripple
-                  highlightColor: Colors.white.withOpacity(0.1),
-                  onTap: onTap,
-                ),
-              ),
-            ),
-          ],
+      // Le Material devient le cœur de la carte
+      child: Material(
+        color: AppColors.primary,
+        clipBehavior: Clip.antiAlias, // C'EST LA CLÉ : coupe parfaitement tout ce qui dépasse
+        shape: RoundedRectangleBorder(
+          borderRadius: borderRadius,
+          side: BorderSide(color: Colors.white.withOpacity(0.1), width: 1), // Subtle rim light
+        ),
+        child: InkWell(
+          splashColor: Colors.white.withOpacity(0.2),
+          highlightColor: Colors.white.withOpacity(0.1),
+          onTap: onTap,
+          // Plus besoin de Stack, l'InkWell englobe directement le contenu
+          child: style == MenuCardStyle.large ? _buildLargeCard() : _buildCompactCard(),
         ),
       ),
     );
@@ -630,19 +631,15 @@ class MenuCard extends StatelessWidget {
         Expanded(
           flex: 4,
           child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: const BorderRadius.only(
-                bottomRight: Radius.circular(50),
-                bottomLeft: Radius.circular(30),
-              ),
-            ),
+            // Plus besoin de BoxDecoration ni de BorderRadius ici !
+            // Le Material parent s'occupe de couper les angles du bas.
+            color: Colors.white.withOpacity(0.2),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Center(
               child: Text(
                 subtitle,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 14), // Text white for contrast
+                style: const TextStyle(color: Colors.white, fontSize: 14),
               ),
             ),
           ),
@@ -667,7 +664,7 @@ class MenuCard extends StatelessWidget {
                   title,
                   style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 4), // Reduced from 6 to 4
+                const SizedBox(height: 4),
                 Text(
                   subtitle,
                   style: const TextStyle(color: Colors.white70, fontSize: 13),
