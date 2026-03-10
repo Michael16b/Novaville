@@ -1,3 +1,4 @@
+import 'package:cross_file/cross_file.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
@@ -151,12 +152,23 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   ) async {
     emit(state.copyWith(status: ReportsStatus.creating));
     try {
-      await _repository.createReport(
+      final report = await _repository.createReport(
         title: event.title,
         problemType: event.problemType,
         description: event.description,
         neighborhood: event.neighborhood,
+        latitude: event.latitude,
+        longitude: event.longitude,
+        address: event.address,
       );
+
+      if (event.media.isNotEmpty) {
+        await _repository.uploadMedia(
+          reportId: report.id,
+          media: event.media,
+        );
+      }
+
       _pageCache.clear();
       emit(state.copyWith(status: ReportsStatus.created));
       // Reload the current page
@@ -275,7 +287,18 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         description: event.description,
         neighborhood: event.neighborhood,
         problemType: event.problemType,
+        latitude: event.latitude,
+        longitude: event.longitude,
+        address: event.address,
       );
+
+      if (event.media.isNotEmpty) {
+        await _repository.uploadMedia(
+          reportId: updatedReport.id,
+          media: event.media,
+        );
+      }
+
       _pageCache.clear();
 
       final updatedReports = state.reports

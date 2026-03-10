@@ -225,4 +225,10 @@ class ReportTexts {
 
   /// Last 30 days option.
   static const last30Days = '30 derniers jours';
+
+  /// Location label.
+  static const locationLabel = 'Localisation';
+
+  /// Media label.
+  static const mediaLabel = 'Photos';
 }

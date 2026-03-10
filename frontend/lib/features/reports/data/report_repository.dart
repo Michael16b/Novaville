@@ -1,3 +1,4 @@
+import 'package:cross_file/cross_file.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
 
@@ -53,11 +54,14 @@ abstract class IReportRepository {
   Future<Report> getReport({required int reportId});
 
   /// Creates a new report.
-  Future<void> createReport({
+  Future<Report> createReport({
     required String title,
     required String problemType,
     required String description,
     int? neighborhood,
+    double? latitude,
+    double? longitude,
+    String? address,
   });
 
   /// Updates an existing report.
@@ -67,6 +71,9 @@ abstract class IReportRepository {
     String? description,
     int? neighborhood,
     String? problemType,
+    double? latitude,
+    double? longitude,
+    String? address,
   });
 
   /// Deletes a report.
@@ -80,4 +87,10 @@ abstract class IReportRepository {
 
   /// Lists all available neighborhoods.
   Future<List<Neighborhood>> listNeighborhoods();
+
+  /// Uploads media to a report.
+  Future<void> uploadMedia({
+    required int reportId,
+    required List<XFile> media,
+  });
 }

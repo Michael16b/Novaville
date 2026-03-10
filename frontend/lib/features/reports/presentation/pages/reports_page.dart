@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
@@ -940,6 +941,10 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
           problemType: result['problem_type'] as String,
           description: result['description'] as String,
           neighborhood: result['neighborhood'] as int?,
+          latitude: result['latitude'] as double?,
+          longitude: result['longitude'] as double?,
+          address: result['address'] as String?,
+          media: result['media'] as List<XFile>,
         ),
       );
     }
@@ -967,6 +972,10 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
           problemType: result['problem_type'] as String?,
           description: result['description'] as String?,
           neighborhood: result['neighborhood'] as int?,
+          latitude: result['latitude'] as double?,
+          longitude: result['longitude'] as double?,
+          address: result['address'] as String?,
+          media: result['media'] as List<XFile>,
         ),
       );
     }

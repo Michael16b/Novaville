@@ -162,7 +162,7 @@ class ReportCard extends StatelessWidget {
                   // Info rows
                   _InfoRow(
                     icon: Icons.location_on_outlined,
-                    text: neighborhoodName,
+                    text: report.address ?? neighborhoodName,
                   ),
                   const SizedBox(height: 6),
                   _InfoRow(
@@ -171,6 +171,14 @@ class ReportCard extends StatelessWidget {
                         ? authorName
                         : report.user.username,
                   ),
+                  if (report.media.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: _InfoRow(
+                        icon: Icons.photo_library_outlined,
+                        text: '${report.media.length} photo(s)',
+                      ),
+                    ),
                 ],
               ),
             ),

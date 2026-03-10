@@ -3,6 +3,7 @@ import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
 import 'package:frontend/features/reports/data/models/report_status.dart';
 import 'package:frontend/features/users/data/models/user.dart';
+import 'package:frontend/features/reports/data/models/media.dart';
 
 /// Model representing a citizen report.
 class Report extends Equatable {
@@ -17,8 +18,11 @@ class Report extends Equatable {
     required this.user,
     this.neighborhoodId,
     this.neighborhoodDetail,
+    this.latitude,
+    this.longitude,
+    this.address,
+    this.media = const [],
   });
-
 
   /// Creates a [Report] from a JSON map.
   factory Report.fromJson(Map<String, dynamic> json) {
@@ -36,6 +40,13 @@ class Report extends Equatable {
               json['neighborhood_detail'] as Map<String, dynamic>,
             )
           : null,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      address: json['address'] as String?,
+      media: (json['media'] as List<dynamic>?)
+              ?.map((e) => Media.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
   }
 
@@ -66,6 +77,17 @@ class Report extends Equatable {
   /// Neighborhood details.
   final Neighborhood? neighborhoodDetail;
 
+  /// Latitude of the report location.
+  final double? latitude;
+
+  /// Longitude of the report location.
+  final double? longitude;
+
+  /// Address of the report location.
+  final String? address;
+
+  /// Media attached to the report.
+  final List<Media> media;
 
   /// Converts this [Report] to a JSON map.
   Map<String, dynamic> toJson() {
@@ -77,6 +99,9 @@ class Report extends Equatable {
       'created_at': createdAt.toIso8601String(),
       'status': status.toJson(),
       if (neighborhoodId != null) 'neighborhood': neighborhoodId,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (address != null) 'address': address,
     };
   }
 
@@ -91,6 +116,10 @@ class Report extends Equatable {
     User? user,
     int? neighborhoodId,
     Neighborhood? neighborhoodDetail,
+    double? latitude,
+    double? longitude,
+    String? address,
+    List<Media>? media,
   }) {
     return Report(
       id: id ?? this.id,
@@ -102,6 +131,10 @@ class Report extends Equatable {
       user: user ?? this.user,
       neighborhoodId: neighborhoodId ?? this.neighborhoodId,
       neighborhoodDetail: neighborhoodDetail ?? this.neighborhoodDetail,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      address: address ?? this.address,
+      media: media ?? this.media,
     );
   }
 
@@ -116,6 +149,9 @@ class Report extends Equatable {
         user,
         neighborhoodId,
         neighborhoodDetail,
+        latitude,
+        longitude,
+        address,
+        media,
       ];
 }
-

@@ -96,6 +96,10 @@ class ReportCreateRequested extends ReportsEvent {
     required this.problemType,
     required this.description,
     this.neighborhood,
+    this.latitude,
+    this.longitude,
+    this.address,
+    this.media = const [],
   });
 
   /// Title of the report.
@@ -110,12 +114,28 @@ class ReportCreateRequested extends ReportsEvent {
   /// Neighborhood ID.
   final int? neighborhood;
 
+  /// Latitude of the report location.
+  final double? latitude;
+
+  /// Longitude of the report location.
+  final double? longitude;
+
+  /// Address of the report location.
+  final String? address;
+
+  /// Media files to upload.
+  final List<XFile> media;
+
   @override
   List<Object?> get props => [
         title,
         problemType,
         description,
         neighborhood,
+        latitude,
+        longitude,
+        address,
+        media,
       ];
 }
 
@@ -158,6 +178,10 @@ class ReportUpdateRequested extends ReportsEvent {
     this.description,
     this.neighborhood,
     this.problemType,
+    this.latitude,
+    this.longitude,
+    this.address,
+    this.media = const [],
   });
 
   /// ID of the report to update.
@@ -175,6 +199,18 @@ class ReportUpdateRequested extends ReportsEvent {
   /// Updated problem type.
   final String? problemType;
 
+  /// Updated latitude.
+  final double? latitude;
+
+  /// Updated longitude.
+  final double? longitude;
+
+  /// Updated address.
+  final String? address;
+
+  /// Updated media files.
+  final List<XFile> media;
+
   @override
   List<Object?> get props => [
         reportId,
@@ -182,6 +218,10 @@ class ReportUpdateRequested extends ReportsEvent {
         description,
         neighborhood,
         problemType,
+        latitude,
+        longitude,
+        address,
+        media,
       ];
 }
 

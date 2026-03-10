@@ -28,6 +28,25 @@ class Report(models.Model):
         default=ReportStatusEnum.RECORDED,
         help_text="Current status of the report"
     )
+    
+    # Location fields
+    latitude = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Latitude of the reported issue"
+    )
+    longitude = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Longitude of the reported issue"
+    )
+    address = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Address or location description"
+    )
+
     # Foreign keys
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

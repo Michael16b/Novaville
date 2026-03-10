@@ -2,8 +2,10 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from core.db.models import Report, User, Neighborhood, RoleEnum, ReportStatusEnum
 from api.v1.serializers.report_serializer import ReportSerializer, ReportCreateSerializer
+from api.v1.serializers.media_serializer import MediaSerializer as MediaUploadSerializer
 from api.v1.filters import ReportFilter
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 from django_filters.rest_framework import DjangoFilterBackend
@@ -59,7 +61,7 @@ class ReportViewSet(viewsets.ModelViewSet):
     Citizens can only modify/delete their own reports.
     Staff can modify/delete any report and update status.
     """
-    queryset = Report.objects.select_related('user', 'neighborhood').all()
+    queryset = Report.objects.select_related('user', 'neighborhood').prefetch_related('media').all()
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -158,3 +160,38 @@ class ReportViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(report)
         return Response(serializer.data)
+
+    @extend_schema(
+        summary="Upload media to report",
+        description="Upload a file (image, video, etc.) to a report",
+        tags=["Reports"],
+        request={
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    "file": {"type": "string", "format": "binary"}
+                }
+            }
+        }
+    )
+    @action(detail=True, methods=['post'], parser_classes=[MultiPartParser, FormParser])
+    def upload_media(self, request, pk=None):
+        report = self.get_object()
+        # Check permissions (owner or staff)
+        if not self._is_owner_or_staff(request.user, report):
+             return Response(
+                {'error': 'Only the report owner or staff can upload media'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        # We need to pass the report ID to the serializer, or save it manually
+        # Since MediaUploadSerializer expects 'report' field, we can add it to data
+        data = request.data.copy()
+        data['report'] = report.id
+        
+        file_serializer = MediaUploadSerializer(data=data)
+        if file_serializer.is_valid():
+            file_serializer.save()
+            return Response(file_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

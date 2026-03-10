@@ -24,6 +24,7 @@ from .report import Report
 from .survey import Survey, SurveyOption, Vote
 from .event import Event, ThemeEvent
 from .useful_info import UsefulInfo
+from .media import Media
 
 __all__ = [
     # Enums
@@ -41,4 +42,5 @@ __all__ = [
     'Event',
     'ThemeEvent',
     'UsefulInfo',
+    'Media',
 ]

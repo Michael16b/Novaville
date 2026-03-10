@@ -105,6 +105,24 @@ class ApiClient {
     return client.patch(uri, headers: mergedHeaders, body: jsonEncode(body));
   }
 
+  /// Performs a multipart POST request.
+  Future<http.StreamedResponse> multipartPost(
+    String path, {
+    Map<String, String> fields = const {},
+    List<http.MultipartFile> files = const [],
+    Map<String, String?>? queryParameters,
+    Map<String, String>? headers,
+  }) {
+    final uri = buildUri(path, queryParameters);
+    final request = http.MultipartRequest('POST', uri);
+    request.fields.addAll(fields);
+    request.files.addAll(files);
+    if (headers != null) {
+      request.headers.addAll(headers);
+    }
+    return client.send(request);
+  }
+
   /// Closes the HTTP client.
   void close() {
     client.close();

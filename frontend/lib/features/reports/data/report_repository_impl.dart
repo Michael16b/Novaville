@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:cross_file/cross_file.dart';
+import 'package:http/http.dart' as http;
 import 'package:frontend/constants/texts/texts_reports.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
@@ -76,11 +78,14 @@ class ReportRepositoryImpl implements IReportRepository {
   }
 
   @override
-  Future<void> createReport({
+  Future<Report> createReport({
     required String title,
     required String problemType,
     required String description,
     int? neighborhood,
+    double? latitude,
+    double? longitude,
+    String? address,
   }) async {
     final body = <String, dynamic>{
       'title': title,
@@ -88,13 +93,19 @@ class ReportRepositoryImpl implements IReportRepository {
       'description': description,
     };
     if (neighborhood != null) body['neighborhood'] = neighborhood;
+    if (latitude != null) body['latitude'] = latitude;
+    if (longitude != null) body['longitude'] = longitude;
+    if (address != null) body['address'] = address;
 
     final response = await _apiClient.post(
       '/api/v1/reports/',
       body: body,
     );
 
-    if (response.statusCode != 201) {
+    if (response.statusCode == 201) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Report.fromJson(json);
+    } else {
       throw Exception(
         '${ReportTextsErrors.createError}: ${response.statusCode}',
       );
@@ -108,12 +119,18 @@ class ReportRepositoryImpl implements IReportRepository {
     String? description,
     int? neighborhood,
     String? problemType,
+    double? latitude,
+    double? longitude,
+    String? address,
   }) async {
     final body = <String, dynamic>{};
     if (title != null) body['title'] = title;
     if (description != null) body['description'] = description;
     if (neighborhood != null) body['neighborhood'] = neighborhood;
     if (problemType != null) body['problem_type'] = problemType;
+    if (latitude != null) body['latitude'] = latitude;
+    if (longitude != null) body['longitude'] = longitude;
+    if (address != null) body['address'] = address;
 
     final response = await _apiClient.patch(
       '/api/v1/reports/$reportId/',
@@ -183,6 +200,32 @@ class ReportRepositoryImpl implements IReportRepository {
       throw Exception(
         '${ReportTexts.fetchNeighborhoodsError}: ${response.statusCode}',
       );
+    }
+  }
+
+  @override
+  Future<void> uploadMedia({
+    required int reportId,
+    required List<XFile> media,
+  }) async {
+    for (final file in media) {
+      final bytes = await file.readAsBytes();
+      final multipartFile = http.MultipartFile.fromBytes(
+        'file',
+        bytes,
+        filename: file.name,
+      );
+
+      final response = await _apiClient.multipartPost(
+        '/api/v1/reports/$reportId/upload_media/',
+        files: [multipartFile],
+      );
+
+      if (response.statusCode != 201) {
+        throw Exception(
+          'Error uploading media: ${response.statusCode}',
+        );
+      }
     }
   }
 }

@@ -5,7 +5,11 @@ import 'package:frontend/constants/texts/texts_reports.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
+import 'package:frontend/features/reports/presentation/widgets/location_picker.dart';
+import 'package:frontend/features/reports/presentation/widgets/media_picker.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:cross_file/cross_file.dart';
 
 /// Dialog for creating or editing a report.
 class ReportFormDialog extends StatefulWidget {
@@ -32,6 +36,8 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
   int? _selectedNeighborhood;
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
+  LatLng? _selectedLocation;
+  List<XFile> _selectedMedia = [];
 
   bool get _isEditing => widget.report != null;
 
@@ -57,6 +63,10 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
     _descriptionController = TextEditingController(
       text: widget.report?.description ?? '',
     );
+
+    if (widget.report?.latitude != null && widget.report?.longitude != null) {
+      _selectedLocation = LatLng(widget.report!.latitude!, widget.report!.longitude!);
+    }
   }
 
   @override
@@ -207,6 +217,28 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
               },
             ),
 
+            const SizedBox(height: 18),
+
+            // Location
+            _buildLabel(ReportTexts.locationLabel),
+            LocationPicker(
+              initialLocation: _selectedLocation,
+              onLocationChanged: (location) {
+                _selectedLocation = location;
+              },
+            ),
+
+            const SizedBox(height: 18),
+
+            // Media
+            _buildLabel(ReportTexts.mediaLabel),
+            MediaPicker(
+              initialMedia: [], // TODO: Handle existing media if needed
+              onMediaChanged: (media) {
+                _selectedMedia = media;
+              },
+            ),
+
             const SizedBox(height: 14),
 
             // Required fields hint
@@ -283,6 +315,9 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
       'problem_type': _selectedProblemType!.toJson(),
       'description': _descriptionController.text.trim(),
       'neighborhood': _selectedNeighborhood!,
+      'latitude': _selectedLocation?.latitude,
+      'longitude': _selectedLocation?.longitude,
+      'media': _selectedMedia,
     };
 
     Navigator.pop(context, result);
