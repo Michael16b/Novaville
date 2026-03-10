@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_home.dart';
+import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 
 class HomeActionButtons extends StatelessWidget {
   const HomeActionButtons({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    final isStaff = authState.user?.isStaff ?? false;
+
     final primaryButtonStyle = ElevatedButton.styleFrom(
       backgroundColor: AppColors.primary,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -46,12 +51,13 @@ class HomeActionButtons extends StatelessWidget {
           style: secondaryButtonStyle,
         ),
         const SizedBox(width: 16),
-        ElevatedButton.icon(
-          onPressed: () {},
-          icon: const Icon(Icons.add, color: AppColors.primary),
-          label: const Text(AppTextsHome.addEvent, style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold)),
-          style: secondaryButtonStyle,
-        ),
+        if (isStaff)
+          ElevatedButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.add, color: AppColors.primary),
+            label: const Text(AppTextsHome.addEvent, style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold)),
+            style: secondaryButtonStyle,
+          ),
       ],
     );
   }

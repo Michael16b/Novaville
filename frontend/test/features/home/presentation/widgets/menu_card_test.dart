@@ -58,7 +58,6 @@ void main() {
         if (widget is! Container) return false;
         final decoration = widget.decoration;
         if (decoration is! BoxDecoration) return false;
-        // On s'assure qu'on a bien trouvé LE conteneur avec l'ombre de ta carte
         return decoration.boxShadow != null && decoration.boxShadow!.isNotEmpty;
       });
 
@@ -86,7 +85,7 @@ void main() {
       final iconFinder = find.byIcon(Icons.report_problem_outlined);
       final Icon icon = tester.widget(iconFinder);
       expect(icon.size, 48);
-      expect(icon.color, AppColors.secondary); // Assure-toi que AppColors.secondary est bien défini
+      expect(icon.color, AppColors.secondary);
     });
 
     testWidgets('title has correct text style', (WidgetTester tester) async {
