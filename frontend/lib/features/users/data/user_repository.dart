@@ -48,6 +48,21 @@ abstract class IUserRepository {
     String? lastName,
     String? username,
     String? email,
+    UserRole? role,
+    int? neighborhoodId,
+  });
+
+  /// Updates the user's password.
+  Future<void> updatePassword({
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  });
+
+  /// Resets the user's password (admin action).
+  Future<void> resetPassword({
+    required int userId,
+    required String newPassword,
   });
 
   /// Deletes a user.

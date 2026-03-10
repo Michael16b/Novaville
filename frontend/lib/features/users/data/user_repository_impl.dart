@@ -80,12 +80,16 @@ class UserRepositoryImpl implements IUserRepository {
     String? lastName,
     String? username,
     String? email,
+    UserRole? role,
+    int? neighborhoodId,
   }) async {
     final body = <String, dynamic>{};
     if (firstName != null) body['first_name'] = firstName;
     if (lastName != null) body['last_name'] = lastName;
     if (username != null) body['username'] = username;
     if (email != null) body['email'] = email;
+    if (role != null) body['role'] = role.toJson();
+    if (neighborhoodId != null) body['neighborhood'] = neighborhoodId;
 
     final response = await _apiClient.patch(
       '/api/v1/users/$userId/',
@@ -99,6 +103,61 @@ class UserRepositoryImpl implements IUserRepository {
       throw Exception(
         '${AppTextsProfile.updateProfileError}: ${response.statusCode}',
       );
+    }
+  }
+
+  @override
+  Future<void> updatePassword({
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final response = await _apiClient.post(
+      '/api/v1/users/$userId/change_password/',
+      body: {
+        'current_password': currentPassword,
+        'new_password': newPassword,
+      },
+    );
+
+    if (response.statusCode == 400 || response.statusCode == 403) {
+      final errorBody = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (errorBody.containsKey('code')) {
+        throw Exception(errorBody['code']);
+      }
+      if (errorBody.containsKey('current_password')) {
+        throw Exception(errorBody['current_password'][0]);
+      }
+      if (errorBody.containsKey('new_password')) {
+        throw Exception(errorBody['new_password'][0]);
+      }
+      if (errorBody.containsKey('detail')) {
+        throw Exception(errorBody['detail']);
+      }
+
+      throw Exception(AppTextsProfile.updatePasswordError);
+    }
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception(AppTextsProfile.updatePasswordError);
+    }
+  }
+
+  @override
+  Future<void> resetPassword({
+    required int userId,
+    required String newPassword,
+  }) async {
+    final response = await _apiClient.post(
+      '/api/v1/users/$userId/reset_password/',
+      body: {
+        'new_password': newPassword,
+      },
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception(AppTextsProfile.updatePasswordError);
     }
   }
 

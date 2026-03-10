@@ -15,46 +15,57 @@ class UserProfileState extends Equatable {
     this.user,
     this.error,
     this.isUpdate = false,
+    this.isPasswordUpdate = false,
   });
 
   const UserProfileState.initial()
       : status = UserProfileStatus.initial,
         user = null,
         error = null,
-        isUpdate = false;
+        isUpdate = false,
+        isPasswordUpdate = false;
 
   const UserProfileState.loading()
       : status = UserProfileStatus.loading,
         user = null,
         error = null,
-        isUpdate = false;
+        isUpdate = false,
+        isPasswordUpdate = false;
 
-  const UserProfileState.loaded(User loadedUser, {bool isUpdate = false})
-      : status = UserProfileStatus.loaded,
+  const UserProfileState.loaded(
+    User loadedUser, {
+    bool isUpdate = false,
+    bool isPasswordUpdate = false,
+  })  : status = UserProfileStatus.loaded,
         user = loadedUser,
         error = null,
-        isUpdate = isUpdate;
+        isUpdate = isUpdate,
+        isPasswordUpdate = isPasswordUpdate;
 
   const UserProfileState.updating(User currentUser)
       : status = UserProfileStatus.updating,
         user = currentUser,
         error = null,
-        isUpdate = false;
+        isUpdate = false,
+        isPasswordUpdate = false;
 
   const UserProfileState.failure(
     String message, {
     User? user,
     bool isUpdate = false,
+    bool isPasswordUpdate = false,
   })  : status = UserProfileStatus.failure,
         user = user,
         error = message,
-        isUpdate = isUpdate;
+        isUpdate = isUpdate,
+        isPasswordUpdate = isPasswordUpdate;
 
   final UserProfileStatus status;
   final User? user;
   final String? error;
   final bool isUpdate;
+  final bool isPasswordUpdate;
 
   @override
-  List<Object?> get props => [status, user, error, isUpdate];
+  List<Object?> get props => [status, user, error, isUpdate, isPasswordUpdate];
 }

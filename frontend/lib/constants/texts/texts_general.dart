@@ -9,6 +9,12 @@ class AppTextsGeneral {
   static const String save = 'Enregistrer';
   static const String saving = 'Enregistrement...';
   static const String reset = 'Réinitialiser';
+  static const String cancel = 'Annuler';
+  static const String close = 'Fermer';
+  static const String delete = 'Supprimer';
+  static const String edit = 'Modifier';
+  static const String create = 'Créer';
+  static const String validate = 'Valider';
 
   /// Required fields hint displayed at the bottom of forms.
   static const String requiredFieldsHint = '* Champs obligatoires';

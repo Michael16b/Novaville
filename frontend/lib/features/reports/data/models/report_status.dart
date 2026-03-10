@@ -1,12 +1,9 @@
 /// Enumeration of report statuses.
 enum ReportStatus {
-  /// Enregistré
   recorded('RECORDED', 'Enregistré'),
 
-  /// En cours
   inProgress('IN_PROGRESS', 'En cours'),
 
-  /// Résolu
   resolved('RESOLVED', 'Résolu');
 
   const ReportStatus(this.value, this.label);

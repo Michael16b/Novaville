@@ -30,9 +30,6 @@ class UsefulInfoTexts {
   /// Loading label (optional if you ever display text instead of spinner).
   static const loading = 'Chargement...';
 
-  /// Admin edit action tooltip/label (optional if you add tooltip later).
-  static const edit = 'Modifier';
-
   static const emailLabel = 'Email :';
   static const phoneLabel = 'Téléphone :';
   static const websiteLabel = 'Site web :';

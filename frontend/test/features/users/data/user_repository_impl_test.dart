@@ -122,5 +122,45 @@ void main() {
         throwsA(isA<Exception>()),
       );
     });
+
+    test('updatePassword envoie les bons paramètres et réussit (200)', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, anyOf(['POST', 'PATCH', 'PUT']));
+        expect(request.url.path, '/api/v1/users/1/change_password/');
+        expect(request.headers['Content-Type'], contains('application/json'));
+        expect(request.body, contains('"current_password":"oldpass"'));
+        expect(request.body, contains('"new_password":"newpass"'));
+        return http.Response('{}', 200);
+      });
+
+      final repo = UserRepositoryImpl(
+        apiClient: ApiClient(baseUrl: baseUrl, client: mockClient),
+      );
+
+      await repo.updatePassword(
+        userId: 1,
+        currentPassword: 'oldpass',
+        newPassword: 'newpass',
+      );
+    });
+
+    test('updatePassword échoue si le mot de passe actuel est incorrect (400)', () async {
+      final mockClient = MockClient((request) async {
+        return http.Response('{"current_password":["Incorrect password."]}', 400);
+      });
+
+      final repo = UserRepositoryImpl(
+        apiClient: ApiClient(baseUrl: baseUrl, client: mockClient),
+      );
+
+      expect(
+        () => repo.updatePassword(
+          userId: 1,
+          currentPassword: 'wrongpass',
+          newPassword: 'newpass',
+        ),
+        throwsA(isA<Exception>()),
+      );
+    });
   });
 }

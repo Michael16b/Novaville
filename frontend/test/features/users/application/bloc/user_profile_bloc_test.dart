@@ -62,6 +62,8 @@ class _FakeUserRepository implements IUserRepository {
     String? lastName,
     String? username,
     String? email,
+    UserRole? role,
+    int? neighborhoodId,
   }) async {
     if (shouldThrow || shouldThrowOnUpdate) throw Exception(errorMessage);
     return User(
@@ -70,6 +72,8 @@ class _FakeUserRepository implements IUserRepository {
       email: email ?? 'john.doe@example.com',
       firstName: firstName ?? 'John',
       lastName: lastName ?? 'Doe',
+      role: role,
+      neighborhoodId: neighborhoodId,
     );
   }
 
@@ -98,6 +102,25 @@ class _FakeUserRepository implements IUserRepository {
       role: role,
       neighborhoodId: neighborhoodId,
     );
+  }
+
+  @override
+  Future<void> updatePassword({
+    required int userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    // Stub: ne fait rien
+    return;
+  }
+
+  @override
+  Future<void> resetPassword({
+    required int userId,
+    required String newPassword,
+  }) async {
+    // Stub: ne fait rien
+    return;
   }
 }
 

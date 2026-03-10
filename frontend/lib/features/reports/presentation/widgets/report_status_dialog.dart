@@ -32,15 +32,15 @@ class _ReportStatusDialogState extends State<ReportStatusDialog> {
     return StyledDialog(
       title: ReportTexts.updateStatus,
       icon: Icons.sync_outlined,
-      closeTooltip: ReportTexts.cancel,
+      closeTooltip: AppTextsGeneral.cancel,
       maxWidth: 420,
       actions: [
         StyledDialog.cancelButton(
-          label: ReportTexts.cancel,
+          label: AppTextsGeneral.cancel,
           onPressed: () => Navigator.pop(context),
         ),
         StyledDialog.primaryButton(
-          label: ReportTexts.save,
+          label: AppTextsGeneral.save,
           icon: Icons.check,
           onPressed: () {
             Navigator.pop(context, _selectedStatus.toJson());
@@ -61,7 +61,11 @@ class _ReportStatusDialogState extends State<ReportStatusDialog> {
           const SizedBox(height: 6),
           DropdownButtonFormField<ReportStatus>(
             initialValue: _selectedStatus,
+            isExpanded: true,
+            menuMaxHeight: 300,
+            borderRadius: BorderRadius.circular(12),
             decoration: InputDecoration(
+              hintText: ReportTexts.selectStatus,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

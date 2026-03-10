@@ -128,7 +128,7 @@ class StyledDialog extends StatelessWidget {
   /// A cancel / secondary outlined button.
   static Widget cancelButton({
     required String label,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
   }) {
     return OutlinedButton(
       onPressed: onPressed,
@@ -152,7 +152,7 @@ class StyledDialog extends StatelessWidget {
   /// A primary action elevated button.
   static Widget primaryButton({
     required String label,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     IconData? icon,
     Color color = AppColors.primary,
   }) {
@@ -190,7 +190,7 @@ class StyledDialog extends StatelessWidget {
   /// A destructive action button (red).
   static Widget destructiveButton({
     required String label,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     IconData? icon,
   }) {
     return primaryButton(
@@ -201,4 +201,3 @@ class StyledDialog extends StatelessWidget {
     );
   }
 }
-

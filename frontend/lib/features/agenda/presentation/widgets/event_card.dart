@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_agenda.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/features/agenda/data/models/community_event.dart';
 import 'package:frontend/features/agenda/data/models/event_theme.dart';
 
@@ -216,7 +217,7 @@ class EventCard extends StatelessWidget {
                         Expanded(
                           child: _ActionButton(
                             icon: Icons.edit_outlined,
-                            label: AgendaTexts.edit,
+                            label: AppTextsGeneral.edit,
                             color: AppColors.primary,
                             onTap: onEdit != null
                                 ? () => onEdit!(event)
@@ -227,7 +228,7 @@ class EventCard extends StatelessWidget {
                         Expanded(
                           child: _ActionButton(
                             icon: Icons.delete_outline_rounded,
-                            label: AgendaTexts.delete,
+                            label: AppTextsGeneral.delete,
                             color: AppColors.error,
                             onTap: onDelete != null
                                 ? () => onDelete!(event)
