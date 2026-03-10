@@ -64,7 +64,7 @@ class UsefulInfoPage extends StatelessWidget {
           }
 
           if (state is UsefulInfoLoading) {
-            return const Center(
+            return Center(
               child: CircularProgressIndicator(color: AppColors.primary),
             );
           }
@@ -159,7 +159,7 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.info_outline, size: 64, color: AppColors.primary),
+          Icon(Icons.info_outline, size: 64, color: AppColors.primary),
           const SizedBox(height: 16),
           Text(
             UsefulInfoTexts.noUsefulInfo,

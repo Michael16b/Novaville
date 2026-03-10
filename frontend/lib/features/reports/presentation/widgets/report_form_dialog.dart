@@ -73,6 +73,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
         : ReportTexts.createReport;
     final actionLabel =
         _isEditing ? AppTextsGeneral.save : AppTextsGeneral.create;
+    final accentColor = AppColors.primary;
 
     return StyledDialog(
       title: title,

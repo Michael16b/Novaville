@@ -15,4 +15,5 @@ class AppRoutes {
   static const String userAccounts = '/user-accounts';
   static const String bulkUserCreation = '/user-accounts/bulk-create';
   static const String credentialsShare = '/credentials-share';
+  static const String myTownHall = '/my-town-hall';
 }

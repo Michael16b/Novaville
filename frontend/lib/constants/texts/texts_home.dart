@@ -2,8 +2,8 @@
 class AppTextsHome {
   AppTextsHome._();
 
-  static const String homeTitle = 'Novaville : votre ville à portée de main';
-  static const String homeSubtitle = 'Bonjour, comment pouvons-nous vous aider ?';
+  static String homeTitle = 'Novaville : votre ville à portée de main';
+  static String homeSubtitle = 'Bonjour, comment pouvons-nous vous aider ?';
 
   // Menu card labels
   static const String reports = 'Signalements';

@@ -32,24 +32,24 @@ class HomePage extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: Column(
                     children: [
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24),
                       Text(
                         AppTextsHome.homeTitle,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           fontStyle: FontStyle.italic,
                           color: AppColors.primary,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      const Text(
+                      SizedBox(height: 8),
+                      Text(
                         AppTextsHome.homeSubtitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 24, color: AppColors.secondaryText),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24),
                     ],
                   ),
                 ),

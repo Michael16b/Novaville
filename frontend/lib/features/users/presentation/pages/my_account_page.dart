@@ -154,13 +154,13 @@ class _MyAccountViewState extends State<_MyAccountView> {
                         color: AppColors.primary.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.person,
                         size: 44,
                         color: AppColors.primary,
                       ),
                     ),
-                    const Text(
+                    Text(
                       AppTextsProfile.myProfile,
                       style: TextStyle(
                         fontSize: 28,
@@ -192,14 +192,14 @@ class _MyAccountViewState extends State<_MyAccountView> {
                                   AppColors.primary.withValues(alpha: 0.12),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.person,
                                   color: AppColors.primary,
                                   size: 20,
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Text(
+                              Text(
                                 AppTextsProfile.personalInformation,
                                 style: TextStyle(
                                   fontSize: 18,
@@ -275,14 +275,14 @@ class _MyAccountViewState extends State<_MyAccountView> {
                                   AppColors.primary.withValues(alpha: 0.12),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.lock_outline,
                                   color: AppColors.primary,
                                   size: 20,
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Text(
+                              Text(
                                 AppTextsProfile.connectionInformation,
                                 style: TextStyle(
                                   fontSize: 18,

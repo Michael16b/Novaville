@@ -153,7 +153,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                 Positioned.fill(
                   child: Container(
                     color: Colors.black.withValues(alpha: 0.1),
-                    child: const Center(
+                    child: Center(
                       child: CircularProgressIndicator(
                         color: AppColors.primary,
                       ),

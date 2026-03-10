@@ -10,6 +10,7 @@ import 'package:frontend/features/home/presentation/pages/home_page.dart';
 import 'package:frontend/features/news/presentation/pages/news_page.dart';
 import 'package:frontend/features/reports/presentation/pages/reports_page.dart';
 import 'package:frontend/features/surveys/presentation/pages/surveys_page.dart';
+import 'package:frontend/features/town_hall/presentation/pages/my_town_hall_page.dart';
 import 'package:frontend/features/useful_info/presentation/pages/useful_info_page_provider.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/presentation/pages/bulk_user_creation_page.dart';
@@ -127,7 +128,7 @@ GoRouter buildRouter(AuthBloc authBloc) {
         path: AppRoutes.loading,
         pageBuilder: (context, state) => _buildPage(
           state: state,
-          child: const Scaffold(
+          child: Scaffold(
             body: Center(
               child: CircularProgressIndicator(color: AppColors.primary),
             ),
@@ -206,6 +207,15 @@ GoRouter buildRouter(AuthBloc authBloc) {
             ),
             pageBuilder: (context, state) =>
                 _buildPage(state: state, child: const BulkUserCreationPage()),
+          ),
+          GoRoute(
+            path: AppRoutes.myTownHall,
+            redirect: (context, state) => anyRoleRedirect(
+              userRole: authBloc.state.user?.role,
+              allowedRoles: [UserRole.globalAdmin, UserRole.elected],
+            ),
+            pageBuilder: (context, state) =>
+                _buildPage(state: state, child: const MyTownHallPage()),
           ),
         ],
       ),

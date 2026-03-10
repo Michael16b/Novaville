@@ -31,7 +31,7 @@ class CustomElevatedStrokedButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8), // Updated to match theme radius
-          side: const BorderSide(
+          side: BorderSide(
             color: AppColors.primary,
             width: 2,
           ),
@@ -40,7 +40,7 @@ class CustomElevatedStrokedButton extends StatelessWidget {
         overlayColor: AppColors.primary.withValues(alpha: 0.1), // Adjusted overlay for better feedback on light bg
       ),
       child: isLoading
-          ? const SizedBox(
+          ? SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(

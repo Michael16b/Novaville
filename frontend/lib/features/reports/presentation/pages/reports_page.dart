@@ -128,7 +128,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
                 Positioned.fill(
                   child: ColoredBox(
                     color: AppColors.overlay,
-                    child: const Center(
+                    child: Center(
                       child: CircularProgressIndicator(
                         color: AppColors.primary,
                       ),

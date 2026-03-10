@@ -2,7 +2,7 @@
 class AppTextsGeneral {
   AppTextsGeneral._();
 
-  static const String appName = 'Novaville';
+  static String appName = 'Novaville';
   static const String welcome = "Bienvenue sur l'application";
   static const String errorOccurred = 'Une erreur est survenue';
   static const String retry = 'Réessayer';

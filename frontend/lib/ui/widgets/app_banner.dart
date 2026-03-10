@@ -20,6 +20,8 @@ class AppBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final isHomePage = currentLocation == AppRoutes.home;
     final isUserAccounts = currentLocation == AppRoutes.userAccounts;
+    final isMyTownHall = currentLocation == AppRoutes.myTownHall;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -56,22 +58,44 @@ class AppBanner extends StatelessWidget {
                       ),
                     BlocBuilder<AuthBloc, AuthState>(
                       builder: (context, state) {
-                        final isAdmin =
-                            state.user?.role == UserRole.globalAdmin;
-                        if (!isAdmin) {
-                          return const SizedBox.shrink();
-                        }
-                        if (isUserAccounts) {
-                          return CustomElevatedFlatButton(
-                            text: AppTextsNavigation.userAccountButton,
-                            onPressed: () {},
-                            iconData: Icons.group_outlined,
-                          );
-                        }
-                        return CustomElevatedStrokedButton(
-                          text: AppTextsNavigation.userAccountButton,
-                          onPressed: () => context.go(AppRoutes.userAccounts),
-                          iconData: Icons.group_outlined,
+                        final user = state.user;
+                        if (user == null) return const SizedBox.shrink();
+
+                        final isAdmin = user.role == UserRole.globalAdmin;
+                        final isElected = user.role == UserRole.elected;
+
+                        return Row(
+                          spacing: 16,
+                          children: [
+                            if (isAdmin)
+                              if (isUserAccounts)
+                                CustomElevatedFlatButton(
+                                  text: AppTextsNavigation.userAccountButton,
+                                  onPressed: () {},
+                                  iconData: Icons.group_outlined,
+                                )
+                              else
+                                CustomElevatedStrokedButton(
+                                  text: AppTextsNavigation.userAccountButton,
+                                  onPressed: () =>
+                                      context.go(AppRoutes.userAccounts),
+                                  iconData: Icons.group_outlined,
+                                ),
+                            if (isAdmin || isElected)
+                              if (isMyTownHall)
+                                CustomElevatedFlatButton(
+                                  text: AppTextsNavigation.myTownHall,
+                                  onPressed: () {},
+                                  iconData: Icons.account_balance_outlined,
+                                )
+                              else
+                                CustomElevatedStrokedButton(
+                                  text: AppTextsNavigation.myTownHall,
+                                  onPressed: () =>
+                                      context.go(AppRoutes.myTownHall),
+                                  iconData: Icons.account_balance_outlined,
+                                ),
+                          ],
                         );
                       },
                     ),
@@ -110,7 +134,7 @@ class AppBanner extends StatelessWidget {
                                   AppColors.primary.withValues(alpha: 0.12),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.person,
                               size: 16,
                               color: AppColors.primary,
@@ -161,7 +185,7 @@ class AppBanner extends StatelessWidget {
                           color: AppColors.primary.withValues(alpha: 0.12),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.person,
                           size: 18,
                           color: AppColors.primary,

@@ -106,7 +106,7 @@ class UserAccountCard extends StatelessWidget {
                         color: AppColors.primary.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.person,
                         size: 16,
                         color: AppColors.primary,

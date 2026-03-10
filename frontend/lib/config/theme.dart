@@ -35,7 +35,7 @@ class AppTheme {
           fontSize: 13,
           fontWeight: FontWeight.w500,
         ),
-        secondaryLabelStyle: const TextStyle(
+        secondaryLabelStyle: TextStyle(
           color: AppColors.primary,
           fontSize: 13,
           fontWeight: FontWeight.w600,
@@ -70,7 +70,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary, width: 1.5),
+          side: BorderSide(color: AppColors.primary, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -116,7 +116,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(
+          borderSide: BorderSide(
             color: AppColors.primary,
             width: 2,
           ),
@@ -184,7 +184,7 @@ class AppTheme {
           }
           return null;
         }),
-        todayBorder: const BorderSide(color: AppColors.primary),
+        todayBorder: BorderSide(color: AppColors.primary),
         yearForegroundColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return AppColors.white;

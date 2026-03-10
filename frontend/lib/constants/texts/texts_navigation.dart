@@ -6,4 +6,5 @@ class AppTextsNavigation {
   static const String userAccountButton = 'Comptes utilisateur';
   static const String personalInfo = 'Mes informations personnelles';
   static const String myAccount = 'Mon compte';
+  static const String myTownHall = 'Ma mairie';
 }

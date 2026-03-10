@@ -1681,7 +1681,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const CircleAvatar(
+            CircleAvatar(
               backgroundColor: AppColors.highlight,
               child: Icon(Icons.person, color: AppColors.primary),
             ),

@@ -11,7 +11,7 @@ class StyledDialog extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.body,
-    this.accentColor = AppColors.primary,
+    this.accentColor,
     this.actions = const [],
     this.maxWidth = 500,
     this.closeTooltip = 'Fermer',
@@ -25,7 +25,7 @@ class StyledDialog extends StatelessWidget {
   final IconData icon;
 
   /// Accent color for the header.
-  final Color accentColor;
+  final Color? accentColor;
 
   /// Main body widget.
   final Widget body;
@@ -41,6 +41,8 @@ class StyledDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = accentColor ?? AppColors.primary;
+
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -56,17 +58,17 @@ class StyledDialog extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
               decoration: BoxDecoration(
-                color: accentColor.withValues(alpha: 0.08),
+                color: color.withValues(alpha: 0.08),
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: accentColor.withValues(alpha: 0.18),
+                      color: color.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(icon, size: 20, color: accentColor),
+                    child: Icon(icon, size: 20, color: color),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -154,15 +156,17 @@ class StyledDialog extends StatelessWidget {
     required String label,
     required VoidCallback? onPressed,
     IconData? icon,
-    Color color = AppColors.primary,
+    Color? color,
   }) {
+    final effectiveColor = color ?? AppColors.primary;
+
     if (icon != null) {
       return ElevatedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon, size: 18),
         label: Text(label),
         style: ElevatedButton.styleFrom(
-          backgroundColor: color,
+          backgroundColor: effectiveColor,
           foregroundColor: AppColors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
@@ -175,7 +179,7 @@ class StyledDialog extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: color,
+        backgroundColor: effectiveColor,
         foregroundColor: AppColors.white,
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(

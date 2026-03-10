@@ -599,7 +599,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
               fontWeight: FontWeight.bold,
               color: AppColors.primaryText,
             ),
-            formatButtonTextStyle: const TextStyle(
+            formatButtonTextStyle: TextStyle(
               fontSize: 13,
               color: AppColors.primary,
             ),
@@ -607,12 +607,12 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
               border: Border.all(color: AppColors.primary),
               borderRadius: BorderRadius.circular(16),
             ),
-            leftChevronIcon: const Icon(
+            leftChevronIcon: Icon(
               Icons.chevron_left,
               color: AppColors.primary,
               size: 28,
             ),
-            rightChevronIcon: const Icon(
+            rightChevronIcon: Icon(
               Icons.chevron_right,
               color: AppColors.primary,
               size: 28,

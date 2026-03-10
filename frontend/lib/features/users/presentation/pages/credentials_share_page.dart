@@ -192,7 +192,7 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             padding: const EdgeInsets.all(10),
-                            child: const Icon(
+                            child: Icon(
                               Icons.lock_person_rounded,
                               color: AppColors.primary,
                               size: 32,
