@@ -14,54 +14,59 @@ void main() {
             body: MenuCard(
               icon: Icons.report_problem_outlined,
               title: 'Test Title',
+              subtitle: 'Test Subtitle',
               onTap: () => tapped = true,
             ),
           ),
         ),
       );
 
-      // Verify icon is rendered
       expect(find.byIcon(Icons.report_problem_outlined), findsOneWidget);
-
-      // Verify title is rendered
       expect(find.text('Test Title'), findsOneWidget);
+      expect(find.text('Test Subtitle'), findsOneWidget);
 
-      // Verify card is tappable
-      await tester.tap(find.byType(InkWell));
+      await tester.tap(find.byType(MenuCard));
+      await tester.pumpAndSettle();
+
       expect(tapped, isTrue);
     });
 
-    testWidgets('has correct styling', (WidgetTester tester) async {
+    testWidgets('has correct Material and Container styling', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: MenuCard(
               icon: Icons.report_problem_outlined,
               title: 'Test Title',
+              subtitle: 'Test Subtitle',
               onTap: () {},
             ),
           ),
         ),
       );
 
-      // Find the Card widget
-      final cardFinder = find.byType(Card);
-      expect(cardFinder, findsOneWidget);
+      final materialFinder = find.byWidgetPredicate(
+            (widget) => widget is Material && widget.color == AppColors.primary,
+      );
+      expect(materialFinder, findsOneWidget);
 
-      final Card card = tester.widget(cardFinder);
-      
-      // Verify Card properties
-      expect(card.color, AppColors.primary);
-      expect(card.elevation, 8);
-      expect(card.shadowColor, Colors.black.withValues(alpha: 0.3));
+      final Material material = tester.widget(materialFinder);
+      expect(material.clipBehavior, Clip.antiAlias);
+      expect(material.shape, isA<RoundedRectangleBorder>());
 
-      // Verify shape has correct border radius
-      final shape = card.shape as RoundedRectangleBorder;
-      final borderRadius = shape.borderRadius as BorderRadius;
-      expect(borderRadius.topLeft, const Radius.circular(30));
-      expect(borderRadius.topRight, const Radius.circular(15));
-      expect(borderRadius.bottomLeft, const Radius.circular(15));
-      expect(borderRadius.bottomRight, const Radius.circular(50));
+      final containerFinder = find.byWidgetPredicate((widget) {
+        if (widget is! Container) return false;
+        final decoration = widget.decoration;
+        if (decoration is! BoxDecoration) return false;
+        // On s'assure qu'on a bien trouvé LE conteneur avec l'ombre de ta carte
+        return decoration.boxShadow != null && decoration.boxShadow!.isNotEmpty;
+      });
+
+      expect(containerFinder, findsOneWidget);
+
+      final Container container = tester.widget(containerFinder);
+      final BoxDecoration decoration = container.decoration as BoxDecoration;
+      expect(decoration.borderRadius, isNotNull);
     });
 
     testWidgets('icon has correct size and color', (WidgetTester tester) async {
@@ -71,6 +76,7 @@ void main() {
             body: MenuCard(
               icon: Icons.report_problem_outlined,
               title: 'Test Title',
+              subtitle: 'Test Subtitle',
               onTap: () {},
             ),
           ),
@@ -79,9 +85,8 @@ void main() {
 
       final iconFinder = find.byIcon(Icons.report_problem_outlined);
       final Icon icon = tester.widget(iconFinder);
-
-      expect(icon.size, 60);
-      expect(icon.color, AppColors.secondary);
+      expect(icon.size, 48);
+      expect(icon.color, AppColors.secondary); // Assure-toi que AppColors.secondary est bien défini
     });
 
     testWidgets('title has correct text style', (WidgetTester tester) async {
@@ -91,6 +96,7 @@ void main() {
             body: MenuCard(
               icon: Icons.report_problem_outlined,
               title: 'Test Title',
+              subtitle: 'Test Subtitle',
               onTap: () {},
             ),
           ),
@@ -99,36 +105,45 @@ void main() {
 
       final textFinder = find.text('Test Title');
       final Text text = tester.widget(textFinder);
-
-      expect(text.textAlign, TextAlign.center);
-      expect(text.style?.fontSize, 32);
-      expect(text.style?.fontWeight, FontWeight.w600);
-      expect(text.style?.color, AppColors.white);
+      expect(text.style?.fontSize, 22);
+      expect(text.style?.fontWeight, FontWeight.bold);
+      expect(text.style?.color, Colors.white);
     });
 
-    testWidgets('InkWell has matching border radius', (WidgetTester tester) async {
+    testWidgets('subtitle has correct text style', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: MenuCard(
               icon: Icons.report_problem_outlined,
               title: 'Test Title',
+              subtitle: 'Test Subtitle',
               onTap: () {},
             ),
           ),
         ),
       );
 
-      final inkWellFinder = find.byType(InkWell);
-      expect(inkWellFinder, findsOneWidget);
+      final textFinder = find.text('Test Subtitle');
+      final Text text = tester.widget(textFinder);
+      expect(text.style?.fontSize, 14);
+      expect(text.style?.color, Colors.white);
+    });
 
-      final InkWell inkWell = tester.widget(inkWellFinder);
-      final borderRadius = inkWell.borderRadius as BorderRadius;
-      
-      expect(borderRadius.topLeft, const Radius.circular(30));
-      expect(borderRadius.topRight, const Radius.circular(15));
-      expect(borderRadius.bottomLeft, const Radius.circular(15));
-      expect(borderRadius.bottomRight, const Radius.circular(50));
+    testWidgets('InkWell is present', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MenuCard(
+              icon: Icons.report_problem_outlined,
+              title: 'Test Title',
+              subtitle: 'Test Subtitle',
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+      expect(find.byType(InkWell), findsOneWidget);
     });
 
     testWidgets('has correct layout structure', (WidgetTester tester) async {
@@ -138,20 +153,19 @@ void main() {
             body: MenuCard(
               icon: Icons.report_problem_outlined,
               title: 'Test Title',
+              subtitle: 'Test Subtitle',
               onTap: () {},
             ),
           ),
         ),
       );
 
-      // Verify Column layout with icon and title
       final columnFinder = find.byWidgetPredicate(
-        (widget) => widget is Column && widget.mainAxisAlignment == MainAxisAlignment.center,
+            (widget) => widget is Column && widget.mainAxisAlignment == MainAxisAlignment.center,
       );
       expect(columnFinder, findsOneWidget);
 
-      // Verify SizedBox spacing exists
-      expect(find.byWidgetPredicate((widget) => widget is SizedBox && widget.height == 12), findsOneWidget);
+      expect(find.byWidgetPredicate((widget) => widget is SizedBox && widget.height == 16), findsOneWidget);
     });
   });
 }

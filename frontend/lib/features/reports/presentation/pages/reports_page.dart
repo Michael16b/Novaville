@@ -97,7 +97,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
         actions: [
           FabMenuAction(
             label: ReportTexts.createReport,
-            icon: Icons.report_outlined,
+            icon: Icons.warning_amber,
             onPressed: () => _showCreateDialog(context),
           ),
         ],
@@ -115,7 +115,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
                     const PageHeader(
                       title: ReportTexts.title,
                       description: ReportTexts.titleDescription,
-                      icon: Icons.report_outlined,
+                      icon: Icons.warning_amber,
                     ),
                     const SizedBox(height: 16),
                     _buildControlsSection(context, state),

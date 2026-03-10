@@ -13,13 +13,10 @@ class AppTextsHome {
   static const String addEvent = 'Ajouter un événement';
   static const String reportsTitle = 'Signalements';
   static const String reportsSubtitle = 'Voir et gérer les signalements\ncitoyens';
-  static const String reportsBadge = '23 en attente';
-  static const String pollsTitle = 'Sondages';
-  static const String pollsSubtitle = 'Gérer les sondages en cours';
-  static const String pollsBadge = '3 actifs';
+  static const String surveysTitle = 'Sondages';
+  static const String surveysSubtitle = 'Gérer les sondages en cours';
   static const String agendaTitle = 'Agenda participatif';
   static const String agendaSubtitle = 'Consulter les événements locaux';
-  static const String agendaBadge = '5 cette semaine';
   static const String newsTitle = 'Actualités';
   static const String newsSubtitle = 'Voir les dernières actualités municipales';
   static const String infoTitle = 'Infos utiles';

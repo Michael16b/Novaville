@@ -7,13 +7,14 @@ import 'package:frontend/features/home/presentation/widgets/dashboard_stats_widg
 import 'package:frontend/features/home/presentation/widgets/home_action_buttons.dart';
 import 'package:frontend/features/home/presentation/widgets/home_sidebar_panels.dart';
 import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
-import 'package:frontend/ui/assets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final DashboardRepository? dashboardRepository;
+
+  const HomePage({super.key, this.dashboardRepository});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -21,11 +22,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late Future<DashboardStats> _statsFuture;
-  final DashboardRepository _dashboardRepository = createDashboardRepository();
+
+  late final DashboardRepository _dashboardRepository;
 
   @override
   void initState() {
     super.initState();
+    _dashboardRepository = widget.dashboardRepository ?? createDashboardRepository();
     _statsFuture = _dashboardRepository.getDashboardStats();
   }
 
@@ -33,74 +36,59 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.page,
-      body: Column(
-        children: [
-          Expanded(
-            child: Stack(
-              children: [
-                // Background
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 300,
-                  child: Opacity(
-                    opacity: 0.15,
-                    child: Image.asset(
-                      AppAssets.home_background,
-                      fit: BoxFit.cover,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(32.0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: constraints.maxWidth,
+                maxWidth: constraints.maxWidth,
+                minHeight: constraints.maxHeight,
+              ),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // --- LEFT COLUMN ---
+                    Expanded(
+                      flex: 7,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildGreeting(),
+                          const SizedBox(height: 24),
+                          TopStatsRow(statsFuture: _statsFuture),
+                          const SizedBox(height: 24),
+                          const HomeActionButtons(),
+                          const SizedBox(height: 32),
+                          _buildCardsGrid(context),
+                          const SizedBox(height: 24),
+                          BottomStatsBar(statsFuture: _statsFuture),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-                // Main content
-                SingleChildScrollView(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // --- LEFT COLUMN ---
-                      Expanded(
-                        flex: 7,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildGreeting(),
-                            const SizedBox(height: 24),
-                            TopStatsRow(statsFuture: _statsFuture), // Refactorisé !
-                            const SizedBox(height: 24),
-                            const HomeActionButtons(), // Refactorisé !
-                            const SizedBox(height: 32),
-                            _buildCardsGrid(context),
-                            const SizedBox(height: 24),
-                            BottomStatsBar(statsFuture: _statsFuture), // Refactorisé !
-                          ],
-                        ),
+                    const SizedBox(width: 32),
+                    // --- RIGHT COLUMN ---
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        children: [
+                          const RecentActivityPanel(),
+                          const SizedBox(height: 24),
+                          UsefulInfoPanel(statsFuture: _statsFuture),
+                        ],
                       ),
-                      const SizedBox(width: 32),
-                      // --- RIGHT COLUMN ---
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          children: [
-                            const RecentActivityPanel(), // Refactorisé !
-                            const SizedBox(height: 24),
-                            UsefulInfoPanel(statsFuture: _statsFuture), // Refactorisé !
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
-
-  // J'ai gardé le Greeting et la Grille ici car ils gèrent la structure
-  // de base de la page et la navigation (GoRouter).
 
   Widget _buildGreeting() {
     return const Column(
@@ -136,8 +124,8 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 child: MenuCard(
                   icon: Icons.bar_chart,
-                  title: AppTextsHome.pollsTitle,
-                  subtitle: AppTextsHome.pollsSubtitle,
+                  title: AppTextsHome.surveysTitle,
+                  subtitle: AppTextsHome.surveysSubtitle,
                   onTap: () => context.go(AppRoutes.surveys),
                 ),
               ),

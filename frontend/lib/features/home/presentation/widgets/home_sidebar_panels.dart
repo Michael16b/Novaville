@@ -145,11 +145,11 @@ class UsefulInfoPanel extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    _mapStatItem(Icons.warning_amber, Colors.orange, AppTextsHome.roadDamage, roadsCount),
+                    _mapStatItem(Icons.lightbulb_outline, AppColors.info, AppTextsHome.faultyLighting, lightingCount),
                     const SizedBox(height: 12),
-                    _mapStatItem(Icons.delete_outline, Colors.red, AppTextsHome.overflowingBins, cleanlinessCount),
+                    _mapStatItem(Icons.delete_outline, AppColors.success, AppTextsHome.overflowingBins, cleanlinessCount),
                     const SizedBox(height: 12),
-                    _mapStatItem(Icons.lightbulb_outline, AppColors.primary, AppTextsHome.faultyLighting, lightingCount),
+                    _mapStatItem(Icons.warning_amber, AppColors.warning, AppTextsHome.roadDamage, roadsCount),
                     const SizedBox(height: 20),
                   ],
                 ),
