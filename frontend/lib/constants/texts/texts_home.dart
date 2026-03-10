@@ -5,11 +5,36 @@ class AppTextsHome {
   static const String homeTitle = 'Novaville : votre ville à portée de main';
   static const String homeSubtitle = 'Bonjour, comment pouvons-nous vous aider ?';
 
-  // Menu card labels
-  static const String reports = 'Signalements';
-  static const String surveys = 'Sondages';
-  static const String agenda = 'Agenda participatif';
-  static const String news = 'Actualités';
-  static const String myAccount = 'Mon compte';
-  static const String usefulInfo = 'Infos utiles';
+  static const String pendingReports = 'Signalements en attente';
+  static const String activePolls = 'Sondages actifs';
+  static const String eventsThisWeek = 'Événements cette semaine';
+  static const String newPoll = 'Nouveau sondage';
+  static const String newReport = 'Nouveau signalement';
+  static const String addEvent = 'Ajouter un événement';
+  static const String reportsTitle = 'Signalements';
+  static const String reportsSubtitle = 'Voir et gérer les signalements\ncitoyens';
+  static const String reportsBadge = '23 en attente';
+  static const String pollsTitle = 'Sondages';
+  static const String pollsSubtitle = 'Gérer les sondages en cours';
+  static const String pollsBadge = '3 actifs';
+  static const String agendaTitle = 'Agenda participatif';
+  static const String agendaSubtitle = 'Consulter les événements locaux';
+  static const String agendaBadge = '5 cette semaine';
+  static const String newsTitle = 'Actualités';
+  static const String newsSubtitle = 'Voir les dernières actualités municipales';
+  static const String infoTitle = 'Infos utiles';
+  static const String infoSubtitle = 'Adresse, horaires, réseaux sociaux, contacts, etc.';
+  static const String platformUsagePrefix = 'Plateforme utilisée par ';
+  static const String platformUsageSuffix = ' citoyens';
+  static const String reportsMonthSuffix = ' signalements ce mois';
+  static const String pollParticipationPrefix = 'Participation aux sondages : ';
+  static const String recentActivityTitle = 'Activité récente';
+  static const String seeAll = 'Tout voir';
+  static const String newReportActivity = 'Nouveau signalement';
+  static const String newVoteActivity = 'Nouveau vote';
+  static const String eventAddedActivity = 'Événement ajouté';
+  static const String usefulInfoTitle = 'Infos utiles';
+  static const String roadDamage = 'Voirie';
+  static const String overflowingBins = 'Propreté';
+  static const String faultyLighting = 'Éclairage';
 }
