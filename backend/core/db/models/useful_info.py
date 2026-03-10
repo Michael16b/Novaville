@@ -63,6 +63,9 @@ class UsefulInfo(models.Model):
     phone = models.CharField(max_length=30)
     email = models.EmailField()
     website = models.URLField()
+    instagram = models.URLField(blank=True, null=True)
+    facebook = models.URLField(blank=True, null=True)
+    x = models.URLField(blank=True, null=True)
     opening_hours = models.JSONField(
         default=dict,
         blank=True,

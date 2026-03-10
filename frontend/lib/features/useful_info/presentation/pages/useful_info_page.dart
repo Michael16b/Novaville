@@ -14,6 +14,7 @@ import 'package:frontend/ui/widgets/page_header.dart';
 
 import '../widgets/contact_actions.dart';
 import '../widgets/opening_hours_table.dart';
+import '../widgets/social_network_actions.dart';
 
 class UsefulInfoPage extends StatefulWidget {
   const UsefulInfoPage({super.key});
@@ -126,6 +127,10 @@ class _UsefulInfoReadView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasSocialNetworks =
+        (info.instagram ?? '').trim().isNotEmpty ||
+        (info.facebook ?? '').trim().isNotEmpty ||
+        (info.x ?? '').trim().isNotEmpty;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       child: Column(
@@ -160,6 +165,18 @@ class _UsefulInfoReadView extends StatelessWidget {
                   website: info.website,
                 ),
               ),
+              if (hasSocialNetworks) ...[
+                const SizedBox(height: 12),
+                _SectionCard(
+                  title: UsefulInfoTexts.reseaux,
+                  icon: Icons.share_outlined,
+                  child: SocialNetworkActions(
+                    instagram: info.instagram,
+                    facebook: info.facebook,
+                    x: info.x,
+                  ),
+                ),
+              ],
             ],
           ),
         ],
@@ -193,6 +210,9 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
   late final TextEditingController _websiteController;
+  late final TextEditingController _instagramController;
+  late final TextEditingController _facebookController;
+  late final TextEditingController _xController;
 
   @override
   void initState() {
@@ -206,6 +226,9 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
     _phoneController = TextEditingController(text: info.phone ?? '');
     _emailController = TextEditingController(text: info.email ?? '');
     _websiteController = TextEditingController(text: info.website ?? '');
+    _instagramController = TextEditingController(text: info.instagram ?? '');
+    _facebookController = TextEditingController(text: info.facebook ?? '');
+    _xController = TextEditingController(text: info.x ?? '');
   }
 
   @override
@@ -217,6 +240,9 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
     _phoneController.dispose();
     _emailController.dispose();
     _websiteController.dispose();
+    _instagramController.dispose();
+    _facebookController.dispose();
+    _xController.dispose();
     super.dispose();
   }
 
@@ -231,6 +257,9 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
       phone: _emptyToNull(_phoneController.text),
       email: _emptyToNull(_emailController.text),
       website: _emptyToNull(_websiteController.text),
+      instagram: _emptyToNull(_instagramController.text),
+      facebook: _emptyToNull(_facebookController.text),
+      x: _emptyToNull(_xController.text),
     );
 
     widget.onSave(updated);
@@ -335,6 +364,39 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
                 ],
               ),
             ),
+            const SizedBox(height: 12),
+
+            _SectionCard(
+              title: UsefulInfoTexts.reseaux,
+              icon: Icons.share_outlined,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _instagramController,
+                    decoration: const InputDecoration(
+                      labelText: UsefulInfoTexts.instagramLabel,
+                    ),
+                    keyboardType: TextInputType.url,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _facebookController,
+                    decoration: const InputDecoration(
+                      labelText: UsefulInfoTexts.facebookLabel,
+                    ),
+                    keyboardType: TextInputType.url,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _xController,
+                    decoration: const InputDecoration(
+                      labelText: UsefulInfoTexts.xLabel,
+                    ),
+                    keyboardType: TextInputType.url,
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -400,6 +462,10 @@ bool _isInfoEmpty(UsefulInfo info) {
       (info.addressLine2 ?? '').trim().isNotEmpty ||
       info.postalCode.trim().isNotEmpty ||
       info.city.trim().isNotEmpty;
+  final hasSocialData =
+      (info.instagram ?? '').trim().isNotEmpty ||
+      (info.facebook ?? '').trim().isNotEmpty ||
+      (info.x ?? '').trim().isNotEmpty;
 
   final hasOpeningHours = info.openingHours.entries.any(
     (entry) => entry.value.any((slot) => slot.trim().isNotEmpty),
@@ -410,7 +476,8 @@ bool _isInfoEmpty(UsefulInfo info) {
   return !hasContactData &&
       !hasAddressData &&
       !hasOpeningHours &&
-      !hasAdditionalInfo;
+      !hasAdditionalInfo &&
+      !hasSocialData;
 }
 
 class _EmptyState extends StatelessWidget {
