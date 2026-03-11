@@ -85,11 +85,8 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
             }
 
             if (state is UsefulInfoLoading || state is UsefulInfoSaving) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              );
+              return const _UsefulInfoSkeleton();
             }
-
             if (state is UsefulInfoFailure) {
               return Center(child: Text(state.message));
             }
@@ -843,5 +840,134 @@ class _TimeRange {
     final h = time.hour.toString().padLeft(2, '0');
     final m = time.minute.toString().padLeft(2, '0');
     return '$h:$m';
+  }
+}
+
+class _UsefulInfoSkeleton extends StatelessWidget {
+  const _UsefulInfoSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: const [
+          _SkeletonHeader(),
+          SizedBox(height: 16),
+          _SkeletonCard(height: 110),
+          SizedBox(height: 12),
+          _SkeletonCard(height: 180),
+          SizedBox(height: 12),
+          _SkeletonCard(height: 100),
+          SizedBox(height: 12),
+          _SkeletonCard(height: 90),
+        ],
+      ),
+    );
+  }
+}
+
+class _SkeletonHeader extends StatelessWidget {
+  const _SkeletonHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: const [
+        _SkeletonBox(height: 28, width: 180),
+        SizedBox(height: 12),
+        _SkeletonBox(height: 14, width: double.infinity),
+        SizedBox(height: 8),
+        _SkeletonBox(height: 14, width: 240),
+      ],
+    );
+  }
+}
+
+class _SkeletonCard extends StatelessWidget {
+  final double height;
+
+  const _SkeletonCard({required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                _SkeletonBox(height: 20, width: 20, radius: 6),
+                SizedBox(width: 10),
+                _SkeletonBox(height: 16, width: 140),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _SkeletonBox(height: height, width: double.infinity),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SkeletonBox extends StatefulWidget {
+  final double height;
+  final double width;
+  final double radius;
+
+  const _SkeletonBox({
+    required this.height,
+    required this.width,
+    this.radius = 12,
+  });
+
+  @override
+  State<_SkeletonBox> createState() => _SkeletonBoxState();
+}
+
+class _SkeletonBoxState extends State<_SkeletonBox>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColor = Colors.grey.shade300;
+    final highlightColor = Colors.grey.shade100;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Container(
+          height: widget.height,
+          width: widget.width == double.infinity
+              ? double.infinity
+              : widget.width,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(widget.radius),
+            color: Color.lerp(baseColor, highlightColor, _controller.value),
+          ),
+        );
+      },
+    );
   }
 }
