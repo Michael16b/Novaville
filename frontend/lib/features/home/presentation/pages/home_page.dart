@@ -1,106 +1,243 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/constants/texts/texts_home.dart';
+import 'package:frontend/features/home/data/dashboard_repository.dart';
+import 'package:frontend/features/home/data/dashboard_repository_factory.dart';
+import 'package:frontend/features/home/domain/dashboard_stats.dart';
+import 'package:frontend/features/home/presentation/widgets/dashboard_stats_widgets.dart';
+import 'package:frontend/features/home/presentation/widgets/home_action_buttons.dart';
+import 'package:frontend/features/home/presentation/widgets/home_sidebar_panels.dart';
+import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
+import 'package:frontend/ui/assets.dart';
+import 'package:go_router/go_router.dart';
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
-import 'package:frontend/constants/texts/texts_home.dart';
-import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
-import 'package:go_router/go_router.dart';
 
-/// Home screen of the app that displays a grid of navigation cards
-/// linking to core features such as reports, surveys, agenda, news,
-/// account, and useful information pages.
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class HomePage extends StatefulWidget {
+  final DashboardRepository? dashboardRepository;
+
+  const HomePage({
+    super.key,
+    this.dashboardRepository,
+  });
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late Future<DashboardStats> _statsFuture;
+  late DashboardRepository _dashboardRepository = createDashboardRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    _dashboardRepository = widget.dashboardRepository ?? createDashboardRepository();
+    _statsFuture = _dashboardRepository.getDashboardStats();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const itemWidth = 450.0;
-        const spacing = 16.0;
-        final availableColumns =
-            (constraints.maxWidth / (itemWidth + spacing)).floor();
-        final crossAxisCount = availableColumns.clamp(1, 3).toInt(); // max 3 columns
-        final gridWidth =
-            crossAxisCount * itemWidth + (crossAxisCount - 1) * spacing;
+    return Scaffold(
+      backgroundColor: AppColors.page,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          final isMobile = width < 768;
+          final showSidebarBelow = width < 1100;
+          final horizontalPadding = isMobile ? 16.0 : width < 1280 ? 24.0 : 32.0;
 
-        return Align(
-          alignment: Alignment.topCenter,
-          child: SizedBox(
-            width: gridWidth,
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 24),
-                      Text(
-                        AppTextsHome.homeTitle,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.italic,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        AppTextsHome.homeSubtitle,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 24, color: AppColors.secondaryText),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
+          final mainColumn = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildGreeting(context, isMobile: isMobile),
+              const SizedBox(height: 24),
+              TopStatsRow(statsFuture: _statsFuture),
+              const SizedBox(height: 24),
+              const HomeActionButtons(),
+              const SizedBox(height: 32),
+              _buildCardsGrid(context),
+              const SizedBox(height: 24),
+              BottomStatsBar(statsFuture: _statsFuture),
+            ],
+          );
+
+          final sidebarColumn = Column(
+            children: [
+              const RecentActivityPanel(),
+              const SizedBox(height: 24),
+              UsefulInfoPanel(statsFuture: _statsFuture),
+            ],
+          );
+
+          return Stack(
+            children: [
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: isMobile ? 220 : 300,
+                child: Opacity(
+                  opacity: 0.15,
+                  child: Image.asset(
+                    AppAssets.home_background,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                SliverPadding(
-                  padding: const EdgeInsets.all(16.0),
-                  sliver: SliverGrid(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: spacing,
-                      mainAxisSpacing: spacing,
-                      childAspectRatio: 1.4,
-                    ),
-                    delegate: SliverChildListDelegate([
-                      MenuCard(
-                        icon: Icons.report_problem_outlined,
-                        title: AppTextsHome.reports,
-                        onTap: () => context.go(AppRoutes.reports),
-                      ),
-                      MenuCard(
-                        icon: Icons.poll_outlined,
-                        title: AppTextsHome.surveys,
-                        onTap: () => context.go(AppRoutes.surveys),
-                      ),
-                      MenuCard(
-                        icon: Icons.calendar_month_outlined,
-                        title: AppTextsHome.agenda,
-                        onTap: () => context.go(AppRoutes.agenda),
-                      ),
-                      MenuCard(
-                        icon: Icons.article_outlined,
-                        title: AppTextsHome.news,
-                        onTap: () => context.go(AppRoutes.news),
-                      ),
-                      MenuCard(
-                        icon: Icons.info_outlined,
-                        title: AppTextsHome.usefulInfo,
-                        onTap: () => context.go(AppRoutes.usefulInfo),
-                      ),
-                      MenuCard(
-                        icon: Icons.person,
-                        title: AppTextsHome.myAccount,
-                        onTap: () => context.go(AppRoutes.myAccount),
-                      ),
-                    ]),
+              ),
+              SingleChildScrollView(
+                padding: EdgeInsets.all(horizontalPadding),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1440),
+                    child: showSidebarBelow
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              mainColumn,
+                              const SizedBox(height: 24),
+                              sidebarColumn,
+                            ],
+                          )
+                        : Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(flex: 7, child: mainColumn),
+                              const SizedBox(width: 32),
+                              Expanded(flex: 3, child: sidebarColumn),
+                            ],
+                          ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildGreeting(BuildContext context, {required bool isMobile}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          children: [
+            Text(
+              AppTextsHome.homeTitle,
+              style: TextStyle(
+                fontSize: isMobile ? 26 : 32,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textDark,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          AppTextsHome.homeSubtitle,
+          style: TextStyle(
+            fontSize: isMobile ? 18 : 24,
+            color: AppColors.textGrey,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCardsGrid(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const spacing = 24.0;
+        final availableWidth = constraints.maxWidth;
+        final largeColumns = availableWidth >= 720 ? 3 : 1;
+        final compactColumns = availableWidth >= 900 ? 2 : 1;
+        final largeCardWidth = (availableWidth - (spacing * (largeColumns - 1))) / largeColumns;
+        final compactCardWidth = compactColumns == 1
+            ? availableWidth
+            : (availableWidth - spacing) / 2;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: [
+                _buildLargeCardItem(
+                  width: largeCardWidth,
+                  child: MenuCard(
+                    icon: Icons.warning_amber_rounded,
+                    title: AppTextsHome.reportsTitle,
+                    subtitle: AppTextsHome.reportsSubtitle,
+                    onTap: () => context.go(AppRoutes.reports),
+                  ),
+                ),
+                _buildLargeCardItem(
+                  width: largeCardWidth,
+                  child: MenuCard(
+                    icon: Icons.bar_chart,
+                    title: AppTextsHome.surveysTitle,
+                    subtitle: AppTextsHome.surveysSubtitle,
+                    onTap: () => context.go(AppRoutes.surveys),
+                  ),
+                ),
+                _buildLargeCardItem(
+                  width: largeCardWidth,
+                  child: MenuCard(
+                    icon: Icons.calendar_month,
+                    title: AppTextsHome.agendaTitle,
+                    subtitle: AppTextsHome.agendaSubtitle,
+                    onTap: () => context.go(AppRoutes.agenda),
                   ),
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: 24),
+            Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: [
+                _buildCompactCardItem(
+                  width: compactCardWidth,
+                  child: MenuCard(
+                    style: MenuCardStyle.compact,
+                    icon: Icons.article_outlined,
+                    title: AppTextsHome.newsTitle,
+                    subtitle: AppTextsHome.newsSubtitle,
+                    onTap: () => context.go(AppRoutes.news),
+                  ),
+                ),
+                _buildCompactCardItem(
+                  width: compactCardWidth,
+                  child: MenuCard(
+                    style: MenuCardStyle.compact,
+                    icon: Icons.info_outline,
+                    title: AppTextsHome.infoTitle,
+                    subtitle: AppTextsHome.infoSubtitle,
+                    onTap: () => context.go(AppRoutes.usefulInfo),
+                  ),
+                ),
+              ],
+            ),
+          ],
         );
       },
+    );
+  }
+
+  Widget _buildLargeCardItem({required double width, required Widget child}) {
+    return SizedBox(
+      width: width,
+      height: 240,
+      child: child,
+    );
+  }
+
+  Widget _buildCompactCardItem({required double width, required Widget child}) {
+    return SizedBox(
+      width: width,
+      height: 110,
+      child: child,
     );
   }
 }

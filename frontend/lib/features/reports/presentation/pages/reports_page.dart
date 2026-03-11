@@ -14,6 +14,7 @@ import 'package:frontend/features/reports/data/models/report_status.dart';
 import 'package:frontend/features/reports/data/report_repository.dart';
 import 'package:frontend/features/reports/data/report_repository_factory.dart';
 import 'package:frontend/features/reports/presentation/widgets/report_card.dart';
+import 'package:frontend/ui/widgets/breadcrumb.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
 import 'package:frontend/features/reports/presentation/widgets/report_form_dialog.dart';
 import 'package:frontend/features/reports/presentation/widgets/report_status_dialog.dart';
@@ -97,7 +98,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
         actions: [
           FabMenuAction(
             label: ReportTexts.createReport,
-            icon: Icons.report_outlined,
+            icon: Icons.warning_amber,
             onPressed: () => _showCreateDialog(context),
           ),
         ],
@@ -115,7 +116,10 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
                     const PageHeader(
                       title: ReportTexts.title,
                       description: ReportTexts.titleDescription,
-                      icon: Icons.report_outlined,
+                      icon: Icons.warning_amber,
+                      breadcrumbItems: [
+                        BreadcrumbItem(label: ReportTexts.title),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     _buildControlsSection(context, state),

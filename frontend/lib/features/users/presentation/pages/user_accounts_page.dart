@@ -17,6 +17,7 @@ import 'package:frontend/features/users/data/user_repository_factory.dart';
 import 'package:frontend/features/users/presentation/widgets/single_user_creation_dialog.dart';
 import 'package:frontend/features/users/presentation/widgets/single_user_edit_dialog.dart';
 import 'package:frontend/features/users/presentation/widgets/user_account_card.dart';
+import 'package:frontend/ui/widgets/breadcrumb.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 import 'package:frontend/ui/widgets/neighborhood_autocomplete.dart';
 import 'package:frontend/ui/widgets/neighborhood_filter_skeleton.dart';
@@ -141,6 +142,9 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                       title: UserTexts.title,
                       description: UserTexts.titleDescription,
                       icon: Icons.people_alt_outlined,
+                      breadcrumbItems: [
+                        BreadcrumbItem(label: UserTexts.title),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     _buildControlsSection(context, state),

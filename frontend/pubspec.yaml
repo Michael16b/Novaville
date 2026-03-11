@@ -57,6 +57,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
+  mocktail: ^1.0.3
 
   # The "very_good_analysis" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -80,6 +81,8 @@ flutter:
   assets:
      - assets/images/logo.png
      - assets/images/login_logo.png
+     - assets/images/home_background.png
+     - assets/images/map.png
      - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
