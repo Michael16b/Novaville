@@ -17,6 +17,7 @@ import 'package:frontend/features/agenda/presentation/widgets/calendar_icons/goo
 import 'package:frontend/features/agenda/presentation/widgets/event_card.dart';
 import 'package:frontend/features/agenda/presentation/widgets/event_form_dialog.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
+import 'package:frontend/ui/widgets/breadcrumb.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
@@ -78,6 +79,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
   static const int _pageSize = 20;
   int _currentPage = 1;
   bool _sortAscending = true;
+  int? _preferredCardsPerRow;
 
   // Advanced filters
   EventTheme? _filterTheme;
@@ -212,26 +214,24 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
             children: [
               SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 900),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        PageHeader(
-                          title: AgendaTexts.title,
-                          description: AgendaTexts.titleDescription,
-                          icon: Icons.calendar_month,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildControlsSection(context, state),
-                        const SizedBox(height: 12),
-                        _buildCalendarSection(context, state),
-                        const SizedBox(height: 24),
-                        _buildUpcomingEventsSection(context, state),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    PageHeader(
+                      title: AgendaTexts.title,
+                      description: AgendaTexts.titleDescription,
+                      icon: Icons.calendar_month,
+                      breadcrumbItems: const [
+                        BreadcrumbItem(label: AgendaTexts.title),
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    _buildControlsSection(context, state),
+                    const SizedBox(height: 12),
+                    _buildCalendarSection(context, state),
+                    const SizedBox(height: 24),
+                    _buildUpcomingEventsSection(context, state),
+                  ],
                 ),
               ),
               if (_showLoadingOverlay)
@@ -813,47 +813,59 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
               horizontal: 12,
               vertical: 8,
             ),
-            child: Row(
-              children: [
-                // Sort controls (same pattern as reports_page)
-                Text(
-                  AgendaTexts.sortBy,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                const SizedBox(width: 8),
-                ChoiceChip(
-                  label: const Text(AgendaTexts.sortByDate),
-                  selected: true,
-                  onSelected: (_) {},
-                ),
-                const SizedBox(width: 8),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _sortAscending = !_sortAscending;
-                      _currentPage = 1;
-                    });
-                  },
-                  icon: Icon(
-                    _sortAscending
-                        ? Icons.arrow_upward
-                        : Icons.arrow_downward,
-                    size: 16,
-                  ),
-                  label: Text(
-                    _sortAscending
-                        ? AgendaTexts.ascending
-                        : AgendaTexts.descending,
-                  ),
-                ),
-                const Spacer(),
-                // Pagination controls (same pattern as reports_page)
-                _buildPaginationControls(
-                  totalCount: totalCount,
-                  pageEventsCount: pageEvents.length,
-                  totalPages: totalPages,
-                ),
-              ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Row(
+                  children: [
+                    // Sort controls
+                    Text(
+                      AgendaTexts.sortBy,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(width: 8),
+                    ChoiceChip(
+                      label: const Text(AgendaTexts.sortByDate),
+                      selected: true,
+                      onSelected: (_) {},
+                    ),
+                    const SizedBox(width: 8),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _sortAscending = !_sortAscending;
+                          _currentPage = 1;
+                        });
+                      },
+                      icon: Icon(
+                        _sortAscending
+                            ? Icons.arrow_upward
+                            : Icons.arrow_downward,
+                        size: 16,
+                      ),
+                      label: Text(
+                        _sortAscending
+                            ? AgendaTexts.ascending
+                            : AgendaTexts.descending,
+                      ),
+                    ),
+                    const Spacer(),
+                    // Cards per row dropdown
+                    if (constraints.maxWidth > 600) ...[
+                      SizedBox(
+                        width: 220,
+                        child: _buildCardsPerRowDropdown(constraints.maxWidth),
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                    // Pagination controls
+                    _buildPaginationControls(
+                      totalCount: totalCount,
+                      pageEventsCount: pageEvents.length,
+                      totalPages: totalPages,
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -863,28 +875,115 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
         if (pageEvents.isEmpty)
           _buildUpcomingEmptyState(context)
         else
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: pageEvents.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final event = pageEvents[index];
-              return EventCard(
-                event: event,
-                isStaff: isStaff,
-                onEdit: isStaff
-                    ? (e) => _showEditDialog(context, e)
-                    : null,
-                onDelete: isStaff
-                    ? (e) => _showDeleteDialog(context, e)
-                    : null,
-                onAddToCalendar: _handleAddToCalendar,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final layout = _computeGridLayout(constraints.maxWidth);
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: pageEvents.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: layout.crossAxisCount,
+                  mainAxisSpacing: 14,
+                  crossAxisSpacing: 14,
+                  childAspectRatio: layout.childAspectRatio,
+                ),
+                itemBuilder: (context, index) {
+                  final event = pageEvents[index];
+                  return EventCard(
+                    event: event,
+                    isStaff: isStaff,
+                    onEdit: isStaff
+                        ? (e) => _showEditDialog(context, e)
+                        : null,
+                    onDelete: isStaff
+                        ? (e) => _showDeleteDialog(context, e)
+                        : null,
+                    onAddToCalendar: _handleAddToCalendar,
+                  );
+                },
               );
             },
           ),
       ],
     );
+  }
+
+  Widget _buildCardsPerRowDropdown(double width) {
+    final maxAllowedCount = _maxCardsAllowedForWidth(width);
+    final options = <int?>[
+      null,
+      for (var count = 1; count <= maxAllowedCount; count++) count,
+    ];
+    final selectedValue = (_preferredCardsPerRow != null &&
+            _preferredCardsPerRow! <= maxAllowedCount)
+        ? _preferredCardsPerRow
+        : null;
+
+    return DropdownButtonFormField<int?>(
+      value: selectedValue,
+      isExpanded: true,
+      menuMaxHeight: 300,
+      borderRadius: BorderRadius.circular(12),
+      decoration: const InputDecoration(
+        labelText: AgendaTexts.cardsPerRow,
+        border: OutlineInputBorder(),
+      ),
+      items: options
+          .map(
+            (option) => DropdownMenuItem<int?>(
+              value: option,
+              child: Text(
+                option == null
+                    ? AgendaTexts.auto
+                    : option.toString(),
+              ),
+            ),
+          )
+          .toList(),
+      onChanged: (value) {
+        setState(() {
+          _preferredCardsPerRow = value;
+        });
+      },
+    );
+  }
+
+  ({int crossAxisCount, double childAspectRatio}) _computeGridLayout(
+    double width,
+  ) {
+    const spacing = 14.0;
+    const minCardWidth = 280.0;
+    final maxByWidth = _maxCardsAllowedForWidth(width);
+
+    final estimatedCount =
+        ((width + spacing) / (minCardWidth + spacing))
+            .floor()
+            .clamp(1, maxByWidth);
+
+    final maxAllowedCount = estimatedCount.clamp(1, maxByWidth);
+
+    final chosenCount = _preferredCardsPerRow == null
+        ? maxAllowedCount
+        : _preferredCardsPerRow!.clamp(1, maxAllowedCount);
+
+    final cardWidth =
+        (width - (spacing * (chosenCount - 1))) / chosenCount;
+    const estimatedCardHeight = 280.0;
+
+    final childAspectRatio =
+        (cardWidth / estimatedCardHeight).clamp(0.9, 2.2);
+
+    return (
+      crossAxisCount: chosenCount,
+      childAspectRatio: childAspectRatio,
+    );
+  }
+
+  int _maxCardsAllowedForWidth(double width) {
+    if (width < 700) return 1;
+    if (width < 1000) return 2;
+    return 3;
   }
 
   // ─── Pagination controls ───────────────────────────────────────
