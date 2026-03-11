@@ -877,36 +877,66 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
         else
           LayoutBuilder(
             builder: (context, constraints) {
-              final layout = _computeGridLayout(constraints.maxWidth);
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: pageEvents.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: layout.crossAxisCount,
-                  mainAxisSpacing: 14,
-                  crossAxisSpacing: 14,
-                  childAspectRatio: layout.childAspectRatio,
-                ),
-                itemBuilder: (context, index) {
-                  final event = pageEvents[index];
-                  return EventCard(
-                    event: event,
-                    isStaff: isStaff,
-                    onEdit: isStaff
-                        ? (e) => _showEditDialog(context, e)
-                        : null,
-                    onDelete: isStaff
-                        ? (e) => _showDeleteDialog(context, e)
-                        : null,
-                    onAddToCalendar: _handleAddToCalendar,
-                  );
-                },
-              );
+              final crossAxisCount = _getCrossAxisCount(constraints.maxWidth);
+              final chunks = _chunkList(pageEvents, crossAxisCount);
+
+              final List<Widget> rows = [];
+              for (int i = 0; i < chunks.length; i++) {
+                final chunk = chunks[i];
+                final rowChildren = <Widget>[];
+
+                for (int j = 0; j < crossAxisCount; j++) {
+                  if (j < chunk.length) {
+                    rowChildren.add(
+                      Expanded(
+                        child: EventCard(
+                          event: chunk[j],
+                          isStaff: isStaff,
+                          onEdit: isStaff ? (e) => _showEditDialog(context, e) : null,
+                          onDelete: isStaff ? (e) => _showDeleteDialog(context, e) : null,
+                          onAddToCalendar: _handleAddToCalendar,
+                        ),
+                      ),
+                    );
+                  } else {
+                    rowChildren.add(const Expanded(child: SizedBox()));
+                  }
+
+                  if (j < crossAxisCount - 1) {
+                    rowChildren.add(const SizedBox(width: 14));
+                  }
+                }
+
+                rows.add(
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: rowChildren,
+                    ),
+                  ),
+                );
+
+                if (i < chunks.length - 1) {
+                  rows.add(const SizedBox(height: 14));
+                }
+              }
+
+              return Column(children: rows);
             },
           ),
       ],
     );
+  }
+
+  List<List<T>> _chunkList<T>(List<T> list, int chunkSize) {
+    if (chunkSize <= 0) return [list];
+    final chunks = <List<T>>[];
+    for (var i = 0; i < list.length; i += chunkSize) {
+      chunks.add(
+        list.sublist(i, i + chunkSize > list.length ? list.length : i + chunkSize),
+      );
+    }
+    return chunks;
   }
 
   Widget _buildCardsPerRowDropdown(double width) {
@@ -949,41 +979,21 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
     );
   }
 
-  ({int crossAxisCount, double childAspectRatio}) _computeGridLayout(
-    double width,
-  ) {
-    const spacing = 14.0;
-    const minCardWidth = 280.0;
-    final maxByWidth = _maxCardsAllowedForWidth(width);
+  int _getCrossAxisCount(double width) {
+    final count = _preferredCardsPerRow ?? _autoCrossAxisCount(width);
+    return count.clamp(1, _maxCardsAllowedForWidth(width));
+  }
 
-    final estimatedCount =
-        ((width + spacing) / (minCardWidth + spacing))
-            .floor()
-            .clamp(1, maxByWidth);
-
-    final maxAllowedCount = estimatedCount.clamp(1, maxByWidth);
-
-    final chosenCount = _preferredCardsPerRow == null
-        ? maxAllowedCount
-        : _preferredCardsPerRow!.clamp(1, maxAllowedCount);
-
-    final cardWidth =
-        (width - (spacing * (chosenCount - 1))) / chosenCount;
-    const estimatedCardHeight = 280.0;
-
-    final childAspectRatio =
-        (cardWidth / estimatedCardHeight).clamp(0.9, 2.2);
-
-    return (
-      crossAxisCount: chosenCount,
-      childAspectRatio: childAspectRatio,
-    );
+  int _autoCrossAxisCount(double width) {
+    if (width < 700) return 1;
+    if (width < 1000) return 2;
+    return 2;
   }
 
   int _maxCardsAllowedForWidth(double width) {
     if (width < 700) return 1;
     if (width < 1000) return 2;
-    return 3;
+    return 2;
   }
 
   // ─── Pagination controls ───────────────────────────────────────
