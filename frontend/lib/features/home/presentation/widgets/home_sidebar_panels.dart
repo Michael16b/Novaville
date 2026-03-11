@@ -26,18 +26,26 @@ class RecentActivityPanel extends StatelessWidget {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.18), borderRadius: BorderRadius.circular(12)),
-                      child: const Icon(Icons.bar_chart, color: AppColors.primary, size: 20),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(AppTextsHome.recentActivityTitle, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                  ],
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.18), borderRadius: BorderRadius.circular(12)),
+                        child: const Icon(Icons.bar_chart, color: AppColors.primary, size: 20),
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          AppTextsHome.recentActivityTitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 TextButton(
                   onPressed: () {},
@@ -125,7 +133,14 @@ class UsefulInfoPanel extends StatelessWidget {
                       child: const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
                     ),
                     const SizedBox(width: 8),
-                    const Text(AppTextsHome.usefulInfoTitle, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                    const Expanded(
+                      child: Text(
+                        AppTextsHome.usefulInfoTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                      ),
+                    ),
                   ],
                 ),
               ),
