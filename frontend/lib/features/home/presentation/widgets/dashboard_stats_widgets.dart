@@ -17,23 +17,23 @@ class TopStatsRow extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const TopStatsSkeleton();
         } else if (snapshot.hasError) {
-          return Row(
+          return Wrap(
+            spacing: 16,
+            runSpacing: 16,
             children: [
               _statPill(Icons.circle, Colors.redAccent, '-', AppTextsHome.pendingReports),
-              const SizedBox(width: 16),
               _statPill(Icons.circle, AppColors.primary, '-', AppTextsHome.activePolls),
-              const SizedBox(width: 16),
               _statPill(Icons.calendar_today, Colors.orangeAccent, '-', AppTextsHome.eventsThisWeek),
             ],
           );
         } else if (snapshot.hasData) {
           final stats = snapshot.data!;
-          return Row(
+          return Wrap(
+            spacing: 16,
+            runSpacing: 16,
             children: [
               _statPill(Icons.circle, Colors.redAccent, stats.pendingReports.toString(), AppTextsHome.pendingReports),
-              const SizedBox(width: 16),
               _statPill(Icons.circle, AppColors.primary, stats.activeSurveys.toString(), AppTextsHome.activePolls),
-              const SizedBox(width: 16),
               _statPill(Icons.calendar_today, Colors.orangeAccent, stats.eventsThisWeek.toString(), AppTextsHome.eventsThisWeek),
             ],
           );
@@ -86,68 +86,124 @@ class BottomStatsBar extends StatelessWidget {
         final reportsThisMonth = stats?.reportsThisMonth.toString() ?? '-';
         final pollParticipationRate = stats?.pollParticipationRate.toString() ?? '-';
 
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                    child: const Icon(Icons.people, color: AppColors.primary, size: 20),
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+            final isPhone = width < 900;
+            final theme = Theme.of(context);
+            final fontSize = width >= 1400
+                ? 16.0
+                : width >= 1200
+                    ? 15.0
+                    : width >= 900
+                        ? 14.0
+                        : 15.0;
+            final iconSize = isPhone ? 18.0 : 20.0;
+            final iconPadding = isPhone ? 6.0 : 8.0;
+            final itemSpacing = isPhone ? 12.0 : 16.0;
+            final statTextStyle = (theme.textTheme.bodyLarge ?? const TextStyle()).copyWith(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textDark,
+              height: 1.2,
+            );
+            final statValueStyle = statTextStyle.copyWith(fontWeight: FontWeight.w700);
+            final statItems = [
+              _BottomStatItem(
+                isPhone: isPhone,
+                spacing: itemSpacing,
+                iconBox: Container(
+                  padding: EdgeInsets.all(iconPadding),
+                  decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                  child: Icon(Icons.people, color: AppColors.primary, size: iconSize),
+                ),
+                child: Text.rich(
+                  TextSpan(
+                    style: statTextStyle,
+                    children: [
+                      const TextSpan(text: AppTextsHome.platformUsagePrefix),
+                      TextSpan(text: totalCitizens, style: statValueStyle),
+                      const TextSpan(text: AppTextsHome.platformUsageSuffix),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  RichText(
-                    text: TextSpan(
-                      style: const TextStyle(color: AppColors.textDark, fontSize: 16),
+                  softWrap: true,
+                  maxLines: 2,
+                ),
+              ),
+              _BottomStatItem(
+                isPhone: isPhone,
+                spacing: itemSpacing,
+                iconBox: Container(
+                  padding: EdgeInsets.all(iconPadding),
+                  decoration: BoxDecoration(color: Colors.red.shade400.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                  child: Icon(Icons.warning_amber, color: Colors.red.shade400, size: iconSize),
+                ),
+                child: Text.rich(
+                  TextSpan(
+                    style: statTextStyle,
+                    children: [
+                      TextSpan(text: reportsThisMonth, style: statValueStyle),
+                      const TextSpan(text: AppTextsHome.reportsMonthSuffix),
+                    ],
+                  ),
+                  softWrap: isPhone,
+                  maxLines: isPhone ? 2 : 1,
+                ),
+              ),
+              _BottomStatItem(
+                isPhone: isPhone,
+                spacing: itemSpacing,
+                iconBox: Container(
+                  padding: EdgeInsets.all(iconPadding),
+                  decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                  child: Icon(Icons.pie_chart, color: AppColors.primary, size: iconSize),
+                ),
+                child: Text.rich(
+                  TextSpan(
+                    style: statTextStyle,
+                    children: [
+                      const TextSpan(text: AppTextsHome.pollParticipationPrefix),
+                      TextSpan(text: '$pollParticipationRate %', style: statValueStyle),
+                    ],
+                  ),
+                  softWrap: isPhone,
+                  maxLines: isPhone ? 2 : 1,
+                ),
+              ),
+            ];
+
+            return Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: width >= 900 ? 24 : 16,
+                vertical: width >= 900 ? 20 : 16,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+              ),
+              child: isPhone
+                  ? Column(
                       children: [
-                        const TextSpan(text: AppTextsHome.platformUsagePrefix),
-                        TextSpan(text: totalCitizens, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        const TextSpan(text: AppTextsHome.platformUsageSuffix),
+                        statItems[0],
+                        const SizedBox(height: 16),
+                        statItems[1],
+                        const SizedBox(height: 16),
+                        statItems[2],
+                      ],
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(child: statItems[0]),
+                        SizedBox(width: itemSpacing),
+                        Expanded(child: statItems[1]),
+                        SizedBox(width: itemSpacing),
+                        Expanded(child: statItems[2]),
                       ],
                     ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: Colors.red.shade400.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                    child: Icon(Icons.warning_amber, color: Colors.red.shade400, size: 20),
-                  ),
-                  const SizedBox(width: 8),
-                  RichText(
-                    text: TextSpan(
-                      style: const TextStyle(color: AppColors.textDark, fontSize: 15),
-                      children: [
-                        TextSpan(text: reportsThisMonth, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        const TextSpan(text: AppTextsHome.reportsMonthSuffix),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                    child: const Icon(Icons.pie_chart, color: AppColors.primary, size: 20),
-                  ),
-                  const SizedBox(width: 8),
-                  Text('${AppTextsHome.pollParticipationPrefix}$pollParticipationRate %', style: const TextStyle(color: AppColors.textDark, fontSize: 15)),
-                ],
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -270,8 +326,9 @@ class _BottomStatsSkeletonState extends State<BottomStatsSkeleton> with SingleTi
             borderRadius: BorderRadius.circular(16),
             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Wrap(
+            spacing: 24,
+            runSpacing: 16,
             children: [
               _buildSkeletonItem(iconColor, barColor),
               _buildSkeletonItem(iconColor, barColor),
@@ -285,6 +342,7 @@ class _BottomStatsSkeletonState extends State<BottomStatsSkeleton> with SingleTi
 
   Widget _buildSkeletonItem(Color iconColor, Color barColor) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           height: 36,
@@ -303,6 +361,37 @@ class _BottomStatsSkeletonState extends State<BottomStatsSkeleton> with SingleTi
             borderRadius: BorderRadius.circular(4),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _BottomStatItem extends StatelessWidget {
+  final Widget iconBox;
+  final Widget child;
+  final double spacing;
+  final bool isPhone;
+
+  const _BottomStatItem({
+    required this.iconBox,
+    required this.child,
+    required this.spacing,
+    required this.isPhone,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: isPhone ? MainAxisSize.max : MainAxisSize.min,
+      mainAxisAlignment: isPhone ? MainAxisAlignment.start : MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        iconBox,
+        SizedBox(width: spacing),
+        if (isPhone)
+          Expanded(child: child)
+        else
+          Flexible(child: child),
       ],
     );
   }

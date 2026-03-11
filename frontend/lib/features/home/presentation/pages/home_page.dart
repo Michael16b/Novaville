@@ -39,153 +39,205 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.page,
-      body: Column(
-        children: [
-          Expanded(
-            child: Stack(
-              children: [
-                // Background
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 300,
-                  child: Opacity(
-                    opacity: 0.15,
-                    child: Image.asset(
-                      AppAssets.home_background,
-                      fit: BoxFit.cover,
-                    ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          final isMobile = width < 768;
+          final showSidebarBelow = width < 1100;
+          final horizontalPadding = isMobile ? 16.0 : width < 1280 ? 24.0 : 32.0;
+
+          final mainColumn = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildGreeting(context, isMobile: isMobile),
+              const SizedBox(height: 24),
+              TopStatsRow(statsFuture: _statsFuture),
+              const SizedBox(height: 24),
+              const HomeActionButtons(),
+              const SizedBox(height: 32),
+              _buildCardsGrid(context),
+              const SizedBox(height: 24),
+              BottomStatsBar(statsFuture: _statsFuture),
+            ],
+          );
+
+          final sidebarColumn = Column(
+            children: [
+              const RecentActivityPanel(),
+              const SizedBox(height: 24),
+              UsefulInfoPanel(statsFuture: _statsFuture),
+            ],
+          );
+
+          return Stack(
+            children: [
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: isMobile ? 220 : 300,
+                child: Opacity(
+                  opacity: 0.15,
+                  child: Image.asset(
+                    AppAssets.home_background,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                // Main content
-                SingleChildScrollView(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // --- LEFT COLUMN ---
-                      Expanded(
-                        flex: 7,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildGreeting(),
-                            const SizedBox(height: 24),
-                            TopStatsRow(statsFuture: _statsFuture),
-                            const SizedBox(height: 24),
-                            const HomeActionButtons(),
-                            const SizedBox(height: 32),
-                            _buildCardsGrid(context),
-                            const SizedBox(height: 24),
-                            BottomStatsBar(statsFuture: _statsFuture),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 32),
-                      // --- RIGHT COLUMN ---
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          children: [
-                            const RecentActivityPanel(),
-                            const SizedBox(height: 24),
-                            UsefulInfoPanel(statsFuture: _statsFuture),
-                          ],
-                        ),
-                      ),
-                    ],
+              ),
+              SingleChildScrollView(
+                padding: EdgeInsets.all(horizontalPadding),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1440),
+                    child: showSidebarBelow
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              mainColumn,
+                              const SizedBox(height: 24),
+                              sidebarColumn,
+                            ],
+                          )
+                        : Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(flex: 7, child: mainColumn),
+                              const SizedBox(width: 32),
+                              Expanded(flex: 3, child: sidebarColumn),
+                            ],
+                          ),
                   ),
                 ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildGreeting() {
-    return const Column(
+  Widget _buildGreeting(BuildContext context, {required bool isMobile}) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        Wrap(
           children: [
-            Text(AppTextsHome.homeTitle, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+            Text(
+              AppTextsHome.homeTitle,
+              style: TextStyle(
+                fontSize: isMobile ? 26 : 32,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textDark,
+              ),
+            ),
           ],
         ),
-        SizedBox(height: 8),
-        Text(AppTextsHome.homeSubtitle, style: TextStyle(fontSize: 24, color: AppColors.textGrey)),
+        const SizedBox(height: 8),
+        Text(
+          AppTextsHome.homeSubtitle,
+          style: TextStyle(
+            fontSize: isMobile ? 18 : 24,
+            color: AppColors.textGrey,
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildCardsGrid(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: 240,
-          child: Row(
-            children: [
-              Expanded(
-                child: MenuCard(
-                  icon: Icons.warning_amber_rounded,
-                  title: AppTextsHome.reportsTitle,
-                  subtitle: AppTextsHome.reportsSubtitle,
-                  onTap: () => context.go(AppRoutes.reports),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const spacing = 24.0;
+        final availableWidth = constraints.maxWidth;
+        final largeColumns = availableWidth >= 720 ? 3 : 1;
+        final compactColumns = availableWidth >= 900 ? 2 : 1;
+        final largeCardWidth = (availableWidth - (spacing * (largeColumns - 1))) / largeColumns;
+        final compactCardWidth = compactColumns == 1
+            ? availableWidth
+            : (availableWidth - spacing) / 2;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: [
+                _buildLargeCardItem(
+                  width: largeCardWidth,
+                  child: MenuCard(
+                    icon: Icons.warning_amber_rounded,
+                    title: AppTextsHome.reportsTitle,
+                    subtitle: AppTextsHome.reportsSubtitle,
+                    onTap: () => context.go(AppRoutes.reports),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: MenuCard(
-                  icon: Icons.bar_chart,
-                  title: AppTextsHome.surveysTitle,
-                  subtitle: AppTextsHome.surveysSubtitle,
-                  onTap: () => context.go(AppRoutes.surveys),
+                _buildLargeCardItem(
+                  width: largeCardWidth,
+                  child: MenuCard(
+                    icon: Icons.bar_chart,
+                    title: AppTextsHome.surveysTitle,
+                    subtitle: AppTextsHome.surveysSubtitle,
+                    onTap: () => context.go(AppRoutes.surveys),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: MenuCard(
-                  icon: Icons.calendar_month,
-                  title: AppTextsHome.agendaTitle,
-                  subtitle: AppTextsHome.agendaSubtitle,
-                  onTap: () => context.go(AppRoutes.agenda),
+                _buildLargeCardItem(
+                  width: largeCardWidth,
+                  child: MenuCard(
+                    icon: Icons.calendar_month,
+                    title: AppTextsHome.agendaTitle,
+                    subtitle: AppTextsHome.agendaSubtitle,
+                    onTap: () => context.go(AppRoutes.agenda),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        SizedBox(
-          height: 110,
-          child: Row(
-            children: [
-              Expanded(
-                child: MenuCard(
-                  style: MenuCardStyle.compact,
-                  icon: Icons.article_outlined,
-                  title: AppTextsHome.newsTitle,
-                  subtitle: AppTextsHome.newsSubtitle,
-                  onTap: () => context.go(AppRoutes.news),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: [
+                _buildCompactCardItem(
+                  width: compactCardWidth,
+                  child: MenuCard(
+                    style: MenuCardStyle.compact,
+                    icon: Icons.article_outlined,
+                    title: AppTextsHome.newsTitle,
+                    subtitle: AppTextsHome.newsSubtitle,
+                    onTap: () => context.go(AppRoutes.news),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: MenuCard(
-                  style: MenuCardStyle.compact,
-                  icon: Icons.info_outline,
-                  title: AppTextsHome.infoTitle,
-                  subtitle: AppTextsHome.infoSubtitle,
-                  onTap: () => context.go(AppRoutes.usefulInfo),
+                _buildCompactCardItem(
+                  width: compactCardWidth,
+                  child: MenuCard(
+                    style: MenuCardStyle.compact,
+                    icon: Icons.info_outline,
+                    title: AppTextsHome.infoTitle,
+                    subtitle: AppTextsHome.infoSubtitle,
+                    onTap: () => context.go(AppRoutes.usefulInfo),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 24),
-              const Expanded(child: SizedBox()),
-            ],
-          ),
-        ),
-      ],
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLargeCardItem({required double width, required Widget child}) {
+    return SizedBox(
+      width: width,
+      height: 240,
+      child: child,
+    );
+  }
+
+  Widget _buildCompactCardItem({required double width, required Widget child}) {
+    return SizedBox(
+      width: width,
+      height: 110,
+      child: child,
     );
   }
 }

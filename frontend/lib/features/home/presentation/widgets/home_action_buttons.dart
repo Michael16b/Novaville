@@ -120,6 +120,8 @@ class _HomeActionButtonsState extends State<HomeActionButtons> {
   Widget build(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
     final isStaff = authState.user?.isStaff ?? false;
+    final width = MediaQuery.sizeOf(context).width;
+    final useVerticalLayout = width < 768;
 
     final primaryButtonStyle = ElevatedButton.styleFrom(
       backgroundColor: AppColors.primary,
@@ -144,39 +146,25 @@ class _HomeActionButtonsState extends State<HomeActionButtons> {
       ),
     );
 
-    return Row(
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
       children: [
-        ElevatedButton.icon(
-          onPressed: () {},
-          icon: const Icon(Icons.add, color: Colors.white),
-          label: const Text(AppTextsHome.newPoll,
-              style: TextStyle(color: Colors.white)),
-          style: primaryButtonStyle,
+        SizedBox(
+          width: useVerticalLayout ? double.infinity : null,
+          child: ElevatedButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: const Text(AppTextsHome.newPoll,
+                style: TextStyle(color: Colors.white)),
+            style: primaryButtonStyle,
+          ),
         ),
-        const SizedBox(width: 16),
-        ElevatedButton.icon(
-          onPressed: _isCreatingReport ? null : () => _showCreateReportDialog(context),
-          icon: _isCreatingReport
-              ? Container(
-                  width: 24,
-                  height: 24,
-                  padding: const EdgeInsets.all(2.0),
-                  child: const CircularProgressIndicator(
-                    color: AppColors.primary,
-                    strokeWidth: 3,
-                  ),
-                )
-              : const Icon(Icons.add, color: AppColors.primary),
-          label: const Text(AppTextsHome.newReport,
-              style: TextStyle(
-                  color: AppColors.textDark, fontWeight: FontWeight.bold)),
-          style: secondaryButtonStyle,
-        ),
-        const SizedBox(width: 16),
-        if (isStaff)
-          ElevatedButton.icon(
-            onPressed: _isCreatingEvent ? null : () => _showCreateEventDialog(context),
-            icon: _isCreatingEvent
+        SizedBox(
+          width: useVerticalLayout ? double.infinity : null,
+          child: ElevatedButton.icon(
+            onPressed: _isCreatingReport ? null : () => _showCreateReportDialog(context),
+            icon: _isCreatingReport
                 ? Container(
                     width: 24,
                     height: 24,
@@ -187,10 +175,33 @@ class _HomeActionButtonsState extends State<HomeActionButtons> {
                     ),
                   )
                 : const Icon(Icons.add, color: AppColors.primary),
-            label: const Text(AppTextsHome.addEvent,
+            label: const Text(AppTextsHome.newReport,
                 style: TextStyle(
                     color: AppColors.textDark, fontWeight: FontWeight.bold)),
             style: secondaryButtonStyle,
+          ),
+        ),
+        if (isStaff)
+          SizedBox(
+            width: useVerticalLayout ? double.infinity : null,
+            child: ElevatedButton.icon(
+              onPressed: _isCreatingEvent ? null : () => _showCreateEventDialog(context),
+              icon: _isCreatingEvent
+                  ? Container(
+                      width: 24,
+                      height: 24,
+                      padding: const EdgeInsets.all(2.0),
+                      child: const CircularProgressIndicator(
+                        color: AppColors.primary,
+                        strokeWidth: 3,
+                      ),
+                    )
+                  : const Icon(Icons.add, color: AppColors.primary),
+              label: const Text(AppTextsHome.addEvent,
+                  style: TextStyle(
+                      color: AppColors.textDark, fontWeight: FontWeight.bold)),
+              style: secondaryButtonStyle,
+            ),
           ),
       ],
     );

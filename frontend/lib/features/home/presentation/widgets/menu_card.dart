@@ -33,9 +33,14 @@ class MenuCard extends StatelessWidget {
         borderRadius: borderRadius,
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(red: 0, green: 0, blue: 0, alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4)
+            color: Colors.black.withValues(
+              red: 0,
+              green: 0,
+              blue: 0,
+              alpha: 0.05,
+            ),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -44,21 +49,40 @@ class MenuCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: borderRadius,
-          side: BorderSide(color: Colors.white.withValues(red: 1, green: 1, blue: 1, alpha: 0.1), width: 1),
+          side: BorderSide(
+            color: Colors.white.withValues(
+              red: 1,
+              green: 1,
+              blue: 1,
+              alpha: 0.1,
+            ),
+            width: 1,
+          ),
         ),
         child: InkWell(
-          splashColor: Colors.white.withValues(red: 1, green: 1, blue: 1, alpha: 0.2),
-          highlightColor: Colors.white.withValues(red: 1, green: 1, blue: 1, alpha: 0.1),
+          splashColor: Colors.white.withValues(
+            red: 1,
+            green: 1,
+            blue: 1,
+            alpha: 0.2,
+          ),
+          highlightColor: Colors.white.withValues(
+            red: 1,
+            green: 1,
+            blue: 1,
+            alpha: 0.1,
+          ),
           onTap: onTap,
-          child: style == MenuCardStyle.large ? _buildLargeCard() : _buildCompactCard(),
+          child: style == MenuCardStyle.large
+              ? _buildLargeCard()
+              : _buildCompactCard(),
         ),
       ),
     );
   }
 
   Widget _buildLargeCard() {
-    return SizedBox(
-      width: 220,
+    return SizedBox.expand(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -69,9 +93,19 @@ class MenuCard extends StatelessWidget {
               children: [
                 Icon(icon, color: AppColors.secondary, size: 48),
                 const SizedBox(height: 16),
-                Text(
-                  title,
-                  style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -79,7 +113,12 @@ class MenuCard extends StatelessWidget {
           Expanded(
             flex: 4,
             child: Container(
-              color: Colors.white.withValues(red: 1, green: 1, blue: 1, alpha: 0.2),
+              color: Colors.white.withValues(
+                red: 1,
+                green: 1,
+                blue: 1,
+                alpha: 0.2,
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: Text(
@@ -96,8 +135,7 @@ class MenuCard extends StatelessWidget {
   }
 
   Widget _buildCompactCard() {
-    return SizedBox(
-      width: 160,
+    return SizedBox.expand(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Row(
@@ -111,7 +149,11 @@ class MenuCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
