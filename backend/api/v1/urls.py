@@ -9,6 +9,7 @@ from api.v1.viewsets.report_viewset import ReportViewSet
 from api.v1.viewsets.survey_viewset import SurveyViewSet, SurveyOptionViewSet
 from api.v1.viewsets.vote_viewset import VoteViewSet
 from api.v1.viewsets.event_viewset import EventViewSet, ThemeEventViewSet
+from api.v1.viewsets.dashboard_viewset import DashboardViewSet
 
 # Import auth views
 from api.v1.auth import LoginView
@@ -25,6 +26,7 @@ router.register(r"survey-options", SurveyOptionViewSet, basename="survey-option"
 router.register(r"votes", VoteViewSet, basename="vote")
 router.register(r"events", EventViewSet, basename="event")
 router.register(r"event-themes", ThemeEventViewSet, basename="event-theme")
+router.register(r"dashboard", DashboardViewSet, basename="dashboard")
 
 # custom endpoints (not part of router)
 from api.v1.viewsets.useful_info_view import UsefulInfoView

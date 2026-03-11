@@ -12,7 +12,7 @@ class SurveysPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const BaseFeaturePage(
       icon: Icons.how_to_vote,
-      title: AppTextsHome.surveys,
+      title: AppTextsHome.agendaTitle,
       description: AppTextsFeatures.surveysDescription,
     );
   }

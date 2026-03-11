@@ -62,7 +62,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
         ? AgendaTexts.editEvent
         : AgendaTexts.createEvent;
     final actionLabel =
-        _isEditing ? AppTextsGeneral.save : AppTextsGeneral.validate;
+        _isEditing ? AppTextsGeneral.save : AppTextsGeneral.create;
 
     return StyledDialog(
       title: title,

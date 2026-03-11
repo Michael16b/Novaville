@@ -68,7 +68,7 @@ class AgendaTexts {
   static const descending = 'Décroissant';
 
   /// Cards per row label.
-  static const cardsPerRow = 'Cartes par ligne';
+  static const cardsPerRow = 'Évènements par ligne';
 
   /// Automatic option.
   static const auto = 'Automatique';

@@ -45,4 +45,8 @@ class AppColors {
   // External services
   /// Google brand blue color.
   static const Color googleBlue = Color(0xFF4285F4);
+
+  // HomePage specific colors
+  static const Color textDark = Color(0xFF2A3B32);
+  static const Color textGrey = Color(0xFF7A8B82);
 }

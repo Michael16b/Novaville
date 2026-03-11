@@ -1,232 +1,178 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/features/users/data/models/user.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_home.dart';
 import 'package:frontend/features/home/presentation/pages/home_page.dart';
 import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
-import 'package:go_router/go_router.dart';
+import 'package:frontend/features/home/data/dashboard_repository.dart';
+import 'package:frontend/features/home/domain/dashboard_stats.dart';
+import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
+import 'package:frontend/features/reports/application/bloc/reports_bloc/reports_bloc.dart';
+import 'package:frontend/features/agenda/application/bloc/agenda_bloc/agenda_bloc.dart';
+
+// --- 1. MOCKS ET FAKES ---
+class FakeDashboardRepository implements DashboardRepository {
+  @override
+  Future<DashboardStats> getDashboardStats() async {
+    return DashboardStats(
+      totalCitizens: 1200,
+      reportsThisMonth: 45,
+      pollParticipationRate: 68,
+      pendingReports: 12,
+      activeSurveys: 3,
+      eventsThisWeek: 2,
+      unresolvedReportsRoads: 5,
+      unresolvedReportsCleanliness: 4,
+      unresolvedReportsLighting: 3,
+    );
+  }
+}
+
+class MockAuthBloc extends Mock implements AuthBloc {}
+class MockReportsBloc extends Mock implements ReportsBloc {}
+class MockAgendaBloc extends Mock implements AgendaBloc {}
+
+class FakeAuthState extends Fake implements AuthState {
+  @override
+  final User? user = null;
+}
+class FakeReportsState extends Fake implements ReportsState {}
+class FakeAgendaState extends Fake implements AgendaState {}
 
 void main() {
   group('HomePage', () {
-    // Helper to set screen size for desktop-like view to ensure all grid items are visible
-    void setDesktopSize(WidgetTester tester) {
-      tester.view.physicalSize = const Size(1440, 3000);
+    late FakeDashboardRepository fakeRepository;
+    late MockAuthBloc mockAuthBloc;
+    late MockReportsBloc mockReportsBloc;
+    late MockAgendaBloc mockAgendaBloc;
+
+    setUpAll(() {
+      registerFallbackValue(FakeAuthState());
+      registerFallbackValue(FakeReportsState());
+      registerFallbackValue(FakeAgendaState());
+    });
+
+    setUp(() {
+      fakeRepository = FakeDashboardRepository();
+      mockAuthBloc = MockAuthBloc();
+      mockReportsBloc = MockReportsBloc();
+      mockAgendaBloc = MockAgendaBloc();
+
+      when(() => mockAuthBloc.state).thenReturn(FakeAuthState());
+      when(() => mockAuthBloc.stream).thenAnswer((_) => const Stream.empty());
+
+      when(() => mockReportsBloc.state).thenReturn(FakeReportsState());
+      when(() => mockReportsBloc.stream).thenAnswer((_) => const Stream.empty());
+
+      when(() => mockAgendaBloc.state).thenReturn(FakeAgendaState());
+      when(() => mockAgendaBloc.stream).thenAnswer((_) => const Stream.empty());
+    });
+
+    void setLargeScreen(WidgetTester tester) {
+      tester.view.physicalSize = const Size(3840, 2160);
       tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+    }
+
+    Widget createTestableWidget({required Widget child}) {
+      return MaterialApp(
+        home: Scaffold(
+          body: MultiBlocProvider(
+            providers: [
+              BlocProvider<AuthBloc>.value(value: mockAuthBloc),
+              BlocProvider<ReportsBloc>.value(value: mockReportsBloc),
+              BlocProvider<AgendaBloc>.value(value: mockAgendaBloc),
+            ],
+            child: child,
+          ),
+        ),
+      );
     }
 
     testWidgets('renders title and subtitle', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
+      setLargeScreen(tester);
+      await tester.pumpWidget(createTestableWidget(
+        child: HomePage(dashboardRepository: fakeRepository),
+      ));
+      await tester.pumpAndSettle();
 
-      // Verify title is rendered
       expect(find.text(AppTextsHome.homeTitle), findsOneWidget);
-
-      // Verify subtitle is rendered
       expect(find.text(AppTextsHome.homeSubtitle), findsOneWidget);
     });
 
     testWidgets('title has correct styling', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
+      setLargeScreen(tester);
+      await tester.pumpWidget(createTestableWidget(
+        child: HomePage(dashboardRepository: fakeRepository),
+      ));
+      await tester.pumpAndSettle();
 
       final titleFinder = find.text(AppTextsHome.homeTitle);
       final Text titleWidget = tester.widget(titleFinder);
-
-      expect(titleWidget.textAlign, TextAlign.center);
-      expect(titleWidget.style?.fontSize, 24);
+      expect(titleWidget.style?.fontSize, 32);
       expect(titleWidget.style?.fontWeight, FontWeight.bold);
-      expect(titleWidget.style?.fontStyle, FontStyle.italic);
-      expect(titleWidget.style?.color, AppColors.primary);
+      expect(titleWidget.style?.color, AppColors.textDark);
     });
 
     testWidgets('subtitle has correct styling', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
+      setLargeScreen(tester);
+      await tester.pumpWidget(createTestableWidget(
+        child: HomePage(dashboardRepository: fakeRepository),
+      ));
+      await tester.pumpAndSettle();
 
       final subtitleFinder = find.text(AppTextsHome.homeSubtitle);
       final Text subtitleWidget = tester.widget(subtitleFinder);
-
-      expect(subtitleWidget.textAlign, TextAlign.center);
       expect(subtitleWidget.style?.fontSize, 24);
-      expect(subtitleWidget.style?.color, AppColors.secondaryText);
+      expect(subtitleWidget.style?.color, AppColors.textGrey);
     });
 
-    testWidgets('renders GridView with 6 MenuCards', (WidgetTester tester) async {
-      setDesktopSize(tester);
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
+    testWidgets('renders MenuCards for all features', (WidgetTester tester) async {
+      setLargeScreen(tester);
+      await tester.pumpWidget(createTestableWidget(
+        child: HomePage(dashboardRepository: fakeRepository),
+      ));
+      await tester.pumpAndSettle();
 
-      // Verify CustomScrollView with SliverGrid exists
-      expect(find.byType(CustomScrollView), findsOneWidget);
-      expect(find.byType(SliverGrid), findsOneWidget);
+      final reportsCard = find.widgetWithText(MenuCard, AppTextsHome.reportsTitle);
+      expect(reportsCard, findsOneWidget);
+      expect(find.descendant(of: reportsCard, matching: find.byIcon(Icons.warning_amber_rounded)), findsOneWidget);
 
-      // Verify 6 MenuCards are rendered
-      expect(find.byType(MenuCard), findsNWidgets(6));
+      final surveysCard = find.widgetWithText(MenuCard, AppTextsHome.surveysTitle);
+      expect(surveysCard, findsOneWidget);
+      expect(find.descendant(of: surveysCard, matching: find.byIcon(Icons.bar_chart)), findsOneWidget);
+
+      final agendaCard = find.widgetWithText(MenuCard, AppTextsHome.agendaTitle);
+      expect(agendaCard, findsOneWidget);
+      expect(find.descendant(of: agendaCard, matching: find.byIcon(Icons.calendar_month)), findsOneWidget);
+
+      final newsCard = find.widgetWithText(MenuCard, AppTextsHome.newsTitle);
+      expect(newsCard, findsOneWidget);
+      expect(find.descendant(of: newsCard, matching: find.byIcon(Icons.article_outlined)), findsOneWidget);
+
+      final infoCard = find.widgetWithText(MenuCard, AppTextsHome.infoTitle);
+      expect(infoCard, findsOneWidget);
+      expect(find.descendant(of: infoCard, matching: find.byIcon(Icons.info_outline)), findsOneWidget);
     });
 
-    testWidgets('GridView has correct configuration', (WidgetTester tester) async {
-      setDesktopSize(tester);
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
+    testWidgets('MenuCards are tappable and navigation works', (WidgetTester tester) async {
+      setLargeScreen(tester);
 
-      final sliverGridFinder = find.byType(SliverGrid);
-      final SliverGrid sliverGrid = tester.widget(sliverGridFinder);
-
-      // Verify SliverGrid uses SliverGridDelegateWithFixedCrossAxisCount
-      expect(sliverGrid.gridDelegate, isA<SliverGridDelegateWithFixedCrossAxisCount>());
-
-      final delegate = sliverGrid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
-      expect(delegate.crossAxisSpacing, 16);
-      expect(delegate.mainAxisSpacing, 16);
-    });
-
-    testWidgets('renders Reports menu card with correct icon and title', (WidgetTester tester) async {
-      setDesktopSize(tester);
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      expect(find.text(AppTextsHome.reports), findsOneWidget);
-      expect(find.byIcon(Icons.report_problem_outlined), findsOneWidget);
-    });
-
-    testWidgets('renders Surveys menu card with correct icon and title', (WidgetTester tester) async {
-      setDesktopSize(tester);
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      expect(find.text(AppTextsHome.surveys), findsOneWidget);
-      expect(find.byIcon(Icons.poll_outlined), findsOneWidget);
-    });
-
-    testWidgets('renders Agenda menu card with correct icon and title', (WidgetTester tester) async {
-      setDesktopSize(tester);
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      expect(find.text(AppTextsHome.agenda), findsOneWidget);
-      expect(find.byIcon(Icons.calendar_month_outlined), findsOneWidget);
-    });
-
-    testWidgets('renders News menu card with correct icon and title', (WidgetTester tester) async {
-      setDesktopSize(tester);
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      expect(find.text(AppTextsHome.news), findsOneWidget);
-      expect(find.byIcon(Icons.article_outlined), findsOneWidget);
-    });
-
-    testWidgets('renders My Account menu card with correct icon and title', (WidgetTester tester) async {
-      setDesktopSize(tester);
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      expect(find.text(AppTextsHome.myAccount), findsOneWidget);
-      expect(find.byIcon(Icons.person), findsOneWidget);
-    });
-
-    testWidgets('renders Useful Info menu card with correct icon and title', (WidgetTester tester) async {
-      setDesktopSize(tester);
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      expect(find.text(AppTextsHome.usefulInfo), findsOneWidget);
-      expect(find.byIcon(Icons.info_outlined), findsOneWidget);
-    });
-
-    testWidgets('has correct padding', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      final paddingFinder = find.byWidgetPredicate(
-        (widget) => widget is SliverPadding && widget.padding == const EdgeInsets.all(16.0),
-      );
-
-      expect(paddingFinder, findsOneWidget);
-    });
-
-    testWidgets('has correct spacing between title and subtitle', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      final columnFinder = find.descendant(
-        of: find.byType(SliverToBoxAdapter),
-        matching: find.byType(Column),
-      );
-      final Column column = tester.widget(columnFinder);
-      
-      // Children: SizedBox(24), Text(Title), SizedBox(8), Text(Subtitle), SizedBox(24)
-      expect((column.children[2] as SizedBox).height, 8);
-    });
-
-    testWidgets('has correct spacing between subtitle and grid', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HomePage(),
-        ),
-      );
-
-      final columnFinder = find.descendant(
-        of: find.byType(SliverToBoxAdapter),
-        matching: find.byType(Column),
-      );
-      final Column column = tester.widget(columnFinder);
-      
-      // Children: SizedBox(24), Text(Title), SizedBox(8), Text(Subtitle), SizedBox(24)
-      expect((column.children[4] as SizedBox).height, 24);
-    });
-
-    testWidgets('menu cards are tappable', (WidgetTester tester) async {
-      setDesktopSize(tester);
-      
       final router = GoRouter(
         initialLocation: '/',
         routes: [
           GoRoute(
             path: '/',
-            builder: (context, state) => const HomePage(),
+            builder: (context, state) => HomePage(dashboardRepository: fakeRepository),
           ),
           GoRoute(
             path: AppRoutes.reports,
@@ -238,15 +184,49 @@ void main() {
       await tester.pumpWidget(
         MaterialApp.router(
           routerConfig: router,
+          builder: (context, child) {
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider<AuthBloc>.value(value: mockAuthBloc),
+                BlocProvider<ReportsBloc>.value(value: mockReportsBloc),
+                BlocProvider<AgendaBloc>.value(value: mockAgendaBloc),
+              ],
+              child: Scaffold(body: child!),
+            );
+          },
         ),
       );
 
-      // Tap on the first MenuCard (Reports)
-      await tester.tap(find.text(AppTextsHome.reports));
       await tester.pumpAndSettle();
 
-      // Verify navigation happened
+      final cardToTap = find.text(AppTextsHome.reportsTitle);
+      await tester.ensureVisible(cardToTap);
+      await tester.tap(cardToTap);
+
+      await tester.pumpAndSettle();
+
       expect(find.text('Reports Page'), findsOneWidget);
+    });
+
+    testWidgets('HomePage layout uses Row and Column', (WidgetTester tester) async {
+      setLargeScreen(tester);
+      await tester.pumpWidget(createTestableWidget(
+        child: HomePage(dashboardRepository: fakeRepository),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(Row), findsWidgets);
+      expect(find.byType(Column), findsWidgets);
+    });
+
+    testWidgets('MenuCard widget count matches expected', (WidgetTester tester) async {
+      setLargeScreen(tester);
+      await tester.pumpWidget(createTestableWidget(
+        child: HomePage(dashboardRepository: fakeRepository),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MenuCard), findsNWidgets(5));
     });
   });
 }

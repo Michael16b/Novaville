@@ -9,6 +9,7 @@ import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/users/application/bloc/user_profil_bloc/user_profile_bloc.dart';
 import 'package:frontend/features/users/data/user_repository_factory.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
+import 'package:frontend/features/users/presentation/widgets/my_account_skeleton.dart';
 
 /// User account page with a profile edit form.
 class MyAccountPage extends StatelessWidget {
@@ -94,16 +95,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
       },
       builder: (context, state) {
         if (state.status == UserProfileStatus.loading) {
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text(AppTextsProfile.loadingProfile),
-              ],
-            ),
-          );
+          return const MyAccountSkeleton();
         }
 
         if (state.status == UserProfileStatus.failure &&
@@ -564,3 +556,4 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
     }
   }
 }
+

@@ -12,7 +12,7 @@ class NewsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const BaseFeaturePage(
       icon: Icons.newspaper,
-      title: AppTextsHome.news,
+      title: AppTextsHome.newsTitle,
       description: AppTextsFeatures.newsDescription,
     );
   }

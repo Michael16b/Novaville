@@ -87,7 +87,7 @@ class ReportTexts {
   static const descending = 'Ordre décroissant';
 
   /// Cards per row label.
-  static const cardsPerRow = 'Cartes par ligne';
+  static const cardsPerRow = 'Signalements par ligne';
 
   /// Auto option label.
   static const auto = 'Auto';
