@@ -15,6 +15,7 @@ import 'package:frontend/ui/widgets/page_header.dart';
 import '../widgets/contact_actions.dart';
 import '../widgets/opening_hours_table.dart';
 import '../widgets/social_network_actions.dart';
+import 'package:frontend/ui/widgets/breadcrumb.dart';
 
 class UsefulInfoPage extends StatefulWidget {
   const UsefulInfoPage({super.key});
@@ -139,6 +140,7 @@ class _UsefulInfoReadView extends StatelessWidget {
             title: UsefulInfoTexts.title,
             description: UsefulInfoTexts.description,
             icon: Icons.info_outline,
+            breadcrumbItems: [BreadcrumbItem(label: UsefulInfoTexts.title)],
           ),
           const SizedBox(height: 16),
           Column(
@@ -379,6 +381,10 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
               title: UsefulInfoTexts.editTitle,
               description: UsefulInfoTexts.description,
               icon: Icons.edit_outlined,
+              breadcrumbItems: [
+                BreadcrumbItem(label: UsefulInfoTexts.title),
+                BreadcrumbItem(label: UsefulInfoTexts.editTitle),
+              ],
             ),
             const SizedBox(height: 16),
             _SectionCard(
