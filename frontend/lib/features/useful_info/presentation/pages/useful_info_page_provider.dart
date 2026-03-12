@@ -8,7 +8,12 @@ import 'package:frontend/features/useful_info/data/useful_info_repository_factor
 import 'useful_info_page.dart';
 
 class UsefulInfoPageProvider extends StatelessWidget {
-  const UsefulInfoPageProvider({super.key});
+  const UsefulInfoPageProvider({
+    this.startInEditMode = false,
+    super.key,
+  });
+
+  final bool startInEditMode;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +21,7 @@ class UsefulInfoPageProvider extends StatelessWidget {
       create: (context) =>
           UsefulInfoBloc(repository: createUsefulInfoRepository())
             ..add(const UsefulInfoRequested()),
-      child: const UsefulInfoPage(),
+      child: UsefulInfoPage(startInEditMode: startInEditMode),
     );
   }
 }

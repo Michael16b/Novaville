@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_useful_info.dart';
@@ -11,6 +12,7 @@ import 'package:frontend/features/useful_info/application/bloc/useful_info_state
 import 'package:frontend/features/useful_info/domain/useful_info.dart';
 
 import 'package:frontend/ui/widgets/page_header.dart';
+import 'package:go_router/go_router.dart';
 
 import '../widgets/contact_actions.dart';
 import '../widgets/opening_hours_table.dart';
@@ -18,25 +20,23 @@ import '../widgets/social_network_actions.dart';
 import 'package:frontend/ui/widgets/breadcrumb.dart';
 
 class UsefulInfoPage extends StatefulWidget {
-  const UsefulInfoPage({super.key});
+  const UsefulInfoPage({
+    this.startInEditMode = false,
+    super.key,
+  });
+
+  final bool startInEditMode;
 
   @override
   State<UsefulInfoPage> createState() => _UsefulInfoPageState();
 }
 
 class _UsefulInfoPageState extends State<UsefulInfoPage> {
-  bool _isEditing = false;
-
-  void _startEditing() {
-    setState(() => _isEditing = true);
-  }
-
-  void _stopEditing() {
-    setState(() => _isEditing = false);
-  }
+  bool _redirectToReadAfterSave = false;
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.startInEditMode;
     final isAdmin = context.select<AuthBloc, bool>((bloc) {
       final state = bloc.state;
       if (state.status != AuthStatus.authenticated) return false;
@@ -48,7 +48,7 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
       floatingActionButton: isAdmin
           ? FloatingActionButton(
               heroTag: 'useful-info-fab',
-              tooltip: _isEditing
+              tooltip: isEditing
                   ? AppTextsGeneral.close
                   : AppTextsGeneral.edit,
               backgroundColor: AppColors.primary,
@@ -56,23 +56,22 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
               onPressed: () {
                 final blocState = context.read<UsefulInfoBloc>().state;
                 if (blocState is! UsefulInfoLoaded) return;
-
-                if (_isEditing) {
-                  _stopEditing();
-                } else {
-                  _startEditing();
-                }
+                context.go(
+                  isEditing ? AppRoutes.usefulInfo : AppRoutes.usefulInfoEdit,
+                );
               },
-              child: Icon(_isEditing ? Icons.close : Icons.edit_outlined),
+              child: Icon(isEditing ? Icons.close : Icons.edit_outlined),
             )
           : null,
       body: BlocListener<UsefulInfoBloc, UsefulInfoState>(
         listener: (context, state) {
-          if (state is UsefulInfoLoaded && _isEditing) {
-            _stopEditing();
+          if (state is UsefulInfoLoaded && _redirectToReadAfterSave) {
+            _redirectToReadAfterSave = false;
+            context.go(AppRoutes.usefulInfo);
           }
 
           if (state is UsefulInfoFailure) {
+            _redirectToReadAfterSave = false;
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
@@ -98,11 +97,12 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
 
             final info = state.info;
 
-            if (_isEditing && isAdmin) {
+            if (isEditing && isAdmin) {
               return _UsefulInfoEditView(
                 info: info,
-                onCancel: _stopEditing,
+                onCancel: () => context.go(AppRoutes.usefulInfo),
                 onSave: (updated) {
+                  _redirectToReadAfterSave = true;
                   context.read<UsefulInfoBloc>().add(UsefulInfoSaved(updated));
                 },
               );
@@ -382,7 +382,10 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
               description: UsefulInfoTexts.description,
               icon: Icons.edit_outlined,
               breadcrumbItems: [
-                BreadcrumbItem(label: UsefulInfoTexts.title),
+                BreadcrumbItem(
+                  label: UsefulInfoTexts.title,
+                  route: AppRoutes.usefulInfo,
+                ),
                 BreadcrumbItem(label: UsefulInfoTexts.editTitle),
               ],
             ),
