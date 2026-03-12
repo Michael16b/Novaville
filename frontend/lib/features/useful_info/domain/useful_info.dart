@@ -11,6 +11,10 @@ class UsefulInfo extends Equatable {
   final String? email;
   final String? website;
 
+  final String? instagram;
+  final String? facebook;
+  final String? x;
+
   final Map<String, List<String>> openingHours;
 
   final String? additionalInfo;
@@ -24,6 +28,9 @@ class UsefulInfo extends Equatable {
     this.phone,
     this.email,
     this.website,
+    this.instagram,
+    this.facebook,
+    this.x,
     required this.openingHours,
     this.additionalInfo,
   });
@@ -42,6 +49,9 @@ class UsefulInfo extends Equatable {
       phone: json['phone'] as String?,
       email: json['email'] as String?,
       website: json['website'] as String?,
+      instagram: json['instagram'] as String?,
+      facebook: json['facebook'] as String?,
+      x: json['x'] as String?,
       openingHours: rawOpeningHours.map(
         (key, value) => MapEntry(
           key,
@@ -63,6 +73,9 @@ class UsefulInfo extends Equatable {
       'phone': phone,
       'email': email,
       'website': website,
+      'instagram': instagram,
+      'facebook': facebook,
+      'x': x,
       'opening_hours': openingHours,
       'additional_info': additionalInfo,
     };
@@ -81,6 +94,9 @@ class UsefulInfo extends Equatable {
     String? phone,
     String? email,
     String? website,
+    String? instagram,
+    String? facebook,
+    String? x,
     Map<String, List<String>>? openingHours,
     String? additionalInfo,
   }) {
@@ -93,6 +109,9 @@ class UsefulInfo extends Equatable {
       phone: phone ?? this.phone,
       email: email ?? this.email,
       website: website ?? this.website,
+      instagram: instagram ?? this.instagram,
+      facebook: facebook ?? this.facebook,
+      x: x ?? this.x,
       openingHours: openingHours ?? this.openingHours,
       additionalInfo: additionalInfo ?? this.additionalInfo,
     );
@@ -112,6 +131,9 @@ class UsefulInfo extends Equatable {
     phone,
     email,
     website,
+    instagram,
+    facebook,
+    x,
     openingHours,
     additionalInfo,
   ];

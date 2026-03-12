@@ -25,7 +25,10 @@ class UsefulInfoView(APIView):
             "phone": "",
             "email": "",
             "website": "",
-            "opening_hours": {},
+            "instagram": "",
+            "facebook": "",
+            "x": "",
+            "opening_hours": {},    
         }
         obj, _ = UsefulInfo.objects.get_or_create(pk=1, defaults=defaults)
         return obj

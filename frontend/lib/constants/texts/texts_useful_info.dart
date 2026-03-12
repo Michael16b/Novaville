@@ -45,4 +45,8 @@ class UsefulInfoTexts {
 
   /// Required field error.
   static const requiredField = 'Ce champ est obligatoire';
+  static const reseaux = 'Nos réseaux :';
+  static const instagramLabel = 'Instagram :';
+  static const facebookLabel = 'Facebook :';
+  static const xLabel = 'X :';
 }
