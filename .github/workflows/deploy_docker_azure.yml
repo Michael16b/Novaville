@@ -139,7 +139,7 @@ jobs:
 
       - name: Deploy Docker Compose
         env:
-          IMAGE_TAG: ${{ github.sha }}
+          GITHUB_SHA: ${{ github.sha }}
           AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
