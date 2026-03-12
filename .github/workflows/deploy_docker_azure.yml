@@ -64,7 +64,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      
       - name: Pull Bitnami Postgres from Public ECR
         run: docker pull public.ecr.aws/bitnami/postgresql:15
 
@@ -74,7 +73,7 @@ jobs:
           login-server: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
           username: ${{ secrets.AZURE_ACR_USERNAME }}
           password: ${{ secrets.AZURE_ACR_PASSWORD }}
-          
+
       - name: Push Bitnami Postgres to ACR
         run: |
           docker tag public.ecr.aws/bitnami/postgresql:15 ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/bitnami-postgresql:15
@@ -82,16 +81,15 @@ jobs:
 
       - name: Build and push Backend
         run: |
-          docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:latest ./backend
-          docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:latest
-
+          docker build -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:${{ github.sha }} ./backend
+          docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-backend:${{ github.sha }}
 
       - name: Build and push Frontend
         run: |
           docker build \
             --build-arg ENVIRONMENT="production" \
-            -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-frontend:latest ./frontend
-          docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-frontend:latest
+            -t ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-frontend:${{ github.sha }} ./frontend
+          docker push ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/novaville-frontend:${{ github.sha }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -141,6 +139,7 @@ jobs:
 
       - name: Deploy Docker Compose
         env:
+          IMAGE_TAG: ${{ github.sha }}
           AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
@@ -153,8 +152,6 @@ jobs:
           DJANGO_RESET_ADMIN_ON_DEPLOY: ${{ secrets.DJANGO_RESET_ADMIN_ON_DEPLOY }}
         run: |
           # Substitute all ${VAR} references in the compose file with their values
-          # from the env block above. This ensures secrets reach the containers
-          # reliably without depending on Azure App Service's own variable resolution.
           envsubst < docker-compose-azure.yml > /tmp/docker-compose-resolved.yml
           az webapp config container set \
             --name NovavilleApp \
