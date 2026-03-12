@@ -25,3 +25,4 @@ migrations/
 *.swp
 
 api/Novaville/*.bru
+docs/Dockerfile
