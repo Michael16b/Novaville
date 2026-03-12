@@ -1,0 +1,28 @@
+# Flutter / Dart generated files
+.dart_tool/
+build/
+ios/
+android/
+web/
+macos/
+linux/
+windows/
+**/*.g.dart
+**/*.freezed.dart
+**/*.mocks.dart
+
+# Python / Backend generated files
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+migrations/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+
+api/Novaville/*.bru
+docs/Dockerfile

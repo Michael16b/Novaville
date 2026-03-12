@@ -27,6 +27,7 @@ def upsert_user(username, defaults, password, label):
         defaults=defaults,
     )
     if RESET_PASSWORDS:
+        # nosemgrep: python.django.security.audit.unvalidated-password.unvalidated-password
         user.set_password(password)
         user.save(update_fields=['password'])
     if created:

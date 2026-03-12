@@ -5,6 +5,12 @@ services:
     image: ${AZURE_ACR_NAME}.azurecr.io/bitnami-postgresql:15
     container_name: postgres
     user: "1001"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
     environment:
       - POSTGRESQL_DATABASE=${DB_NAME}
       - POSTGRESQL_USERNAME=${DB_USER}
@@ -25,6 +31,11 @@ services:
   backend:
     image: ${AZURE_ACR_NAME}.azurecr.io/novaville-backend:${GITHUB_SHA}
     container_name: backend
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
     environment:
       - DB_ENGINE=django.db.backends.postgresql
       - DB_HOST=postgres
@@ -56,6 +67,13 @@ services:
   frontend:
     image: ${AZURE_ACR_NAME}.azurecr.io/novaville-frontend:${GITHUB_SHA}
     container_name: frontend
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
     ports:
       - "80:8080"
     networks:
