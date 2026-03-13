@@ -35,7 +35,7 @@ class UsefulInfoTexts {
   static const websiteLabel = 'Site web :';
 
   /// Admin edit page title.
-  static const editTitle = 'Paramétrer les infos utiles';
+  static const editTitle = 'Modifier les infos utiles';
 
   /// Form field labels.
   static const nameLabel = 'Nom';
