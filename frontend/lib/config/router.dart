@@ -185,6 +185,13 @@ GoRouter buildRouter(AuthBloc authBloc) {
                 _buildPage(state: state, child: const UsefulInfoPageProvider()),
           ),
           GoRoute(
+            path: AppRoutes.usefulInfoEdit,
+            pageBuilder: (context, state) => _buildPage(
+              state: state,
+              child: const UsefulInfoPageProvider(startInEditMode: true),
+            ),
+          ),
+          GoRoute(
             path: AppRoutes.myAccount,
             pageBuilder: (context, state) =>
                 _buildPage(state: state, child: const MyAccountPage()),

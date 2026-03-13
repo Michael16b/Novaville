@@ -37,36 +37,27 @@ class PageHeader extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Stack(
-            alignment: Alignment.center,
+          if (breadcrumbItems != null) ...[
+            Breadcrumb(items: breadcrumbItems!),
+            const SizedBox(height: 12),
+          ],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              if (breadcrumbItems != null)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Breadcrumb(items: breadcrumbItems!),
+              Icon(icon, size: 32, color: AppColors.primary),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primaryText,
+                    letterSpacing: 0.3,
+                    height: 1.3,
+                  ),
                 ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    icon,
-                    size: 32,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.primaryText,
-                            letterSpacing: 0.3,
-                            height: 1.3,
-                          ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
@@ -75,9 +66,9 @@ class PageHeader extends StatelessWidget {
             description,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.secondaryText,
-                  height: 1.4,
-                ),
+              color: AppColors.secondaryText,
+              height: 1.4,
+            ),
           ),
         ],
       ),

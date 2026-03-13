@@ -10,6 +10,7 @@ class AppRoutes {
   static const String agenda = '/agenda';
   static const String news = '/news';
   static const String usefulInfo = '/useful-info';
+  static const String usefulInfoEdit = '/useful-info/edit';
   static const String myAccount = '/account';
   static const String loading = '/loading';
   static const String userAccounts = '/user-accounts';

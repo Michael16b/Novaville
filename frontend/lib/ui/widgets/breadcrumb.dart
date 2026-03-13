@@ -6,10 +6,7 @@ class BreadcrumbItem {
   final String label;
   final String? route;
 
-  const BreadcrumbItem({
-    required this.label,
-    this.route,
-  });
+  const BreadcrumbItem({required this.label, this.route});
 }
 
 /// A simple breadcrumb widget to display navigation path.
@@ -17,59 +14,77 @@ class BreadcrumbItem {
 class Breadcrumb extends StatelessWidget {
   final List<BreadcrumbItem> items;
 
-  const Breadcrumb({
-    super.key,
-    required this.items,
-  });
+  const Breadcrumb({super.key, required this.items});
 
   @override
   Widget build(BuildContext context) {
-    const homeItem = BreadcrumbItem(
-      label: 'Accueil',
-      route: '/',
-    );
+    const homeItem = BreadcrumbItem(label: 'Accueil', route: '/');
 
-    final allItems = [
-      homeItem,
-      ...items,
-    ];
+    final allItems = [homeItem, ...items];
 
-    return Row(
-      children: [
-        for (int i = 0; i < allItems.length; i++) ...[
-          _buildItem(context, allItems[i], isLast: i == allItems.length - 1),
-          if (i < allItems.length - 1)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4.0),
-              child: Icon(
-                Icons.chevron_right,
-                size: 16,
-                color: AppColors.secondaryText,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 520;
+        final itemMaxWidth = isCompact
+            ? constraints.maxWidth * 0.72
+            : constraints.maxWidth;
+
+        return Wrap(
+          spacing: 4,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            for (int i = 0; i < allItems.length; i++) ...[
+              _buildItem(
+                context,
+                allItems[i],
+                isLast: i == allItems.length - 1,
+                maxWidth: itemMaxWidth,
               ),
-            ),
-        ],
-      ],
+              if (i < allItems.length - 1)
+                const Icon(
+                  Icons.chevron_right,
+                  size: 16,
+                  color: AppColors.secondaryText,
+                ),
+            ],
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildItem(BuildContext context, BreadcrumbItem item, {required bool isLast}) {
+  Widget _buildItem(
+    BuildContext context,
+    BreadcrumbItem item, {
+    required bool isLast,
+    required double maxWidth,
+  }) {
+    final textStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
+      color: isLast ? AppColors.primaryText : AppColors.secondaryText,
+      fontWeight: isLast ? FontWeight.bold : FontWeight.w500,
+      decoration: isLast ? TextDecoration.underline : TextDecoration.none,
+    );
+
     if (isLast) {
-      return Text(
-        item.label,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.primaryText,
-          fontWeight: FontWeight.bold,
-          decoration: TextDecoration.underline,
+      return ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: Text(
+          item.label,
+          softWrap: true,
+          style: textStyle,
         ),
       );
     }
 
     return InkWell(
       onTap: item.route != null ? () => context.go(item.route!) : null,
-      child: Text(
-        item.label,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.secondaryText,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: Text(
+          item.label,
+          softWrap: true,
+          style: textStyle,
         ),
       ),
     );
