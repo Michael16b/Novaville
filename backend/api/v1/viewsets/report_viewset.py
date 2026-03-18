@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from core.db.models import Report, User, Neighborhood, RoleEnum, ReportStatusEnum
 from api.v1.serializers.report_serializer import ReportSerializer, ReportCreateSerializer
 from api.v1.filters import ReportFilter
@@ -61,13 +61,20 @@ class ReportViewSet(viewsets.ModelViewSet):
     """
     queryset = Report.objects.select_related('user', 'neighborhood').all()
     serializer_class = ReportSerializer
-    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ReportFilter
     search_fields = ['title', 'description', 'user__first_name', 'user__last_name']
     ordering_fields = ['created_at']
     ordering = ['-created_at']
     
+    def get_permissions(self):
+        """Allow public read access and authenticated writes only."""
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
+
     def get_serializer_class(self):
         """Use different serializers for different actions"""
         if self.action == 'create':

@@ -38,10 +38,6 @@ class MockAuthBloc extends Mock implements AuthBloc {}
 class MockReportsBloc extends Mock implements ReportsBloc {}
 class MockAgendaBloc extends Mock implements AgendaBloc {}
 
-class FakeAuthState extends Fake implements AuthState {
-  @override
-  final User? user = null;
-}
 class FakeReportsState extends Fake implements ReportsState {}
 class FakeAgendaState extends Fake implements AgendaState {}
 
@@ -53,7 +49,6 @@ void main() {
     late MockAgendaBloc mockAgendaBloc;
 
     setUpAll(() {
-      registerFallbackValue(FakeAuthState());
       registerFallbackValue(FakeReportsState());
       registerFallbackValue(FakeAgendaState());
     });
@@ -64,7 +59,20 @@ void main() {
       mockReportsBloc = MockReportsBloc();
       mockAgendaBloc = MockAgendaBloc();
 
-      when(() => mockAuthBloc.state).thenReturn(FakeAuthState());
+      when(
+        () => mockAuthBloc.state,
+      ).thenReturn(
+        const AuthState.authenticated(
+          user: User(
+            id: 1,
+            username: 'citizen',
+            email: 'citizen@test.com',
+            firstName: 'Test',
+            lastName: 'Citizen',
+            role: null,
+          ),
+        ),
+      );
       when(() => mockAuthBloc.stream).thenAnswer((_) => const Stream.empty());
 
       when(() => mockReportsBloc.state).thenReturn(FakeReportsState());
@@ -96,6 +104,12 @@ void main() {
           ),
         ),
       );
+    }
+
+    void setUnauthenticatedState() {
+      when(
+        () => mockAuthBloc.state,
+      ).thenReturn(const AuthState.unauthenticated());
     }
 
     testWidgets('renders title and subtitle', (WidgetTester tester) async {
@@ -227,6 +241,24 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(MenuCard), findsNWidgets(5));
+    });
+
+    testWidgets('hides bottom stats bar when user is not authenticated', (
+      WidgetTester tester,
+    ) async {
+      setLargeScreen(tester);
+      setUnauthenticatedState();
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: HomePage(dashboardRepository: fakeRepository),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining(AppTextsHome.platformUsagePrefix), findsNothing);
+      expect(find.textContaining(AppTextsHome.reportsMonthSuffix), findsNothing);
+      expect(find.textContaining(AppTextsHome.pollParticipationPrefix), findsNothing);
     });
   });
 }

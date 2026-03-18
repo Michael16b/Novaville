@@ -74,13 +74,23 @@ void main() {
     });
 
     group('when AuthStatus is unauthenticated', () {
-      test('redirects to /login when on home page', () {
+      test('keeps public home page accessible', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.unauthenticated,
             currentLocation: AppRoutes.home,
           ),
-          '${AppRoutes.login}?from=%2F',
+          isNull,
+        );
+      });
+
+      test('keeps public reports page accessible', () {
+        expect(
+          authRedirect(
+            authStatus: AuthStatus.unauthenticated,
+            currentLocation: AppRoutes.reports,
+          ),
+          isNull,
         );
       });
 
@@ -88,9 +98,9 @@ void main() {
         expect(
           authRedirect(
             authStatus: AuthStatus.unauthenticated,
-            currentLocation: AppRoutes.reports,
+            currentLocation: AppRoutes.surveys,
           ),
-          '${AppRoutes.login}?from=%2Freports',
+          '${AppRoutes.login}?from=%2Fsurveys',
         );
       });
 
@@ -120,13 +130,13 @@ void main() {
     });
 
     group('when AuthStatus is failure', () {
-      test('redirects to /login when on a protected route', () {
+      test('keeps public routes accessible', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.failure,
             currentLocation: AppRoutes.home,
           ),
-          '${AppRoutes.login}?from=%2F',
+          isNull,
         );
       });
 

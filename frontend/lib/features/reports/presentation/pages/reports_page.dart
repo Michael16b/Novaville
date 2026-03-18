@@ -90,19 +90,24 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
 
   @override
   Widget build(BuildContext context) {
+    final isAuthenticated =
+        context.read<AuthBloc>().state.status == AuthStatus.authenticated;
+
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: ExpandableFabMenu(
-        heroTag: 'reports-fab',
-        tooltip: ReportTexts.createReport,
-        actions: [
-          FabMenuAction(
-            label: ReportTexts.createReport,
-            icon: Icons.warning_amber,
-            onPressed: () => _showCreateDialog(context),
-          ),
-        ],
-      ),
+      floatingActionButton: isAuthenticated
+          ? ExpandableFabMenu(
+              heroTag: 'reports-fab',
+              tooltip: ReportTexts.createReport,
+              actions: [
+                FabMenuAction(
+                  label: ReportTexts.createReport,
+                  icon: Icons.warning_amber,
+                  onPressed: () => _showCreateDialog(context),
+                ),
+              ],
+            )
+          : null,
       body: BlocConsumer<ReportsBloc, ReportsState>(
         listener: _handleStateChanges,
         builder: (context, state) {

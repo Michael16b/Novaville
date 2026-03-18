@@ -20,6 +20,10 @@ class AppBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final isHomePage = currentLocation == AppRoutes.home;
     final isUserAccounts = currentLocation == AppRoutes.userAccounts;
+    final authState = context.watch<AuthBloc>().state;
+    final isAuthenticated = authState.status == AuthStatus.authenticated;
+    final authBloc = context.read<AuthBloc>();
+    final router = GoRouter.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -54,146 +58,138 @@ class AppBanner extends StatelessWidget {
                         onPressed: () => context.go(AppRoutes.home),
                         iconData: Icons.home_outlined,
                       ),
-                    BlocBuilder<AuthBloc, AuthState>(
-                      builder: (context, state) {
-                        final isAdmin =
-                            state.user?.role == UserRole.globalAdmin;
-                        if (!isAdmin) {
-                          return const SizedBox.shrink();
-                        }
-                        if (isUserAccounts) {
-                          return CustomElevatedFlatButton(
-                            text: AppTextsNavigation.userAccountButton,
-                            onPressed: () {},
-                            iconData: Icons.group_outlined,
-                          );
-                        }
-                        return CustomElevatedStrokedButton(
+                    if (authState.user?.role == UserRole.globalAdmin)
+                      if (isUserAccounts)
+                        CustomElevatedFlatButton(
+                          text: AppTextsNavigation.userAccountButton,
+                          onPressed: () {},
+                          iconData: Icons.group_outlined,
+                        )
+                      else
+                        CustomElevatedStrokedButton(
                           text: AppTextsNavigation.userAccountButton,
                           onPressed: () => context.go(AppRoutes.userAccounts),
                           iconData: Icons.group_outlined,
-                        );
-                      },
-                    ),
+                        ),
                   ],
                 ),
               ),
             ),
-            BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, state) {
-                final user = state.user;
-                final fullName = user != null
-                    ? '${user.firstName} ${user.lastName}'
-                    : AppTextsNavigation.myAccount;
-                final roleLabel = user?.role?.label ?? '';
-
-                return PopupMenuButton<String>(
-                  offset: const Offset(0, 45),
-                  color: Colors.white, // Force white background
-                  surfaceTintColor: Colors.white, // Prevent Material 3 tint
-                  onSelected: (value) {
-                    if (value == 'logout') {
-                      context.read<AuthBloc>().add(const AuthLogoutRequested());
-                    } else if (value == 'personal_info') {
-                      context.go(AppRoutes.myAccount);
-                    }
-                  },
-                  itemBuilder: (BuildContext context) => [
-                    PopupMenuItem<String>(
-                      value: 'personal_info',
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color:
-                                  AppColors.primary.withValues(alpha: 0.12),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.person,
-                              size: 16,
-                              color: AppColors.primary,
-                            ),
+            if (isAuthenticated)
+              PopupMenuButton<String>(
+                offset: const Offset(0, 45),
+                color: Colors.white,
+                surfaceTintColor: Colors.white,
+                onSelected: (value) {
+                  if (value == 'logout') {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      authBloc.add(const AuthLogoutRequested());
+                    });
+                  } else if (value == 'personal_info') {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      router.go(AppRoutes.myAccount);
+                    });
+                  }
+                },
+                itemBuilder: (BuildContext context) => [
+                  PopupMenuItem<String>(
+                    value: 'personal_info',
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
                           ),
-                          const SizedBox(width: 12),
-                          const Flexible(
-                            child: Text(
-                              AppTextsNavigation.personalInfo,
-                              style: TextStyle(color: AppColors.primaryText),
-                            ),
+                          child: const Icon(
+                            Icons.person,
+                            size: 16,
+                            color: AppColors.primary,
                           ),
-                        ],
+                        ),
+                        const SizedBox(width: 12),
+                        const Flexible(
+                          child: Text(
+                            AppTextsNavigation.personalInfo,
+                            style: TextStyle(color: AppColors.primaryText),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.logout,
+                            size: 16,
+                            color: AppColors.error,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Flexible(
+                          child: Text(
+                            AppTextsAuth.logout,
+                            style: TextStyle(color: AppColors.error),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.person,
+                        size: 18,
+                        color: AppColors.primary,
                       ),
                     ),
-                    PopupMenuItem<String>(
-                      value: 'logout',
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: AppColors.error.withValues(alpha: 0.12),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.logout,
-                              size: 16,
-                              color: AppColors.error,
-                            ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${authState.user!.firstName} ${authState.user!.lastName}'
+                              .trim(),
+                          style: const TextStyle(
+                            color: AppColors.primaryText,
+                            fontWeight: FontWeight.w600,
                           ),
-                          const SizedBox(width: 12),
-                          const Flexible(
-                            child: Text(
-                              AppTextsAuth.logout,
-                              style: TextStyle(color: AppColors.error),
-                            ),
+                        ),
+                        Text(
+                          authState.user?.role?.label ?? '',
+                          style: const TextStyle(
+                            color: AppColors.secondaryText,
+                            fontSize: 12,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.12),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.person,
-                          size: 18,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            fullName,
-                            style: const TextStyle(
-                              color: AppColors.primaryText,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (roleLabel.isNotEmpty)
-                            Text(
-                              roleLabel,
-                              style: const TextStyle(
-                                color: AppColors.secondaryText,
-                                fontSize: 12,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                ),
+              )
+            else
+              CustomElevatedStrokedButton(
+                text: AppTextsAuth.login,
+                onPressed: () => context.go(AppRoutes.login),
+                iconData: Icons.login,
+              ),
           ],
         ),
       ),

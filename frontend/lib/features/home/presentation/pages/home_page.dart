@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/texts/texts_home.dart';
+import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/home/data/dashboard_repository.dart';
 import 'package:frontend/features/home/data/dashboard_repository_factory.dart';
 import 'package:frontend/features/home/domain/dashboard_stats.dart';
@@ -36,6 +38,10 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isAuthenticated = context.select<AuthBloc, bool>(
+      (bloc) => bloc.state.status == AuthStatus.authenticated,
+    );
+
     return Scaffold(
       backgroundColor: AppColors.page,
       body: LayoutBuilder(
@@ -51,8 +57,10 @@ class _HomePageState extends State<HomePage> {
               _buildGreeting(context, isMobile: isMobile),
               const SizedBox(height: 48),
               _buildCardsGrid(context),
-              const SizedBox(height: 36),
-              BottomStatsBar(statsFuture: _statsFuture),
+              if (isAuthenticated) ...[
+                const SizedBox(height: 36),
+                BottomStatsBar(statsFuture: _statsFuture),
+              ],
             ],
           );
 
@@ -140,6 +148,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCardsGrid(BuildContext context) {
+    final isAuthenticated =
+        context.select<AuthBloc, bool>(
+          (bloc) => bloc.state.status == AuthStatus.authenticated,
+        );
+
     return FutureBuilder<DashboardStats>(
       future: _statsFuture,
       builder: (context, snapshot) {
@@ -153,8 +166,12 @@ class _HomePageState extends State<HomePage> {
             final isNarrow = constraints.maxWidth < 900;
             final spacing = isNarrow ? 24.0 : 32.0;
             final availableWidth = constraints.maxWidth;
-            final largeColumns = availableWidth >= 720 ? 3 : 1;
-            final compactColumns = availableWidth >= 900 ? 2 : 1;
+            final largeColumns = isAuthenticated
+                ? (availableWidth >= 720 ? 3 : 1)
+                : (availableWidth >= 900 ? 2 : 1);
+            final compactColumns = isAuthenticated
+                ? (availableWidth >= 900 ? 2 : 1)
+                : 1;
             final largeCardWidth = (availableWidth - (spacing * (largeColumns - 1))) / largeColumns;
             final compactCardWidth = compactColumns == 1
                 ? availableWidth
@@ -178,17 +195,18 @@ class _HomePageState extends State<HomePage> {
                         onTap: () => context.go(AppRoutes.reports),
                       ),
                     ),
-                    _buildLargeCardItem(
-                      width: largeCardWidth,
-                      child: MenuCard(
-                        icon: Icons.bar_chart,
-                        title: AppTextsHome.surveysTitle,
-                        subtitle: AppTextsHome.surveysSubtitle,
-                        statValue: activeSurveys,
-                        statLabel: AppTextsHome.activePolls,
-                        onTap: () => context.go(AppRoutes.surveys),
+                    if (isAuthenticated)
+                      _buildLargeCardItem(
+                        width: largeCardWidth,
+                        child: MenuCard(
+                          icon: Icons.bar_chart,
+                          title: AppTextsHome.surveysTitle,
+                          subtitle: AppTextsHome.surveysSubtitle,
+                          statValue: activeSurveys,
+                          statLabel: AppTextsHome.activePolls,
+                          onTap: () => context.go(AppRoutes.surveys),
+                        ),
                       ),
-                    ),
                     _buildLargeCardItem(
                       width: largeCardWidth,
                       child: MenuCard(
@@ -207,16 +225,17 @@ class _HomePageState extends State<HomePage> {
                   spacing: spacing,
                   runSpacing: spacing,
                   children: [
-                    _buildCompactCardItem(
-                      width: compactCardWidth,
-                      child: MenuCard(
-                        style: MenuCardStyle.compact,
-                        icon: Icons.article_outlined,
-                        title: AppTextsHome.newsTitle,
-                        subtitle: AppTextsHome.newsSubtitle,
-                        onTap: () => context.go(AppRoutes.news),
+                    if (isAuthenticated)
+                      _buildCompactCardItem(
+                        width: compactCardWidth,
+                        child: MenuCard(
+                          style: MenuCardStyle.compact,
+                          icon: Icons.article_outlined,
+                          title: AppTextsHome.newsTitle,
+                          subtitle: AppTextsHome.newsSubtitle,
+                          onTap: () => context.go(AppRoutes.news),
+                        ),
                       ),
-                    ),
                     _buildCompactCardItem(
                       width: compactCardWidth,
                       child: MenuCard(

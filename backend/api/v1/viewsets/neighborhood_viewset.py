@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from core.db.models import Neighborhood
 from api.v1.serializers.neighborhood_serializer import NeighborhoodSerializer
 from api.v1.permissions import IsAdminOrReadOnly
@@ -53,9 +53,9 @@ class NeighborhoodViewSet(viewsets.ModelViewSet):
     filterset_fields = '__all__'
     
     def get_permissions(self):
-        """Allow read for authenticated, write for admin only"""
+        """Allow public read access and keep write access restricted to admin."""
         if self.action in ['list', 'retrieve']:
-            permission_classes = [IsAuthenticated]
+            permission_classes = [AllowAny]
         else:
             permission_classes = [IsAdminOrReadOnly]
         return [permission() for permission in permission_classes]

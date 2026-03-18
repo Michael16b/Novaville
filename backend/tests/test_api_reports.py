@@ -9,6 +9,13 @@ pytestmark = pytest.mark.django_db
 
 class TestReportsAPI:
     """Tests for reports endpoints"""
+
+    def test_list_reports_public(self, api_client, report):
+        """Test anonymous users can list reports."""
+        response = api_client.get("/api/v1/reports/")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        assert len(results) >= 1
     
     def test_list_reports(self, authenticated_client, report):
         """Test listing reports"""
@@ -32,6 +39,12 @@ class TestReportsAPI:
     def test_retrieve_report(self, authenticated_client, report):
         """Test retrieving a specific report"""
         response = authenticated_client.get(f"/api/v1/reports/{report.id}/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["id"] == report.id
+
+    def test_retrieve_report_public(self, api_client, report):
+        """Test anonymous users can retrieve a specific report."""
+        response = api_client.get(f"/api/v1/reports/{report.id}/")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == report.id
     
