@@ -76,113 +76,122 @@ class AppBanner extends StatelessWidget {
               ),
             ),
             if (isAuthenticated)
-              PopupMenuButton<String>(
-                offset: const Offset(0, 45),
-                color: Colors.white,
-                surfaceTintColor: Colors.white,
-                onSelected: (value) {
-                  if (value == 'logout') {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      authBloc.add(const AuthLogoutRequested());
-                    });
-                  } else if (value == 'personal_info') {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      router.go(AppRoutes.myAccount);
-                    });
-                  }
-                },
-                itemBuilder: (BuildContext context) => [
-                  PopupMenuItem<String>(
-                    value: 'personal_info',
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.person,
-                            size: 16,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Flexible(
-                          child: Text(
-                            AppTextsNavigation.personalInfo,
-                            style: TextStyle(color: AppColors.primaryText),
-                          ),
-                        ),
-                      ],
+              MenuAnchor(
+                style: MenuStyle(
+                  backgroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+                  surfaceTintColor: const WidgetStatePropertyAll<Color>(
+                    Colors.white,
+                  ),
+                  shape: WidgetStatePropertyAll<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  PopupMenuItem<String>(
-                    value: 'logout',
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: AppColors.error.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.logout,
-                            size: 16,
-                            color: AppColors.error,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Flexible(
-                          child: Text(
-                            AppTextsAuth.logout,
-                            style: TextStyle(color: AppColors.error),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
+                ),
+                menuChildren: [
+                  MenuItemButton(
+                    onPressed: () => router.go(AppRoutes.myAccount),
+                    leadingIcon: Container(
+                      padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.person,
-                        size: 18,
+                        size: 16,
                         color: AppColors.primary,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${authState.user!.firstName} ${authState.user!.lastName}'
-                              .trim(),
-                          style: const TextStyle(
-                            color: AppColors.primaryText,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          authState.user?.role?.label ?? '',
-                          style: const TextStyle(
-                            color: AppColors.secondaryText,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
+                    child: const Text(
+                      AppTextsNavigation.personalInfo,
+                      style: TextStyle(color: AppColors.primaryText),
                     ),
-                  ],
-                ),
+                  ),
+                  MenuItemButton(
+                    onPressed: () =>
+                        authBloc.add(const AuthLogoutRequested()),
+                    leadingIcon: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.logout,
+                        size: 16,
+                        color: AppColors.error,
+                      ),
+                    ),
+                    child: const Text(
+                      AppTextsAuth.logout,
+                      style: TextStyle(color: AppColors.error),
+                    ),
+                  ),
+                ],
+                builder: (context, controller, child) {
+                  return InkWell(
+                    onTap: () {
+                      if (controller.isOpen) {
+                        controller.close();
+                      } else {
+                        controller.open();
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 6,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.person,
+                              size: 18,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${authState.user!.firstName} ${authState.user!.lastName}'
+                                    .trim(),
+                                style: const TextStyle(
+                                  color: AppColors.primaryText,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                authState.user?.role?.label ?? '',
+                                style: const TextStyle(
+                                  color: AppColors.secondaryText,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            controller.isOpen
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            color: AppColors.secondaryText,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               )
             else
               CustomElevatedStrokedButton(
