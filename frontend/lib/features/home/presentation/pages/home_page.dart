@@ -257,9 +257,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildLargeCardItem({required double width, required Widget child}) {
+    final height = width < 240
+        ? 230.0
+        : width < 320
+        ? 215.0
+        : 220.0;
+
     return SizedBox(
       width: width,
-      height: width < 320 ? 200 : 220,
+      height: height,
       child: child,
     );
   }

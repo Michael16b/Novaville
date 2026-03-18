@@ -91,10 +91,19 @@ class MenuCard extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxWidth < 320;
-        final iconSize = isCompact ? 24.0 : 28.0;
-        final titleSize = isCompact ? 18.0 : 21.0;
-        final statValueSize = isCompact ? 24.0 : 30.0;
-        final statLabelSize = isCompact ? 13.0 : 14.0;
+        final isVeryCompact = constraints.maxWidth < 240;
+        final iconSize = isVeryCompact ? 22.0 : isCompact ? 24.0 : 28.0;
+        final titleSize = isVeryCompact ? 16.0 : isCompact ? 18.0 : 21.0;
+        final statValueSize =
+            isVeryCompact ? 22.0 : isCompact ? 24.0 : 30.0;
+        final statLabelSize =
+            isVeryCompact ? 12.0 : isCompact ? 13.0 : 14.0;
+        final contentPadding = isVeryCompact
+            ? const EdgeInsets.fromLTRB(18, 18, 18, 16)
+            : const EdgeInsets.fromLTRB(22, 22, 22, 18);
+        final statPadding = isVeryCompact
+            ? const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
+            : const EdgeInsets.symmetric(horizontal: 16, vertical: 14);
 
         return Stack(
           children: [
@@ -116,7 +125,7 @@ class MenuCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
+              padding: contentPadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -134,7 +143,7 @@ class MenuCard extends StatelessWidget {
                     ),
                     child: Icon(icon, color: AppColors.secondary, size: iconSize),
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: isVeryCompact ? 12 : 18),
                   Text(
                     title,
                     maxLines: 2,
@@ -150,7 +159,7 @@ class MenuCard extends StatelessWidget {
                   if (hasStat)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: statPadding,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
