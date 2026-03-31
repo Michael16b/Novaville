@@ -9,6 +9,13 @@ pytestmark = pytest.mark.django_db
 
 class TestEventsAPI:
     """Tests for events endpoints"""
+
+    def test_list_events_public(self, api_client, event):
+        """Test anonymous users can list events."""
+        response = api_client.get("/api/v1/events/")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        assert len(results) >= 1
     
     def test_list_events(self, authenticated_client, event):
         """Test listing events"""
@@ -45,6 +52,12 @@ class TestEventsAPI:
     def test_retrieve_event(self, authenticated_client, event):
         """Test retrieving a specific event"""
         response = authenticated_client.get(f"/api/v1/events/{event.id}/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["id"] == event.id
+
+    def test_retrieve_event_public(self, api_client, event):
+        """Test anonymous users can retrieve a specific event."""
+        response = api_client.get(f"/api/v1/events/{event.id}/")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == event.id
     
@@ -152,6 +165,13 @@ class TestEventsAPI:
 
 class TestEventThemesAPI:
     """Tests for event themes endpoints"""
+
+    def test_list_themes_public(self, api_client, theme):
+        """Test anonymous users can list event themes."""
+        response = api_client.get("/api/v1/event-themes/")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        assert len(results) >= 1
     
     def test_list_themes(self, authenticated_client, theme):
         """Test listing event themes"""

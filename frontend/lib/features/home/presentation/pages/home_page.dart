@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/texts/texts_home.dart';
+import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/home/data/dashboard_repository.dart';
 import 'package:frontend/features/home/data/dashboard_repository_factory.dart';
 import 'package:frontend/features/home/domain/dashboard_stats.dart';
 import 'package:frontend/features/home/presentation/widgets/dashboard_stats_widgets.dart';
-import 'package:frontend/features/home/presentation/widgets/home_action_buttons.dart';
 import 'package:frontend/features/home/presentation/widgets/home_sidebar_panels.dart';
 import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
 import 'package:frontend/ui/assets.dart';
@@ -37,6 +38,10 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isAuthenticated = context.select<AuthBloc, bool>(
+      (bloc) => bloc.state.status == AuthStatus.authenticated,
+    );
+
     return Scaffold(
       backgroundColor: AppColors.page,
       body: LayoutBuilder(
@@ -50,14 +55,12 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildGreeting(context, isMobile: isMobile),
-              const SizedBox(height: 24),
-              TopStatsRow(statsFuture: _statsFuture),
-              const SizedBox(height: 24),
-              const HomeActionButtons(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 48),
               _buildCardsGrid(context),
-              const SizedBox(height: 24),
-              BottomStatsBar(statsFuture: _statsFuture),
+              if (isAuthenticated) ...[
+                const SizedBox(height: 36),
+                BottomStatsBar(statsFuture: _statsFuture),
+              ],
             ],
           );
 
@@ -145,90 +148,124 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCardsGrid(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const spacing = 24.0;
-        final availableWidth = constraints.maxWidth;
-        final largeColumns = availableWidth >= 720 ? 3 : 1;
-        final compactColumns = availableWidth >= 900 ? 2 : 1;
-        final largeCardWidth = (availableWidth - (spacing * (largeColumns - 1))) / largeColumns;
-        final compactCardWidth = compactColumns == 1
-            ? availableWidth
-            : (availableWidth - spacing) / 2;
+    final isAuthenticated =
+        context.select<AuthBloc, bool>(
+          (bloc) => bloc.state.status == AuthStatus.authenticated,
+        );
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              spacing: spacing,
-              runSpacing: spacing,
+    return FutureBuilder<DashboardStats>(
+      future: _statsFuture,
+      builder: (context, snapshot) {
+        final stats = snapshot.data;
+        final pendingReports = stats?.pendingReports.toString() ?? '-';
+        final activeSurveys = stats?.activeSurveys.toString() ?? '-';
+        final eventsThisWeek = stats?.eventsThisWeek.toString() ?? '-';
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final isNarrow = constraints.maxWidth < 900;
+            final spacing = isNarrow ? 24.0 : 32.0;
+            final availableWidth = constraints.maxWidth;
+            final largeColumns = isAuthenticated
+                ? (availableWidth >= 720 ? 3 : 1)
+                : (availableWidth >= 900 ? 2 : 1);
+            final compactColumns = isAuthenticated
+                ? (availableWidth >= 900 ? 2 : 1)
+                : 1;
+            final largeCardWidth = (availableWidth - (spacing * (largeColumns - 1))) / largeColumns;
+            final compactCardWidth = compactColumns == 1
+                ? availableWidth
+                : (availableWidth - spacing) / 2;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildLargeCardItem(
-                  width: largeCardWidth,
-                  child: MenuCard(
-                    icon: Icons.warning_amber_rounded,
-                    title: AppTextsHome.reportsTitle,
-                    subtitle: AppTextsHome.reportsSubtitle,
-                    onTap: () => context.go(AppRoutes.reports),
-                  ),
+                Wrap(
+                  spacing: spacing,
+                  runSpacing: spacing,
+                  children: [
+                    _buildLargeCardItem(
+                      width: largeCardWidth,
+                      child: MenuCard(
+                        icon: Icons.warning_amber_rounded,
+                        title: AppTextsHome.reportsTitle,
+                        subtitle: AppTextsHome.reportsSubtitle,
+                        statValue: pendingReports,
+                        statLabel: AppTextsHome.pendingReports,
+                        onTap: () => context.go(AppRoutes.reports),
+                      ),
+                    ),
+                    if (isAuthenticated)
+                      _buildLargeCardItem(
+                        width: largeCardWidth,
+                        child: MenuCard(
+                          icon: Icons.bar_chart,
+                          title: AppTextsHome.surveysTitle,
+                          subtitle: AppTextsHome.surveysSubtitle,
+                          statValue: activeSurveys,
+                          statLabel: AppTextsHome.activePolls,
+                          onTap: () => context.go(AppRoutes.surveys),
+                        ),
+                      ),
+                    _buildLargeCardItem(
+                      width: largeCardWidth,
+                      child: MenuCard(
+                        icon: Icons.calendar_month,
+                        title: AppTextsHome.agendaTitle,
+                        subtitle: AppTextsHome.agendaSubtitle,
+                        statValue: eventsThisWeek,
+                        statLabel: AppTextsHome.eventsThisWeek,
+                        onTap: () => context.go(AppRoutes.agenda),
+                      ),
+                    ),
+                  ],
                 ),
-                _buildLargeCardItem(
-                  width: largeCardWidth,
-                  child: MenuCard(
-                    icon: Icons.bar_chart,
-                    title: AppTextsHome.surveysTitle,
-                    subtitle: AppTextsHome.surveysSubtitle,
-                    onTap: () => context.go(AppRoutes.surveys),
-                  ),
-                ),
-                _buildLargeCardItem(
-                  width: largeCardWidth,
-                  child: MenuCard(
-                    icon: Icons.calendar_month,
-                    title: AppTextsHome.agendaTitle,
-                    subtitle: AppTextsHome.agendaSubtitle,
-                    onTap: () => context.go(AppRoutes.agenda),
-                  ),
+                SizedBox(height: spacing),
+                Wrap(
+                  spacing: spacing,
+                  runSpacing: spacing,
+                  children: [
+                    if (isAuthenticated)
+                      _buildCompactCardItem(
+                        width: compactCardWidth,
+                        child: MenuCard(
+                          style: MenuCardStyle.compact,
+                          icon: Icons.article_outlined,
+                          title: AppTextsHome.newsTitle,
+                          subtitle: AppTextsHome.newsSubtitle,
+                          onTap: () => context.go(AppRoutes.news),
+                        ),
+                      ),
+                    _buildCompactCardItem(
+                      width: compactCardWidth,
+                      child: MenuCard(
+                        style: MenuCardStyle.compact,
+                        icon: Icons.info_outline,
+                        title: AppTextsHome.infoTitle,
+                        subtitle: AppTextsHome.infoSubtitle,
+                        onTap: () => context.go(AppRoutes.usefulInfo),
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-            const SizedBox(height: 24),
-            Wrap(
-              spacing: spacing,
-              runSpacing: spacing,
-              children: [
-                _buildCompactCardItem(
-                  width: compactCardWidth,
-                  child: MenuCard(
-                    style: MenuCardStyle.compact,
-                    icon: Icons.article_outlined,
-                    title: AppTextsHome.newsTitle,
-                    subtitle: AppTextsHome.newsSubtitle,
-                    onTap: () => context.go(AppRoutes.news),
-                  ),
-                ),
-                _buildCompactCardItem(
-                  width: compactCardWidth,
-                  child: MenuCard(
-                    style: MenuCardStyle.compact,
-                    icon: Icons.info_outline,
-                    title: AppTextsHome.infoTitle,
-                    subtitle: AppTextsHome.infoSubtitle,
-                    onTap: () => context.go(AppRoutes.usefulInfo),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            );
+          },
         );
       },
     );
   }
 
   Widget _buildLargeCardItem({required double width, required Widget child}) {
+    final height = width < 240
+        ? 230.0
+        : width < 320
+        ? 215.0
+        : 220.0;
+
     return SizedBox(
       width: width,
-      height: 240,
+      height: height,
       child: child,
     );
   }

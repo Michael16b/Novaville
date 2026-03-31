@@ -160,10 +160,10 @@ class TestEventsFlow:
 class TestPermissionsBasics:
     """Test basic permission rules"""
     
-    def test_unauthenticated_cannot_access_api(self, api_client):
-        """Test unauthenticated requests are rejected"""
+    def test_unauthenticated_can_access_public_neighborhoods_api(self, api_client):
+        """Test unauthenticated requests can access the public neighborhoods list"""
         response = api_client.get("/api/v1/neighborhoods/")
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.status_code == status.HTTP_200_OK
     
     def test_citizen_cannot_create_events(self, authenticated_client, theme):
         """Test citizens cannot create events"""

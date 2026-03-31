@@ -7,6 +7,8 @@ class MenuCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final String? statValue;
+  final String? statLabel;
   final VoidCallback onTap;
   final MenuCardStyle style;
 
@@ -15,6 +17,8 @@ class MenuCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.statValue,
+    this.statLabel,
     required this.onTap,
     this.style = MenuCardStyle.large,
   });
@@ -82,55 +86,160 @@ class MenuCard extends StatelessWidget {
   }
 
   Widget _buildLargeCard() {
-    return SizedBox.expand(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            flex: 6,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: AppColors.secondary, size: 48),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+    final hasStat = statValue != null && statLabel != null;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 320;
+        final isVeryCompact = constraints.maxWidth < 240;
+        final iconSize = isVeryCompact ? 22.0 : isCompact ? 24.0 : 28.0;
+        final titleSize = isVeryCompact ? 16.0 : isCompact ? 18.0 : 21.0;
+        final statValueSize =
+            isVeryCompact ? 22.0 : isCompact ? 24.0 : 30.0;
+        final statLabelSize =
+            isVeryCompact ? 12.0 : isCompact ? 13.0 : 14.0;
+        final contentPadding = isVeryCompact
+            ? const EdgeInsets.fromLTRB(18, 18, 18, 16)
+            : const EdgeInsets.fromLTRB(22, 22, 22, 18);
+        final statPadding = isVeryCompact
+            ? const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
+            : const EdgeInsets.symmetric(horizontal: 16, vertical: 14);
+
+        return Stack(
+          children: [
+            Positioned(
+              bottom: -28,
+              left: -16,
+              child: Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black.withValues(
+                    red: 0,
+                    green: 0,
+                    blue: 0,
+                    alpha: 0.04,
                   ),
                 ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 4,
-            child: Container(
-              color: Colors.white.withValues(
-                red: 1,
-                green: 1,
-                blue: 1,
-                alpha: 0.2,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Center(
-                child: Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                ),
               ),
             ),
-          ),
-        ],
-      ),
+            Padding(
+              padding: contentPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: isCompact ? 44 : 50,
+                    height: isCompact ? 44 : 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(
+                        red: 1,
+                        green: 1,
+                        blue: 1,
+                        alpha: 0.10,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(icon, color: AppColors.secondary, size: iconSize),
+                  ),
+                  SizedBox(height: isVeryCompact ? 12 : 18),
+                  Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: titleSize,
+                      fontWeight: FontWeight.w700,
+                      height: 1.15,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (hasStat)
+                    Container(
+                      width: double.infinity,
+                      padding: statPadding,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.white.withValues(
+                              red: 1,
+                              green: 1,
+                              blue: 1,
+                              alpha: 0.16,
+                            ),
+                            Colors.white.withValues(
+                              red: 1,
+                              green: 1,
+                              blue: 1,
+                              alpha: 0.08,
+                            ),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withValues(
+                            red: 1,
+                            green: 1,
+                            blue: 1,
+                            alpha: 0.10,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            statValue!,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: statValueSize,
+                              fontWeight: FontWeight.w800,
+                              height: 1,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              statLabel!,
+                              style: TextStyle(
+                                color: Colors.white.withValues(
+                                  red: 1,
+                                  green: 1,
+                                  blue: 1,
+                                  alpha: 0.92,
+                                ),
+                                fontSize: statLabelSize,
+                                fontWeight: FontWeight.w600,
+                                height: 1.2,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

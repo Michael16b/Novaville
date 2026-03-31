@@ -6,7 +6,7 @@ import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 void main() {
   group('authRedirect', () {
     group('when AuthStatus is checking', () {
-      test('redirects to /loading when not already there', () {
+      test('Given auth status is checking when current route is not loading then it redirects to loading', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.checking,
@@ -16,7 +16,7 @@ void main() {
         );
       });
 
-      test('stays on /loading (returns null) when already there', () {
+      test('Given auth status is checking when current route is already loading then it returns null', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.checking,
@@ -26,7 +26,7 @@ void main() {
         );
       });
 
-      test('redirects to /loading from login page', () {
+      test('Given auth status is checking when current route is login then it redirects to loading with login as source', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.checking,
@@ -37,7 +37,7 @@ void main() {
       });
 
       test(
-        'preserves existing from query value when redirecting to /loading',
+        'Given auth status is checking when a from location is provided then it preserves that destination in the loading redirect',
         () {
           expect(
             authRedirect(
@@ -52,7 +52,7 @@ void main() {
     });
 
     group('when AuthStatus is authenticating', () {
-      test('redirects to /loading when not already there', () {
+      test('Given auth status is authenticating when current route is not loading then it redirects to loading', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.authenticating,
@@ -62,7 +62,7 @@ void main() {
         );
       });
 
-      test('stays on /loading (returns null) when already there', () {
+      test('Given auth status is authenticating when current route is already loading then it returns null', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.authenticating,
@@ -74,28 +74,38 @@ void main() {
     });
 
     group('when AuthStatus is unauthenticated', () {
-      test('redirects to /login when on home page', () {
+      test('Given auth status is unauthenticated when current route is the public home page then it returns null', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.unauthenticated,
             currentLocation: AppRoutes.home,
           ),
-          '${AppRoutes.login}?from=%2F',
+          isNull,
         );
       });
 
-      test('redirects to /login when on a protected route', () {
+      test('Given auth status is unauthenticated when current route is the public reports page then it returns null', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.unauthenticated,
             currentLocation: AppRoutes.reports,
           ),
-          '${AppRoutes.login}?from=%2Freports',
+          isNull,
+        );
+      });
+
+      test('Given auth status is unauthenticated when current route is protected then it redirects to login', () {
+        expect(
+          authRedirect(
+            authStatus: AuthStatus.unauthenticated,
+            currentLocation: AppRoutes.surveys,
+          ),
+          '${AppRoutes.login}?from=%2Fsurveys',
         );
       });
 
       test(
-        'keeps intended destination when unauthenticated on loading page',
+        'Given auth status is unauthenticated when current route is loading and a destination exists then it redirects to login with that destination',
         () {
           expect(
             authRedirect(
@@ -108,7 +118,7 @@ void main() {
         },
       );
 
-      test('stays on /login (returns null) when already on login page', () {
+      test('Given auth status is unauthenticated when current route is already login then it returns null', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.unauthenticated,
@@ -120,17 +130,17 @@ void main() {
     });
 
     group('when AuthStatus is failure', () {
-      test('redirects to /login when on a protected route', () {
+      test('Given auth status is failure when current route is public then it returns null', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.failure,
             currentLocation: AppRoutes.home,
           ),
-          '${AppRoutes.login}?from=%2F',
+          isNull,
         );
       });
 
-      test('stays on /login (returns null) when already on login page', () {
+      test('Given auth status is failure when current route is already login then it returns null', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.failure,
@@ -142,7 +152,7 @@ void main() {
     });
 
     group('when AuthStatus is authenticated', () {
-      test('returns null when on home page (no redirect needed)', () {
+      test('Given auth status is authenticated when current route is home then it returns null', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.authenticated,
@@ -152,7 +162,7 @@ void main() {
         );
       });
 
-      test('returns null when on a protected route', () {
+      test('Given auth status is authenticated when current route is already allowed then it returns null', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.authenticated,
@@ -162,7 +172,7 @@ void main() {
         );
       });
 
-      test('redirects to /home when on login page', () {
+      test('Given auth status is authenticated when current route is login then it redirects to home', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.authenticated,
@@ -172,7 +182,7 @@ void main() {
         );
       });
 
-      test('redirects to /home when on loading page', () {
+      test('Given auth status is authenticated when current route is loading without a destination then it redirects to home', () {
         expect(
           authRedirect(
             authStatus: AuthStatus.authenticated,
@@ -183,7 +193,7 @@ void main() {
       });
 
       test(
-        'returns intended destination when authenticated on loading page',
+        'Given auth status is authenticated when current route is loading with a destination then it returns that destination',
         () {
           expect(
             authRedirect(

@@ -38,12 +38,19 @@ String? authRedirect({
   required String currentLocation,
   String? fromLocation,
 }) {
+  const publicRoutes = <String>{
+    AppRoutes.home,
+    AppRoutes.reports,
+    AppRoutes.agenda,
+    AppRoutes.usefulInfo,
+  };
   final normalizedLocation =
       currentLocation.endsWith('/') && currentLocation.length > 1
       ? currentLocation.substring(0, currentLocation.length - 1)
       : currentLocation;
   final isOnLoading = currentLocation == AppRoutes.loading;
   final isLoggingIn = currentLocation == AppRoutes.login;
+  final isPublicRoute = publicRoutes.contains(normalizedLocation);
   final isCredentialsShare =
       normalizedLocation == AppRoutes.credentialsShare ||
       normalizedLocation.startsWith('${AppRoutes.credentialsShare}/');
@@ -62,10 +69,7 @@ String? authRedirect({
   final isAuthenticated = authStatus == AuthStatus.authenticated;
   // Not authenticated → send to login (and away from loading).
   if (!isAuthenticated) {
-    if (isCredentialsShare) {
-      return null;
-    }
-    if (isLoggingIn) {
+    if (isCredentialsShare || isLoggingIn || isPublicRoute) {
       return null;
     }
     final encodedFrom = Uri.encodeQueryComponent(intendedLocation);

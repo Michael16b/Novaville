@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from core.db.models import Report, Survey, Event, User, Vote, ReportStatusEnum, ProblemTypeEnum, RoleEnum
 from django.utils import timezone
 from datetime import timedelta
@@ -19,7 +19,7 @@ class DashboardViewSet(viewsets.ViewSet):
     """
     A simple ViewSet for providing dashboard statistics.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     @action(detail=False, methods=['get'])
     def stats(self, request):
@@ -76,7 +76,7 @@ class DashboardViewSet(viewsets.ViewSet):
         active_surveys = Survey.objects.filter(start_date__lte=now, end_date__gte=now)
         active_surveys_total = active_surveys.count()
         
-        if active_surveys_total > 0:
+        if active_surveys_total > 0 and user.is_authenticated:
             # Subquery to check if the user has voted on a survey
             user_voted_subquery = Vote.objects.filter(
                 survey=OuterRef('pk'),

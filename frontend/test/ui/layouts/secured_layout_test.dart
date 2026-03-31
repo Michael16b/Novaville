@@ -8,6 +8,7 @@ import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/ui/layouts/secured_layout.dart';
 import 'package:frontend/ui/widgets/app_banner.dart';
+import 'package:go_router/go_router.dart';
 
 class _MockAuthRepository implements IAuthRepository {
   @override
@@ -46,39 +47,75 @@ void main() {
       authBloc.close();
     });
 
-    Widget createWidgetUnderTest({Widget? child}) {
-      return MaterialApp(
-        home: BlocProvider<AuthBloc>.value(
-          value: authBloc,
-          child: SecuredLayout(
-            currentLocation: '/test',
-            child: child ?? const Center(child: Text('Test Child')),
+    Future<void> createWidgetUnderTest(
+      WidgetTester tester, {
+      Widget? child,
+    }) async {
+      authBloc.add(const AuthStarted());
+
+      final router = GoRouter(
+        initialLocation: '/test',
+        routes: [
+          GoRoute(
+            path: '/test',
+            builder: (context, state) => BlocProvider<AuthBloc>.value(
+              value: authBloc,
+              child: SecuredLayout(
+                currentLocation: '/test',
+                child: child ?? const Center(child: Text('Test Child')),
+              ),
+            ),
           ),
-        ),
+          GoRoute(
+            path: '/login',
+            builder: (context, state) => const SizedBox.shrink(),
+          ),
+          GoRoute(
+            path: '/me',
+            builder: (context, state) => const SizedBox.shrink(),
+          ),
+          GoRoute(
+            path: '/users',
+            builder: (context, state) => const SizedBox.shrink(),
+          ),
+          GoRoute(
+            path: '/',
+            builder: (context, state) => const SizedBox.shrink(),
+          ),
+        ],
       );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
     }
 
-    testWidgets('renders child widget', (WidgetTester tester) async {
+    testWidgets('Given a secured layout when it is rendered then it displays the child widget', (WidgetTester tester) async {
       const testText = 'Test Child Content';
-      await tester.pumpWidget(
-        createWidgetUnderTest(
-          child: const Center(child: Text(testText)),
-        ),
+
+      // Given / When
+      await createWidgetUnderTest(
+        tester,
+        child: const Center(child: Text(testText)),
       );
 
+      // Then
       expect(find.text(testText), findsOneWidget);
     });
 
-    testWidgets('contains Scaffold as root widget', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+    testWidgets('Given a secured layout when it is rendered then it contains a Scaffold root', (WidgetTester tester) async {
+      // Given / When
+      await createWidgetUnderTest(tester);
 
+      // Then
       final scaffoldFinder = find.byType(Scaffold);
       expect(scaffoldFinder, findsAtLeastNWidgets(1));
     });
 
-    testWidgets('has correct background color', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+    testWidgets('Given a secured layout when it is rendered then the Scaffold uses the page background color', (WidgetTester tester) async {
+      // Given / When
+      await createWidgetUnderTest(tester);
 
+      // Then
       final scaffold = tester.widget<Scaffold>(
         find.byType(Scaffold).first,
       );
@@ -86,15 +123,19 @@ void main() {
       expect(scaffold.backgroundColor, AppColors.page);
     });
 
-    testWidgets('renders AppBanner in AppBar', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+    testWidgets('Given a secured layout when it is rendered then it shows the app banner in the app bar', (WidgetTester tester) async {
+      // Given / When
+      await createWidgetUnderTest(tester);
 
+      // Then
       expect(find.byType(AppBanner), findsOneWidget);
     });
 
-    testWidgets('AppBar has correct preferred size', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+    testWidgets('Given a secured layout when it is rendered then the app bar uses the expected preferred size', (WidgetTester tester) async {
+      // Given / When
+      await createWidgetUnderTest(tester);
 
+      // Then
       final preferredSizeFinder = find.byWidgetPredicate(
         (widget) =>
             widget is PreferredSize &&
@@ -104,9 +145,11 @@ void main() {
       expect(preferredSizeFinder, findsOneWidget);
     });
 
-    testWidgets('AppBar has Material wrapper with elevation', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+    testWidgets('Given a secured layout when it is rendered then the app bar material wrapper has elevation', (WidgetTester tester) async {
+      // Given / When
+      await createWidgetUnderTest(tester);
 
+      // Then
       final materialFinder = find.byWidgetPredicate(
         (widget) =>
             widget is Material &&
@@ -117,51 +160,54 @@ void main() {
       expect(materialFinder, findsOneWidget);
     });
 
-    testWidgets('child is rendered in body', (WidgetTester tester) async {
+    testWidgets('Given a secured layout when it is rendered then the child is placed in the body', (WidgetTester tester) async {
       const childKey = Key('test-child');
-      await tester.pumpWidget(
-        createWidgetUnderTest(
-          child: const SizedBox(key: childKey),
-        ),
+
+      // Given / When
+      await createWidgetUnderTest(
+        tester,
+        child: const SizedBox(key: childKey),
       );
 
+      // Then
       expect(find.byKey(childKey), findsOneWidget);
     });
 
-    testWidgets('layout structure is correct', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+    testWidgets('Given a secured layout when it is rendered then its layout structure is correct', (WidgetTester tester) async {
+      // Given / When
+      await createWidgetUnderTest(tester);
 
-      // Verify Scaffold exists
+      // Then
       expect(find.byType(Scaffold), findsAtLeastNWidgets(1));
 
-      // Verify AppBanner is in the AppBar
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
       expect(scaffold.appBar, isNotNull);
 
-      // Verify child is in the body
       expect(find.text('Test Child'), findsOneWidget);
     });
 
-    testWidgets('works with different child widgets', (WidgetTester tester) async {
-      // Test with ListView
-      await tester.pumpWidget(
-        createWidgetUnderTest(
-          child: ListView(
-            children: const [
-              ListTile(title: Text('Item 1')),
-              ListTile(title: Text('Item 2')),
-            ],
-          ),
+    testWidgets('Given a secured layout when it receives a list view child then it renders that child content', (WidgetTester tester) async {
+      // Given / When
+      await createWidgetUnderTest(
+        tester,
+        child: ListView(
+          children: const [
+            ListTile(title: Text('Item 1')),
+            ListTile(title: Text('Item 2')),
+          ],
         ),
       );
 
+      // Then
       expect(find.text('Item 1'), findsOneWidget);
       expect(find.text('Item 2'), findsOneWidget);
     });
 
-    testWidgets('banner elevation shadow is configured correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
+    testWidgets('Given a secured layout when it is rendered then the banner material uses the expected shadow color', (WidgetTester tester) async {
+      // Given / When
+      await createWidgetUnderTest(tester);
 
+      // Then
       final materialFinder = find.byWidgetPredicate(
         (widget) =>
             widget is Material &&
@@ -171,29 +217,21 @@ void main() {
       expect(materialFinder, findsOneWidget);
     });
 
-    testWidgets('preserves child widget state', (WidgetTester tester) async {
-      // Create a stateful child widget
+    testWidgets('Given a secured layout when a stateful child updates then the child state is preserved', (WidgetTester tester) async {
       final key = GlobalKey<_TestStatefulWidgetState>();
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<AuthBloc>.value(
-            value: authBloc,
-            child: SecuredLayout(
-              currentLocation: '/test',
-              child: _TestStatefulWidget(key: key),
-            ),
-          ),
-        ),
+
+      // Given / When
+      await createWidgetUnderTest(
+        tester,
+        child: _TestStatefulWidget(key: key),
       );
 
-      // Verify initial state
+      // Then
       expect(find.text('Counter: 0'), findsOneWidget);
 
-      // Interact with the child widget
       await tester.tap(find.widgetWithText(ElevatedButton, 'Increment'));
       await tester.pump();
 
-      // Verify state is preserved
       expect(find.text('Counter: 1'), findsOneWidget);
     });
   });

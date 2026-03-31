@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from core.db.models import Event, ThemeEvent, RoleEnum
 from api.v1.serializers.event_serializer import (
     EventSerializer,
@@ -69,9 +69,9 @@ class EventViewSet(viewsets.ModelViewSet):
     ordering = ['start_date']
     
     def get_permissions(self):
-        """Allow read for authenticated, write for staff only"""
+        """Allow public read access and keep write access restricted to staff."""
         if self.action in ['list', 'retrieve', 'upcoming']:
-            permission_classes = [IsAuthenticated]
+            permission_classes = [AllowAny]
         else:
             permission_classes = [IsStaffOrReadOnly]
         return [permission() for permission in permission_classes]
@@ -134,9 +134,9 @@ class ThemeEventViewSet(viewsets.ModelViewSet):
     filterset_fields = '__all__'
     
     def get_permissions(self):
-        """Allow read for authenticated, write for admin only"""
+        """Allow public read access and keep write access restricted to admin."""
         if self.action in ['list', 'retrieve']:
-            permission_classes = [IsAuthenticated]
+            permission_classes = [AllowAny]
         else:
             permission_classes = [IsAdminOrReadOnly]
         return [permission() for permission in permission_classes]

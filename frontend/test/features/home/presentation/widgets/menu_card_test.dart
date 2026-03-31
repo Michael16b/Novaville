@@ -5,9 +5,10 @@ import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
 
 void main() {
   group('MenuCard', () {
-    testWidgets('renders icon, title and is tappable', (WidgetTester tester) async {
+    testWidgets('Given a menu card when it is rendered and tapped then it shows its content and triggers onTap', (WidgetTester tester) async {
       bool tapped = false;
 
+      // Given / When
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -21,6 +22,7 @@ void main() {
         ),
       );
 
+      // Then
       expect(find.byIcon(Icons.report_problem_outlined), findsOneWidget);
       expect(find.text('Test Title'), findsOneWidget);
       expect(find.text('Test Subtitle'), findsOneWidget);
@@ -31,7 +33,8 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('has correct Material and Container styling', (WidgetTester tester) async {
+    testWidgets('Given a menu card when it is rendered then it uses the expected material and container styling', (WidgetTester tester) async {
+      // Given / When
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -45,6 +48,7 @@ void main() {
         ),
       );
 
+      // Then
       final materialFinder = find.byWidgetPredicate(
             (widget) => widget is Material && widget.color == AppColors.primary,
       );
@@ -68,7 +72,8 @@ void main() {
       expect(decoration.borderRadius, isNotNull);
     });
 
-    testWidgets('icon has correct size and color', (WidgetTester tester) async {
+    testWidgets('Given a large menu card when it is rendered then the icon uses the expected size and color', (WidgetTester tester) async {
+      // Given / When
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -82,13 +87,15 @@ void main() {
         ),
       );
 
+      // Then
       final iconFinder = find.byIcon(Icons.report_problem_outlined);
       final Icon icon = tester.widget(iconFinder);
-      expect(icon.size, 48);
+      expect(icon.size, 28);
       expect(icon.color, AppColors.secondary);
     });
 
-    testWidgets('title has correct text style', (WidgetTester tester) async {
+    testWidgets('Given a large menu card when it is rendered then the title uses the expected text style', (WidgetTester tester) async {
+      // Given / When
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -102,14 +109,16 @@ void main() {
         ),
       );
 
+      // Then
       final textFinder = find.text('Test Title');
       final Text text = tester.widget(textFinder);
-      expect(text.style?.fontSize, 22);
-      expect(text.style?.fontWeight, FontWeight.bold);
+      expect(text.style?.fontSize, 21);
+      expect(text.style?.fontWeight, FontWeight.w700);
       expect(text.style?.color, Colors.white);
     });
 
-    testWidgets('subtitle has correct text style', (WidgetTester tester) async {
+    testWidgets('Given a large menu card when it is rendered then the subtitle uses the expected text style', (WidgetTester tester) async {
+      // Given / When
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -123,13 +132,15 @@ void main() {
         ),
       );
 
+      // Then
       final textFinder = find.text('Test Subtitle');
       final Text text = tester.widget(textFinder);
       expect(text.style?.fontSize, 14);
-      expect(text.style?.color, Colors.white);
+      expect(text.style?.color, Colors.white70);
     });
 
-    testWidgets('InkWell is present', (WidgetTester tester) async {
+    testWidgets('Given a menu card when it is rendered then it contains an InkWell', (WidgetTester tester) async {
+      // Given / When
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -142,10 +153,13 @@ void main() {
           ),
         ),
       );
+
+      // Then
       expect(find.byType(InkWell), findsOneWidget);
     });
 
-    testWidgets('has correct layout structure', (WidgetTester tester) async {
+    testWidgets('Given a large menu card when it is rendered then it uses the expected layout structure', (WidgetTester tester) async {
+      // Given / When
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -159,12 +173,20 @@ void main() {
         ),
       );
 
+      // Then
       final columnFinder = find.byWidgetPredicate(
-            (widget) => widget is Column && widget.mainAxisAlignment == MainAxisAlignment.center,
+            (widget) => widget is Column &&
+                widget.crossAxisAlignment == CrossAxisAlignment.start,
       );
       expect(columnFinder, findsOneWidget);
 
-      expect(find.byWidgetPredicate((widget) => widget is SizedBox && widget.height == 16), findsOneWidget);
+      expect(find.byType(Spacer), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (widget) => widget is SizedBox && widget.height == 18,
+        ),
+        findsOneWidget,
+      );
     });
   });
 }
