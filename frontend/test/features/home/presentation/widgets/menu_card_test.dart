@@ -84,7 +84,7 @@ void main() {
 
       final iconFinder = find.byIcon(Icons.report_problem_outlined);
       final Icon icon = tester.widget(iconFinder);
-      expect(icon.size, 48);
+      expect(icon.size, 28);
       expect(icon.color, AppColors.secondary);
     });
 
@@ -104,8 +104,8 @@ void main() {
 
       final textFinder = find.text('Test Title');
       final Text text = tester.widget(textFinder);
-      expect(text.style?.fontSize, 22);
-      expect(text.style?.fontWeight, FontWeight.bold);
+      expect(text.style?.fontSize, 21);
+      expect(text.style?.fontWeight, FontWeight.w700);
       expect(text.style?.color, Colors.white);
     });
 
@@ -126,7 +126,7 @@ void main() {
       final textFinder = find.text('Test Subtitle');
       final Text text = tester.widget(textFinder);
       expect(text.style?.fontSize, 14);
-      expect(text.style?.color, Colors.white);
+      expect(text.style?.color, Colors.white70);
     });
 
     testWidgets('InkWell is present', (WidgetTester tester) async {
@@ -160,11 +160,18 @@ void main() {
       );
 
       final columnFinder = find.byWidgetPredicate(
-            (widget) => widget is Column && widget.mainAxisAlignment == MainAxisAlignment.center,
+            (widget) => widget is Column &&
+                widget.crossAxisAlignment == CrossAxisAlignment.start,
       );
       expect(columnFinder, findsOneWidget);
 
-      expect(find.byWidgetPredicate((widget) => widget is SizedBox && widget.height == 16), findsOneWidget);
+      expect(find.byType(Spacer), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (widget) => widget is SizedBox && widget.height == 18,
+        ),
+        findsOneWidget,
+      );
     });
   });
 }
