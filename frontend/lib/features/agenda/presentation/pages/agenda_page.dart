@@ -815,54 +815,79 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
             ),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                return Row(
+                final isCompact = constraints.maxWidth < 720;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Sort controls
-                    Text(
-                      AgendaTexts.sortBy,
-                      style: Theme.of(context).textTheme.titleSmall,
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          AgendaTexts.sortBy,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        ChoiceChip(
+                          label: const Text(AgendaTexts.sortByDate),
+                          selected: true,
+                          onSelected: (_) {},
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _sortAscending = !_sortAscending;
+                              _currentPage = 1;
+                            });
+                          },
+                          icon: Icon(
+                            _sortAscending
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            size: 16,
+                          ),
+                          label: Text(
+                            _sortAscending
+                                ? AgendaTexts.ascending
+                                : AgendaTexts.descending,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text(AgendaTexts.sortByDate),
-                      selected: true,
-                      onSelected: (_) {},
-                    ),
-                    const SizedBox(width: 8),
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          _sortAscending = !_sortAscending;
-                          _currentPage = 1;
-                        });
-                      },
-                      icon: Icon(
-                        _sortAscending
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        size: 16,
+                    const SizedBox(height: 8),
+                    if (isCompact)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildCardsPerRowDropdown(constraints.maxWidth),
+                          const SizedBox(height: 8),
+                          _buildPaginationControls(
+                            totalCount: totalCount,
+                            pageEventsCount: pageEvents.length,
+                            totalPages: totalPages,
+                            compact: true,
+                          ),
+                        ],
+                      )
+                    else
+                      Row(
+                        children: [
+                          const Spacer(),
+                          SizedBox(
+                            width: 220,
+                            child: _buildCardsPerRowDropdown(
+                              constraints.maxWidth,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          _buildPaginationControls(
+                            totalCount: totalCount,
+                            pageEventsCount: pageEvents.length,
+                            totalPages: totalPages,
+                          ),
+                        ],
                       ),
-                      label: Text(
-                        _sortAscending
-                            ? AgendaTexts.ascending
-                            : AgendaTexts.descending,
-                      ),
-                    ),
-                    const Spacer(),
-                    // Cards per row dropdown
-                    if (constraints.maxWidth > 600) ...[
-                      SizedBox(
-                        width: 220,
-                        child: _buildCardsPerRowDropdown(constraints.maxWidth),
-                      ),
-                      const SizedBox(width: 16),
-                    ],
-                    // Pagination controls
-                    _buildPaginationControls(
-                      totalCount: totalCount,
-                      pageEventsCount: pageEvents.length,
-                      totalPages: totalPages,
-                    ),
                   ],
                 );
               },
@@ -1003,21 +1028,26 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
     required int totalCount,
     required int pageEventsCount,
     required int totalPages,
+    bool compact = false,
   }) {
     final start = totalCount == 0 ? 0 : (_currentPage - 1) * _pageSize + 1;
     final end = (start + pageEventsCount - 1).clamp(0, totalCount);
     final hasPrevious = _currentPage > 1;
     final hasNext = _currentPage < totalPages;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
+      spacing: compact ? 8 : 16,
+      runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(
           '$start-$end ${AgendaTexts.on} $totalCount',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-        const SizedBox(width: 16),
         IconButton(
+          visualDensity: compact ? VisualDensity.compact : null,
+          constraints: compact ? const BoxConstraints() : null,
+          padding: compact ? const EdgeInsets.all(4) : null,
           icon: const Icon(Icons.chevron_left),
           tooltip: AgendaTexts.previousPage,
           onPressed: hasPrevious
@@ -1025,6 +1055,9 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
               : null,
         ),
         IconButton(
+          visualDensity: compact ? VisualDensity.compact : null,
+          constraints: compact ? const BoxConstraints() : null,
+          padding: compact ? const EdgeInsets.all(4) : null,
           icon: const Icon(Icons.chevron_right),
           tooltip: AgendaTexts.nextPage,
           onPressed: hasNext
