@@ -90,7 +90,8 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter queryset based on user role"""
         user = self.request.user
-        requested_status = self.request.query_params.get('approval_status')
+        query_params = getattr(self.request, 'query_params', self.request.GET)
+        requested_status = query_params.get('approval_status')
         if user.is_staff or user.is_superuser:
             if self.action in ['approve', 'reject', 'pending'] or requested_status:
                 return User.objects.select_related('neighborhood').all()
