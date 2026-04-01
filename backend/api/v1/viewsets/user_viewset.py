@@ -92,8 +92,9 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.request.user
         query_params = getattr(self.request, 'query_params', self.request.GET)
         requested_status = query_params.get('approval_status')
+        current_action = getattr(self, 'action', None)
         if user.is_staff or user.is_superuser:
-            if self.action in ['approve', 'reject', 'pending'] or requested_status:
+            if current_action in ['approve', 'reject', 'pending'] or requested_status:
                 return User.objects.select_related('neighborhood').all()
             return User.objects.select_related('neighborhood').filter(
                 approval_status=ApprovalStatus.APPROVED,
