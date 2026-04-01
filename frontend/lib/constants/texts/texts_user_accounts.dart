@@ -37,6 +37,15 @@ class UserTexts {
 
   static const titleDescription =
       'Gérez les comptes des utilisateurs de la plateforme';
+  static const pendingRequestsTitle = "Demandes d'inscription";
+  static const pendingRequestsDescription =
+      "Validez ou refusez les inscriptions avant d'autoriser la connexion.";
+  static const noPendingRequests = "Aucune demande en attente";
+  static const approve = 'Valider';
+  static const reject = 'Refuser';
+  static const approvedSuccess = 'La demande a été validée';
+  static const rejectedSuccess = 'La demande a été refusée';
+  static const address = 'Adresse';
   static const advancedFilters = 'Filtres avancés';
   static const filterByRole = 'Rôle';
   static const allRoles = 'Tous les rôles';

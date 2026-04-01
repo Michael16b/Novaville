@@ -9,16 +9,16 @@ from core.db.models import (
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     """Admin configuration for custom User model"""
-    list_display = ['username', 'email', 'first_name', 'last_name', 'role', 'is_staff']
-    list_filter = ['role', 'is_staff', 'is_superuser']
+    list_display = ['username', 'email', 'first_name', 'last_name', 'role', 'approval_status', 'is_staff']
+    list_filter = ['role', 'approval_status', 'is_staff', 'is_superuser']
     search_fields = ['username', 'email', 'first_name', 'last_name']
     
     fieldsets = BaseUserAdmin.fieldsets + (
-        ('Role Information', {'fields': ('role', 'neighborhood')}),
+        ('Role Information', {'fields': ('role', 'neighborhood', 'address', 'approval_status')}),
     )
     
     add_fieldsets = BaseUserAdmin.add_fieldsets + (
-        ('Role Information', {'fields': ('role', 'neighborhood')}),
+        ('Role Information', {'fields': ('role', 'neighborhood', 'address', 'approval_status')}),
     )
 
 

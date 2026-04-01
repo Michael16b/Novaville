@@ -16,10 +16,7 @@ import 'package:frontend/constants/colors.dart';
 class HomePage extends StatefulWidget {
   final DashboardRepository? dashboardRepository;
 
-  const HomePage({
-    super.key,
-    this.dashboardRepository,
-  });
+  const HomePage({super.key, this.dashboardRepository});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -32,7 +29,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _dashboardRepository = widget.dashboardRepository ?? createDashboardRepository();
+    _dashboardRepository =
+        widget.dashboardRepository ?? createDashboardRepository();
     _statsFuture = _dashboardRepository.getDashboardStats();
   }
 
@@ -49,7 +47,11 @@ class _HomePageState extends State<HomePage> {
           final width = constraints.maxWidth;
           final isMobile = width < 768;
           final showSidebarBelow = width < 1100;
-          final horizontalPadding = isMobile ? 16.0 : width < 1280 ? 24.0 : 32.0;
+          final horizontalPadding = isMobile
+              ? 16.0
+              : width < 1280
+              ? 24.0
+              : 32.0;
 
           final mainColumn = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,10 +150,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCardsGrid(BuildContext context) {
-    final isAuthenticated =
-        context.select<AuthBloc, bool>(
-          (bloc) => bloc.state.status == AuthStatus.authenticated,
-        );
+    final isAuthenticated = context.select<AuthBloc, bool>(
+      (bloc) => bloc.state.status == AuthStatus.authenticated,
+    );
 
     return FutureBuilder<DashboardStats>(
       future: _statsFuture,
@@ -172,7 +173,9 @@ class _HomePageState extends State<HomePage> {
             final compactColumns = isAuthenticated
                 ? (availableWidth >= 900 ? 2 : 1)
                 : 1;
-            final largeCardWidth = (availableWidth - (spacing * (largeColumns - 1))) / largeColumns;
+            final largeCardWidth =
+                (availableWidth - (spacing * (largeColumns - 1))) /
+                largeColumns;
             final compactCardWidth = compactColumns == 1
                 ? availableWidth
                 : (availableWidth - spacing) / 2;
@@ -263,18 +266,10 @@ class _HomePageState extends State<HomePage> {
         ? 215.0
         : 220.0;
 
-    return SizedBox(
-      width: width,
-      height: height,
-      child: child,
-    );
+    return SizedBox(width: width, height: height, child: child);
   }
 
   Widget _buildCompactCardItem({required double width, required Widget child}) {
-    return SizedBox(
-      width: width,
-      height: 110,
-      child: child,
-    );
+    return SizedBox(width: width, height: 110, child: child);
   }
 }

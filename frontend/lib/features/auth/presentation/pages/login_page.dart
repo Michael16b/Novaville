@@ -8,6 +8,8 @@ import 'package:frontend/constants/texts/texts_validator_messages.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/ui/assets.dart';
+import 'package:go_router/go_router.dart';
+import 'package:frontend/config/app_routes.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -48,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
       builder: (context, state) {
         final isLoading =
             state.status == AuthStatus.authenticating ||
-                state.status == AuthStatus.checking;
+            state.status == AuthStatus.checking;
         return Scaffold(
           resizeToAvoidBottomInset: true,
           body: SafeArea(
@@ -109,13 +111,11 @@ class _LoginPageState extends State<LoginPage> {
                                   const SizedBox(width: 6),
                                   Text(
                                     AppTextsGeneral.requiredFieldsHint,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
+                                    style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
-                                      color: AppColors.secondaryText,
-                                      fontStyle: FontStyle.italic,
-                                    ),
+                                          color: AppColors.secondaryText,
+                                          fontStyle: FontStyle.italic,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -127,8 +127,9 @@ class _LoginPageState extends State<LoginPage> {
                                   padding: const EdgeInsets.only(bottom: 12),
                                   child: Text(
                                     state.error!,
-                                    style:
-                                    const TextStyle(color: AppColors.error),
+                                    style: const TextStyle(
+                                      color: AppColors.error,
+                                    ),
                                   ),
                                 ),
                               const SizedBox(height: 24),
@@ -139,6 +140,14 @@ class _LoginPageState extends State<LoginPage> {
                                   isLoading: isLoading,
                                   onPressed: _submit,
                                 ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextButton.icon(
+                                onPressed: isLoading
+                                    ? null
+                                    : () => context.go(AppRoutes.register),
+                                icon: const Icon(Icons.person_add_alt_1),
+                                label: const Text(AppTextsAuth.register),
                               ),
                             ],
                           ),

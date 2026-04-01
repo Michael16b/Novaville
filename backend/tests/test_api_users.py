@@ -106,18 +106,107 @@ class TestUsersAPI:
     
     def test_create_user(self, api_client, neighborhood):
         """Test creating a new user (registration)"""
+        from django.contrib.auth import get_user_model
+        from core.db.models.user import ApprovalStatus
+
         data = {
             "username": "newuser",
             "email": "newuser@test.com",
             "password": "NewPass123",
             "first_name": "New",
             "last_name": "User",
-            "neighborhood": neighborhood.id
+            "neighborhood": neighborhood.id,
+            "address": "12 rue des Lilas",
         }
         response = api_client.post("/api/v1/users/", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["username"] == "newuser"
+        created_user = get_user_model().objects.get(username="newuser")
+        assert created_user.approval_status == ApprovalStatus.PENDING
+        assert created_user.is_active is False
         assert "password" not in response.data  # Password should not be returned
+
+    def test_non_admin_only_sees_approved_users(self, authenticated_client, neighborhood):
+        from django.contrib.auth import get_user_model
+        from core.db.models.user import ApprovalStatus
+
+        get_user_model().objects.create_user(
+            username="pendinghidden",
+            email="hidden@test.com",
+            password="TestPass123",
+            first_name="Hidden",
+            last_name="Pending",
+            neighborhood=neighborhood,
+            approval_status=ApprovalStatus.PENDING,
+            is_active=False,
+        )
+
+        response = authenticated_client.get("/api/v1/users/")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        usernames = [user["username"] for user in results]
+        assert "pendinghidden" not in usernames
+
+    def test_admin_can_list_pending_users(self, admin_client, neighborhood):
+        from django.contrib.auth import get_user_model
+        from core.db.models.user import ApprovalStatus
+
+        pending = get_user_model().objects.create_user(
+            username="pendingreview",
+            email="pendingreview@test.com",
+            password="TestPass123",
+            first_name="Pending",
+            last_name="Review",
+            neighborhood=neighborhood,
+            approval_status=ApprovalStatus.PENDING,
+            is_active=False,
+        )
+
+        response = admin_client.get("/api/v1/users/pending/")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        returned_ids = [user["id"] for user in results]
+        assert pending.id in returned_ids
+
+    def test_admin_can_approve_pending_user(self, admin_client, neighborhood):
+        from django.contrib.auth import get_user_model
+        from core.db.models.user import ApprovalStatus
+
+        pending = get_user_model().objects.create_user(
+            username="pendingapprove",
+            email="pendingapprove@test.com",
+            password="TestPass123",
+            first_name="Pending",
+            last_name="Approve",
+            neighborhood=neighborhood,
+            approval_status=ApprovalStatus.PENDING,
+            is_active=False,
+        )
+
+        response = admin_client.post(f"/api/v1/users/{pending.id}/approve/", {}, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        pending.refresh_from_db()
+        assert pending.approval_status == ApprovalStatus.APPROVED
+        assert pending.is_active is True
+
+    def test_admin_can_reject_pending_user(self, admin_client, neighborhood):
+        from django.contrib.auth import get_user_model
+        from core.db.models.user import ApprovalStatus
+
+        pending = get_user_model().objects.create_user(
+            username="pendingreject",
+            email="pendingreject@test.com",
+            password="TestPass123",
+            first_name="Pending",
+            last_name="Reject",
+            neighborhood=neighborhood,
+            approval_status=ApprovalStatus.PENDING,
+            is_active=False,
+        )
+
+        response = admin_client.post(f"/api/v1/users/{pending.id}/reject/", {}, format="json")
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        assert get_user_model().objects.filter(id=pending.id).exists() is False
     
     def test_retrieve_user(self, authenticated_client, citizen_user):
         """Test retrieving a user"""

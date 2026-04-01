@@ -1,13 +1,25 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+
+from core.db.models.user import ApprovalStatus
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ("id", "username", "email", "first_name", "last_name", "role")
+        fields = (
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "role",
+            "address",
+            "approval_status",
+        )
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -19,6 +31,23 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
+        username_field = self.username_field
+        username = attrs.get(username_field)
+        password = attrs.get("password")
+
+        if username and password:
+            user_model = get_user_model()
+            try:
+                candidate = user_model.objects.get(**{username_field: username})
+            except user_model.DoesNotExist:
+                candidate = None
+
+            if candidate and candidate.check_password(password):
+                if candidate.approval_status != ApprovalStatus.APPROVED:
+                    raise AuthenticationFailed("pending_approval")
+                if not candidate.is_active:
+                    raise AuthenticationFailed("account_disabled")
+
         data = super().validate(attrs)
 
         # attach user info to the response

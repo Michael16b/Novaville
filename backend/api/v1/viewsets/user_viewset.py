@@ -9,6 +9,7 @@ from core.db.models import User
 from api.v1.serializers.user_serializer import UserSerializer, UserPublicSerializer
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 from rest_framework import serializers
+from core.db.models.user import ApprovalStatus
 
 
 @extend_schema_view(
@@ -18,6 +19,7 @@ from rest_framework import serializers
         tags=["Users"],
         parameters=[
             OpenApiParameter(name='role', description='Filter by role (e.g. CITIZEN, ELECTED, AGENT, GLOBAL_ADMIN)', required=False, type=str),
+            OpenApiParameter(name='approval_status', description='Filter by approval status (e.g. PENDING, APPROVED)', required=False, type=str),
             OpenApiParameter(name='neighborhood', description='Filter by neighborhood ID', required=False, type=int),
             OpenApiParameter(name='search', description='Search in username, first_name, last_name, email', required=False, type=str),
             OpenApiParameter(name='ordering', description='Order by first_name, username, email, role, date_joined', required=False, type=str),
@@ -88,11 +90,19 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter queryset based on user role"""
         user = self.request.user
+        requested_status = self.request.query_params.get('approval_status')
         if user.is_staff or user.is_superuser:
-            return User.objects.all()
+            if self.action in ['approve', 'reject', 'pending'] or requested_status:
+                return User.objects.select_related('neighborhood').all()
+            return User.objects.select_related('neighborhood').filter(
+                approval_status=ApprovalStatus.APPROVED,
+                is_active=True,
+            )
         elif user.is_authenticated:
-            # Regular users can see all users (public directory)
-            return User.objects.all()
+            return User.objects.select_related('neighborhood').filter(
+                approval_status=ApprovalStatus.APPROVED,
+                is_active=True,
+            )
         return User.objects.none()
     
     def update(self, request, *args, **kwargs):
@@ -125,6 +135,34 @@ class UserViewSet(viewsets.ModelViewSet):
         """Get current user's profile"""
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminUser])
+    def pending(self, request):
+        queryset = User.objects.select_related('neighborhood').filter(
+            approval_status=ApprovalStatus.PENDING,
+            is_active=False,
+        ).order_by('-date_joined')
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+    def approve(self, request, pk=None):
+        user = self.get_object()
+        user.approval_status = ApprovalStatus.APPROVED
+        user.is_active = True
+        user.save(update_fields=['approval_status', 'is_active'])
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+    def reject(self, request, pk=None):
+        user = self.get_object()
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post'], url_path='change_password', permission_classes=[IsAuthenticated])
     def change_password(self, request, pk=None):

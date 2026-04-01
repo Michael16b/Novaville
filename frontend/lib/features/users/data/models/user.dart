@@ -9,6 +9,9 @@ class User extends Equatable {
     this.email = '',
     required this.firstName,
     required this.lastName,
+    this.address = '',
+    this.approvalStatus = 'APPROVED',
+    this.isActive = true,
     this.role,
     this.neighborhoodId,
   });
@@ -18,6 +21,9 @@ class User extends Equatable {
   final String email;
   final String firstName;
   final String lastName;
+  final String address;
+  final String approvalStatus;
+  final bool isActive;
   final UserRole? role;
   final int? neighborhoodId;
 
@@ -29,6 +35,9 @@ class User extends Equatable {
       email: (json['email'] as String?) ?? '',
       firstName: (json['first_name'] as String?) ?? '',
       lastName: (json['last_name'] as String?) ?? '',
+      address: (json['address'] as String?) ?? '',
+      approvalStatus: (json['approval_status'] as String?) ?? 'APPROVED',
+      isActive: (json['is_active'] as bool?) ?? true,
       role: json['role'] != null
           ? UserRole.fromString(json['role'] as String)
           : null,
@@ -44,6 +53,9 @@ class User extends Equatable {
       'email': email,
       'first_name': firstName,
       'last_name': lastName,
+      'address': address,
+      'approval_status': approvalStatus,
+      'is_active': isActive,
       if (role != null) 'role': role!.toJson(),
       if (neighborhoodId != null) 'neighborhood': neighborhoodId,
     };
@@ -56,6 +68,9 @@ class User extends Equatable {
     String? email,
     String? firstName,
     String? lastName,
+    String? address,
+    String? approvalStatus,
+    bool? isActive,
     UserRole? role,
     int? neighborhoodId,
   }) {
@@ -65,6 +80,9 @@ class User extends Equatable {
       email: email ?? this.email,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
+      address: address ?? this.address,
+      approvalStatus: approvalStatus ?? this.approvalStatus,
+      isActive: isActive ?? this.isActive,
       role: role ?? this.role,
       neighborhoodId: neighborhoodId ?? this.neighborhoodId,
     );
@@ -77,18 +95,23 @@ class User extends Equatable {
   bool get isCitizen => role == UserRole.citizen;
 
   /// Check if user has staff privileges (elected, agent, or admin)
-  bool get isStaff => role != null &&
-      (role == UserRole.elected || role == UserRole.agent || role == UserRole.globalAdmin);
+  bool get isStaff =>
+      role != null &&
+      (role == UserRole.elected ||
+          role == UserRole.agent ||
+          role == UserRole.globalAdmin);
 
   @override
   List<Object?> get props => [
-        id,
-        username,
-        email,
-        firstName,
-        lastName,
-        role,
-        neighborhoodId,
-      ];
+    id,
+    username,
+    email,
+    firstName,
+    lastName,
+    address,
+    approvalStatus,
+    isActive,
+    role,
+    neighborhoodId,
+  ];
 }
-

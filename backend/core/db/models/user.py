@@ -9,6 +9,11 @@ from django.db import models
 from core.db.enums import RoleEnum
 
 
+class ApprovalStatus(models.TextChoices):
+    PENDING = "PENDING", "Pending"
+    APPROVED = "APPROVED", "Approved"
+
+
 class User(AbstractUser):
     """Custom user model with role-based access"""
     role = models.CharField(
@@ -25,6 +30,18 @@ class User(AbstractUser):
         related_name='residents',
         help_text="User's neighborhood"
     )
+    address = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="User's postal address",
+    )
+    approval_status = models.CharField(
+        max_length=20,
+        choices=ApprovalStatus.choices,
+        default=ApprovalStatus.APPROVED,
+        help_text="Approval workflow status for user registrations",
+    )
     
     class Meta:
         db_table = 'users'
@@ -40,3 +57,7 @@ class User(AbstractUser):
     @property
     def is_staff_member(self):
         return self.role in [RoleEnum.ELECTED, RoleEnum.AGENT, RoleEnum.GLOBAL_ADMIN]
+
+    @property
+    def is_pending_approval(self):
+        return self.approval_status == ApprovalStatus.PENDING

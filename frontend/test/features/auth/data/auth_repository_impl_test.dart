@@ -54,6 +54,7 @@ class _StubUserRepository implements IUserRepository {
     String? lastName,
     String? username,
     String? email,
+    String? address,
     UserRole? role,
     int? neighborhoodId,
   }) async {
@@ -68,10 +69,11 @@ class _StubUserRepository implements IUserRepository {
   @override
   Future<User> createUser({
     required String username,
-    required String email,
     required String firstName,
     required String lastName,
     required String password,
+    String email = '',
+    String address = '',
     UserRole role = UserRole.citizen,
     int? neighborhoodId,
   }) async {
@@ -95,6 +97,19 @@ class _StubUserRepository implements IUserRepository {
   }) async {
     // Stub: ne fait rien
     return;
+  }
+
+  @override
+  Future<List<User>> listPendingUsers() async => const [];
+
+  @override
+  Future<User> approveUser({required int userId}) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> rejectUser({required int userId}) async {
+    throw UnimplementedError();
   }
 }
 
@@ -279,6 +294,7 @@ class _SequentialUserRepository implements IUserRepository {
     String? lastName,
     String? username,
     String? email,
+    String? address,
     UserRole? role,
     int? neighborhoodId,
   }) async {
@@ -293,10 +309,11 @@ class _SequentialUserRepository implements IUserRepository {
   @override
   Future<User> createUser({
     required String username,
-    required String email,
     required String firstName,
     required String lastName,
     required String password,
+    String email = '',
+    String address = '',
     UserRole role = UserRole.citizen,
     int? neighborhoodId,
   }) async {
@@ -320,5 +337,18 @@ class _SequentialUserRepository implements IUserRepository {
   }) async {
     // Stub: ne fait rien
     return;
+  }
+
+  @override
+  Future<List<User>> listPendingUsers() async => const [];
+
+  @override
+  Future<User> approveUser({required int userId}) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> rejectUser({required int userId}) async {
+    throw UnimplementedError();
   }
 }

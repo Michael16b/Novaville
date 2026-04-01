@@ -92,6 +92,7 @@ class MockUserRepository implements IUserRepository {
     String? lastName,
     String? username,
     String? email,
+    String? address,
     UserRole? role,
     int? neighborhoodId,
   }) async {
@@ -106,10 +107,11 @@ class MockUserRepository implements IUserRepository {
   @override
   Future<User> createUser({
     required String username,
-    required String email,
     required String firstName,
     required String lastName,
     required String password,
+    String email = '',
+    String address = '',
     UserRole role = UserRole.citizen,
     int? neighborhoodId,
   }) async {
@@ -122,6 +124,7 @@ class MockUserRepository implements IUserRepository {
       email: email,
       firstName: firstName,
       lastName: lastName,
+      address: address,
       role: role,
       neighborhoodId: neighborhoodId,
     );
@@ -142,6 +145,19 @@ class MockUserRepository implements IUserRepository {
     required String newPassword,
   }) async {
     return;
+  }
+
+  @override
+  Future<List<User>> listPendingUsers() async => const [];
+
+  @override
+  Future<User> approveUser({required int userId}) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> rejectUser({required int userId}) async {
+    throw UnimplementedError();
   }
 }
 
@@ -182,9 +198,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     }
 
-    testWidgets(
-      'renders title and floating add button',
-      (WidgetTester tester) async {
+    testWidgets('renders title and floating add button', (
+      WidgetTester tester,
+    ) async {
       // Set a large screen size to avoid overflow
       tester.view.physicalSize = const Size(2400, 1200);
       tester.view.devicePixelRatio = 1.0;

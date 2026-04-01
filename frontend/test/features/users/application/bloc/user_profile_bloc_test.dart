@@ -62,6 +62,7 @@ class _FakeUserRepository implements IUserRepository {
     String? lastName,
     String? username,
     String? email,
+    String? address,
     UserRole? role,
     int? neighborhoodId,
   }) async {
@@ -72,6 +73,7 @@ class _FakeUserRepository implements IUserRepository {
       email: email ?? 'john.doe@example.com',
       firstName: firstName ?? 'John',
       lastName: lastName ?? 'Doe',
+      address: address ?? '',
       role: role,
       neighborhoodId: neighborhoodId,
     );
@@ -85,10 +87,11 @@ class _FakeUserRepository implements IUserRepository {
   @override
   Future<User> createUser({
     required String username,
-    required String email,
     required String firstName,
     required String lastName,
     required String password,
+    String email = '',
+    String address = '',
     UserRole role = UserRole.citizen,
     int? neighborhoodId,
   }) async {
@@ -99,6 +102,7 @@ class _FakeUserRepository implements IUserRepository {
       email: email,
       firstName: firstName,
       lastName: lastName,
+      address: address,
       role: role,
       neighborhoodId: neighborhoodId,
     );
@@ -121,6 +125,19 @@ class _FakeUserRepository implements IUserRepository {
   }) async {
     // Stub: ne fait rien
     return;
+  }
+
+  @override
+  Future<List<User>> listPendingUsers() async => const [];
+
+  @override
+  Future<User> approveUser({required int userId}) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> rejectUser({required int userId}) async {
+    throw UnimplementedError();
   }
 }
 

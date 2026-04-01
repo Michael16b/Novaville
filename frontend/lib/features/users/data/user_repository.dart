@@ -48,6 +48,7 @@ abstract class IUserRepository {
     String? lastName,
     String? username,
     String? email,
+    String? address,
     UserRole? role,
     int? neighborhoodId,
   });
@@ -71,13 +72,21 @@ abstract class IUserRepository {
   /// Creates a new user account.
   Future<User> createUser({
     required String username,
-    required String email,
+    String email = '',
     required String firstName,
     required String lastName,
     required String password,
+    String address = '',
     UserRole role = UserRole.citizen,
     int? neighborhoodId,
   });
+
+  Future<List<User>> listPendingUsers();
+
+  Future<User> approveUser({required int userId});
+
+  Future<void> rejectUser({required int userId});
+
   /// Lists all available neighborhoods.
   Future<List<Neighborhood>> listNeighborhoods();
 }
