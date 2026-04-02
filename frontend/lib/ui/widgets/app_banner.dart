@@ -194,10 +194,21 @@ class AppBanner extends StatelessWidget {
                 },
               )
             else
-              CustomElevatedStrokedButton(
-                text: AppTextsAuth.login,
-                onPressed: () => context.go(AppRoutes.login),
-                iconData: Icons.login,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CustomElevatedStrokedButton(
+                    text: AppTextsAuth.register,
+                    onPressed: () => context.go(AppRoutes.register),
+                    iconData: Icons.person_add_alt_1,
+                  ),
+                  const SizedBox(width: 8),
+                  CustomElevatedStrokedButton(
+                    text: AppTextsAuth.login,
+                    onPressed: () => context.go(AppRoutes.login),
+                    iconData: Icons.login,
+                  ),
+                ],
               ),
           ],
         ),

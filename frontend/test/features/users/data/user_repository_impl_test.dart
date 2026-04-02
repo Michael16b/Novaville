@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/constants/texts/texts_user_repository_errors.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/users/data/user_repository_impl.dart';
 import 'package:http/http.dart' as http;
@@ -160,6 +161,74 @@ void main() {
           newPassword: 'newpass',
         ),
         throwsA(isA<Exception>()),
+      );
+    });
+
+    test('createUser returns a user on success', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/api/v1/users/');
+        expect(request.body, contains('"username":"newuser"'));
+        expect(request.body, contains('"address":"1 Main Street"'));
+
+        return http.Response(
+          '''
+{
+  "id": 2,
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "first_name": "New",
+  "last_name": "User",
+  "address": "1 Main Street"
+}
+''',
+          201,
+        );
+      });
+
+      final repo = UserRepositoryImpl(
+        apiClient: ApiClient(baseUrl: baseUrl, client: mockClient),
+      );
+
+      final user = await repo.createUser(
+        username: 'newuser',
+        firstName: 'New',
+        lastName: 'User',
+        password: 'Password123',
+        email: 'newuser@example.com',
+        address: '1 Main Street',
+      );
+
+      expect(user.username, 'newuser');
+      expect(user.address, '1 Main Street');
+    });
+
+    test('createUser localizes username already exists errors', () async {
+      final mockClient = MockClient((request) async {
+        return http.Response(
+          '{"username":["username_already_exists"]}',
+          400,
+        );
+      });
+
+      final repo = UserRepositoryImpl(
+        apiClient: ApiClient(baseUrl: baseUrl, client: mockClient),
+      );
+
+      expect(
+        () => repo.createUser(
+          username: 'existing',
+          firstName: 'Jane',
+          lastName: 'Doe',
+          password: 'Password123',
+        ),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains(AppTextsUserRepositoryErrors.usernameAlreadyExists),
+          ),
+        ),
       );
     });
   });

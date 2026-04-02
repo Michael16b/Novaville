@@ -38,6 +38,31 @@ class TestAuthentication:
             format="json"
         )
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_login_pending_account_rejected(self, api_client, neighborhood):
+        from django.contrib.auth import get_user_model
+        from core.db.models.user import ApprovalStatus
+
+        user = get_user_model().objects.create_user(
+            username="pendinguser",
+            email="pending@test.com",
+            password="TestPass123",
+            first_name="Pending",
+            last_name="User",
+            neighborhood=neighborhood,
+            approval_status=ApprovalStatus.PENDING,
+            is_active=False,
+        )
+
+        response = api_client.post(
+            "/api/v1/auth/token/",
+            {
+                "username": user.username,
+                "password": "TestPass123"
+            },
+            format="json"
+        )
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
     
     def test_login_missing_fields(self, api_client):
         """Test login with missing fields fails"""

@@ -59,6 +59,44 @@ void main() {
       );
     });
 
+    test('login maps pending approval code to a localized message', () async {
+      final mockClient = MockClient((request) async {
+        return http.Response('{"detail":"pending_approval"}', 401);
+      });
+
+      final authApi = AuthApi(baseUrl: baseUrl, client: mockClient);
+
+      expect(
+        () => authApi.login(username: 'pending', password: 'password'),
+        throwsA(
+          isA<AuthFailure>().having(
+            (e) => e.message,
+            'message',
+            AppTextsAuth.pendingApproval,
+          ),
+        ),
+      );
+    });
+
+    test('login maps disabled account code to a localized message', () async {
+      final mockClient = MockClient((request) async {
+        return http.Response('{"detail":"account_disabled"}', 401);
+      });
+
+      final authApi = AuthApi(baseUrl: baseUrl, client: mockClient);
+
+      expect(
+        () => authApi.login(username: 'disabled', password: 'password'),
+        throwsA(
+          isA<AuthFailure>().having(
+            (e) => e.message,
+            'message',
+            AppTextsAuth.accountDisabled,
+          ),
+        ),
+      );
+    });
+
     test(
       'login throws AuthFailure with default message on 401 without detail',
       () async {

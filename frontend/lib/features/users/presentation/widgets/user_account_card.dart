@@ -43,9 +43,7 @@ class UserAccountCard extends StatelessWidget {
         children: [
           // ── Header: colored accent bar + avatar + name + role badge ──
           Container(
-            decoration: BoxDecoration(
-              color: roleColor.withValues(alpha: 0.08),
-            ),
+            decoration: BoxDecoration(color: roleColor.withValues(alpha: 0.08)),
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
             child: Row(
               children: [
@@ -70,10 +68,9 @@ class UserAccountCard extends StatelessWidget {
                         fullName.isNotEmpty ? fullName : user.username,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Container(
@@ -123,21 +120,19 @@ class UserAccountCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: Column(
                 children: [
-                  _InfoRow(
-                    icon: Icons.alternate_email,
-                    text: user.username,
-                  ),
+                  _InfoRow(icon: Icons.alternate_email, text: user.username),
                   const SizedBox(height: 8),
-                  _InfoRow(
-                    icon: Icons.mail_outline_rounded,
-                    text: user.email,
-                  ),
+                  _InfoRow(icon: Icons.mail_outline_rounded, text: user.email),
                   if (neighborhoodName != null) ...[
                     const SizedBox(height: 8),
                     _InfoRow(
                       icon: Icons.location_on_outlined,
                       text: neighborhoodName!,
                     ),
+                  ],
+                  if (user.address.trim().isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    _InfoRow(icon: Icons.home_outlined, text: user.address),
                   ],
                   const Spacer(),
                 ],
@@ -165,9 +160,7 @@ class UserAccountCard extends StatelessWidget {
                   child: _ActionButton(
                     icon: Icons.delete_outline_rounded,
                     label: 'Supprimer',
-                    color: isCurrentUser
-                        ? AppColors.disabled
-                        : AppColors.error,
+                    color: isCurrentUser ? AppColors.disabled : AppColors.error,
                     onTap: isCurrentUser ? null : () => onDelete(user),
                   ),
                 ),
@@ -205,9 +198,9 @@ class _InfoRow extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.primaryText,
-                  height: 1.3,
-                ),
+              color: AppColors.primaryText,
+              height: 1.3,
+            ),
           ),
         ),
       ],
@@ -259,4 +252,3 @@ class _ActionButton extends StatelessWidget {
     );
   }
 }
-

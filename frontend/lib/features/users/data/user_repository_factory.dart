@@ -40,10 +40,14 @@ IUserRepository createUserRepository({http.Client? client}) {
   );
 
   // Create the ApiClient backed by the authenticated client
-  final apiClient = ApiClient(
-    baseUrl: baseUrl,
-    client: authenticatedClient,
-  );
+  final apiClient = ApiClient(baseUrl: baseUrl, client: authenticatedClient);
 
+  return UserRepositoryImpl(apiClient: apiClient);
+}
+
+IUserRepository createPublicUserRepository({http.Client? client}) {
+  final baseUrl = AppConfig.apiBaseUrl;
+  final httpClient = client ?? http.Client();
+  final apiClient = ApiClient(baseUrl: baseUrl, client: httpClient);
   return UserRepositoryImpl(apiClient: apiClient);
 }

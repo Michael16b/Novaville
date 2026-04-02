@@ -44,10 +44,9 @@ class UserAccountsPage extends StatelessWidget {
     return RepositoryProvider.value(
       value: repository,
       child: BlocProvider(
-        create: (context) =>
-            UserAccountsBloc(repository: repository)
-              ..add(const UserAccountsLoadRequested(ordering: 'first_name'))
-              ..add(const UserAccountsNeighborhoodsLoadRequested()),
+        create: (context) => UserAccountsBloc(repository: repository)
+          ..add(const UserAccountsLoadRequested(ordering: 'first_name'))
+          ..add(const UserAccountsNeighborhoodsLoadRequested()),
         child: const _UserAccountsPageContent(),
       ),
     );
@@ -76,6 +75,8 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   Timer? _loadingTimer;
   String _searchQuery = '';
   bool _showLoadingOverlay = false;
+  late Future<List<User>> _pendingUsersFuture;
+  bool _isHandlingPendingRequest = false;
 
   // Advanced filters
   String? _filterRole;
@@ -85,11 +86,28 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
       _sortAscending ? _sortColumnKey : '-$_sortColumnKey';
 
   @override
+  void initState() {
+    super.initState();
+    _pendingUsersFuture = _loadPendingUsers();
+  }
+
+  @override
   void dispose() {
     _searchDebounce?.cancel();
     _loadingTimer?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<List<User>> _loadPendingUsers() {
+    final repository = context.read<IUserRepository>();
+    return repository.listPendingUsers();
+  }
+
+  void _refreshPendingUsers() {
+    setState(() {
+      _pendingUsersFuture = _loadPendingUsers();
+    });
   }
 
   @override
@@ -142,10 +160,10 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                       title: UserTexts.title,
                       description: UserTexts.titleDescription,
                       icon: Icons.people_alt_outlined,
-                      breadcrumbItems: [
-                        BreadcrumbItem(label: UserTexts.title),
-                      ],
+                      breadcrumbItems: [BreadcrumbItem(label: UserTexts.title)],
                     ),
+                    const SizedBox(height: 16),
+                    _buildPendingRequestsSection(),
                     const SizedBox(height: 16),
                     _buildControlsSection(context, state),
                     const SizedBox(height: 12),
@@ -244,12 +262,91 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     );
   }
 
-  Widget _buildAdvancedFilters(
-    BuildContext context,
-    UserAccountsState state,
-  ) {
-    final hasActiveFilter =
-        _filterRole != null || _filterNeighborhood != null;
+  Widget _buildPendingRequestsSection() {
+    return FutureBuilder<List<User>>(
+      future: _pendingUsersFuture,
+      builder: (context, snapshot) {
+        final pendingUsers = snapshot.data ?? const <User>[];
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.pending_actions, color: AppColors.primary),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            UserTexts.pendingRequestsTitle,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            UserTexts.pendingRequestsDescription,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AppColors.secondaryText),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: _refreshPendingUsers,
+                      icon: const Icon(Icons.refresh),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                if (snapshot.connectionState == ConnectionState.waiting &&
+                    pendingUsers.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(12),
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  )
+                else if (snapshot.hasError)
+                  Text(
+                    snapshot.error.toString(),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: AppColors.error),
+                  )
+                else if (pendingUsers.isEmpty)
+                  Text(
+                    UserTexts.noPendingRequests,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  )
+                else
+                  Column(
+                    children: pendingUsers
+                        .map(
+                          (user) => _PendingRegistrationCard(
+                            user: user,
+                            isBusy: _isHandlingPendingRequest,
+                            onApprove: () => _approvePendingUser(user),
+                            onReject: () => _rejectPendingUser(user),
+                          ),
+                        )
+                        .toList(),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAdvancedFilters(BuildContext context, UserAccountsState state) {
+    final hasActiveFilter = _filterRole != null || _filterNeighborhood != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,9 +369,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
               icon: const Icon(Icons.clear_all, size: 16),
               label: const Text(UserTexts.clearFilters),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 visualDensity: VisualDensity.compact,
               ),
             ),
@@ -284,10 +379,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
         Wrap(
           spacing: 10,
           runSpacing: 10,
-          children: [
-            _buildRoleFilterChips(),
-            _buildNeighborhoodFilter(state),
-          ],
+          children: [_buildRoleFilterChips(), _buildNeighborhoodFilter(state)],
         ),
       ],
     );
@@ -307,9 +399,9 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
           child: Text(
             UserTexts.filterByRole,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.secondaryText,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: AppColors.secondaryText,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         Wrap(
@@ -345,9 +437,9 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
             child: Text(
               UserTexts.filterByNeighborhood,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.secondaryText,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: AppColors.secondaryText,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const SizedBox(
@@ -367,9 +459,9 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
           child: Text(
             UserTexts.filterByNeighborhood,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.secondaryText,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: AppColors.secondaryText,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         SizedBox(
@@ -391,13 +483,13 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   void _applyFilters() {
     _flushSearchDebounce();
     context.read<UserAccountsBloc>().add(
-          UserAccountsFilterRequested(
-            role: _filterRole,
-            neighborhood: _filterNeighborhood,
-            ordering: _currentOrdering,
-            search: _searchQuery,
-          ),
-        );
+      UserAccountsFilterRequested(
+        role: _filterRole,
+        neighborhood: _filterNeighborhood,
+        ordering: _currentOrdering,
+        search: _searchQuery,
+      ),
+    );
   }
 
   void _clearAllFilters() {
@@ -603,9 +695,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   Widget _buildUsersGrid(BuildContext context, List<User> users) {
     final currentUser = context.read<AuthBloc>().state.user;
     final state = context.read<UserAccountsBloc>().state;
-    final neighborhoodMap = {
-      for (final n in state.neighborhoods) n.id: n.name,
-    };
+    final neighborhoodMap = {for (final n in state.neighborhoods) n.id: n.name};
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -808,6 +898,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
           search: _searchQuery,
         ),
       );
+      _refreshPendingUsers();
     });
   }
 
@@ -872,9 +963,9 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
             Text(
               UserTexts.irreversible,
               style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
-                    color: AppColors.error,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: AppColors.error,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -894,6 +985,158 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
       default:
         return AppColors.success;
     }
+  }
+
+  Future<void> _approvePendingUser(User user) async {
+    setState(() {
+      _isHandlingPendingRequest = true;
+    });
+
+    try {
+      await context.read<IUserRepository>().approveUser(userId: user.id);
+      if (!mounted) {
+        return;
+      }
+      CustomSnackBar.showSuccess(context, UserTexts.approvedSuccess);
+      context.read<UserAccountsBloc>().add(UserAccountsRefreshRequested());
+      _refreshPendingUsers();
+    } catch (e) {
+      if (mounted) {
+        CustomSnackBar.showError(context, e.toString());
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isHandlingPendingRequest = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _rejectPendingUser(User user) async {
+    setState(() {
+      _isHandlingPendingRequest = true;
+    });
+
+    try {
+      await context.read<IUserRepository>().rejectUser(userId: user.id);
+      if (!mounted) {
+        return;
+      }
+      CustomSnackBar.showSuccess(context, UserTexts.rejectedSuccess);
+      _refreshPendingUsers();
+    } catch (e) {
+      if (mounted) {
+        CustomSnackBar.showError(context, e.toString());
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isHandlingPendingRequest = false;
+        });
+      }
+    }
+  }
+}
+
+class _PendingRegistrationCard extends StatelessWidget {
+  const _PendingRegistrationCard({
+    required this.user,
+    required this.isBusy,
+    required this.onApprove,
+    required this.onReject,
+  });
+
+  final User user;
+  final bool isBusy;
+  final VoidCallback onApprove;
+  final VoidCallback onReject;
+
+  @override
+  Widget build(BuildContext context) {
+    final fullName = '${user.firstName} ${user.lastName}'.trim();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.page,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            fullName.isEmpty ? user.username : fullName,
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              _PendingInfoChip(
+                icon: Icons.person_outline,
+                label: user.username,
+              ),
+              if (user.email.trim().isNotEmpty)
+                _PendingInfoChip(icon: Icons.mail_outline, label: user.email),
+              if (user.address.trim().isNotEmpty)
+                _PendingInfoChip(
+                  icon: Icons.home_outlined,
+                  label: user.address,
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              ElevatedButton.icon(
+                onPressed: isBusy ? null : onApprove,
+                icon: const Icon(Icons.check_circle_outline),
+                label: const Text(UserTexts.approve),
+              ),
+              const SizedBox(width: 10),
+              OutlinedButton.icon(
+                onPressed: isBusy ? null : onReject,
+                icon: const Icon(Icons.close),
+                label: const Text(UserTexts.reject),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PendingInfoChip extends StatelessWidget {
+  const _PendingInfoChip({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: AppColors.secondaryText),
+          const SizedBox(width: 6),
+          Text(label),
+        ],
+      ),
+    );
   }
 }
 

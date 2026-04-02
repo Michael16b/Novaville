@@ -6,6 +6,7 @@ import 'package:frontend/constants/colors.dart';
 import 'package:frontend/features/agenda/presentation/pages/agenda_page.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/presentation/pages/login_page.dart';
+import 'package:frontend/features/auth/presentation/pages/register_page.dart';
 import 'package:frontend/features/home/presentation/pages/home_page.dart';
 import 'package:frontend/features/news/presentation/pages/news_page.dart';
 import 'package:frontend/features/reports/presentation/pages/reports_page.dart';
@@ -40,6 +41,7 @@ String? authRedirect({
 }) {
   const publicRoutes = <String>{
     AppRoutes.home,
+    AppRoutes.register,
     AppRoutes.reports,
     AppRoutes.agenda,
     AppRoutes.usefulInfo,
@@ -143,6 +145,11 @@ GoRouter buildRouter(AuthBloc authBloc) {
         path: AppRoutes.login,
         pageBuilder: (context, state) =>
             _buildPage(state: state, child: const LoginPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.register,
+        pageBuilder: (context, state) =>
+            _buildPage(state: state, child: const RegisterPage()),
       ),
       GoRoute(
         path: AppRoutes.credentialsShare,
