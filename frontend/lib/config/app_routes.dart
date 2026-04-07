@@ -13,6 +13,7 @@ class AppRoutes {
   static const String usefulInfo = '/useful-info';
   static const String usefulInfoEdit = '/useful-info/edit';
   static const String myAccount = '/account';
+  static const String townHall = '/town-hall';
   static const String loading = '/loading';
   static const String userAccounts = '/user-accounts';
   static const String bulkUserCreation = '/user-accounts/bulk-create';

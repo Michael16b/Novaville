@@ -13,8 +13,8 @@ class ReportRepositoryImpl implements IReportRepository {
   ReportRepositoryImpl({
     required ApiClient publicApiClient,
     required ApiClient authenticatedApiClient,
-  })  : _publicApiClient = publicApiClient,
-        _authenticatedApiClient = authenticatedApiClient;
+  }) : _publicApiClient = publicApiClient,
+       _authenticatedApiClient = authenticatedApiClient;
 
   final ApiClient _publicApiClient;
   final ApiClient _authenticatedApiClient;
