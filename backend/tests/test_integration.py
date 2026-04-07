@@ -38,8 +38,10 @@ class TestReportsFlow:
         create_response = authenticated_client.post(
             "/api/v1/reports/",
             {
+                "title": "Pothole report",
                 "problem_type": "ROADS",
                 "description": "Pothole on main street",
+                "address": "12 rue de la Paix",
                 "neighborhood": neighborhood.id
             },
             format="json"
@@ -55,14 +57,17 @@ class TestReportsFlow:
         detail_response = authenticated_client.get(f"/api/v1/reports/{report_id}/")
         assert detail_response.status_code == status.HTTP_200_OK
         assert detail_response.data["description"] == "Pothole on main street"
+        assert detail_response.data["address"] == "12 rue de la Paix"
     
     def test_staff_can_update_report_status(self, elected_client, citizen_user, neighborhood):
         """Test staff can change report status"""
         # Create report as citizen
         report = Report.objects.create(
             user=citizen_user,
+            title="Test report",
             problem_type=ProblemTypeEnum.ROADS,
             description="Test report",
+            address="18 boulevard Saint-Germain",
             neighborhood=neighborhood
         )
         
