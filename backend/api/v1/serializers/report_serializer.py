@@ -1,19 +1,13 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from core.db.models import Report
+from api.v1.patterns import REPORT_ADDRESS_PATTERN
 from api.v1.serializers.user_serializer import UserPublicSerializer
 from api.v1.serializers.neighborhood_serializer import NeighborhoodSerializer
 
 
 class _ReportValidationMixin:
     """Common validation helpers for report serializers."""
-
-    ADDRESS_PATTERN = (
-        r"^\s*\d{1,5}(?:\s?(?:bis|ter|quater|[A-Za-z]))?\s+"
-        r"(?:rue|avenue|av\.?|boulevard|bd\.?|chemin|impasse|allee|all[ée]e|route|"
-        r"place|quai|square|cours|esplanade|faubourg|sentier|sente)\s+"
-        r"[A-Za-zÀ-ÿ0-9'’., -]{2,}\s*$"
-    )
 
     def validate_title(self, value):
         """Reject blank titles."""
@@ -27,7 +21,7 @@ class _ReportValidationMixin:
             raise serializers.ValidationError("Address is required and cannot be blank.")
         normalized_value = " ".join(value.strip().split())
         RegexValidator(
-            regex=self.ADDRESS_PATTERN,
+            regex=REPORT_ADDRESS_PATTERN,
             message=(
                 "Enter an exact address like '12 rue de la Paix'. "
                 "A street-type address must start with a number."
