@@ -28,6 +28,14 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
     caseSensitive: false,
   );
 
+  static final RegExp _exactAddressPattern = RegExp(
+    r'^\s*\d{1,5}(?:\s?(?:bis|ter|quater|[A-Za-z]))?\s+'
+    r'(?:rue|avenue|av\.?|boulevard|bd\.?|chemin|impasse|allee|all[ée]e|route|'
+    r'place|quai|square|cours|esplanade|faubourg|sentier|sente)\s+'
+    r"[A-Za-zÀ-ÿ0-9'’., -]{2,}\s*$",
+    caseSensitive: false,
+  );
+
   final _formKey = GlobalKey<FormState>();
   ProblemType? _selectedProblemType;
   late final TextEditingController _titleController;
@@ -191,7 +199,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                 if (trimmed.isEmpty) {
                   return ReportTexts.addressRequired;
                 }
-                if (!_exactAddressPattern.hasMatch(trimmed)) {
+                if (!ValidationPatterns.exactAddress.hasMatch(trimmed)) {
                   return ReportTexts.addressInvalid;
                 }
                 return null;
