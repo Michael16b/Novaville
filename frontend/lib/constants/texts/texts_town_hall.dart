@@ -7,17 +7,17 @@ class TownHallTexts {
   static const title = 'Ma mairie';
 
   /// Page subtitle/description.
-  static const titleDescription = 'Gerez les quartiers de la commune';
+  static const titleDescription = 'Gérez les quartiers de la commune';
 
   /// Floating action button tooltip.
-  static const createNeighborhood = 'Creer un quartier';
+  static const createNeighborhood = 'Créer un quartier';
 
   /// Controls section description.
   static const managementSectionDescription =
       'Ajoutez, modifiez ou supprimez les quartiers de Novaville.';
 
   /// Dialog title for neighborhood creation.
-  static const createDialogTitle = 'Creer un quartier';
+  static const createDialogTitle = 'Créer un quartier';
 
   /// Message shown when opening creation dialog.
   static const createDialogMessage = 'Ajoutez les informations du quartier.';
@@ -47,7 +47,7 @@ class TownHallTexts {
   static const on = 'sur';
 
   /// Previous page tooltip.
-  static const previousPage = 'Page precedente';
+  static const previousPage = 'Page précédente';
 
   /// Next page tooltip.
   static const nextPage = 'Page suivante';
@@ -59,14 +59,14 @@ class TownHallTexts {
   static const postalCodeShort = 'CP';
 
   /// Empty state message.
-  static const noNeighborhoods = 'Aucun quartier enregistre pour le moment.';
+  static const noNeighborhoods = 'Aucun quartier enregistré pour le moment.';
 
   /// Empty state for search results.
   static const noNeighborhoodsFound =
-      'Aucun quartier ne correspond a votre recherche.';
+      'Aucun quartier ne correspond à votre recherche.';
 
   /// Generic irreversible action warning.
-  static const irreversible = 'Cette action est irreversible.';
+  static const irreversible = 'Cette action est irréversible.';
 
   /// Validation error for required fields.
   static const requiredFieldsError =
@@ -79,10 +79,10 @@ class TownHallTexts {
   static const createSuccess = 'Quartier créé avec succès';
 
   /// Create error message.
-  static const createError = 'Erreur lors de la creation du quartier';
+  static const createError = 'Erreur lors de la création du quartier';
 
   /// Update success message.
-  static const updateSuccess = 'Quartier modifie avec succes';
+  static const updateSuccess = 'Quartier modifié avec succès';
 
   /// Update error message.
   static const updateError = 'Erreur lors de la modification du quartier';

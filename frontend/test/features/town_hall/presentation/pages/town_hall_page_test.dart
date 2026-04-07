@@ -34,7 +34,7 @@ void main() {
     return MaterialApp(home: TownHallPage(neighborhoodRepository: repository));
   }
 
-  testWidgets('affiche le header et l etat vide', (tester) async {
+  testWidgets("affiche le header et l'état vide", (tester) async {
     final repository = FakeNeighborhoodRepository();
 
     await tester.pumpWidget(buildTestWidget(repository));

@@ -59,7 +59,8 @@ class AppBanner extends StatelessWidget {
                         onPressed: () => context.go(AppRoutes.home),
                         iconData: Icons.home_outlined,
                       ),
-                    if (authState.user?.role == UserRole.globalAdmin)
+                    if (authState.user?.role == UserRole.globalAdmin ||
+                        authState.user?.role == UserRole.elected)
                       if (isTownHall)
                         CustomElevatedFlatButton(
                           text: AppTextsNavigation.townHallButton,

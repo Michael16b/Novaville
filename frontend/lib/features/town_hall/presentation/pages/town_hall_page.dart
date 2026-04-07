@@ -265,10 +265,7 @@ class _TownHallPageState extends State<TownHallPage> {
   }
 
   int _autoCrossAxisCount(double width) {
-    if (width < 600) return 1;
-    if (width < 900) return 2;
-    if (width < 1200) return 3;
-    return 4;
+    return _maxCardsAllowedForWidth(width);
   }
 
   int _getCrossAxisCount(double width) {
@@ -289,7 +286,7 @@ class _TownHallPageState extends State<TownHallPage> {
         : null;
 
     return DropdownButtonFormField<int?>(
-      initialValue: selectedValue,
+      value: selectedValue,
       isExpanded: true,
       menuMaxHeight: 300,
       borderRadius: BorderRadius.circular(12),
