@@ -1,6 +1,7 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from core.db.models import Report
+from api.v1.patterns import REPORT_ADDRESS_PATTERN
 from api.v1.serializers.user_serializer import UserPublicSerializer
 from api.v1.serializers.neighborhood_serializer import NeighborhoodSerializer
 

@@ -10,10 +10,14 @@ import 'package:frontend/features/reports/data/report_repository.dart';
 /// HTTP-based implementation of [IReportRepository].
 class ReportRepositoryImpl implements IReportRepository {
   /// Creates a [ReportRepositoryImpl].
-  ReportRepositoryImpl({required ApiClient apiClient})
-      : _apiClient = apiClient;
+  ReportRepositoryImpl({
+    required ApiClient publicApiClient,
+    required ApiClient authenticatedApiClient,
+  })  : _publicApiClient = publicApiClient,
+        _authenticatedApiClient = authenticatedApiClient;
 
-  final ApiClient _apiClient;
+  final ApiClient _publicApiClient;
+  final ApiClient _authenticatedApiClient;
 
   @override
   Future<ReportPage> listReports({
@@ -45,7 +49,7 @@ class ReportRepositoryImpl implements IReportRepository {
       url += '&created_after=${createdAfter.toUtc().toIso8601String()}';
     }
 
-    final response = await _apiClient.get(url);
+    final response = await _publicApiClient.get(url);
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
@@ -63,7 +67,7 @@ class ReportRepositoryImpl implements IReportRepository {
 
   @override
   Future<Report> getReport({required int reportId}) async {
-    final response = await _apiClient.get('/api/v1/reports/$reportId/');
+    final response = await _publicApiClient.get('/api/v1/reports/$reportId/');
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
@@ -91,7 +95,7 @@ class ReportRepositoryImpl implements IReportRepository {
     };
     if (neighborhood != null) body['neighborhood'] = neighborhood;
 
-    final response = await _apiClient.post(
+    final response = await _authenticatedApiClient.post(
       '/api/v1/reports/',
       body: body,
     );
@@ -119,7 +123,7 @@ class ReportRepositoryImpl implements IReportRepository {
     if (neighborhood != null) body['neighborhood'] = neighborhood;
     if (problemType != null) body['problem_type'] = problemType;
 
-    final response = await _apiClient.patch(
+    final response = await _authenticatedApiClient.patch(
       '/api/v1/reports/$reportId/',
       body: body,
     );
@@ -136,7 +140,9 @@ class ReportRepositoryImpl implements IReportRepository {
 
   @override
   Future<void> deleteReport({required int reportId}) async {
-    final response = await _apiClient.delete('/api/v1/reports/$reportId/');
+    final response = await _authenticatedApiClient.delete(
+      '/api/v1/reports/$reportId/',
+    );
 
     if (response.statusCode != 204 && response.statusCode != 200) {
       throw Exception(
@@ -150,7 +156,7 @@ class ReportRepositoryImpl implements IReportRepository {
     required int reportId,
     required String status,
   }) async {
-    final response = await _apiClient.post(
+    final response = await _authenticatedApiClient.post(
       '/api/v1/reports/$reportId/update_status/',
       body: {'status': status},
     );
@@ -167,7 +173,7 @@ class ReportRepositoryImpl implements IReportRepository {
 
   @override
   Future<List<Neighborhood>> listNeighborhoods() async {
-    final response = await _apiClient.get('/api/v1/neighborhoods/');
+    final response = await _publicApiClient.get('/api/v1/neighborhoods/');
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);

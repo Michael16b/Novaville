@@ -9,11 +9,15 @@ import 'package:frontend/features/auth/data/auth_storage_impl.dart';
 import 'package:http/http.dart' as http;
 
 /// Factory for creating an [EventRepositoryImpl] configured with
-/// authentication.
+/// public reads and authenticated writes.
 IEventRepository createEventRepository({http.Client? client}) {
   final storage = SecureTokenStorage();
   final baseUrl = AppConfig.apiBaseUrl;
   final httpClient = client ?? http.Client();
+  final publicApiClient = ApiClient(
+    baseUrl: baseUrl,
+    client: httpClient,
+  );
 
   final authenticatedClient = AuthenticatedClientFactory.create(
     storage: storage,
@@ -44,5 +48,8 @@ IEventRepository createEventRepository({http.Client? client}) {
     client: authenticatedClient,
   );
 
-  return EventRepositoryImpl(apiClient: apiClient);
+  return EventRepositoryImpl(
+    publicApiClient: publicApiClient,
+    authenticatedApiClient: apiClient,
+  );
 }

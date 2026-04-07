@@ -9,11 +9,15 @@ import 'package:frontend/features/reports/data/report_repository_impl.dart';
 import 'package:http/http.dart' as http;
 
 /// Factory for creating a [ReportRepositoryImpl] configured with
-/// authentication.
+/// public reads and authenticated writes.
 IReportRepository createReportRepository({http.Client? client}) {
   final storage = SecureTokenStorage();
   final baseUrl = AppConfig.apiBaseUrl;
   final httpClient = client ?? http.Client();
+  final publicApiClient = ApiClient(
+    baseUrl: baseUrl,
+    client: httpClient,
+  );
 
   // Create the authenticated client with automatic token refresh handling
   final authenticatedClient = AuthenticatedClientFactory.create(
@@ -45,6 +49,8 @@ IReportRepository createReportRepository({http.Client? client}) {
     client: authenticatedClient,
   );
 
-  return ReportRepositoryImpl(apiClient: apiClient);
+  return ReportRepositoryImpl(
+    publicApiClient: publicApiClient,
+    authenticatedApiClient: apiClient,
+  );
 }
-
