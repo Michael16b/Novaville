@@ -22,7 +22,7 @@ class ReportSerializer(_TitleValidationMixin, serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = [
-            'id', 'title', 'problem_type', 'description', 'created_at',
+            'id', 'title', 'problem_type', 'description', 'exact_address', 'created_at',
             'status', 'user', 'neighborhood', 'neighborhood_detail'
         ]
         read_only_fields = ['id', 'created_at', 'user']
@@ -33,5 +33,8 @@ class ReportCreateSerializer(_TitleValidationMixin, serializers.ModelSerializer)
     
     class Meta:
         model = Report
-        fields = ['id', 'title', 'problem_type', 'description', 'neighborhood']
+        fields = ['id', 'title', 'problem_type', 'description', 'exact_address', 'neighborhood']
         read_only_fields = ['id']
+        extra_kwargs = {
+            'exact_address': {'required': False, 'allow_blank': True},
+        }
