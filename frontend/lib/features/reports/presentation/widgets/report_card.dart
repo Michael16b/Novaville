@@ -42,8 +42,9 @@ class ReportCard extends StatelessWidget {
     final authorName =
         '${report.user.firstName} ${report.user.lastName}'.trim();
     final dateStr = _formatDate(report.createdAt);
-    final neighborhoodName =
-        report.neighborhoodDetail?.name ?? ReportTexts.noNeighborhood;
+    final locationLabel = report.address.trim().isNotEmpty
+        ? report.address
+        : report.neighborhoodDetail?.name ?? ReportTexts.noNeighborhood;
     final canModify = isOwner || isStaff;
     final isResolved = report.status == ReportStatus.resolved;
     final typeColor = _problemTypeColor(report.problemType);
@@ -57,7 +58,7 @@ class ReportCard extends StatelessWidget {
             : null,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: [
             // ── Header ──
             Container(
@@ -131,47 +132,47 @@ class ReportCard extends StatelessWidget {
             ),
 
             // ── Body ──
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title
-                  if (report.title.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Text(
-                        report.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                      ),
-                    ),
-                  // Description
-                  Text(
-                    report.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          height: 1.4,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (report.title.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Text(
+                          report.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
                         ),
-                  ),
-                  const SizedBox(height: 10),
-                  // Info rows
-                  _InfoRow(
-                    icon: Icons.location_on_outlined,
-                    text: neighborhoodName,
-                  ),
-                  const SizedBox(height: 6),
-                  _InfoRow(
-                    icon: Icons.person_outline_rounded,
-                    text: authorName.isNotEmpty
-                        ? authorName
-                        : report.user.username,
-                  ),
-                ],
+                      ),
+                    Text(
+                      report.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            height: 1.4,
+                          ),
+                    ),
+                    const SizedBox(height: 10),
+                    _InfoRow(
+                      icon: Icons.location_on_outlined,
+                      text: locationLabel,
+                    ),
+                    const SizedBox(height: 6),
+                    _InfoRow(
+                      icon: Icons.person_outline_rounded,
+                      text: authorName.isNotEmpty
+                          ? authorName
+                          : report.user.username,
+                    ),
+                    const Spacer(),
+                  ],
+                ),
               ),
             ),
 
@@ -179,40 +180,44 @@ class ReportCard extends StatelessWidget {
             if (canModify)
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                child: Row(
-                  children: [
-                    if (isStaff) ...[
-                      Expanded(
-                        child: _ActionButton(
-                          icon: Icons.sync_outlined,
-                          label: ReportTexts.updateStatus,
-                          color: AppColors.info,
-                          onTap: onStatusChange != null
-                              ? () => onStatusChange!(report)
-                              : null,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Row(
+                      children: [
+                        if (isStaff) ...[
+                          Expanded(
+                            child: _ActionButton(
+                              icon: Icons.sync_outlined,
+                              label: ReportTexts.updateStatus,
+                              color: AppColors.info,
+                              onTap: onStatusChange != null
+                                  ? () => onStatusChange!(report)
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                        Expanded(
+                          child: _ActionButton(
+                            icon: Icons.edit_outlined,
+                            label: AppTextsGeneral.edit,
+                            color: AppColors.primary,
+                            onTap: onEdit != null ? () => onEdit!(report) : null,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                    ],
-                    Expanded(
-                      child: _ActionButton(
-                        icon: Icons.edit_outlined,
-                        label: AppTextsGeneral.edit,
-                        color: AppColors.primary,
-                        onTap: onEdit != null ? () => onEdit!(report) : null,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: _ActionButton(
-                        icon: Icons.delete_outline_rounded,
-                        label: AppTextsGeneral.delete,
-                        color: AppColors.error,
-                        onTap:
-                            onDelete != null ? () => onDelete!(report) : null,
-                      ),
-                    ),
-                  ],
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: _ActionButton(
+                            icon: Icons.delete_outline_rounded,
+                            label: AppTextsGeneral.delete,
+                            color: AppColors.error,
+                            onTap:
+                                onDelete != null ? () => onDelete!(report) : null,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
           ],

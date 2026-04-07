@@ -30,11 +30,25 @@ class TestReportsAPI:
             "title": "Street cleanliness issue",
             "problem_type": "CLEANLINESS",
             "description": "Trash on the street",
+            "address": "15 avenue Victor Hugo",
             "neighborhood": neighborhood.id
         }
         response = authenticated_client.post("/api/v1/reports/", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["problem_type"] == "CLEANLINESS"
+        assert response.data["address"] == "15 avenue Victor Hugo"
+
+    def test_create_report_requires_exact_address(self, authenticated_client):
+        """Test creating a report requires a valid exact address."""
+        data = {
+            "title": "Street cleanliness issue",
+            "problem_type": "CLEANLINESS",
+            "description": "Trash on the street",
+            "address": "avenue Victor Hugo",
+        }
+        response = authenticated_client.post("/api/v1/reports/", data, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "address" in response.data
     
     def test_retrieve_report(self, authenticated_client, report):
         """Test retrieving a specific report"""
@@ -50,7 +64,10 @@ class TestReportsAPI:
     
     def test_update_report(self, authenticated_client, report):
         """Test updating a report (only author can update)"""
-        data = {"description": "Updated description"}
+        data = {
+            "description": "Updated description",
+            "address": "18 boulevard Saint-Germain",
+        }
         response = authenticated_client.patch(
             f"/api/v1/reports/{report.id}/",
             data,
@@ -58,6 +75,7 @@ class TestReportsAPI:
         )
         assert response.status_code == status.HTTP_200_OK
         assert response.data["description"] == "Updated description"
+        assert response.data["address"] == "18 boulevard Saint-Germain"
     
     def test_delete_report(self, authenticated_client, report):
         """Test deleting a report"""
@@ -113,6 +131,7 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
             description="Report 1",
+            address="1 rue A",
             status=ReportStatusEnum.RECORDED,
             neighborhood=neighborhood
         )
@@ -120,6 +139,7 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.LIGHTING,
             description="Report 2",
+            address="2 rue B",
             status=ReportStatusEnum.IN_PROGRESS,
             neighborhood=neighborhood
         )
@@ -140,12 +160,14 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
             description="Report in my neighborhood",
+            address="3 rue C",
             neighborhood=neighborhood
         )
         Report.objects.create(
             user=citizen_user,
             problem_type=ProblemTypeEnum.LIGHTING,
             description="Report in other neighborhood",
+            address="4 rue D",
             neighborhood=other_neighborhood
         )
         
@@ -165,6 +187,7 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
             description="Multi attr report",
+            address="5 rue E",
             status=ReportStatusEnum.IN_PROGRESS,
             neighborhood=neighborhood,
         )
@@ -172,6 +195,7 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
             description="Wrong status",
+            address="6 rue F",
             status=ReportStatusEnum.RECORDED,
             neighborhood=neighborhood,
         )
@@ -179,6 +203,7 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.LIGHTING,
             description="Wrong problem type",
+            address="7 rue G",
             status=ReportStatusEnum.IN_PROGRESS,
             neighborhood=neighborhood,
         )
@@ -186,6 +211,7 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
             description="Wrong neighborhood",
+            address="8 rue H",
             status=ReportStatusEnum.IN_PROGRESS,
             neighborhood=other_neighborhood,
         )
@@ -249,12 +275,14 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
             description="Unique search term xyzzy",
+            address="9 rue I",
             neighborhood=neighborhood,
         )
         Report.objects.create(
             user=citizen_user,
             problem_type=ProblemTypeEnum.LIGHTING,
             description="Other report without the term",
+            address="10 rue J",
             neighborhood=neighborhood,
         )
 
@@ -270,6 +298,7 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
             description="Old report",
+            address="11 rue K",
             neighborhood=neighborhood,
         )
         # Back-date the old report
@@ -281,6 +310,7 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.LIGHTING,
             description="New report",
+            address="12 rue L",
             neighborhood=neighborhood,
         )
 
@@ -298,6 +328,7 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
             description="Old report for before filter",
+            address="13 rue M",
             neighborhood=neighborhood,
         )
         Report.objects.filter(id=old_report.id).update(
@@ -308,6 +339,7 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.LIGHTING,
             description="New report for before filter",
+            address="14 rue N",
             neighborhood=neighborhood,
         )
 
@@ -318,3 +350,23 @@ class TestReportsAPI:
         result_ids = [r["id"] for r in results]
         assert old_report.id in result_ids
         assert new_report.id not in result_ids
+
+    def test_legacy_report_with_neighborhood_only_is_still_readable(
+        self,
+        authenticated_client,
+        citizen_user,
+        neighborhood,
+    ):
+        """Test legacy reports without exact address still exist and remain readable."""
+        legacy_report = Report.objects.create(
+            user=citizen_user,
+            problem_type=ProblemTypeEnum.ROADS,
+            description="Legacy report",
+            neighborhood=neighborhood,
+        )
+
+        response = authenticated_client.get(f"/api/v1/reports/{legacy_report.id}/")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["neighborhood"] == neighborhood.id
+        assert response.data["address"] == ""

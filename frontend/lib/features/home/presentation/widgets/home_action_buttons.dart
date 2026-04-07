@@ -30,18 +30,11 @@ class _HomeActionButtonsState extends State<HomeActionButtons> {
 
     try {
       final reportRepository = createReportRepository();
-      final neighborhoods = await reportRepository.listNeighborhoods();
       if (!mounted) return;
-
-      setState(() {
-        _isCreatingReport = false;
-      });
 
       final result = await showDialog<Map<String, dynamic>>(
         context: context,
-        builder: (dialogContext) => ReportFormDialog(
-          neighborhoods: neighborhoods,
-        ),
+        builder: (dialogContext) => const ReportFormDialog(),
       );
 
       if (result != null && mounted) {
@@ -49,11 +42,16 @@ class _HomeActionButtonsState extends State<HomeActionButtons> {
           title: result['title'] as String,
           problemType: result['problem_type'] as String,
           description: result['description'] as String,
-          neighborhood: result['neighborhood'] as int,
+          address: result['address'] as String,
         );
         if (mounted) {
           CustomSnackBar.showSuccess(context, ReportTexts.createSuccess);
         }
+      }
+      if (mounted) {
+        setState(() {
+          _isCreatingReport = false;
+        });
       }
     } catch (e) {
       if (mounted) {

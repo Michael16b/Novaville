@@ -101,6 +101,7 @@ def report(citizen_user, neighborhood):
         title="Test report",
         problem_type=ProblemTypeEnum.ROADS,
         description="Test report description",
+        address="12 rue de la Paix",
         status=ReportStatusEnum.RECORDED,
         neighborhood=neighborhood
     )

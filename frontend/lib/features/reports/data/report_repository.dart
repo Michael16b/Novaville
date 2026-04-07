@@ -57,6 +57,7 @@ abstract class IReportRepository {
     required String title,
     required String problemType,
     required String description,
+    required String address,
     int? neighborhood,
   });
 
@@ -65,6 +66,7 @@ abstract class IReportRepository {
     required int reportId,
     String? title,
     String? description,
+    String? address,
     int? neighborhood,
     String? problemType,
   });

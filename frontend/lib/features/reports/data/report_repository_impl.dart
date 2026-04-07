@@ -80,12 +80,14 @@ class ReportRepositoryImpl implements IReportRepository {
     required String title,
     required String problemType,
     required String description,
+    required String address,
     int? neighborhood,
   }) async {
     final body = <String, dynamic>{
       'title': title,
       'problem_type': problemType,
       'description': description,
+      'address': address,
     };
     if (neighborhood != null) body['neighborhood'] = neighborhood;
 
@@ -106,12 +108,14 @@ class ReportRepositoryImpl implements IReportRepository {
     required int reportId,
     String? title,
     String? description,
+    String? address,
     int? neighborhood,
     String? problemType,
   }) async {
     final body = <String, dynamic>{};
     if (title != null) body['title'] = title;
     if (description != null) body['description'] = description;
+    if (address != null) body['address'] = address;
     if (neighborhood != null) body['neighborhood'] = neighborhood;
     if (problemType != null) body['problem_type'] = problemType;
 

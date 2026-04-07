@@ -95,6 +95,7 @@ class ReportCreateRequested extends ReportsEvent {
     required this.title,
     required this.problemType,
     required this.description,
+    required this.address,
     this.neighborhood,
   });
 
@@ -107,6 +108,9 @@ class ReportCreateRequested extends ReportsEvent {
   /// Description of the issue.
   final String description;
 
+  /// Exact address of the issue.
+  final String address;
+
   /// Neighborhood ID.
   final int? neighborhood;
 
@@ -115,6 +119,7 @@ class ReportCreateRequested extends ReportsEvent {
         title,
         problemType,
         description,
+        address,
         neighborhood,
       ];
 }
@@ -156,6 +161,7 @@ class ReportUpdateRequested extends ReportsEvent {
     required this.reportId,
     this.title,
     this.description,
+    this.address,
     this.neighborhood,
     this.problemType,
   });
@@ -169,6 +175,9 @@ class ReportUpdateRequested extends ReportsEvent {
   /// Updated description.
   final String? description;
 
+  /// Updated exact address.
+  final String? address;
+
   /// Updated neighborhood ID.
   final int? neighborhood;
 
@@ -180,6 +189,7 @@ class ReportUpdateRequested extends ReportsEvent {
         reportId,
         title,
         description,
+        address,
         neighborhood,
         problemType,
       ];

@@ -21,6 +21,12 @@ class Report(models.Model):
         help_text="Type of problem reported"
     )
     description = models.TextField(help_text="Detailed description of the issue")
+    address = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Exact address where the issue was reported"
+    )
     created_at = models.DateTimeField(auto_now_add=True, help_text="Report creation date")
     status = models.CharField(
         max_length=20,
