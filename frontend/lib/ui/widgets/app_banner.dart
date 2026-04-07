@@ -20,6 +20,7 @@ class AppBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final isHomePage = currentLocation == AppRoutes.home;
     final isUserAccounts = currentLocation == AppRoutes.userAccounts;
+    final isTownHall = currentLocation == AppRoutes.townHall;
     final authState = context.watch<AuthBloc>().state;
     final isAuthenticated = authState.status == AuthStatus.authenticated;
     final authBloc = context.read<AuthBloc>();
@@ -59,7 +60,19 @@ class AppBanner extends StatelessWidget {
                         iconData: Icons.home_outlined,
                       ),
                     if (authState.user?.role == UserRole.globalAdmin)
-                      if (isUserAccounts)
+                      if (isTownHall)
+                        CustomElevatedFlatButton(
+                          text: AppTextsNavigation.townHallButton,
+                          onPressed: () {},
+                          iconData: Icons.account_balance_outlined,
+                        )
+                      else
+                        CustomElevatedStrokedButton(
+                          text: AppTextsNavigation.townHallButton,
+                          onPressed: () => context.go(AppRoutes.townHall),
+                          iconData: Icons.account_balance_outlined,
+                        ),
+                    if (isUserAccounts)
                         CustomElevatedFlatButton(
                           text: AppTextsNavigation.userAccountButton,
                           onPressed: () {},
