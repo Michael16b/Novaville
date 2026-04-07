@@ -12,6 +12,7 @@ import 'package:frontend/features/news/presentation/pages/news_page.dart';
 import 'package:frontend/features/reports/presentation/pages/reports_page.dart';
 import 'package:frontend/features/surveys/presentation/pages/surveys_page.dart';
 import 'package:frontend/features/useful_info/presentation/pages/useful_info_page_provider.dart';
+import 'package:frontend/features/town_hall/presentation/pages/town_hall_page.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/presentation/pages/bulk_user_creation_page.dart';
 import 'package:frontend/features/users/presentation/pages/credentials_share_page.dart';
@@ -174,6 +175,17 @@ GoRouter buildRouter(AuthBloc authBloc) {
             path: AppRoutes.reports,
             pageBuilder: (context, state) =>
                 _buildPage(state: state, child: const ReportsPage()),
+          ),
+          GoRoute(
+            path: AppRoutes.townHall,
+            redirect: (context, state) => anyRoleRedirect(
+              userRole: authBloc.state.user?.role,
+              allowedRoles: [UserRole.elected, UserRole.globalAdmin],
+            ),
+            pageBuilder: (context, state) => _buildPage(
+              state: state,
+              child: const TownHallPage(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.surveys,
