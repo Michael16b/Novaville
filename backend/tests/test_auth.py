@@ -115,8 +115,10 @@ class TestPermissions:
         response = authenticated_client.post(
             "/api/v1/reports/",
             {
+                "title": "Road issue",
                 "problem_type": "ROADS",
                 "description": "Test report",
+                "address": "10 avenue Victor Hugo",
                 "neighborhood": neighborhood.id
             },
             format="json"

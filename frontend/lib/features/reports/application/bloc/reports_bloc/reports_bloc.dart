@@ -155,6 +155,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         title: event.title,
         problemType: event.problemType,
         description: event.description,
+        address: event.address,
         neighborhood: event.neighborhood,
       );
       _pageCache.clear();
@@ -273,6 +274,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         reportId: event.reportId,
         title: event.title,
         description: event.description,
+        address: event.address,
         neighborhood: event.neighborhood,
         problemType: event.problemType,
       );

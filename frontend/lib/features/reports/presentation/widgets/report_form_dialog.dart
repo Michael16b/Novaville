@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_reports.dart';
-import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
@@ -11,13 +11,9 @@ import 'package:frontend/ui/widgets/styled_dialog.dart';
 class ReportFormDialog extends StatefulWidget {
   /// Creates a [ReportFormDialog].
   const ReportFormDialog({
-    required this.neighborhoods,
     this.report,
     super.key,
   });
-
-  /// Available neighborhoods.
-  final List<Neighborhood> neighborhoods;
 
   /// Report to edit (null for creation).
   final Report? report;
@@ -29,9 +25,9 @@ class ReportFormDialog extends StatefulWidget {
 class _ReportFormDialogState extends State<ReportFormDialog> {
   final _formKey = GlobalKey<FormState>();
   ProblemType? _selectedProblemType;
-  int? _selectedNeighborhood;
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
+  late final TextEditingController _addressController;
 
   bool get _isEditing => widget.report != null;
 
@@ -39,23 +35,12 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
   void initState() {
     super.initState();
     _selectedProblemType = widget.report?.problemType;
-
-    // Ensure the neighborhood ID exists in the available list,
-    // otherwise reset to null to avoid DropdownButton assertion.
-    final reportNeighborhoodId = widget.report?.neighborhoodId;
-    final neighborhoodIds =
-        widget.neighborhoods.map((n) => n.id).toSet();
-    _selectedNeighborhood =
-        (reportNeighborhoodId != null &&
-                neighborhoodIds.contains(reportNeighborhoodId))
-            ? reportNeighborhoodId
-            : null;
-
-    _titleController = TextEditingController(
-      text: widget.report?.title ?? '',
-    );
+    _titleController = TextEditingController(text: widget.report?.title ?? '');
     _descriptionController = TextEditingController(
       text: widget.report?.description ?? '',
+    );
+    _addressController = TextEditingController(
+      text: widget.report?.address ?? '',
     );
   }
 
@@ -63,14 +48,13 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final title = _isEditing
-        ? ReportTexts.editReport
-        : ReportTexts.createReport;
+    final title = _isEditing ? ReportTexts.editReport : ReportTexts.createReport;
     final actionLabel =
         _isEditing ? AppTextsGeneral.save : AppTextsGeneral.create;
 
@@ -96,10 +80,9 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Problem type
             _buildLabel('${ReportTexts.problemTypeLabel} *'),
             DropdownButtonFormField<ProblemType>(
-              value: _selectedProblemType,
+              initialValue: _selectedProblemType,
               isExpanded: true,
               menuMaxHeight: 300,
               borderRadius: BorderRadius.circular(12),
@@ -143,10 +126,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                 return null;
               },
             ),
-
             const SizedBox(height: 18),
-
-            // Title
             _buildLabel('${ReportTexts.titleLabel} *'),
             TextFormField(
               controller: _titleController,
@@ -165,10 +145,7 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                 return null;
               },
             ),
-
             const SizedBox(height: 18),
-
-            // Description
             _buildLabel('${ReportTexts.descriptionLabel} *'),
             TextFormField(
               controller: _descriptionController,
@@ -188,28 +165,31 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                 return null;
               },
             ),
-
             const SizedBox(height: 18),
-
-            // Neighborhood
-            _buildLabel('${ReportTexts.neighborhoodLabel} *'),
-            _NeighborhoodAutocompleteField(
-              neighborhoods: widget.neighborhoods,
-              initialNeighborhoodId: _selectedNeighborhood,
-              onChanged: (value) {
-                _selectedNeighborhood = value;
-              },
+            _buildLabel('${ReportTexts.addressLabel} *'),
+            TextFormField(
+              controller: _addressController,
+              maxLength: 255,
+              textInputAction: TextInputAction.done,
+              decoration: InputDecoration(
+                hintText: ReportTexts.addressHint,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.all(14),
+              ),
               validator: (value) {
-                if (value == null) {
-                  return ReportTexts.neighborhoodRequired;
+                final trimmed = value?.trim() ?? '';
+                if (trimmed.isEmpty) {
+                  return ReportTexts.addressRequired;
+                }
+                if (!ValidationPatterns.exactAddress.hasMatch(trimmed)) {
+                  return ReportTexts.addressInvalid;
                 }
                 return null;
               },
             ),
-
             const SizedBox(height: 14),
-
-            // Required fields hint
             Row(
               children: [
                 Container(
@@ -225,12 +205,14 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                   ),
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  AppTextsGeneral.requiredFieldsHint,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.secondaryText,
-                        fontStyle: FontStyle.italic,
-                      ),
+                Expanded(
+                  child: Text(
+                    AppTextsGeneral.requiredFieldsHint,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.secondaryText,
+                          fontStyle: FontStyle.italic,
+                        ),
+                  ),
                 ),
               ],
             ),
@@ -278,172 +260,14 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
   void _onSubmit() {
     if (!_formKey.currentState!.validate()) return;
 
-    final result = {
-      'title': _titleController.text.trim(),
-      'problem_type': _selectedProblemType!.toJson(),
-      'description': _descriptionController.text.trim(),
-      'neighborhood': _selectedNeighborhood!,
-    };
-
-    Navigator.pop(context, result);
-  }
-}
-
-// ─── Neighborhood Autocomplete Field ──────────────────────────────
-
-/// Autocomplete field for selecting a neighborhood with search.
-class _NeighborhoodAutocompleteField extends StatefulWidget {
-  const _NeighborhoodAutocompleteField({
-    required this.neighborhoods,
-    required this.initialNeighborhoodId,
-    required this.onChanged,
-    this.validator,
-  });
-
-  final List<Neighborhood> neighborhoods;
-  final int? initialNeighborhoodId;
-  final ValueChanged<int?> onChanged;
-  final String? Function(int?)? validator;
-
-  @override
-  State<_NeighborhoodAutocompleteField> createState() =>
-      _NeighborhoodAutocompleteFieldState();
-}
-
-class _NeighborhoodAutocompleteFieldState
-    extends State<_NeighborhoodAutocompleteField> {
-  late TextEditingController _controller;
-  int? _selectedId;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedId = widget.initialNeighborhoodId;
-    _controller = TextEditingController(text: _labelForId(_selectedId));
-  }
-
-  @override
-  void didUpdateWidget(covariant _NeighborhoodAutocompleteField oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialNeighborhoodId != widget.initialNeighborhoodId) {
-      _selectedId = widget.initialNeighborhoodId;
-      _controller.text = _labelForId(_selectedId);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  String _labelForId(int? id) {
-    if (id == null) return '';
-    return widget.neighborhoods
-            .where((n) => n.id == id)
-            .map((n) => n.name)
-            .firstOrNull ??
-        '';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Autocomplete<Neighborhood>(
-      displayStringForOption: (n) => n.name,
-      optionsBuilder: (textEditingValue) {
-        final query = textEditingValue.text.toLowerCase().trim();
-        if (query.isEmpty) {
-          return widget.neighborhoods;
-        }
-        return widget.neighborhoods.where(
-          (n) => n.name.toLowerCase().contains(query),
-        );
-      },
-      onSelected: (neighborhood) {
-        setState(() {
-          _selectedId = neighborhood.id;
-          _controller.text = neighborhood.name;
-        });
-        widget.onChanged(neighborhood.id);
-        // Fermer le focus pour fermer la dropdown
-        Future.microtask(() {
-          FocusScope.of(context).unfocus();
-        });
-      },
-      fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
-        // Synchronize the controller only when not focused to avoid
-        // resetting user input and cursor position while typing.
-        if (!focusNode.hasFocus && controller.text != _controller.text) {
-          controller.text = _controller.text;
-        }
-
-        return TextFormField(
-          controller: controller,
-          focusNode: focusNode,
-          validator: (_) => widget.validator?.call(_selectedId),
-          decoration: InputDecoration(
-            hintText: ReportTexts.selectNeighborhood,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 12,
-            ),
-            suffixIcon: _selectedId != null
-                ? IconButton(
-                    icon: const Icon(Icons.close, size: 18),
-                    onPressed: () {
-                      setState(() {
-                        _selectedId = null;
-                        controller.clear();
-                        _controller.clear();
-                      });
-                      widget.onChanged(null);
-                    },
-                    tooltip: ReportTexts.selectNeighborhood,
-                  )
-                : const Icon(Icons.arrow_drop_down, size: 20),
-          ),
-          onTap: () {
-            controller.selection = TextSelection(
-              baseOffset: 0,
-              extentOffset: controller.text.length,
-            );
-          },
-          onFieldSubmitted: (_) => onSubmitted(),
-        );
-      },
-      optionsViewBuilder: (context, onSelected, options) {
-        return Align(
-          alignment: Alignment.topLeft,
-          child: Material(
-            elevation: 4,
-            borderRadius: BorderRadius.circular(12),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: 250,
-                minWidth: MediaQuery.of(context).size.width * 0.3,
-                maxWidth: MediaQuery.of(context).size.width * 0.9,
-              ),
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                itemCount: options.length,
-                itemBuilder: (context, index) {
-                  final neighborhood = options.elementAt(index);
-                  final isSelected = neighborhood.id == _selectedId;
-                  return ListTile(
-                    dense: true,
-                    title: Text(neighborhood.name),
-                    selected: isSelected,
-                    onTap: () => onSelected(neighborhood),
-                  );
-                },
-              ),
-            ),
-          ),
-        );
+    Navigator.pop(
+      context,
+      {
+        'title': _titleController.text.trim(),
+        'problem_type': _selectedProblemType!.toJson(),
+        'description': _descriptionController.text.trim(),
+        'address': _addressController.text.trim(),
+        'neighborhood': widget.report?.neighborhoodId,
       },
     );
   }

@@ -8,14 +8,18 @@ import 'package:frontend/features/agenda/data/models/community_event.dart';
 /// HTTP-based implementation of [IEventRepository].
 class EventRepositoryImpl implements IEventRepository {
   /// Creates an [EventRepositoryImpl].
-  EventRepositoryImpl({required ApiClient apiClient})
-      : _apiClient = apiClient;
+  EventRepositoryImpl({
+    required ApiClient publicApiClient,
+    required ApiClient authenticatedApiClient,
+  })  : _publicApiClient = publicApiClient,
+        _authenticatedApiClient = authenticatedApiClient;
 
-  final ApiClient _apiClient;
+  final ApiClient _publicApiClient;
+  final ApiClient _authenticatedApiClient;
 
   @override
   Future<List<ThemeItem>> listThemes() async {
-    final response = await _apiClient.get('/api/v1/event-themes/');
+    final response = await _publicApiClient.get('/api/v1/event-themes/');
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
@@ -65,7 +69,7 @@ class EventRepositoryImpl implements IEventRepository {
       url += '&start_date__lte=${startDateLte.toUtc().toIso8601String()}';
     }
 
-    final response = await _apiClient.get(url);
+    final response = await _publicApiClient.get(url);
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
@@ -98,7 +102,7 @@ class EventRepositoryImpl implements IEventRepository {
 
   @override
   Future<CommunityEvent> getEvent({required int eventId}) async {
-    final response = await _apiClient.get('/api/v1/events/$eventId/');
+    final response = await _publicApiClient.get('/api/v1/events/$eventId/');
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
@@ -126,7 +130,7 @@ class EventRepositoryImpl implements IEventRepository {
     };
     if (theme != null) body['theme'] = theme;
 
-    final response = await _apiClient.post(
+    final response = await _authenticatedApiClient.post(
       '/api/v1/events/',
       body: body,
     );
@@ -158,7 +162,7 @@ class EventRepositoryImpl implements IEventRepository {
     }
     if (theme != null) body['theme'] = theme;
 
-    final response = await _apiClient.patch(
+    final response = await _authenticatedApiClient.patch(
       '/api/v1/events/$eventId/',
       body: body,
     );
@@ -175,8 +179,9 @@ class EventRepositoryImpl implements IEventRepository {
 
   @override
   Future<void> deleteEvent({required int eventId}) async {
-    final response =
-        await _apiClient.delete('/api/v1/events/$eventId/');
+    final response = await _authenticatedApiClient.delete(
+      '/api/v1/events/$eventId/',
+    );
 
     if (response.statusCode != 204) {
       throw Exception(

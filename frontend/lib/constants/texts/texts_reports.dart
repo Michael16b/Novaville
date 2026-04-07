@@ -1,5 +1,3 @@
-import 'package:frontend/constants/texts/texts_general.dart';
-
 /// Text constants for the reports feature.
 /// Variable names are in English, values in French.
 class ReportTexts {
@@ -32,6 +30,9 @@ class ReportTexts {
   /// Neighborhood form label.
   static const neighborhoodLabel = 'Quartier';
 
+  /// Exact address form label.
+  static const addressLabel = 'Adresse exacte';
+
   /// Status form label.
   static const statusLabel = 'Statut';
 
@@ -43,6 +44,9 @@ class ReportTexts {
 
   /// Placeholder for neighborhood dropdown.
   static const selectNeighborhood = 'Sélectionnez un quartier';
+
+  /// Hint for the exact address field.
+  static const addressHint = 'Ex. 12 rue de la Paix';
 
   /// Placeholder for status dropdown.
   static const selectStatus = 'Sélectionnez un statut';
@@ -127,6 +131,13 @@ class ReportTexts {
 
   /// Neighborhood required validation message.
   static const neighborhoodRequired = 'Le quartier est obligatoire';
+
+  /// Address required validation message.
+  static const addressRequired = "L'adresse exacte est obligatoire";
+
+  /// Address format validation message.
+  static const addressInvalid =
+      "Utilisez une adresse comme '12 rue de la Paix'";
 
   /// Status required validation message.
   static const statusRequired = 'Le statut est obligatoire';

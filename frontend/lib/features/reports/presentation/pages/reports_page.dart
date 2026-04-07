@@ -746,10 +746,10 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     final cardWidth =
         (width - (spacing * (chosenCount - 1))) / chosenCount;
     final estimatedCardHeight = chosenCount == 1
-        ? 210.0
+        ? 285.0
         : chosenCount == 2
-            ? 230.0
-            : 250.0;
+            ? 255.0
+            : 275.0;
 
     final childAspectRatio =
         (cardWidth / estimatedCardHeight).clamp(0.9, 2.2);
@@ -934,12 +934,9 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
 
   Future<void> _showCreateDialog(BuildContext context) async {
     final bloc = context.read<ReportsBloc>();
-    final neighborhoods = bloc.state.neighborhoods;
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (dialogContext) => ReportFormDialog(
-        neighborhoods: neighborhoods,
-      ),
+      builder: (dialogContext) => const ReportFormDialog(),
     );
 
     if (result != null && mounted) {
@@ -948,6 +945,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
           title: result['title'] as String,
           problemType: result['problem_type'] as String,
           description: result['description'] as String,
+          address: result['address'] as String,
           neighborhood: result['neighborhood'] as int?,
         ),
       );
@@ -959,13 +957,9 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     Report report,
   ) async {
     final bloc = context.read<ReportsBloc>();
-    final neighborhoods = bloc.state.neighborhoods;
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (dialogContext) => ReportFormDialog(
-        neighborhoods: neighborhoods,
-        report: report,
-      ),
+      builder: (dialogContext) => ReportFormDialog(report: report),
     );
 
     if (result != null && mounted) {
@@ -975,6 +969,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
           title: result['title'] as String?,
           problemType: result['problem_type'] as String?,
           description: result['description'] as String?,
+          address: result['address'] as String?,
           neighborhood: result['neighborhood'] as int?,
         ),
       );

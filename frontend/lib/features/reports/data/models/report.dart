@@ -12,6 +12,7 @@ class Report extends Equatable {
     required this.title,
     required this.problemType,
     required this.description,
+    required this.address,
     required this.createdAt,
     required this.status,
     required this.user,
@@ -27,6 +28,7 @@ class Report extends Equatable {
       title: (json['title'] as String?) ?? '',
       problemType: ProblemType.fromString(json['problem_type'] as String),
       description: json['description'] as String,
+      address: (json['address'] as String?) ?? '',
       createdAt: DateTime.parse(json['created_at'] as String),
       status: ReportStatus.fromString(json['status'] as String),
       user: User.fromJson(json['user'] as Map<String, dynamic>),
@@ -51,6 +53,9 @@ class Report extends Equatable {
   /// Description of the issue.
   final String description;
 
+  /// Exact address of the issue.
+  final String address;
+
   /// Creation date.
   final DateTime createdAt;
 
@@ -74,6 +79,7 @@ class Report extends Equatable {
       'title': title,
       'problem_type': problemType.toJson(),
       'description': description,
+      'address': address,
       'created_at': createdAt.toIso8601String(),
       'status': status.toJson(),
       if (neighborhoodId != null) 'neighborhood': neighborhoodId,
@@ -86,6 +92,7 @@ class Report extends Equatable {
     String? title,
     ProblemType? problemType,
     String? description,
+    String? address,
     DateTime? createdAt,
     ReportStatus? status,
     User? user,
@@ -97,6 +104,7 @@ class Report extends Equatable {
       title: title ?? this.title,
       problemType: problemType ?? this.problemType,
       description: description ?? this.description,
+      address: address ?? this.address,
       createdAt: createdAt ?? this.createdAt,
       status: status ?? this.status,
       user: user ?? this.user,
@@ -111,6 +119,7 @@ class Report extends Equatable {
         title,
         problemType,
         description,
+        address,
         createdAt,
         status,
         user,
@@ -118,4 +127,3 @@ class Report extends Equatable {
         neighborhoodDetail,
       ];
 }
-
