@@ -73,7 +73,8 @@ class AppBanner extends StatelessWidget {
                           onPressed: () => context.go(AppRoutes.townHall),
                           iconData: Icons.account_balance_outlined,
                         ),
-                    if (isUserAccounts)
+                    if (authState.user?.role == UserRole.globalAdmin)
+                      if (isUserAccounts)
                         CustomElevatedFlatButton(
                           text: AppTextsNavigation.userAccountButton,
                           onPressed: () {},
@@ -123,8 +124,10 @@ class AppBanner extends StatelessWidget {
                     ),
                   ),
                   MenuItemButton(
-                    onPressed: () =>
-                        authBloc.add(const AuthLogoutRequested()),
+                    onPressed: () {
+                      authBloc.add(const AuthLogoutRequested());
+                      context.go(AppRoutes.home);
+                    },
                     leadingIcon: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
