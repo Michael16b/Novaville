@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_reports.dart';
+import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
@@ -20,22 +20,6 @@ class ReportFormDialog extends StatefulWidget {
 }
 
 class _ReportFormDialogState extends State<ReportFormDialog> {
-  static final RegExp _exactAddressPattern = RegExp(
-    r'^\s*\d{1,5}(?:\s?(?:bis|ter|quater|[A-Za-z]))?\s+'
-    r'(?:rue|avenue|av\.?|boulevard|bd\.?|chemin|impasse|allee|all[ée]e|route|'
-    r'place|quai|square|cours|esplanade|faubourg|sentier|sente)\s+'
-    r"[A-Za-zÀ-ÿ0-9'’., -]{2,}\s*$",
-    caseSensitive: false,
-  );
-
-  static final RegExp _exactAddressPattern = RegExp(
-    r'^\s*\d{1,5}(?:\s?(?:bis|ter|quater|[A-Za-z]))?\s+'
-    r'(?:rue|avenue|av\.?|boulevard|bd\.?|chemin|impasse|allee|all[ée]e|route|'
-    r'place|quai|square|cours|esplanade|faubourg|sentier|sente)\s+'
-    r"[A-Za-zÀ-ÿ0-9'’., -]{2,}\s*$",
-    caseSensitive: false,
-  );
-
   final _formKey = GlobalKey<FormState>();
   ProblemType? _selectedProblemType;
   late final TextEditingController _titleController;
@@ -78,7 +62,6 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
       title: title,
       icon: _isEditing ? Icons.edit_outlined : Icons.add_circle_outline,
       closeTooltip: AppTextsGeneral.cancel,
-      maxWidth: 500,
       actions: [
         StyledDialog.cancelButton(
           label: AppTextsGeneral.cancel,
