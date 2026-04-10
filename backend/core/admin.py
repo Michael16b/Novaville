@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from core.db.models import (
     User, Neighborhood, Report, Survey, SurveyOption,
-    Vote, Event, ThemeEvent, UsefulInfo
+    Vote, Event, ThemeEvent, UsefulInfo, NewsQuestion, NewsPhoto
 )
 
 
@@ -94,3 +94,30 @@ class UsefulInfoAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # don't allow deletion via admin
         return False
+
+
+@admin.register(NewsQuestion)
+class NewsQuestionAdmin(admin.ModelAdmin):
+    """Admin configuration for citizen questions sent from the news page."""
+
+    list_display = [
+        "id",
+        "subject",
+        "citizen",
+        "status",
+        "answered_by",
+        "created_at",
+        "answered_at",
+    ]
+    list_filter = ["status", "created_at", "answered_at"]
+    search_fields = ["subject", "message", "response", "citizen__username"]
+    raw_id_fields = ["citizen", "answered_by"]
+
+
+@admin.register(NewsPhoto)
+class NewsPhotoAdmin(admin.ModelAdmin):
+    """Admin configuration for news photos."""
+
+    list_display = ["id", "title", "created_by", "created_at"]
+    search_fields = ["title", "subtitle", "image_url"]
+    raw_id_fields = ["created_by"]
