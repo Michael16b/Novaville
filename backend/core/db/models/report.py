@@ -22,10 +22,7 @@ class Report(models.Model):
     )
     description = models.TextField(help_text="Detailed description of the issue")
     address = models.CharField(
-<<<<<<< HEAD
         db_column="exact_address",
-=======
->>>>>>> 2d0411a (feat: adress in reports)
         max_length=255,
         blank=True,
         default="",

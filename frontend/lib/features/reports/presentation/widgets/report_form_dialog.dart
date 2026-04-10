@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_reports.dart';
-import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
@@ -10,7 +10,10 @@ import 'package:frontend/ui/widgets/styled_dialog.dart';
 /// Dialog for creating or editing a report.
 class ReportFormDialog extends StatefulWidget {
   /// Creates a [ReportFormDialog].
-  const ReportFormDialog({this.report, super.key});
+  const ReportFormDialog({
+    this.report,
+    super.key,
+  });
 
   /// Report to edit (null for creation).
   final Report? report;
@@ -51,12 +54,9 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final title = _isEditing
-        ? ReportTexts.editReport
-        : ReportTexts.createReport;
-    final actionLabel = _isEditing
-        ? AppTextsGeneral.save
-        : AppTextsGeneral.create;
+    final title = _isEditing ? ReportTexts.editReport : ReportTexts.createReport;
+    final actionLabel =
+        _isEditing ? AppTextsGeneral.save : AppTextsGeneral.create;
 
     return StyledDialog(
       title: title,
@@ -208,9 +208,9 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                   child: Text(
                     AppTextsGeneral.requiredFieldsHint,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.secondaryText,
-                      fontStyle: FontStyle.italic,
-                    ),
+                          color: AppColors.secondaryText,
+                          fontStyle: FontStyle.italic,
+                        ),
                   ),
                 ),
               ],
@@ -259,12 +259,15 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
   void _onSubmit() {
     if (!_formKey.currentState!.validate()) return;
 
-    Navigator.pop(context, {
-      'title': _titleController.text.trim(),
-      'problem_type': _selectedProblemType!.toJson(),
-      'description': _descriptionController.text.trim(),
-      'address': _addressController.text.trim(),
-      'neighborhood': widget.report?.neighborhoodId,
-    });
+    Navigator.pop(
+      context,
+      {
+        'title': _titleController.text.trim(),
+        'problem_type': _selectedProblemType!.toJson(),
+        'description': _descriptionController.text.trim(),
+        'address': _addressController.text.trim(),
+        'neighborhood': widget.report?.neighborhoodId,
+      },
+    );
   }
 }
