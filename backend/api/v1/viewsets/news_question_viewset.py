@@ -37,7 +37,7 @@ class NewsQuestionViewSet(viewsets.ModelViewSet):
 
     queryset = NewsQuestion.objects.select_related("citizen", "answered_by").all()
     permission_classes = [IsAuthenticated]
-    http_method_names = ["get", "post", "head", "options"]
+    http_method_names = ["get", "post", "delete", "head", "options"]
 
     def get_queryset(self):
         user = self.request.user
