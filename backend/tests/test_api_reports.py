@@ -23,6 +23,30 @@ class TestReportsAPI:
         assert response.status_code == status.HTTP_200_OK
         results = response.data.get('results', response.data)
         assert len(results) >= 1
+
+    def test_list_reports_includes_neighborhood_only_reports(
+        self,
+        authenticated_client,
+        citizen_user,
+        neighborhood,
+    ):
+        """Test listing also returns reports that only have a neighborhood."""
+        legacy_report = Report.objects.create(
+            user=citizen_user,
+            title="Legacy neighborhood report",
+            problem_type=ProblemTypeEnum.ROADS,
+            description="Legacy report",
+            neighborhood=neighborhood,
+        )
+
+        response = authenticated_client.get("/api/v1/reports/")
+
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get("results", response.data)
+        matching_reports = [item for item in results if item["id"] == legacy_report.id]
+        assert len(matching_reports) == 1
+        assert matching_reports[0]["address"] == ""
+        assert matching_reports[0]["neighborhood"] == neighborhood.id
     
     def test_create_report(self, authenticated_client, neighborhood):
         """Test creating a report"""
@@ -38,15 +62,55 @@ class TestReportsAPI:
         assert response.data["problem_type"] == "CLEANLINESS"
         assert response.data["address"] == "15 avenue Victor Hugo"
 
-    def test_create_report_requires_exact_address(self, authenticated_client):
-        """Test creating a report requires a valid exact address."""
+    def test_create_report_with_neighborhood_only(
+        self,
+        authenticated_client,
+        neighborhood,
+    ):
+        """Test creating a report without exact address when a neighborhood is provided."""
+        data = {
+            "title": "Street cleanliness issue",
+            "problem_type": "CLEANLINESS",
+            "description": "Trash on the street",
+            "address": "",
+            "neighborhood": neighborhood.id,
+        }
+
+        response = authenticated_client.post("/api/v1/reports/", data, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["address"] == ""
+        assert response.data["neighborhood"] == neighborhood.id
+
+    def test_create_report_requires_address_or_neighborhood(self, authenticated_client):
+        """Test creating a report requires an exact address or a neighborhood."""
+        data = {
+            "title": "Street cleanliness issue",
+            "problem_type": "CLEANLINESS",
+            "description": "Trash on the street",
+            "address": "",
+        }
+        response = authenticated_client.post("/api/v1/reports/", data, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "address" in response.data
+        assert "neighborhood" in response.data
+
+    def test_create_report_rejects_malformed_exact_address(
+        self,
+        authenticated_client,
+        neighborhood,
+    ):
+        """Test malformed exact addresses are still rejected when provided."""
         data = {
             "title": "Street cleanliness issue",
             "problem_type": "CLEANLINESS",
             "description": "Trash on the street",
             "address": "avenue Victor Hugo",
+            "neighborhood": neighborhood.id,
         }
+
         response = authenticated_client.post("/api/v1/reports/", data, format="json")
+
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "address" in response.data
     

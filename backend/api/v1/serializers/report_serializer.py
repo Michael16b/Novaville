@@ -16,9 +16,9 @@ class _ReportValidationMixin:
         return value.strip()
 
     def validate_address(self, value):
-        """Reject blank or malformed exact addresses."""
+        """Normalize exact addresses and reject malformed non-empty values."""
         if not value or not value.strip():
-            raise serializers.ValidationError("Address is required and cannot be blank.")
+            return ""
         normalized_value = " ".join(value.strip().split())
         RegexValidator(
             regex=REPORT_ADDRESS_PATTERN,
@@ -28,6 +28,29 @@ class _ReportValidationMixin:
             ),
         )(normalized_value)
         return normalized_value
+
+    def validate(self, attrs):
+        """Require either an exact address or a neighborhood."""
+        attrs = super().validate(attrs)
+
+        instance = getattr(self, "instance", None)
+        address = attrs.get("address")
+        neighborhood = attrs.get("neighborhood")
+
+        if address is None and instance is not None:
+            address = instance.address
+        if neighborhood is None and instance is not None:
+            neighborhood = instance.neighborhood
+
+        if not (address or neighborhood):
+            raise serializers.ValidationError(
+                {
+                    "address": "Provide an exact address or select a neighborhood.",
+                    "neighborhood": "Provide an exact address or select a neighborhood.",
+                }
+            )
+
+        return attrs
 
 
 class ReportSerializer(_ReportValidationMixin, serializers.ModelSerializer):
@@ -43,7 +66,7 @@ class ReportSerializer(_ReportValidationMixin, serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'user']
         extra_kwargs = {
-            'address': {'required': False, 'allow_blank': False},
+            'address': {'required': False, 'allow_blank': True},
         }
 
 
@@ -55,5 +78,5 @@ class ReportCreateSerializer(_ReportValidationMixin, serializers.ModelSerializer
         fields = ['id', 'title', 'problem_type', 'description', 'address', 'neighborhood']
         read_only_fields = ['id']
         extra_kwargs = {
-            'address': {'required': True, 'allow_blank': False},
+            'address': {'required': False, 'allow_blank': True},
         }

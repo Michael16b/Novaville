@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:frontend/constants/texts/texts_news.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/news/data/models/news_question.dart';
 import 'package:frontend/features/news/data/news_repository.dart';
@@ -17,7 +18,7 @@ class NewsRepositoryImpl implements NewsRepository {
 
     if (response.statusCode != 200) {
       throw Exception(
-        'Impossible de charger les questions: ${response.statusCode}',
+        '${AppTextsNews.loadQuestionsError}: ${response.statusCode}',
       );
     }
 
@@ -28,7 +29,7 @@ class NewsRepositoryImpl implements NewsRepository {
     } else if (data is List<dynamic>) {
       results = data;
     } else {
-      throw Exception('Format de reponse invalide pour les questions mairie.');
+      throw Exception(AppTextsNews.invalidQuestionsResponseFormat);
     }
 
     return results
@@ -48,7 +49,7 @@ class NewsRepositoryImpl implements NewsRepository {
 
     if (response.statusCode != 201) {
       throw Exception(
-        'Impossible d envoyer votre question: ${response.statusCode}',
+        '${AppTextsNews.createQuestionError}: ${response.statusCode}',
       );
     }
   }
@@ -65,7 +66,7 @@ class NewsRepositoryImpl implements NewsRepository {
 
     if (httpResponse.statusCode != 200) {
       throw Exception(
-        'Impossible d envoyer la reponse mairie: ${httpResponse.statusCode}',
+        '${AppTextsNews.replyQuestionError}: ${httpResponse.statusCode}',
       );
     }
 

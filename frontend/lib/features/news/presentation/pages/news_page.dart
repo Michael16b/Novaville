@@ -1,5 +1,7 @@
 // ignore_for_file: public_member_api_docs, lines_longer_than_80_chars, prefer_const_constructors
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
@@ -26,12 +28,20 @@ class NewsPage extends StatefulWidget {
 }
 
 class _NewsPageState extends State<NewsPage> {
+  static const int _staffQuestionsPerPage = 3;
+
   late final NewsRepository _newsRepository;
   late Future<List<NewsQuestion>> _questionsFuture;
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isSubmitting = false;
+  _StaffInboxTab? _selectedStaffTab = _StaffInboxTab.pending;
+  _CitizenInboxTab? _selectedCitizenTab = _CitizenInboxTab.pending;
+  int? _pendingPage = 1;
+  int? _historyPage = 1;
+  int? _citizenPendingPage = 1;
+  int? _citizenHistoryPage = 1;
 
   final List<_SocialPost> _posts = const [
     _SocialPost(
@@ -129,7 +139,28 @@ class _NewsPageState extends State<NewsPage> {
                         );
                       }
 
+                      if (!isStaff) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 6, child: _buildSocialFeed()),
+                                const SizedBox(width: 16),
+                                Expanded(flex: 4, child: _buildPhotoGallery()),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _buildQuestionPanel(isStaff: false),
+                            const SizedBox(height: 16),
+                            _buildInboxPanel(isStaff: false),
+                          ],
+                        );
+                      }
+
                       return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,39 +340,309 @@ class _NewsPageState extends State<NewsPage> {
           }
 
           final questions = snapshot.data ?? const <NewsQuestion>[];
-          if (questions.isEmpty) {
-            return Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.subtleSurface,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: const Text(
-                AppTextsNews.emptyInbox,
-                style: TextStyle(color: AppColors.secondaryText, height: 1.5),
-              ),
-            );
+          if (isStaff) {
+            return _buildStaffInboxContent(questions);
           }
+          return _buildCitizenInboxContent(questions);
+        },
+      ),
+    );
+  }
 
-          return Column(
-            children: questions
+  Widget _buildCitizenInboxContent(List<NewsQuestion> questions) {
+    final selectedTab = _selectedCitizenTab ?? _CitizenInboxTab.pending;
+    final pendingQuestions = questions
+        .where((question) => !question.isAnswered)
+        .toList();
+    final historyQuestions = questions
+        .where((question) => question.isAnswered)
+        .toList();
+
+    _citizenPendingPage = _normalizedPage(
+      _citizenPendingPage ?? 1,
+      pendingQuestions.length,
+    );
+    _citizenHistoryPage = _normalizedPage(
+      _citizenHistoryPage ?? 1,
+      historyQuestions.length,
+    );
+
+    final isPendingTab = selectedTab == _CitizenInboxTab.pending;
+    final visibleQuestions = isPendingTab ? pendingQuestions : historyQuestions;
+    final currentPage = isPendingTab
+        ? (_citizenPendingPage ?? 1)
+        : (_citizenHistoryPage ?? 1);
+    final totalPages = _pageCountFor(visibleQuestions.length);
+    final paginatedQuestions = _pageItems(visibleQuestions, currentPage);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _buildStaffTabButton(
+              label: '${AppTextsNews.pendingTab} (${pendingQuestions.length})',
+              isSelected: isPendingTab,
+              onTap: () {
+                setState(() {
+                  _selectedCitizenTab = _CitizenInboxTab.pending;
+                });
+              },
+            ),
+            _buildStaffTabButton(
+              label: '${AppTextsNews.historyTab} (${historyQuestions.length})',
+              isSelected: !isPendingTab,
+              onTap: () {
+                setState(() {
+                  _selectedCitizenTab = _CitizenInboxTab.history;
+                });
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (paginatedQuestions.isEmpty)
+          _buildEmptyInboxMessage(
+            isPendingTab
+                ? AppTextsNews.emptyPendingInbox
+                : AppTextsNews.emptyHistoryInbox,
+          )
+        else ...[
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: paginatedQuestions
                 .map(
                   (question) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _QuestionCard(
                       question: question,
-                      isStaff: isStaff,
-                      onReply: question.isAnswered
-                          ? null
-                          : () => _openReplyDialog(question),
+                      isStaff: false,
                     ),
                   ),
                 )
                 .toList(),
-          );
-        },
+          ),
+          _buildStaffPagination(
+            currentPage: currentPage,
+            totalPages: totalPages,
+            onPrevious: currentPage > 1
+                ? () => setState(() {
+                    if (isPendingTab) {
+                      _citizenPendingPage = (_citizenPendingPage ?? 1) - 1;
+                    } else {
+                      _citizenHistoryPage = (_citizenHistoryPage ?? 1) - 1;
+                    }
+                  })
+                : null,
+            onNext: currentPage < totalPages
+                ? () => setState(() {
+                    if (isPendingTab) {
+                      _citizenPendingPage = (_citizenPendingPage ?? 1) + 1;
+                    } else {
+                      _citizenHistoryPage = (_citizenHistoryPage ?? 1) + 1;
+                    }
+                  })
+                : null,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildStaffInboxContent(List<NewsQuestion> questions) {
+    final selectedTab = _selectedStaffTab ?? _StaffInboxTab.pending;
+    final pendingQuestions = questions
+        .where((question) => !question.isAnswered)
+        .toList();
+    final historyQuestions = questions
+        .where((question) => question.isAnswered)
+        .toList();
+
+    _pendingPage = _normalizedPage(_pendingPage ?? 1, pendingQuestions.length);
+    _historyPage = _normalizedPage(_historyPage ?? 1, historyQuestions.length);
+
+    final isPendingTab = selectedTab == _StaffInboxTab.pending;
+    final visibleQuestions = isPendingTab ? pendingQuestions : historyQuestions;
+    final currentPage = isPendingTab ? (_pendingPage ?? 1) : (_historyPage ?? 1);
+    final totalPages = _pageCountFor(visibleQuestions.length);
+    final paginatedQuestions = _pageItems(visibleQuestions, currentPage);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _buildStaffTabButton(
+              label: '${AppTextsNews.pendingTab} (${pendingQuestions.length})',
+              isSelected: isPendingTab,
+              onTap: () {
+                setState(() {
+                  _selectedStaffTab = _StaffInboxTab.pending;
+                });
+              },
+            ),
+            _buildStaffTabButton(
+              label: '${AppTextsNews.historyTab} (${historyQuestions.length})',
+              isSelected: !isPendingTab,
+              onTap: () {
+                setState(() {
+                  _selectedStaffTab = _StaffInboxTab.history;
+                });
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (paginatedQuestions.isEmpty)
+          _buildEmptyInboxMessage(
+            isPendingTab
+                ? AppTextsNews.emptyPendingInbox
+                : AppTextsNews.emptyHistoryInbox,
+          )
+        else ...[
+          ...paginatedQuestions.map(
+            (question) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _QuestionCard(
+                question: question,
+                isStaff: true,
+                onReply: question.isAnswered
+                    ? null
+                    : () => _openReplyDialog(question),
+              ),
+            ),
+          ),
+          _buildStaffPagination(
+            currentPage: currentPage,
+            totalPages: totalPages,
+            onPrevious: currentPage > 1
+                ? () => setState(() {
+                    if (isPendingTab) {
+                      _pendingPage = (_pendingPage ?? 1) - 1;
+                    } else {
+                      _historyPage = (_historyPage ?? 1) - 1;
+                    }
+                  })
+                : null,
+            onNext: currentPage < totalPages
+                ? () => setState(() {
+                    if (isPendingTab) {
+                      _pendingPage = (_pendingPage ?? 1) + 1;
+                    } else {
+                      _historyPage = (_historyPage ?? 1) + 1;
+                    }
+                  })
+                : null,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildStaffTabButton({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.subtleSurface,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.cardBorder,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? AppColors.white : AppColors.primaryText,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
+  }
+
+  Widget _buildEmptyInboxMessage(String message) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.subtleSurface,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Text(
+        message,
+        style: const TextStyle(color: AppColors.secondaryText, height: 1.5),
+      ),
+    );
+  }
+
+  Widget _buildStaffPagination({
+    required int currentPage,
+    required int totalPages,
+    required VoidCallback? onPrevious,
+    required VoidCallback? onNext,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        runSpacing: 10,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(
+            '${AppTextsNews.pageLabel} $currentPage / $totalPages',
+            style: const TextStyle(
+              color: AppColors.secondaryText,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              OutlinedButton.icon(
+                onPressed: onPrevious,
+                icon: const Icon(Icons.chevron_left),
+                label: const Text(AppTextsNews.previousPage),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                onPressed: onNext,
+                icon: const Icon(Icons.chevron_right),
+                label: const Text(AppTextsNews.nextPage),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  int _pageCountFor(int itemCount) {
+    return itemCount == 0 ? 1 : (itemCount / _staffQuestionsPerPage).ceil();
+  }
+
+  int _normalizedPage(int currentPage, int itemCount) {
+    final totalPages = _pageCountFor(itemCount);
+    return math.max(1, math.min(currentPage, totalPages));
+  }
+
+  List<NewsQuestion> _pageItems(List<NewsQuestion> questions, int currentPage) {
+    final start = (currentPage - 1) * _staffQuestionsPerPage;
+    final end = math.min(start + _staffQuestionsPerPage, questions.length);
+    if (start >= questions.length) {
+      return const <NewsQuestion>[];
+    }
+    return questions.sublist(start, end);
   }
 
   Future<void> _submitQuestion() async {
@@ -379,6 +680,10 @@ class _NewsPageState extends State<NewsPage> {
     final future = _newsRepository.listQuestions();
     setState(() {
       _questionsFuture = future;
+      _pendingPage = 1;
+      _historyPage = 1;
+      _citizenPendingPage = 1;
+      _citizenHistoryPage = 1;
     });
     await future;
   }
@@ -465,6 +770,10 @@ class _NewsPageState extends State<NewsPage> {
     }
   }
 }
+
+enum _StaffInboxTab { pending, history }
+
+enum _CitizenInboxTab { pending, history }
 
 class _SectionCard extends StatelessWidget {
   const _SectionCard({

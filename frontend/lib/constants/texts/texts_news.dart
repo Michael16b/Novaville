@@ -33,8 +33,23 @@ class AppTextsNews {
       'Toutes les questions entrantes avec possibilité de répondre.';
   static const String inboxSubtitleCitizen =
       'Suivi des messages envoyés et des réponses reçues.';
-  static const String emptyInbox =
-      'Aucun message pour le moment. Envoyez la premiere question pour lancer les échanges avec la mairie.';
+  static const String pendingTab = 'En attente';
+  static const String historyTab = 'Historique';
+  static const String emptyPendingInbox =
+      'Aucune demande en attente de réponse pour le moment.';
+  static const String emptyHistoryInbox =
+      'Aucune demande traitée dans l historique pour le moment.';
+  static const String pageLabel = 'Page';
+  static const String previousPage = 'Précédent';
+  static const String nextPage = 'Suivant';
+  static const String loadQuestionsError =
+      'Impossible de charger les questions';
+  static const String invalidQuestionsResponseFormat =
+      'Format de reponse invalide pour les questions mairie.';
+  static const String createQuestionError =
+      'Impossible d envoyer votre question';
+  static const String replyQuestionError =
+      'Impossible d envoyer la reponse mairie';
 
   static const String replyDialogTitlePrefix = 'Répondre à';
   static const String replyLabel = 'Réponse mairie';
