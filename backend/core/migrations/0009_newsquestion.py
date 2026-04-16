@@ -6,7 +6,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0008_report_address"),
+        ("core", "0009_align_report_address_column"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
