@@ -47,7 +47,6 @@ class AppBanner extends StatelessWidget {
                     context: context,
                     navigationActions: navigationActions,
                     isAuthenticated: isAuthenticated,
-                    authState: authState,
                     authBloc: authBloc,
                     router: router,
                   ),
@@ -178,6 +177,16 @@ class AppBanner extends StatelessWidget {
     );
   }
 
+  static MenuStyle get _menuStyle => MenuStyle(
+    backgroundColor: const WidgetStatePropertyAll<Color>(Colors.white),
+    surfaceTintColor: const WidgetStatePropertyAll<Color>(Colors.white),
+    shape: WidgetStatePropertyAll<RoundedRectangleBorder>(
+      RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+  );
+
   Widget _buildProfileMenu({
     required BuildContext context,
     required AuthState authState,
@@ -185,15 +194,7 @@ class AppBanner extends StatelessWidget {
     required GoRouter router,
   }) {
     return MenuAnchor(
-      style: MenuStyle(
-        backgroundColor: const WidgetStatePropertyAll<Color>(Colors.white),
-        surfaceTintColor: const WidgetStatePropertyAll<Color>(Colors.white),
-        shape: WidgetStatePropertyAll<RoundedRectangleBorder>(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
+      style: _menuStyle,
       menuChildren: [
         MenuItemButton(
           onPressed: () => router.go(AppRoutes.myAccount),
@@ -272,8 +273,14 @@ class AppBanner extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '${authState.user!.firstName} ${authState.user!.lastName}'
-                          .trim(),
+                      ('${authState.user?.firstName ?? ''} '
+                              '${authState.user?.lastName ?? ''}')
+                          .trim()
+                          .isEmpty
+                          ? 'Utilisateur'
+                          : ('${authState.user?.firstName ?? ''} '
+                                  '${authState.user?.lastName ?? ''}')
+                              .trim(),
                       style: const TextStyle(
                         color: AppColors.primaryText,
                         fontWeight: FontWeight.w600,
@@ -307,20 +314,11 @@ class AppBanner extends StatelessWidget {
     required BuildContext context,
     required List<_BannerNavigationAction> navigationActions,
     required bool isAuthenticated,
-    required AuthState authState,
     required AuthBloc authBloc,
     required GoRouter router,
   }) {
     return MenuAnchor(
-      style: MenuStyle(
-        backgroundColor: const WidgetStatePropertyAll<Color>(Colors.white),
-        surfaceTintColor: const WidgetStatePropertyAll<Color>(Colors.white),
-        shape: WidgetStatePropertyAll<RoundedRectangleBorder>(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
+      style: _menuStyle,
       menuChildren: [
         ...navigationActions.map(
           (action) => MenuItemButton(
@@ -385,7 +383,7 @@ class AppBanner extends StatelessWidget {
               controller.open();
             }
           },
-          tooltip: 'Menu',
+          tooltip: AppTextsNavigation.menuTooltip,
           icon: const Icon(Icons.menu, color: AppColors.primaryText),
         );
       },

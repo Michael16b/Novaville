@@ -7,4 +7,5 @@ class AppTextsNavigation {
   static const String townHallButton = 'Ma mairie';
   static const String personalInfo = 'Mes informations personnelles';
   static const String myAccount = 'Mon compte';
+  static const String menuTooltip = 'Menu';
 }
