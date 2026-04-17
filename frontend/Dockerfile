@@ -108,13 +108,19 @@ server {
     try_files $uri $uri/ /index.html;
   }
 
-  # Fichiers d'entree: toujours revalider pour recuperer la derniere release
+  # Fichiers d'entree et fichiers racine non versionnes: toujours revalider
+  # pour recuperer la derniere release
   location = /index.html {
     try_files $uri =404;
     expires -1;
     add_header Cache-Control "no-cache, must-revalidate" always;
   }
 
+  location = /browserconfig.xml {
+    try_files $uri =404;
+    expires -1;
+    add_header Cache-Control "no-cache, must-revalidate" always;
+  }
   location = /main.dart.js {
     try_files $uri =404;
     expires -1;
