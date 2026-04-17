@@ -152,11 +152,11 @@ server {
     add_header Cache-Control "no-cache, must-revalidate" always;
   }
 
-  # Assets Flutter versionnes: cache long
+  # Assets Flutter : cache borne sans `immutable` car les URLs peuvent rester stables entre releases
   location ^~ /assets/ {
     try_files $uri =404;
-    expires 1y;
-    add_header Cache-Control "public, immutable" always;
+    expires 1d;
+    add_header Cache-Control "public, max-age=86400" always;
   }
 
   # CanvasKit n'est pas garanti comme versionne par l'URL entre versions Flutter:
