@@ -62,7 +62,6 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
       title: title,
       icon: _isEditing ? Icons.edit_outlined : Icons.add_circle_outline,
       closeTooltip: AppTextsGeneral.cancel,
-      maxWidth: 500,
       actions: [
         StyledDialog.cancelButton(
           label: AppTextsGeneral.cancel,
@@ -228,9 +227,9 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.secondaryText,
-              fontWeight: FontWeight.w600,
-            ),
+          color: AppColors.secondaryText,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

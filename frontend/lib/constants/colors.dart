@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:flutter/material.dart';
 
 /// Application color palette constants.
@@ -15,6 +17,12 @@ class AppColors {
   static const Color white = Color(0xFFFFFFFF);
 
   static const Color highlight = Color(0x4D2E6B55);
+  static const Color cardBorder = Color(0xFFDCE7DE);
+  static const Color subtleSurface = Color(0xFFF8FAF7);
+  static const Color successBackground = Color(0xFFE7F5EA);
+  static const Color warningBackground = Color(0xFFFFF4D8);
+  static const Color errorBackground = Color(0xFFFFF3F0);
+  static const Color responseBackground = Color(0xFFEFF7F0);
 
   static const Color error = Color(0xFFC94A4A);
   static const Color success = Color(0xFF5DB075);
