@@ -38,7 +38,7 @@ class AppTextsNews {
   static const String emptyPendingInbox =
       'Aucune demande en attente de réponse pour le moment.';
   static const String emptyHistoryInbox =
-      'Aucune demande traitée dans l historique pour le moment.';
+      "Aucune demande traitée dans l'historique pour le moment.";
   static const String pageLabel = 'Page';
   static const String previousPage = 'Précédent';
   static const String nextPage = 'Suivant';
