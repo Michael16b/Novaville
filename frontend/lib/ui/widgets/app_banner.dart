@@ -239,6 +239,10 @@ class AppBanner extends StatelessWidget {
         ),
       ],
       builder: (context, controller, child) {
+        final userName =
+            ('${authState.user?.firstName ?? ''} '
+                    '${authState.user?.lastName ?? ''}')
+                .trim();
         return InkWell(
           onTap: () {
             if (controller.isOpen) {
@@ -273,14 +277,7 @@ class AppBanner extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      ('${authState.user?.firstName ?? ''} '
-                              '${authState.user?.lastName ?? ''}')
-                          .trim()
-                          .isEmpty
-                          ? 'Utilisateur'
-                          : ('${authState.user?.firstName ?? ''} '
-                                  '${authState.user?.lastName ?? ''}')
-                              .trim(),
+                      userName.isEmpty ? 'Utilisateur' : userName,
                       style: const TextStyle(
                         color: AppColors.primaryText,
                         fontWeight: FontWeight.w600,
