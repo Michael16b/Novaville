@@ -159,10 +159,13 @@ server {
     add_header Cache-Control "public, immutable" always;
   }
 
+  # CanvasKit n'est pas garanti comme versionne par l'URL entre versions Flutter:
+  # on garde un cache court pour eviter de servir durablement une version
+  # incompatible apres mise a jour de l'application.
   location ^~ /canvaskit/ {
     try_files $uri =404;
-    expires 1y;
-    add_header Cache-Control "public, immutable" always;
+    expires 1h;
+    add_header Cache-Control "public, max-age=3600" always;
   }
 
   location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|webp|woff|woff2|ttf|eot)$ {
