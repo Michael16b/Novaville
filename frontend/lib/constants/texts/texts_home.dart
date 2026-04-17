@@ -26,7 +26,6 @@ class AppTextsHome {
   static const String reportsMonthSuffix = ' signalements ce mois';
   static const String pollParticipationPrefix = 'Participation aux sondages : ';
   static const String recentActivityTitle = 'Activité récente';
-  static const String seeAll = 'Tout voir';
   static const String newReportActivity = 'Nouveau signalement';
   static const String newVoteActivity = 'Nouveau vote';
   static const String eventAddedActivity = 'Événement ajouté';

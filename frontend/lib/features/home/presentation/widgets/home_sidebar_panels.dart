@@ -47,10 +47,6 @@ class RecentActivityPanel extends StatelessWidget {
                     ],
                   ),
                 ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text(AppTextsHome.seeAll, style: TextStyle(color: AppColors.textGrey)),
-                ),
               ],
             ),
           ),
