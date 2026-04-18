@@ -163,7 +163,7 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
                             }
                           : null,
                       icon: const Icon(Icons.clear_all, size: 16),
-                      label: const Text(AppTextsGeneral.reset),
+                      label: const Text(AppTextsGeneral.resetFilters),
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         visualDensity: VisualDensity.compact,
@@ -677,17 +677,22 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
     switch (state.status) {
       case SurveysStatus.created:
         CustomSnackBar.showSuccess(context, SurveysTexts.createSuccess);
+        break;
       case SurveysStatus.deleted:
         CustomSnackBar.showSuccess(context, SurveysTexts.deleteSuccess);
+        break;
       case SurveysStatus.updated:
         CustomSnackBar.showSuccess(context, SurveysTexts.updateSuccess);
+        break;
       case SurveysStatus.voted:
         CustomSnackBar.showSuccess(context, SurveysTexts.voteSuccess);
+        break;
       case SurveysStatus.failure:
         CustomSnackBar.showError(
           context,
           state.error ?? SurveysTexts.genericError,
         );
+        break;
       case SurveysStatus.initial:
       case SurveysStatus.loading:
       case SurveysStatus.loaded:

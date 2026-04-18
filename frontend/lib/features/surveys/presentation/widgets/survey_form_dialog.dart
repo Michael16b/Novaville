@@ -150,7 +150,7 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
               onChanged: (value) => setState(() => _targetRole = value),
             ),
             const SizedBox(height: 14),
-            _buildFieldLabel('Description'),
+            _buildFieldLabel(SurveysTexts.descriptionLabel),
             TextFormField(
               controller: _descriptionController,
               maxLines: 3,

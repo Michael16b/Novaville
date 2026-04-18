@@ -40,20 +40,40 @@ class SurveySerializer(serializers.ModelSerializer):
         """Get the total number of votes for this survey"""
         return obj.votes.count()
 
-    def get_current_user_vote_id(self, obj):
-        """Get current user vote id for this survey."""
+    def _get_current_user_vote(self, obj):
+        """Return the current authenticated user's vote for this survey, using prefetched data when available."""
         request = self.context.get('request')
         if not request or not request.user.is_authenticated:
             return None
-        vote = Vote.objects.filter(user=request.user, survey=obj).first()
+
+        cache_attr = '_current_user_vote_cache'
+        cached_user_id_attr = '_current_user_vote_cache_user_id'
+        user_id = request.user.id
+
+        if (
+            hasattr(obj, cache_attr)
+            and getattr(obj, cached_user_id_attr, None) == user_id
+        ):
+            return getattr(obj, cache_attr)
+
+        prefetched_votes = getattr(obj, '_prefetched_objects_cache', {}).get('votes')
+        if prefetched_votes is not None:
+            vote = next((v for v in prefetched_votes if v.user_id == user_id), None)
+        else:
+            vote = Vote.objects.filter(user=request.user, survey=obj).first()
+
+        setattr(obj, cache_attr, vote)
+        setattr(obj, cached_user_id_attr, user_id)
+        return vote
+
+    def get_current_user_vote_id(self, obj):
+        """Get current user vote id for this survey."""
+        vote = self._get_current_user_vote(obj)
         return vote.id if vote else None
 
     def get_current_user_vote_option_id(self, obj):
         """Get current user selected option id for this survey."""
-        request = self.context.get('request')
-        if not request or not request.user.is_authenticated:
-            return None
-        vote = Vote.objects.filter(user=request.user, survey=obj).first()
+        vote = self._get_current_user_vote(obj)
         return vote.option_id if vote else None
 
 
@@ -74,9 +94,9 @@ class SurveyCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
     
     def validate_options(self, value):
-        """Ensure at least one option is provided"""
-        if not value:
-            raise serializers.ValidationError("At least one option is required.")
+        """Ensure at least two options are provided"""
+        if len(value) < 2:
+            raise serializers.ValidationError("At least two options are required.")
         return value
 
     def create(self, validated_data):

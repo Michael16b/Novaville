@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.db import transaction
 from core.db.models import Vote
 from api.v1.serializers.vote_serializer import VoteSerializer, VoteCreateSerializer
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -57,20 +58,21 @@ class VoteViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
     
     def create(self, request, *args, **kwargs):
-        """Create or replace the current user's vote for a survey."""
+        """Create or replace the current user's vote for a survey atomically."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         survey = serializer.validated_data['survey']
         option = serializer.validated_data['option']
 
-        existing_vote = Vote.objects.filter(user=request.user, survey=survey).first()
-        if existing_vote:
-            existing_vote.option = option
-            existing_vote.save(update_fields=['option'])
-            response_serializer = VoteSerializer(existing_vote)
-            return Response(response_serializer.data, status=status.HTTP_200_OK)
+        with transaction.atomic():
+            vote, created = Vote.objects.update_or_create(
+                user=request.user,
+                survey=survey,
+                defaults={'option': option},
+            )
 
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        response_serializer = VoteSerializer(vote)
+        response_status = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        headers = self.get_success_headers(response_serializer.data) if created else {}
+        return Response(response_serializer.data, status=response_status, headers=headers)

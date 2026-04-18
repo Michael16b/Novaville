@@ -14,8 +14,6 @@ class Survey(models.Model):
     description = models.TextField(help_text="Survey description")
     address = models.CharField(
         max_length=255,
-        blank=True,
-        default='',
         help_text="Exact address targeted by the survey"
     )
     created_at = models.DateTimeField(auto_now_add=True, help_text="Survey creation date")

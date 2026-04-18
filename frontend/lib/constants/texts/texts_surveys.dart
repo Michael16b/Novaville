@@ -7,20 +7,20 @@ class SurveysTexts {
   static const titleDescription =
       'Consultez les sondages citoyens, votez en un clic et suivez les résultats.';
 
-  static const createSurvey = 'Creer un sondage';
+  static const createSurvey = 'Créer un sondage';
   static const editSurvey = 'Modifier le sondage';
   static const deleteSurvey = 'Supprimer le sondage';
   static const deleteConfirmTitle = 'Supprimer ce sondage ?';
   static const deleteConfirmBody =
-      'Cette action est irreversible. Le sondage et ses votes seront supprimes.';
-  static const createSuccess = 'Sondage cree avec succès';
-  static const updateSuccess = 'Sondage modifie avec succès';
-  static const deleteSuccess = 'Sondage supprime avec succès';
-  static const voteSuccess = 'Vote enregistre';
+      'Cette action est irréversible. Le sondage et ses votes seront supprimés.';
+  static const createSuccess = 'Sondage créé avec succès';
+  static const updateSuccess = 'Sondage modifié avec succès';
+  static const deleteSuccess = 'Sondage supprimé avec succès';
+  static const voteSuccess = 'Vote enregistré';
   static const loginRequiredToVote = 'Connectez-vous pour voter.';
   static const noSurveys = 'Aucun sondage';
   static const noSurveysFound =
-      'Aucun sondage ne correspond aux filtres sélectionnes.';
+      'Aucun sondage ne correspond aux filtres sélectionnés.';
   static const loadError = 'Impossible de charger les sondages.';
   static const genericError = 'Une erreur est survenue avec les sondages.';
 
@@ -28,13 +28,13 @@ class SurveysTexts {
   static const searchAddressHint = 'Ex: 12 Rue de la Paix, Novaville';
   static const applyFilters = 'Filtrer';
   static const clearFilters = 'Réinitialiser les filtres';
-  static const advancedFilters = 'Filtres avancées';
+  static const advancedFilters = 'Filtres avancés';
   static const filterByCitizenType = 'Type de citoyen';
   static const allCitizenTypes = 'Tous';
   static const cardsPerRow = 'Cartes par ligne';
   static const auto = 'Auto';
   static const sortBy = 'Trier par';
-  static const sortByDate = 'Date de creation';
+  static const sortByDate = 'Date de création';
   static const ascending = 'Croissant';
   static const descending = 'Décroissant';
 
@@ -54,8 +54,9 @@ class SurveysTexts {
   static const minOptions = 'Ajoutez au moins 2 réponses.';
   static const addOption = 'Ajouter une réponse';
 
+  static const descriptionLabel = 'Description';
   static const vote = 'Voter';
   static const totalVotes = 'votes';
   static const targetedAudience = 'Cible';
-  static const createdBy = 'Cree par';
+  static const createdBy = 'Créé par';
 }

@@ -8,7 +8,8 @@ class AppTextsGeneral {
   static const String retry = 'Réessayer';
   static const String save = 'Enregistrer';
   static const String saving = 'Enregistrement...';
-  static const String reset = 'Réinitialiser les filtres';
+  static const String reset = 'Réinitialiser';
+  static const String resetFilters = 'Réinitialiser les filtres';
   static const String cancel = 'Annuler';
   static const String close = 'Fermer';
   static const String delete = 'Supprimer';
