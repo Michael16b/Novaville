@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> {
 
           final sidebarColumn = Column(
             children: [
-              const RecentActivityPanel(),
+              RecentActivityPanel(statsFuture: _statsFuture),
               const SizedBox(height: 24),
               UsefulInfoPanel(statsFuture: _statsFuture),
             ],
