@@ -104,6 +104,46 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    Future<void> pumpCompactBanner(
+      WidgetTester tester, {
+      String currentLocation = '/',
+      bool authenticated = true,
+    }) async {
+      mockAuthRepository = MockAuthRepository(hasSession: authenticated);
+      authBloc = AuthBloc(repository: mockAuthRepository);
+      authBloc.add(const AuthStarted());
+
+      final router = GoRouter(
+        initialLocation: currentLocation,
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => Scaffold(
+              body: BlocProvider<AuthBloc>.value(
+                value: authBloc,
+                child: AppBanner(currentLocation: currentLocation),
+              ),
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.login,
+            builder: (context, state) => const SizedBox.shrink(),
+          ),
+          GoRoute(
+            path: AppRoutes.register,
+            builder: (context, state) => const SizedBox.shrink(),
+          ),
+          GoRoute(
+            path: AppRoutes.myAccount,
+            builder: (context, state) => const SizedBox.shrink(),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+    }
+
     setUp(() {
       mockAuthRepository = MockAuthRepository();
       authBloc = AuthBloc(repository: mockAuthRepository);
@@ -282,6 +322,61 @@ void main() {
       expect(find.text(AppTextsAuth.login), findsOneWidget);
       expect(find.byIcon(Icons.login), findsOneWidget);
       expect(find.byIcon(Icons.person), findsNothing);
+    });
+
+    group('compact layout', () {
+      testWidgets('renders hamburger menu icon instead of nav buttons', (
+        WidgetTester tester,
+      ) async {
+        tester.view.physicalSize = const Size(500, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        await pumpCompactBanner(tester);
+
+        expect(find.byIcon(Icons.menu), findsOneWidget);
+        expect(find.text(AppTextsNavigation.homeButton), findsNothing);
+      });
+
+      testWidgets(
+        'compact menu for authenticated users shows nav and profile/logout',
+        (WidgetTester tester) async {
+          tester.view.physicalSize = const Size(500, 800);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          await pumpCompactBanner(tester);
+
+          await tester.tap(find.byIcon(Icons.menu));
+          await tester.pumpAndSettle();
+
+          expect(find.text(AppTextsNavigation.homeButton), findsOneWidget);
+          expect(find.text(AppTextsNavigation.personalInfo), findsOneWidget);
+          expect(find.text(AppTextsAuth.logout), findsOneWidget);
+          expect(find.text(AppTextsAuth.login), findsNothing);
+          expect(find.text(AppTextsAuth.register), findsNothing);
+        },
+      );
+
+      testWidgets(
+        'compact menu for unauthenticated users shows nav and login/register',
+        (WidgetTester tester) async {
+          tester.view.physicalSize = const Size(500, 800);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          await pumpCompactBanner(tester, authenticated: false);
+
+          await tester.tap(find.byIcon(Icons.menu));
+          await tester.pumpAndSettle();
+
+          expect(find.text(AppTextsNavigation.homeButton), findsOneWidget);
+          expect(find.text(AppTextsAuth.login), findsOneWidget);
+          expect(find.text(AppTextsAuth.register), findsOneWidget);
+          expect(find.text(AppTextsNavigation.personalInfo), findsNothing);
+          expect(find.text(AppTextsAuth.logout), findsNothing);
+        },
+      );
     });
   });
 }
