@@ -3,7 +3,6 @@ import pytest
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.test import APIRequestFactory, force_authenticate
-from rest_framework.viewsets import ModelViewSet
 from datetime import timedelta
 from django.utils import timezone
 from api.v1.viewsets.vote_viewset import VoteViewSet
@@ -28,6 +27,7 @@ class TestSurveysAPI:
         data = {
             "title": "New Survey",
             "description": "Survey description",
+            "address": "12 Rue de la Paix, Novaville",
             "start_date": timezone.now().isoformat(),
             "end_date": (timezone.now() + timedelta(days=7)).isoformat(),
             "options": ["Option A", "Option B", "Option C"]
@@ -35,7 +35,8 @@ class TestSurveysAPI:
         response = elected_client.post("/api/v1/surveys/", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["title"] == "New Survey"
-        
+        assert response.data["address"] == "12 Rue de la Paix, Novaville"
+
         # Get the survey to check options
         survey_id = response.data["id"]
         survey_response = elected_client.get(f"/api/v1/surveys/{survey_id}/")
@@ -173,8 +174,8 @@ class TestVotesAPI:
         assert response.data["survey"] == survey_with_options.id
         assert response.data["option"] == option.id
     
-    def test_cannot_vote_twice(self, authenticated_client, survey_with_options):
-        """Test user cannot vote twice on same survey"""
+    def test_second_vote_updates_existing_vote(self, authenticated_client, survey_with_options):
+        """Test user can change vote on same survey by voting again"""
         option1 = survey_with_options.options.first()
         option2 = survey_with_options.options.last()
         
@@ -186,14 +187,19 @@ class TestVotesAPI:
         )
         assert response1.status_code == status.HTTP_201_CREATED
         
-        # Second vote fails
+        # Second vote updates the existing vote
         response2 = authenticated_client.post(
             "/api/v1/votes/",
             {"survey": survey_with_options.id, "option": option2.id},
             format="json"
         )
-        assert response2.status_code == status.HTTP_400_BAD_REQUEST
-    
+        assert response2.status_code == status.HTTP_200_OK
+        assert response2.data["option"] == option2.id
+
+        from core.db.models import Vote
+        votes = Vote.objects.filter(survey=survey_with_options, user_id=response2.data["user"])
+        assert votes.count() == 1
+
     def test_vote_option_mismatch(self, authenticated_client, survey_with_options, elected_user):
         """Test voting with option from different survey"""
         # Create another survey
@@ -273,26 +279,19 @@ class TestVotesAPI:
         assert results[0]["survey"] == survey_with_options.id
         assert results[0]["option"] == option1.id
 
-    def test_vote_unique_constraint_exception(self, citizen_user, monkeypatch):
-        """Test viewset handles unique constraint exception"""
-        from django.db import IntegrityError
+    def test_vote_create_requires_valid_payload(self, citizen_user):
+        """Test create vote returns validation error for invalid payload."""
         factory = APIRequestFactory()
         request = factory.post(
             "/api/v1/votes/",
-            {"survey": 1, "option": 1},
+            {"survey": 99999, "option": 99999},
             format="json"
         )
         force_authenticate(request, user=citizen_user)
 
-        def raise_unique(*args, **kwargs):
-            raise IntegrityError("UNIQUE constraint failed: votes.user_id, votes.survey_id")
-
-        monkeypatch.setattr(ModelViewSet, "create", raise_unique)
-
         view = VoteViewSet.as_view({"post": "create"})
         response = view(request)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.data["error"] == "You have already voted on this survey"
 
 
 class TestSurveyOptionsAPI:

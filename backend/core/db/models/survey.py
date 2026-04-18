@@ -12,6 +12,12 @@ class Survey(models.Model):
     """Public survey/consultation"""
     title = models.CharField(max_length=255, help_text="Survey title")
     description = models.TextField(help_text="Survey description")
+    address = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        help_text="Exact address targeted by the survey"
+    )
     created_at = models.DateTimeField(auto_now_add=True, help_text="Survey creation date")
     start_date = models.DateTimeField(help_text="Survey start date")
     end_date = models.DateTimeField(help_text="Survey end date")

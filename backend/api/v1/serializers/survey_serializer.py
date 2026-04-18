@@ -23,19 +23,38 @@ class SurveySerializer(serializers.ModelSerializer):
     options = SurveyOptionSerializer(many=True, read_only=True)
     is_active = serializers.BooleanField(read_only=True)
     total_votes = serializers.SerializerMethodField()
-    
+    current_user_vote_id = serializers.SerializerMethodField()
+    current_user_vote_option_id = serializers.SerializerMethodField()
+
     class Meta:
         model = Survey
         fields = [
-            'id', 'title', 'description', 'created_at', 'start_date',
+            'id', 'title', 'description', 'address', 'created_at', 'start_date',
             'end_date', 'citizen_target', 'created_by', 'options',
-            'is_active', 'total_votes'
+            'is_active', 'total_votes', 'current_user_vote_id',
+            'current_user_vote_option_id',
         ]
         read_only_fields = ['id', 'created_at', 'created_by']
     
     def get_total_votes(self, obj):
         """Get the total number of votes for this survey"""
         return obj.votes.count()
+
+    def get_current_user_vote_id(self, obj):
+        """Get current user vote id for this survey."""
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return None
+        vote = Vote.objects.filter(user=request.user, survey=obj).first()
+        return vote.id if vote else None
+
+    def get_current_user_vote_option_id(self, obj):
+        """Get current user selected option id for this survey."""
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return None
+        vote = Vote.objects.filter(user=request.user, survey=obj).first()
+        return vote.option_id if vote else None
 
 
 class SurveyCreateSerializer(serializers.ModelSerializer):
@@ -49,7 +68,7 @@ class SurveyCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Survey
         fields = [
-            'id', 'title', 'description', 'start_date', 'end_date',
+            'id', 'title', 'description', 'address', 'start_date', 'end_date',
             'citizen_target', 'options',
         ]
         read_only_fields = ['id']
