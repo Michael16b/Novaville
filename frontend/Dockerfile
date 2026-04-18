@@ -108,29 +108,70 @@ server {
     try_files $uri $uri/ /index.html;
   }
 
-  # Sécurité et Cache pour fichiers Flutter
-  location ~* \.(manifest|appcache|html?|xml|json)$ {
+  # Fichiers d'entree et fichiers racine non versionnes: toujours revalider
+  # pour recuperer la derniere release
+  location = /index.html {
+    try_files $uri =404;
     expires -1;
-    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
+    add_header Cache-Control "no-cache, must-revalidate" always;
+  }
+
+  location = /browserconfig.xml {
+    try_files $uri =404;
+    expires -1;
+    add_header Cache-Control "no-cache, must-revalidate" always;
+  }
+  location = /main.dart.js {
+    try_files $uri =404;
+    expires -1;
+    add_header Cache-Control "no-cache, must-revalidate" always;
+  }
+
+  location = /flutter_bootstrap.js {
+    try_files $uri =404;
+    expires -1;
+    add_header Cache-Control "no-cache, must-revalidate" always;
+  }
+
+  location = /flutter.js {
+    try_files $uri =404;
+    expires -1;
+    add_header Cache-Control "no-cache, must-revalidate" always;
   }
 
   location = /flutter_service_worker.js {
     try_files $uri =404;
     expires -1;
     add_header Service-Worker-Allowed "/" always;
-    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
+    add_header Cache-Control "no-cache, must-revalidate" always;
   }
 
   location = /manifest.json {
     try_files $uri =404;
     add_header Content-Type "application/manifest+json" always;
-    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
+    add_header Cache-Control "no-cache, must-revalidate" always;
+  }
+
+  # Assets Flutter : cache borne sans `immutable` car les URLs peuvent rester stables entre releases
+  location ^~ /assets/ {
+    try_files $uri =404;
+    expires 1d;
+    add_header Cache-Control "public, max-age=86400" always;
+  }
+
+  # CanvasKit n'est pas garanti comme versionne par l'URL entre versions Flutter:
+  # on garde un cache court pour eviter de servir durablement une version
+  # incompatible apres mise a jour de l'application.
+  location ^~ /canvaskit/ {
+    try_files $uri =404;
+    expires 1h;
+    add_header Cache-Control "public, max-age=3600" always;
   }
 
   location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|webp|woff|woff2|ttf|eot)$ {
     try_files $uri =404;
-    expires 1y;
-    add_header Cache-Control "public, immutable" always;
+    expires 1h;
+    add_header Cache-Control "public, max-age=3600" always;
   }
 }
 EOF
