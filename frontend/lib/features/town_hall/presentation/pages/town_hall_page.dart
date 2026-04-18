@@ -449,9 +449,8 @@ class _TownHallPageState extends State<TownHallPage> {
             ),
             const SizedBox(height: 16),
             if (_loading)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 48),
-                child: Center(child: CircularProgressIndicator()),
+              _TownHallLoadingSkeleton(
+                preferredCardsPerRow: _preferredCardsPerRow,
               )
             else
               Column(
@@ -481,75 +480,17 @@ class _TownHallPageState extends State<TownHallPage> {
                                 crossAxisCount: _getCrossAxisCount(
                                   constraints.maxWidth,
                                 ),
-                                mainAxisExtent: 120,
+                                mainAxisExtent: 190,
                                 crossAxisSpacing: 12,
                                 mainAxisSpacing: 12,
                               ),
                           itemCount: paginatedNeighborhoods.length,
                           itemBuilder: (context, index) {
                             final neighborhood = paginatedNeighborhoods[index];
-                            return Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: const Icon(
-                                        Icons.apartment_outlined,
-                                        size: 18,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            neighborhood.name,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            '${TownHallTexts.postalCodeShort}: ${neighborhood.postalCode}',
-                                            style: const TextStyle(
-                                              color: AppColors.secondaryText,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    IconButton(
-                                      tooltip: AppTextsGeneral.edit,
-                                      onPressed: () =>
-                                          _showEditDialog(neighborhood),
-                                      icon: const Icon(Icons.edit_outlined),
-                                    ),
-                                    IconButton(
-                                      tooltip: AppTextsGeneral.delete,
-                                      onPressed: () =>
-                                          _confirmDelete(neighborhood),
-                                      icon: const Icon(
-                                        Icons.delete_outline,
-                                        color: AppColors.error,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            return _TownHallNeighborhoodCard(
+                              neighborhood: neighborhood,
+                              onEdit: () => _showEditDialog(neighborhood),
+                              onDelete: () => _confirmDelete(neighborhood),
                             );
                           },
                         );
@@ -560,6 +501,363 @@ class _TownHallPageState extends State<TownHallPage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _TownHallNeighborhoodCard extends StatelessWidget {
+  const _TownHallNeighborhoodCard({
+    required this.neighborhood,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final Neighborhood neighborhood;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.apartment_outlined,
+                    size: 20,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    neighborhood.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    neighborhood.postalCode,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _TownHallActionButton(
+                    icon: Icons.edit_outlined,
+                    label: AppTextsGeneral.edit,
+                    color: AppColors.primary,
+                    onTap: onEdit,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: _TownHallActionButton(
+                    icon: Icons.delete_outline_rounded,
+                    label: AppTextsGeneral.delete,
+                    color: AppColors.error,
+                    onTap: onDelete,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TownHallActionButton extends StatelessWidget {
+  const _TownHallActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveColor = onTap != null ? color : AppColors.disabled;
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: effectiveColor),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: effectiveColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TownHallLoadingSkeleton extends StatefulWidget {
+  const _TownHallLoadingSkeleton({this.preferredCardsPerRow});
+
+  final int? preferredCardsPerRow;
+
+  @override
+  State<_TownHallLoadingSkeleton> createState() =>
+      _TownHallLoadingSkeletonState();
+}
+
+class _TownHallLoadingSkeletonState extends State<_TownHallLoadingSkeleton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+
+  int _maxCardsAllowedForWidth(double width) {
+    if (width < 600) return 1;
+    if (width < 900) return 2;
+    if (width < 1200) return 3;
+    return 4;
+  }
+
+  int _skeletonCrossAxisCount(double width) {
+    final maxAllowed = _maxCardsAllowedForWidth(width);
+    final preferred = widget.preferredCardsPerRow;
+    if (preferred == null) return maxAllowed;
+    return preferred.clamp(1, maxAllowed);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1700),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final pulse = _pulseController.value;
+        final barColor = Color.lerp(
+          AppColors.secondaryText.withValues(alpha: 0.12),
+          AppColors.secondaryText.withValues(alpha: 0.24),
+          pulse,
+        );
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: barColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          width: 220,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: barColor,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      alignment: WrapAlignment.end,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 12,
+                      runSpacing: 4,
+                      children: [
+                        Container(
+                          width: 150,
+                          height: 16,
+                          color: barColor,
+                        ),
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: barColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: barColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final crossAxisCount = _skeletonCrossAxisCount(
+                  constraints.maxWidth,
+                );
+                final itemCount = crossAxisCount * 2;
+
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: itemCount,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    mainAxisExtent: 190,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemBuilder: (context, index) {
+                    return Card(
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.08),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: barColor,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Container(height: 14, color: barColor),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(width: 44, height: 16, color: barColor),
+                              ],
+                            ),
+                          ),
+                          const Spacer(),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    height: 28,
+                                    decoration: BoxDecoration(
+                                      color: barColor,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Container(
+                                    height: 28,
+                                    decoration: BoxDecoration(
+                                      color: barColor,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
