@@ -56,7 +56,9 @@ class SurveyViewSet(viewsets.ModelViewSet):
     serializer_class = SurveySerializer
     permission_classes = [IsStaffOrReadOnly]
     filterset_fields = '__all__'
-    
+    search_fields = ['title', 'description', 'address']
+    ordering_fields = ['created_at', 'start_date', 'end_date', 'title']
+
     def get_serializer_class(self):
         """Use different serializers for different actions"""
         if self.action == 'create':

@@ -74,7 +74,7 @@ class AgendaTexts {
   static const auto = 'Automatique';
 
   /// Advanced filters label.
-  static const advancedFilters = 'Filtres';
+  static const advancedFilters = 'Filtres avancés';
 
   /// Clear filters label.
   static const clearFilters = 'Réinitialiser';
