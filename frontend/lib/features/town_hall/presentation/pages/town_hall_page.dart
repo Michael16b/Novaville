@@ -11,6 +11,13 @@ import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
 
+int _maxCardsAllowedForWidth(double width) {
+  if (width < 600) return 1;
+  if (width < 900) return 2;
+  if (width < 1200) return 3;
+  return 4;
+}
+
 /// Simple page for managing neighborhoods (Ma mairie)
 class TownHallPage extends StatefulWidget {
   const TownHallPage({super.key, this.neighborhoodRepository});
@@ -255,13 +262,6 @@ class _TownHallPageState extends State<TownHallPage> {
     if (start >= filteredItems.length) return const [];
     final end = (start + _pageSize).clamp(0, filteredItems.length);
     return filteredItems.sublist(start, end);
-  }
-
-  int _maxCardsAllowedForWidth(double width) {
-    if (width < 600) return 1;
-    if (width < 900) return 2;
-    if (width < 1200) return 3;
-    return 4;
   }
 
   int _autoCrossAxisCount(double width) {
@@ -563,7 +563,7 @@ class _TownHallNeighborhoodCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    neighborhood.postalCode,
+                    'CP: ${neighborhood.postalCode}',
                     style: const TextStyle(
                       color: AppColors.white,
                       fontSize: 10,
@@ -668,13 +668,6 @@ class _TownHallLoadingSkeletonState extends State<_TownHallLoadingSkeleton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _pulseController;
 
-  int _maxCardsAllowedForWidth(double width) {
-    if (width < 600) return 1;
-    if (width < 900) return 2;
-    if (width < 1200) return 3;
-    return 4;
-  }
-
   int _skeletonCrossAxisCount(double width) {
     final maxAllowed = _maxCardsAllowedForWidth(width);
     final preferred = widget.preferredCardsPerRow;
@@ -726,18 +719,27 @@ class _TownHallLoadingSkeletonState extends State<_TownHallLoadingSkeleton>
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          width: 220,
-                          height: 46,
-                          decoration: BoxDecoration(
-                            color: barColor,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ],
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final dropdownWidth =
+                            constraints.maxWidth < 220
+                                ? constraints.maxWidth
+                                : 220.0;
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Container(
+                              width: dropdownWidth,
+                              height: 46,
+                              decoration: BoxDecoration(
+                                color: barColor,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 10),
                     Wrap(
