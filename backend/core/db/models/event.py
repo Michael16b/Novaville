@@ -24,6 +24,7 @@ class Event(models.Model):
     """City or association event"""
     title = models.CharField(max_length=255, help_text="Event title")
     description = models.TextField(help_text="Event description")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="Event creation date")
     start_date = models.DateTimeField(help_text="Event start date and time")
     end_date = models.DateTimeField(help_text="Event end date and time")
     # Foreign keys
