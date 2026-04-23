@@ -47,6 +47,7 @@ class TestSurveysAPI:
         data = {
             "title": "Survey Without Options",
             "description": "Should fail",
+            "address": "14 rue des Ecoles, Novaville",
             "start_date": timezone.now().isoformat(),
             "end_date": (timezone.now() + timedelta(days=7)).isoformat(),
             "options": []
@@ -60,6 +61,7 @@ class TestSurveysAPI:
         data = {
             "title": "Unauthorized Survey",
             "description": "Should fail",
+            "address": "16 rue des Roses, Novaville",
             "start_date": timezone.now().isoformat(),
             "end_date": (timezone.now() + timedelta(days=7)).isoformat()
         }
@@ -96,6 +98,7 @@ class TestSurveysAPI:
         active_survey = elected_user.created_surveys.create(
             title="Active Survey",
             description="Active",
+            address="2 place du Marche, Novaville",
             start_date=timezone.now() - timedelta(days=1),
             end_date=timezone.now() + timedelta(days=5)
         )
@@ -104,6 +107,7 @@ class TestSurveysAPI:
         expired_survey = elected_user.created_surveys.create(
             title="Expired Survey",
             description="Expired",
+            address="3 place du Marche, Novaville",
             start_date=timezone.now() - timedelta(days=10),
             end_date=timezone.now() - timedelta(days=1)
         )
@@ -136,12 +140,14 @@ class TestSurveysAPI:
         matching_survey = elected_user.created_surveys.create(
             title="Multi Attr Survey",
             description="Should match",
+            address="8 rue de la Liberte, Novaville",
             start_date=timezone.now() - timedelta(days=1),
             end_date=timezone.now() + timedelta(days=5),
         )
         elected_user.created_surveys.create(
             title="Multi Attr Survey",
             description="Wrong date range",
+            address="9 rue de la Liberte, Novaville",
             start_date=timezone.now() - timedelta(days=10),
             end_date=timezone.now() - timedelta(days=2),
         )
@@ -207,6 +213,7 @@ class TestVotesAPI:
         other_survey = Survey.objects.create(
             title="Other Survey",
             description="Different",
+            address="4 boulevard du Parc, Novaville",
             start_date="2026-01-01T00:00:00Z",
             end_date="2026-12-31T23:59:59Z",
             created_by=elected_user
@@ -249,6 +256,7 @@ class TestVotesAPI:
         other_survey = Survey.objects.create(
             title="Other Filter Survey",
             description="Different survey",
+            address="6 avenue de la Gare, Novaville",
             start_date=timezone.now(),
             end_date=timezone.now() + timedelta(days=7),
             created_by=elected_user,

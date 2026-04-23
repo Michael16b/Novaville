@@ -132,6 +132,7 @@ class TestPermissions:
             {
                 "title": "Test Survey",
                 "description": "Test",
+                "address": "10 avenue Victor Hugo, Novaville",
                 "start_date": timezone.now().isoformat(),
                 "end_date": (timezone.now() + timedelta(days=7)).isoformat()
             },
@@ -146,6 +147,7 @@ class TestPermissions:
             {
                 "title": "Test Survey",
                 "description": "Test description",
+                "address": "10 avenue Victor Hugo, Novaville",
                 "start_date": timezone.now().isoformat(),
                 "end_date": (timezone.now() + timedelta(days=7)).isoformat(),
                 "options": ["Option 1", "Option 2"]
