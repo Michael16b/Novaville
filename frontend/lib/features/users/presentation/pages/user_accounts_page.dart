@@ -635,7 +635,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     return _buildUsersGrid(context, state.users);
   }
 
-  ({int crossAxisCount, double childAspectRatio}) _computeGridLayout(
+  ({int crossAxisCount, double mainAxisExtent}) _computeGridLayout(
     double width,
   ) {
     const spacing = 14.0;
@@ -653,15 +653,13 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
         : _preferredCardsPerRow!.clamp(1, maxAllowedCount);
 
     final cardWidth = (width - (spacing * (chosenCount - 1))) / chosenCount;
-    final estimatedCardHeight = chosenCount == 1
-        ? 165.0
-        : chosenCount == 2
-        ? 185.0
-        : 205.0;
+    final mainAxisExtent = chosenCount == 1
+        ? 236.0
+        : cardWidth < 290
+        ? 280.0
+        : 248.0;
 
-    final childAspectRatio = (cardWidth / estimatedCardHeight).clamp(1.15, 2.4);
-
-    return (crossAxisCount: chosenCount, childAspectRatio: childAspectRatio);
+    return (crossAxisCount: chosenCount, mainAxisExtent: mainAxisExtent);
   }
 
   int _maxCardsAllowedForWidth(double width) {
@@ -682,7 +680,6 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
       builder: (context, constraints) {
         final layout = _computeGridLayout(constraints.maxWidth);
         final crossAxisCount = layout.crossAxisCount;
-        final childAspectRatio = layout.childAspectRatio;
 
         return GridView.builder(
           shrinkWrap: true,
@@ -692,7 +689,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: 14,
             crossAxisSpacing: 14,
-            childAspectRatio: childAspectRatio,
+            mainAxisExtent: layout.mainAxisExtent,
           ),
           itemBuilder: (context, index) {
             return _UserCardSkeleton();
@@ -711,7 +708,6 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
       builder: (context, constraints) {
         final layout = _computeGridLayout(constraints.maxWidth);
         final crossAxisCount = layout.crossAxisCount;
-        final childAspectRatio = layout.childAspectRatio;
 
         return GridView.builder(
           shrinkWrap: true,
@@ -721,7 +717,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: 14,
             crossAxisSpacing: 14,
-            childAspectRatio: childAspectRatio,
+            mainAxisExtent: layout.mainAxisExtent,
           ),
           itemBuilder: (context, index) {
             final user = users[index];
