@@ -254,19 +254,20 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             const Icon(
               Icons.filter_list,
               size: 18,
               color: AppColors.secondaryText,
             ),
-            const SizedBox(width: 6),
             Text(
               ReportTexts.advancedFilters,
               style: Theme.of(context).textTheme.titleSmall,
             ),
-            const SizedBox(width: 8),
             TextButton.icon(
               onPressed: hasActiveFilter ? _clearAllFilters : null,
               icon: const Icon(Icons.clear_all, size: 16),
@@ -274,6 +275,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 visualDensity: VisualDensity.compact,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
           ],

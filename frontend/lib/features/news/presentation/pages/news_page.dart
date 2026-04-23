@@ -606,15 +606,17 @@ class _NewsPageState extends State<NewsPage> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.end,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               OutlinedButton.icon(
                 onPressed: onPrevious,
                 icon: const Icon(Icons.chevron_left),
                 label: const Text(AppTextsNews.previousPage),
               ),
-              const SizedBox(width: 8),
               OutlinedButton.icon(
                 onPressed: onNext,
                 icon: const Icon(Icons.chevron_right),
