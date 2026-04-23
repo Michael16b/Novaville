@@ -7,6 +7,12 @@ from core.db.models import Report
 class ReportFilter(django_filters.FilterSet):
     """FilterSet for the Report model with date range support."""
 
+    address = django_filters.CharFilter(
+        field_name="address",
+        lookup_expr="icontains",
+        label="Filter by address (case-insensitive partial match)",
+    )
+
     created_after = django_filters.DateTimeFilter(
         field_name="created_at",
         lookup_expr="gte",
@@ -27,5 +33,12 @@ class ReportFilter(django_filters.FilterSet):
         """Meta options for ReportFilter."""
 
         model = Report
-        fields = ["status", "problem_type", "neighborhood", "created_after", "created_before", "created_date"]
-
+        fields = [
+            "status",
+            "problem_type",
+            "address",
+            "neighborhood",
+            "created_after",
+            "created_before",
+            "created_date",
+        ]

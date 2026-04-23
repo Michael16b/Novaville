@@ -39,6 +39,7 @@ class _FakeUserRepository implements IUserRepository {
     String? search,
     int page = 1,
     String? role,
+    String? address,
     int? neighborhood,
   }) async {
     if (shouldThrow) throw Exception(errorMessage);

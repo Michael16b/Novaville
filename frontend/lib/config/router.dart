@@ -145,12 +145,12 @@ GoRouter buildRouter(AuthBloc authBloc) {
       GoRoute(
         path: AppRoutes.login,
         pageBuilder: (context, state) =>
-            _buildPage(state: state, child: const LoginPage()),
+            NoTransitionPage(key: state.pageKey, child: const LoginPage()),
       ),
       GoRoute(
         path: AppRoutes.register,
         pageBuilder: (context, state) =>
-            _buildPage(state: state, child: const RegisterPage()),
+            NoTransitionPage(key: state.pageKey, child: const RegisterPage()),
       ),
       GoRoute(
         path: AppRoutes.credentialsShare,
@@ -159,12 +159,13 @@ GoRouter buildRouter(AuthBloc authBloc) {
       ),
       // ── Secured shell — all child routes share the AppBanner layout ───────
       ShellRoute(
-        builder: (context, state, child) {
-          return SecuredLayout(
+        pageBuilder: (context, state, child) => NoTransitionPage(
+          key: state.pageKey,
+          child: SecuredLayout(
             currentLocation: state.matchedLocation,
             child: child,
-          );
-        },
+          ),
+        ),
         routes: [
           GoRoute(
             path: AppRoutes.home,
@@ -182,10 +183,8 @@ GoRouter buildRouter(AuthBloc authBloc) {
               userRole: authBloc.state.user?.role,
               allowedRoles: [UserRole.elected, UserRole.globalAdmin],
             ),
-            pageBuilder: (context, state) => _buildPage(
-              state: state,
-              child: const TownHallPage(),
-            ),
+            pageBuilder: (context, state) =>
+                _buildPage(state: state, child: const TownHallPage()),
           ),
           GoRoute(
             path: AppRoutes.surveys,

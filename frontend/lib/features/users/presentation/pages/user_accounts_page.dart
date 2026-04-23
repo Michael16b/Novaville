@@ -2,10 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:frontend/constants/texts/texts_general.dart';
-import 'package:go_router/go_router.dart';
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
@@ -19,10 +18,9 @@ import 'package:frontend/features/users/presentation/widgets/single_user_edit_di
 import 'package:frontend/features/users/presentation/widgets/user_account_card.dart';
 import 'package:frontend/ui/widgets/breadcrumb.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
-import 'package:frontend/ui/widgets/neighborhood_autocomplete.dart';
-import 'package:frontend/ui/widgets/neighborhood_filter_skeleton.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
+import 'package:go_router/go_router.dart';
 
 /// User Accounts management page - accessible only to GLOBAL_ADMIN.
 ///
@@ -77,10 +75,12 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   bool _showLoadingOverlay = false;
   late Future<List<User>> _pendingUsersFuture;
   bool _isHandlingPendingRequest = false;
+  final TextEditingController _addressFilterController =
+      TextEditingController();
 
   // Advanced filters
   String? _filterRole;
-  int? _filterNeighborhood;
+  String _filterAddress = '';
 
   String get _currentOrdering =>
       _sortAscending ? _sortColumnKey : '-$_sortColumnKey';
@@ -96,6 +96,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     _searchDebounce?.cancel();
     _loadingTimer?.cancel();
     _searchController.dispose();
+    _addressFilterController.dispose();
     super.dispose();
   }
 
@@ -346,7 +347,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   }
 
   Widget _buildAdvancedFilters(BuildContext context, UserAccountsState state) {
-    final hasActiveFilter = _filterRole != null || _filterNeighborhood != null;
+    final hasActiveFilter = _filterRole != null || _filterAddress.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,10 +377,13 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
           ],
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [_buildRoleFilterChips(), _buildNeighborhoodFilter(state)],
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildRoleFilterChips(),
+            const SizedBox(height: 10),
+            _buildAddressFilter(),
+          ],
         ),
       ],
     );
@@ -424,40 +428,14 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     );
   }
 
-  Widget _buildNeighborhoodFilter(UserAccountsState state) {
-    final neighborhoods = state.neighborhoods;
-
-    // Show skeleton while loading
-    if (!state.neighborhoodsLoaded) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Text(
-              UserTexts.filterByNeighborhood,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.secondaryText,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const SizedBox(
-            width: 250,
-            height: 32,
-            child: NeighborhoodFilterSkeleton(),
-          ),
-        ],
-      );
-    }
-
+  Widget _buildAddressFilter() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 4),
           child: Text(
-            UserTexts.filterByNeighborhood,
+            UserTexts.filterByAddress,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppColors.secondaryText,
               fontWeight: FontWeight.w600,
@@ -465,15 +443,43 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
           ),
         ),
         SizedBox(
-          width: 250,
-          child: NeighborhoodAutocomplete(
-            neighborhoods: neighborhoods,
-            selectedId: _filterNeighborhood,
-            hintText: UserTexts.allNeighborhoods,
-            onSelected: (int? value) {
-              setState(() => _filterNeighborhood = value);
+          width: 320,
+          child: TextField(
+            controller: _addressFilterController,
+            onChanged: (value) {
+              setState(() => _filterAddress = value.trim());
               _applyFilters();
             },
+            decoration: InputDecoration(
+              hintText: UserTexts.addressFilterHint,
+              prefixIcon: const Padding(
+                padding: EdgeInsets.only(left: 12, right: 8),
+                child: Icon(Icons.home_outlined, size: 20),
+              ),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 0,
+                minHeight: 0,
+              ),
+              isDense: true,
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+              visualDensity: VisualDensity.compact,
+              suffixIcon: _filterAddress.isEmpty
+                  ? null
+                  : IconButton(
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        _addressFilterController.clear();
+                        setState(() => _filterAddress = '');
+                        _applyFilters();
+                      },
+                      icon: const Icon(Icons.close),
+                    ),
+            ),
           ),
         ),
       ],
@@ -482,10 +488,11 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
 
   void _applyFilters() {
     _flushSearchDebounce();
+    _filterAddress = _addressFilterController.text.trim();
     context.read<UserAccountsBloc>().add(
       UserAccountsFilterRequested(
         role: _filterRole,
-        neighborhood: _filterNeighborhood,
+        address: _filterAddress.isEmpty ? null : _filterAddress,
         ordering: _currentOrdering,
         search: _searchQuery,
       ),
@@ -495,8 +502,9 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   void _clearAllFilters() {
     setState(() {
       _filterRole = null;
-      _filterNeighborhood = null;
+      _filterAddress = '';
     });
+    _addressFilterController.clear();
     _applyFilters();
   }
 

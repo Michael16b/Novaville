@@ -1,5 +1,5 @@
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
@@ -19,9 +19,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     on<UserAccountsPageRequested>(_onPageRequested);
     on<UserAccountsSearchRequested>(_onSearchRequested);
     on<UserAccountsFilterRequested>(_onFilterRequested);
-    on<UserAccountsNeighborhoodsLoadRequested>(
-      _onNeighborhoodsLoadRequested,
-    );
+    on<UserAccountsNeighborhoodsLoadRequested>(_onNeighborhoodsLoadRequested);
   }
 
   final IUserRepository _repository;
@@ -29,7 +27,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
 
   // Current active filters
   String? _filterRole;
-  int? _filterNeighborhood;
+  String? _filterAddress;
 
   static const Duration _revalidationInterval = Duration(seconds: 20);
   static const Duration _minimumSkeletonDuration = Duration(milliseconds: 300);
@@ -171,7 +169,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     Emitter<UserAccountsState> emit,
   ) async {
     _filterRole = event.role;
-    _filterNeighborhood = event.neighborhood;
+    _filterAddress = event.address;
     _pageCache.clear();
     await _loadPageWithCache(
       emit: emit,
@@ -190,7 +188,9 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
   ) async {
     try {
       final neighborhoods = await _repository.listNeighborhoods();
-      emit(state.copyWith(neighborhoods: neighborhoods, neighborhoodsLoaded: true));
+      emit(
+        state.copyWith(neighborhoods: neighborhoods, neighborhoodsLoaded: true),
+      );
     } catch (_) {
       // Silently fail – neighborhoods are optional for filters
       emit(state.copyWith(neighborhoodsLoaded: true));
@@ -217,7 +217,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
       ordering: ordering,
       search: search,
       role: _filterRole,
-      neighborhood: _filterNeighborhood,
+      address: _filterAddress,
     );
     final cached = _pageCache[key];
 
@@ -235,7 +235,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
               search: search,
               page: page,
               role: _filterRole,
-              neighborhood: _filterNeighborhood,
+              address: _filterAddress,
             );
             _pageCache[key] = _CachedUserPage(
               pageData: freshPage,
@@ -264,7 +264,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
         search: search,
         page: page,
         role: _filterRole,
-        neighborhood: _filterNeighborhood,
+        address: _filterAddress,
       );
       _pageCache[key] = _CachedUserPage(
         pageData: userPage,
@@ -334,17 +334,17 @@ class _UserPageCacheKey extends Equatable {
     required this.ordering,
     required this.search,
     this.role,
-    this.neighborhood,
+    this.address,
   });
 
   final int page;
   final String? ordering;
   final String search;
   final String? role;
-  final int? neighborhood;
+  final String? address;
 
   @override
-  List<Object?> get props => [page, ordering, search, role, neighborhood];
+  List<Object?> get props => [page, ordering, search, role, address];
 }
 
 class _CachedUserPage {

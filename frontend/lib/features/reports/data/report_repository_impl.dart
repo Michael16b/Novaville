@@ -1,10 +1,10 @@
 import 'dart:convert';
 
+import 'package:frontend/constants/texts/texts_report_repository_errors.dart';
 import 'package:frontend/constants/texts/texts_reports.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
-import 'package:frontend/constants/texts/texts_report_repository_errors.dart';
 import 'package:frontend/features/reports/data/report_repository.dart';
 
 /// HTTP-based implementation of [IReportRepository].
@@ -26,6 +26,7 @@ class ReportRepositoryImpl implements IReportRepository {
     int page = 1,
     String? status,
     String? problemType,
+    String? address,
     int? neighborhood,
     DateTime? createdAfter,
   }) async {
@@ -41,6 +42,9 @@ class ReportRepositoryImpl implements IReportRepository {
     }
     if (problemType != null && problemType.isNotEmpty) {
       url += '&problem_type=$problemType';
+    }
+    if (address != null && address.trim().isNotEmpty) {
+      url += '&address=${Uri.encodeQueryComponent(address.trim())}';
     }
     if (neighborhood != null) {
       url += '&neighborhood=$neighborhood';

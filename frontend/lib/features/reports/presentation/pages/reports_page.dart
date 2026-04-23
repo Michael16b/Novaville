@@ -14,22 +14,15 @@ import 'package:frontend/features/reports/data/models/report_status.dart';
 import 'package:frontend/features/reports/data/report_repository.dart';
 import 'package:frontend/features/reports/data/report_repository_factory.dart';
 import 'package:frontend/features/reports/presentation/widgets/report_card.dart';
-import 'package:frontend/ui/widgets/breadcrumb.dart';
-import 'package:frontend/ui/widgets/styled_dialog.dart';
 import 'package:frontend/features/reports/presentation/widgets/report_form_dialog.dart';
 import 'package:frontend/features/reports/presentation/widgets/report_status_dialog.dart';
+import 'package:frontend/ui/widgets/breadcrumb.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
-import 'package:frontend/ui/widgets/neighborhood_autocomplete.dart';
-import 'package:frontend/ui/widgets/neighborhood_filter_skeleton.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
+import 'package:frontend/ui/widgets/styled_dialog.dart';
 
 /// Date filter periods
-enum DateFilterPeriod {
-  all,
-  today,
-  last7Days,
-  last30Days,
-}
+enum DateFilterPeriod { all, today, last7Days, last30Days }
 
 /// Reports feature page for citizen reports.
 class ReportsPage extends StatelessWidget {
@@ -46,9 +39,9 @@ class ReportsPage extends StatelessWidget {
     final repository = reportRepository ?? createReportRepository();
 
     return BlocProvider(
-      create: (context) => ReportsBloc(repository: repository)
-        ..add(const ReportsLoadRequested(ordering: '-created_at'))
-        ..add(const ReportsNeighborhoodsLoadRequested()),
+      create: (context) =>
+          ReportsBloc(repository: repository)
+            ..add(const ReportsLoadRequested(ordering: '-created_at')),
       child: const _ReportsPageContent(),
     );
   }
@@ -70,11 +63,13 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
   Timer? _loadingTimer;
   String _searchQuery = '';
   bool _showLoadingOverlay = false;
+  final TextEditingController _addressFilterController =
+      TextEditingController();
 
   // Advanced filters
   String? _filterStatus;
   String? _filterProblemType;
-  int? _filterNeighborhood;
+  String _filterAddress = '';
   DateFilterPeriod _filterDatePeriod = DateFilterPeriod.all;
 
   @override
@@ -82,6 +77,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     _searchDebounce?.cancel();
     _loadingTimer?.cancel();
     _searchController.dispose();
+    _addressFilterController.dispose();
     super.dispose();
   }
 
@@ -156,10 +152,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
 
     switch (state.status) {
       case ReportsStatus.failure:
-        CustomSnackBar.showError(
-          context,
-          state.error ?? ReportTexts.error,
-        );
+        CustomSnackBar.showError(context, state.error ?? ReportTexts.error);
       case ReportsStatus.created:
         CustomSnackBar.showSuccess(context, ReportTexts.createSuccess);
       case ReportsStatus.deleted:
@@ -208,20 +201,12 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
 
   // ─── Controls Section ──────────────────────────────────────────
 
-  Widget _buildControlsSection(
-    BuildContext context,
-    ReportsState state,
-  ) {
-    final sortItems = [
-      (label: ReportTexts.sortByDate, key: 'created_at'),
-    ];
+  Widget _buildControlsSection(BuildContext context, ReportsState state) {
+    final sortItems = [(label: ReportTexts.sortByDate, key: 'created_at')];
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 10,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -259,13 +244,11 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
 
   // ─── Advanced Filters ──────────────────────────────────────────
 
-  Widget _buildAdvancedFilters(
-    BuildContext context,
-    ReportsState state,
-  ) {
-    final hasActiveFilter = _filterStatus != null ||
+  Widget _buildAdvancedFilters(BuildContext context, ReportsState state) {
+    final hasActiveFilter =
+        _filterStatus != null ||
         _filterProblemType != null ||
-        _filterNeighborhood != null ||
+        _filterAddress.isNotEmpty ||
         _filterDatePeriod != DateFilterPeriod.all;
 
     return Column(
@@ -284,61 +267,59 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(width: 8),
-              TextButton.icon(
-                onPressed: hasActiveFilter ? _clearAllFilters : null,
-                icon: const Icon(Icons.clear_all, size: 16),
-                label: const Text(ReportTexts.clearFilters),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                  ),
-                  visualDensity: VisualDensity.compact,
-                ),
+            TextButton.icon(
+              onPressed: hasActiveFilter ? _clearAllFilters : null,
+              icon: const Icon(Icons.clear_all, size: 16),
+              label: const Text(ReportTexts.clearFilters),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                visualDensity: VisualDensity.compact,
               ),
+            ),
           ],
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          crossAxisAlignment: WrapCrossAlignment.start,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildFilterChipGroup<String>(
-              label: ReportTexts.filterByProblemType,
-              selectedValue: _filterProblemType,
-              options: [
-                (
-                  label: ReportTexts.allProblemTypes,
-                  value: null,
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              crossAxisAlignment: WrapCrossAlignment.start,
+              children: [
+                _buildFilterChipGroup<String>(
+                  label: ReportTexts.filterByProblemType,
+                  selectedValue: _filterProblemType,
+                  options: [
+                    (label: ReportTexts.allProblemTypes, value: null),
+                    ...ProblemType.values.map(
+                      (t) => (label: t.label, value: t.value),
+                    ),
+                  ],
+                  onSelected: (value) {
+                    setState(() => _filterProblemType = value);
+                    _applyFilters();
+                  },
                 ),
-                ...ProblemType.values.map(
-                  (t) => (label: t.label, value: t.value),
+                _buildFilterChipGroup<String>(
+                  label: ReportTexts.filterByStatus,
+                  selectedValue: _filterStatus,
+                  options: [
+                    (label: ReportTexts.allStatuses, value: null),
+                    ...ReportStatus.values.map(
+                      (s) => (label: s.label, value: s.value),
+                    ),
+                  ],
+                  onSelected: (value) {
+                    setState(() => _filterStatus = value);
+                    _applyFilters();
+                  },
                 ),
+                _buildDateFilter(),
               ],
-              onSelected: (value) {
-                setState(() => _filterProblemType = value);
-                _applyFilters();
-              },
             ),
-            _buildFilterChipGroup<String>(
-              label: ReportTexts.filterByStatus,
-              selectedValue: _filterStatus,
-              options: [
-                (
-                  label: ReportTexts.allStatuses,
-                  value: null,
-                ),
-                ...ReportStatus.values.map(
-                  (s) => (label: s.label, value: s.value),
-                ),
-              ],
-              onSelected: (value) {
-                setState(() => _filterStatus = value);
-                _applyFilters();
-              },
-            ),
-            _buildNeighborhoodFilter(state),
-            _buildDateFilter(),
+            const SizedBox(height: 10),
+            _buildAddressFilter(),
           ],
         ),
       ],
@@ -359,9 +340,9 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
           child: Text(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.secondaryText,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: AppColors.secondaryText,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         Wrap(
@@ -381,56 +362,58 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     );
   }
 
-  Widget _buildNeighborhoodFilter(ReportsState state) {
-    final neighborhoods = state.neighborhoods;
-
-    // Show skeleton while loading
-    if (!state.neighborhoodsLoaded) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Text(
-              ReportTexts.filterByNeighborhood,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.secondaryText,
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-          ),
-          const SizedBox(
-            width: 250,
-            height: 32,
-            child: NeighborhoodFilterSkeleton(),
-          ),
-        ],
-      );
-    }
-
+  Widget _buildAddressFilter() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 4),
           child: Text(
-            ReportTexts.filterByNeighborhood,
+            ReportTexts.filterByAddress,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.secondaryText,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: AppColors.secondaryText,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         SizedBox(
-          width: 250,
-          child: NeighborhoodAutocomplete(
-            neighborhoods: neighborhoods,
-            selectedId: _filterNeighborhood,
-            hintText: ReportTexts.allNeighborhoods,
-            onSelected: (int? value) {
-              setState(() => _filterNeighborhood = value);
+          width: 320,
+          child: TextField(
+            controller: _addressFilterController,
+            onChanged: (value) {
+              setState(() => _filterAddress = value.trim());
               _applyFilters();
             },
+            decoration: InputDecoration(
+              hintText: ReportTexts.addressFilterHint,
+              prefixIcon: const Padding(
+                padding: EdgeInsets.only(left: 12, right: 8),
+                child: Icon(Icons.home_outlined, size: 20),
+              ),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 0,
+                minHeight: 0,
+              ),
+              isDense: true,
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+              visualDensity: VisualDensity.compact,
+              suffixIcon: _filterAddress.isEmpty
+                  ? null
+                  : IconButton(
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        _addressFilterController.clear();
+                        setState(() => _filterAddress = '');
+                        _applyFilters();
+                      },
+                      icon: const Icon(Icons.close),
+                    ),
+            ),
           ),
         ),
       ],
@@ -453,9 +436,9 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
           child: Text(
             ReportTexts.filterByDate,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.secondaryText,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: AppColors.secondaryText,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         Wrap(
@@ -480,10 +463,11 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
 
   void _applyFilters() {
     _flushSearchDebounce();
-    
+    _filterAddress = _addressFilterController.text.trim();
+
     DateTime? createdAfter;
     final now = DateTime.now();
-    
+
     switch (_filterDatePeriod) {
       case DateFilterPeriod.today:
         createdAfter = DateTime(now.year, now.month, now.day);
@@ -496,24 +480,25 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     }
 
     context.read<ReportsBloc>().add(
-          ReportsFilterRequested(
-            status: _filterStatus,
-            problemType: _filterProblemType,
-            neighborhood: _filterNeighborhood,
-            createdAfter: createdAfter,
-            ordering: _currentOrdering,
-            search: _searchQuery,
-          ),
-        );
+      ReportsFilterRequested(
+        status: _filterStatus,
+        problemType: _filterProblemType,
+        address: _filterAddress.isEmpty ? null : _filterAddress,
+        createdAfter: createdAfter,
+        ordering: _currentOrdering,
+        search: _searchQuery,
+      ),
+    );
   }
 
   void _clearAllFilters() {
     setState(() {
       _filterStatus = null;
       _filterProblemType = null;
-      _filterNeighborhood = null;
+      _filterAddress = '';
       _filterDatePeriod = DateFilterPeriod.all;
     });
+    _addressFilterController.clear();
     _applyFilters();
   }
 
@@ -534,9 +519,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
                 const SizedBox(height: 8),
                 SizedBox(
                   width: 220,
-                  child: _buildCardsPerRowDropdown(
-                    constraints.maxWidth,
-                  ),
+                  child: _buildCardsPerRowDropdown(constraints.maxWidth),
                 ),
               ],
             ],
@@ -554,9 +537,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
             const SizedBox(width: 12),
             SizedBox(
               width: 220,
-              child: _buildCardsPerRowDropdown(
-                constraints.maxWidth,
-              ),
+              child: _buildCardsPerRowDropdown(constraints.maxWidth),
             ),
           ],
         );
@@ -564,38 +545,27 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     );
   }
 
-  Widget _buildSortControlsWrap(
-    List<({String label, String key})> sortItems,
-  ) {
+  Widget _buildSortControlsWrap(List<({String label, String key})> sortItems) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text(
-          ReportTexts.sortBy,
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
+        Text(ReportTexts.sortBy, style: Theme.of(context).textTheme.titleSmall),
         for (final sortItem in sortItems)
           ChoiceChip(
             label: Text(sortItem.label),
             selected: _sortColumnKey == sortItem.key,
-            onSelected: (_) =>
-                _applySort(sortItem.key, _sortAscending),
+            onSelected: (_) => _applySort(sortItem.key, _sortAscending),
           ),
         OutlinedButton.icon(
-          onPressed: () =>
-              _applySort(_sortColumnKey, !_sortAscending),
+          onPressed: () => _applySort(_sortColumnKey, !_sortAscending),
           icon: Icon(
-            _sortAscending
-                ? Icons.arrow_upward
-                : Icons.arrow_downward,
+            _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
             size: 16,
           ),
           label: Text(
-            _sortAscending
-                ? ReportTexts.ascending
-                : ReportTexts.descending,
+            _sortAscending ? ReportTexts.ascending : ReportTexts.descending,
           ),
         ),
       ],
@@ -608,7 +578,8 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
       null,
       for (var count = 1; count <= maxAllowedCount; count++) count,
     ];
-    final selectedValue = (_preferredCardsPerRow != null &&
+    final selectedValue =
+        (_preferredCardsPerRow != null &&
             _preferredCardsPerRow! <= maxAllowedCount)
         ? _preferredCardsPerRow
         : null;
@@ -627,9 +598,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
             (option) => DropdownMenuItem<int?>(
               value: option,
               child: Text(
-                option == null
-                    ? ReportTexts.auto
-                    : option.toString(),
+                option == null ? ReportTexts.auto : option.toString(),
               ),
             ),
           )
@@ -644,13 +613,9 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
 
   // ─── Pagination ────────────────────────────────────────────────
 
-  Widget _buildPaginationControls(
-    BuildContext context,
-    ReportsState state,
-  ) {
+  Widget _buildPaginationControls(BuildContext context, ReportsState state) {
     final start = (state.page - 1) * state.pageSize + 1;
-    final end =
-        (start + state.reports.length - 1).clamp(0, state.count);
+    final end = (start + state.reports.length - 1).clamp(0, state.count);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -668,12 +633,12 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
                 ? () {
                     _flushSearchDebounce();
                     context.read<ReportsBloc>().add(
-                          ReportsPageRequested(
-                            page: state.page - 1,
-                            ordering: _currentOrdering,
-                            search: _searchQuery,
-                          ),
-                        );
+                      ReportsPageRequested(
+                        page: state.page - 1,
+                        ordering: _currentOrdering,
+                        search: _searchQuery,
+                      ),
+                    );
                   }
                 : null,
           ),
@@ -683,12 +648,12 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
                 ? () {
                     _flushSearchDebounce();
                     context.read<ReportsBloc>().add(
-                          ReportsPageRequested(
-                            page: state.page + 1,
-                            ordering: _currentOrdering,
-                            search: _searchQuery,
-                          ),
-                        );
+                      ReportsPageRequested(
+                        page: state.page + 1,
+                        ordering: _currentOrdering,
+                        search: _searchQuery,
+                      ),
+                    );
                   }
                 : null,
           ),
@@ -699,21 +664,14 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
 
   // ─── Results Section ───────────────────────────────────────────
 
-  Widget _buildResultsSection(
-    BuildContext context,
-    ReportsState state,
-  ) {
+  Widget _buildResultsSection(BuildContext context, ReportsState state) {
     if (state.status == ReportsStatus.initial ||
         state.status == ReportsStatus.loading) {
       return _buildReportsSkeleton(context);
     }
 
-    if (state.status == ReportsStatus.failure &&
-        state.reports.isEmpty) {
-      return _buildErrorState(
-        context,
-        state.error ?? ReportTexts.error,
-      );
+    if (state.status == ReportsStatus.failure && state.reports.isEmpty) {
+      return _buildErrorState(context, state.error ?? ReportTexts.error);
     }
 
     if (state.reports.isEmpty) {
@@ -732,10 +690,9 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     const minCardWidth = 280.0;
     final maxByWidth = _maxCardsAllowedForWidth(width);
 
-    final estimatedCount =
-        ((width + spacing) / (minCardWidth + spacing))
-            .floor()
-            .clamp(1, maxByWidth);
+    final estimatedCount = ((width + spacing) / (minCardWidth + spacing))
+        .floor()
+        .clamp(1, maxByWidth);
 
     final maxAllowedCount = estimatedCount.clamp(1, maxByWidth);
 
@@ -743,21 +700,16 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
         ? maxAllowedCount
         : _preferredCardsPerRow!.clamp(1, maxAllowedCount);
 
-    final cardWidth =
-        (width - (spacing * (chosenCount - 1))) / chosenCount;
+    final cardWidth = (width - (spacing * (chosenCount - 1))) / chosenCount;
     final estimatedCardHeight = chosenCount == 1
         ? 285.0
         : chosenCount == 2
-            ? 255.0
-            : 275.0;
+        ? 255.0
+        : 275.0;
 
-    final childAspectRatio =
-        (cardWidth / estimatedCardHeight).clamp(0.9, 2.2);
+    final childAspectRatio = (cardWidth / estimatedCardHeight).clamp(0.9, 2.2);
 
-    return (
-      crossAxisCount: chosenCount,
-      childAspectRatio: childAspectRatio,
-    );
+    return (crossAxisCount: chosenCount, childAspectRatio: childAspectRatio);
   }
 
   int _maxCardsAllowedForWidth(double width) {
@@ -790,10 +742,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     );
   }
 
-  Widget _buildReportsGrid(
-    BuildContext context,
-    List<Report> reports,
-  ) {
+  Widget _buildReportsGrid(BuildContext context, List<Report> reports) {
     final currentUser = context.read<AuthBloc>().state.user;
     final isStaff = currentUser?.isStaff ?? false;
 
@@ -842,11 +791,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.error_outline,
-            size: 64,
-            color: AppColors.error,
-          ),
+          const Icon(Icons.error_outline, size: 64, color: AppColors.error),
           const SizedBox(height: 16),
           Text(
             ReportTexts.error,
@@ -865,11 +810,11 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
           ElevatedButton.icon(
             onPressed: () {
               context.read<ReportsBloc>().add(
-                    ReportsLoadRequested(
-                      ordering: _currentOrdering,
-                      search: _searchQuery,
-                    ),
-                  );
+                ReportsLoadRequested(
+                  ordering: _currentOrdering,
+                  search: _searchQuery,
+                ),
+              );
             },
             icon: const Icon(Icons.refresh),
             label: const Text(AppTextsGeneral.retry),
@@ -900,34 +845,28 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
       _sortAscending = ascending;
     });
     context.read<ReportsBloc>().add(
-          ReportsSortRequested(
-            column: columnKey,
-            ascending: ascending,
-            search: _searchQuery,
-          ),
-        );
+      ReportsSortRequested(
+        column: columnKey,
+        ascending: ascending,
+        search: _searchQuery,
+      ),
+    );
   }
 
   void _onSearchChanged(String value) {
     setState(() {});
     _searchDebounce?.cancel();
-    _searchDebounce = Timer(
-      const Duration(milliseconds: 350),
-      () {
-        if (!mounted) return;
-        final nextQuery = value.trim();
-        if (nextQuery == _searchQuery) return;
-        setState(() {
-          _searchQuery = nextQuery;
-        });
-        context.read<ReportsBloc>().add(
-              ReportsSearchRequested(
-                query: _searchQuery,
-                ordering: _currentOrdering,
-              ),
-            );
-      },
-    );
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      if (!mounted) return;
+      final nextQuery = value.trim();
+      if (nextQuery == _searchQuery) return;
+      setState(() {
+        _searchQuery = nextQuery;
+      });
+      context.read<ReportsBloc>().add(
+        ReportsSearchRequested(query: _searchQuery, ordering: _currentOrdering),
+      );
+    });
   }
 
   // ─── Dialogs ───────────────────────────────────────────────────
@@ -952,10 +891,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     }
   }
 
-  Future<void> _showEditDialog(
-    BuildContext context,
-    Report report,
-  ) async {
+  Future<void> _showEditDialog(BuildContext context, Report report) async {
     final bloc = context.read<ReportsBloc>();
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
@@ -995,8 +931,8 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
             onPressed: () {
               Navigator.pop(dialogContext);
               context.read<ReportsBloc>().add(
-                    ReportDeleteRequested(reportId: report.id),
-                  );
+                ReportDeleteRequested(reportId: report.id),
+              );
             },
           ),
         ],
@@ -1011,9 +947,9 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
             Text(
               ReportTexts.irreversible,
               style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
-                    color: AppColors.error,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: AppColors.error,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -1021,23 +957,16 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
     );
   }
 
-  Future<void> _showStatusDialog(
-    BuildContext context,
-    Report report,
-  ) async {
+  Future<void> _showStatusDialog(BuildContext context, Report report) async {
     final bloc = context.read<ReportsBloc>();
     final result = await showDialog<String>(
       context: context,
-      builder: (dialogContext) =>
-          ReportStatusDialog(report: report),
+      builder: (dialogContext) => ReportStatusDialog(report: report),
     );
 
     if (result != null && mounted) {
       bloc.add(
-        ReportStatusUpdateRequested(
-          reportId: report.id,
-          status: result,
-        ),
+        ReportStatusUpdateRequested(reportId: report.id, status: result),
       );
     }
   }
@@ -1054,11 +983,7 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.report_off_outlined,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.report_off_outlined, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             ReportTexts.noReports,
@@ -1081,8 +1006,7 @@ class _ReportCardSkeleton extends StatefulWidget {
   const _ReportCardSkeleton();
 
   @override
-  State<_ReportCardSkeleton> createState() =>
-      _ReportCardSkeletonState();
+  State<_ReportCardSkeleton> createState() => _ReportCardSkeletonState();
 }
 
 class _ReportCardSkeletonState extends State<_ReportCardSkeleton>
@@ -1144,46 +1068,20 @@ class _ReportCardSkeletonState extends State<_ReportCardSkeleton>
                   ],
                 ),
                 const SizedBox(height: 12),
-                Container(
-                  height: 14,
-                  width: double.infinity,
-                  color: barColor,
-                ),
+                Container(height: 14, width: double.infinity, color: barColor),
                 const SizedBox(height: 8),
-                Container(
-                  height: 14,
-                  width: 200,
-                  color: barColor,
-                ),
+                Container(height: 14, width: 200, color: barColor),
                 const SizedBox(height: 10),
-                Container(
-                  height: 12,
-                  width: 150,
-                  color: barColor,
-                ),
+                Container(height: 12, width: 150, color: barColor),
                 const SizedBox(height: 6),
-                Container(
-                  height: 12,
-                  width: 180,
-                  color: barColor,
-                ),
+                Container(height: 12, width: 180, color: barColor),
                 const Spacer(),
                 const Divider(height: 20),
                 Row(
                   children: [
-                    Expanded(
-                      child: Container(
-                        height: 32,
-                        color: barColor,
-                      ),
-                    ),
+                    Expanded(child: Container(height: 32, color: barColor)),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: Container(
-                        height: 32,
-                        color: barColor,
-                      ),
-                    ),
+                    Expanded(child: Container(height: 32, color: barColor)),
                   ],
                 ),
               ],

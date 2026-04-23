@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/constants/colors.dart';
-import 'package:frontend/constants/texts/texts_form_labels.dart';
 import 'package:frontend/constants/texts/texts_auth.dart';
+import 'package:frontend/constants/texts/texts_form_labels.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_validator_messages.dart';
 import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
@@ -60,7 +60,9 @@ class _LoginPageState extends State<LoginPage> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                   child: TextButton.icon(
-                    onPressed: isLoading ? null : () => context.go(AppRoutes.home),
+                    onPressed: isLoading
+                        ? null
+                        : () => context.go(AppRoutes.home),
                     icon: const Icon(Icons.arrow_back),
                     label: const Text(AppTextsAuth.backToHome),
                   ),
@@ -93,10 +95,12 @@ class _LoginPageState extends State<LoginPage> {
                                       keyboardType: TextInputType.name,
                                       textInputAction: TextInputAction.next,
                                       validator: (v) => (v == null || v.isEmpty)
-                                          ? AppValidatorMessages.usernameRequired
+                                          ? AppValidatorMessages
+                                                .usernameRequired
                                           : null,
                                       decoration: const InputDecoration(
-                                        labelText: '${AppFormLabels.username} *',
+                                        labelText:
+                                            '${AppFormLabels.username} *',
                                       ),
                                     ),
                                     const SizedBox(height: 24),
@@ -106,10 +110,12 @@ class _LoginPageState extends State<LoginPage> {
                                       textInputAction: TextInputAction.done,
                                       onFieldSubmitted: (_) => _submit(),
                                       validator: (v) => (v == null || v.isEmpty)
-                                          ? AppValidatorMessages.passwordRequired
+                                          ? AppValidatorMessages
+                                                .passwordRequired
                                           : null,
                                       decoration: const InputDecoration(
-                                        labelText: '${AppFormLabels.password} *',
+                                        labelText:
+                                            '${AppFormLabels.password} *',
                                       ),
                                     ),
                                     const SizedBox(height: 12),
@@ -139,8 +145,9 @@ class _LoginPageState extends State<LoginPage> {
                                     if (state.status == AuthStatus.failure &&
                                         state.error != null)
                                       Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 12),
+                                        padding: const EdgeInsets.only(
+                                          bottom: 12,
+                                        ),
                                         child: Text(
                                           state.error!,
                                           style: const TextStyle(
@@ -161,7 +168,8 @@ class _LoginPageState extends State<LoginPage> {
                                     TextButton.icon(
                                       onPressed: isLoading
                                           ? null
-                                          : () => context.go(AppRoutes.register),
+                                          : () =>
+                                                context.go(AppRoutes.register),
                                       icon: const Icon(Icons.person_add_alt_1),
                                       label: const Text(AppTextsAuth.register),
                                     ),
