@@ -167,6 +167,7 @@ class TestSurveyModel:
         survey = Survey.objects.create(
             title="Test Survey",
             description="Survey description",
+            address="5 rue de la Republique, Novaville",
             created_by=elected_user,
             start_date=timezone.now(),
             end_date=timezone.now() + timedelta(days=7)
@@ -186,6 +187,7 @@ class TestSurveyModel:
         # Active survey
         active = Survey.objects.create(
             title="Active",
+            address="7 rue Pasteur, Novaville",
             created_by=elected_user,
             start_date=timezone.now() - timedelta(days=1),
             end_date=timezone.now() + timedelta(days=1)
@@ -195,6 +197,7 @@ class TestSurveyModel:
         # Expired survey
         expired = Survey.objects.create(
             title="Expired",
+            address="11 rue Pasteur, Novaville",
             created_by=elected_user,
             start_date=timezone.now() - timedelta(days=10),
             end_date=timezone.now() - timedelta(days=1)

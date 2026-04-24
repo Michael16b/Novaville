@@ -143,10 +143,11 @@ class UserAccountCard extends StatelessWidget {
           // ── Footer: action buttons ──
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _ActionButton(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final useVerticalActions = constraints.maxWidth < 260;
+                final actions = [
+                  _ActionButton(
                     icon: Icons.edit_outlined,
                     label: 'Modifier',
                     color: isCurrentUser
@@ -154,17 +155,33 @@ class UserAccountCard extends StatelessWidget {
                         : AppColors.primary,
                     onTap: isCurrentUser ? null : () => onEdit(user),
                   ),
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: _ActionButton(
+                  _ActionButton(
                     icon: Icons.delete_outline_rounded,
                     label: 'Supprimer',
                     color: isCurrentUser ? AppColors.disabled : AppColors.error,
                     onTap: isCurrentUser ? null : () => onDelete(user),
                   ),
-                ),
-              ],
+                ];
+
+                if (useVerticalActions) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      actions.first,
+                      const SizedBox(height: 4),
+                      actions.last,
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(child: actions.first),
+                    const SizedBox(width: 4),
+                    Expanded(child: actions.last),
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -232,13 +249,15 @@ class _ActionButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 4,
             children: [
               Icon(icon, size: 16, color: color),
-              const SizedBox(width: 4),
               Text(
                 label,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: color,
                   fontSize: 12,

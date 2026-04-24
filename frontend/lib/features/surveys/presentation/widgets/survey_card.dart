@@ -11,6 +11,7 @@ class SurveyCard extends StatelessWidget {
     required this.survey,
     required this.isAuthenticated,
     required this.isStaff,
+    required this.canVote,
     required this.onVote,
     this.onEdit,
     this.onDelete,
@@ -25,6 +26,9 @@ class SurveyCard extends StatelessWidget {
 
   /// Whether the current user has staff privileges.
   final bool isStaff;
+
+  /// Whether the current user can answer this survey.
+  final bool canVote;
 
   /// Callback called when user taps one option.
   final ValueChanged<int> onVote;
@@ -72,8 +76,8 @@ class SurveyCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 Container(
@@ -119,9 +123,9 @@ class SurveyCard extends StatelessWidget {
                       survey.description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            height: 1.35,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(height: 1.35),
                     ),
                   const SizedBox(height: 10),
                   _InfoRow(
@@ -136,14 +140,17 @@ class SurveyCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   ...survey.options.map((option) {
-                    final isSelected = survey.currentUserVoteOptionId == option.id;
+                    final isSelected =
+                        survey.currentUserVoteOptionId == option.id;
                     final percentage = totalVotes == 0
                         ? 0
                         : ((option.voteCount * 100) / totalVotes).round();
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: FilledButton.tonal(
-                        onPressed: isAuthenticated ? () => onVote(option.id) : null,
+                        onPressed: isAuthenticated && canVote
+                            ? () => onVote(option.id)
+                            : null,
                         style: FilledButton.styleFrom(
                           backgroundColor: isSelected
                               ? AppColors.secondary
@@ -177,17 +184,17 @@ class SurveyCard extends StatelessWidget {
                   Text(
                     '${survey.totalVotes} ${SurveysTexts.totalVotes}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.secondaryText,
-                        ),
+                      color: AppColors.secondaryText,
+                    ),
                   ),
                   if (!isAuthenticated) ...[
                     const SizedBox(height: 8),
                     Text(
                       SurveysTexts.loginRequiredToVote,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.error,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        color: AppColors.error,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ],
@@ -248,9 +255,9 @@ class _InfoRow extends StatelessWidget {
             text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.primaryText,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.primaryText),
           ),
         ),
       ],
@@ -306,4 +313,3 @@ class _ActionButton extends StatelessWidget {
     );
   }
 }
-

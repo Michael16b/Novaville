@@ -42,6 +42,21 @@ class IsStaffOrReadOnly(permissions.BasePermission):
         return request.user.is_staff
 
 
+class IsSurveyManagerOrReadOnly(permissions.BasePermission):
+    """
+    Permission to only allow elected users and global admins to create/edit surveys.
+    Read-only access for authenticated users.
+    """
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return request.user.role in [RoleEnum.ELECTED, RoleEnum.GLOBAL_ADMIN]
+
+
 class IsAdminOrReadOnly(permissions.BasePermission):
     """
     Permission to only allow admins to create/edit.

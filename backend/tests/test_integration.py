@@ -95,6 +95,7 @@ class TestSurveysFlow:
             {
                 "title": "Park Development",
                 "description": "What should we build in the park?",
+                "address": "25 rue des Lilas, Novaville",
                 "start_date": timezone.now().isoformat(),
                 "end_date": (timezone.now() + timedelta(days=7)).isoformat(),
                 "options": ["Playground", "Sports field"]

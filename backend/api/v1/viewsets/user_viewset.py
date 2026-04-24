@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from core.db.models import User
+from api.v1.filters import UserFilter
 from api.v1.serializers.user_serializer import UserSerializer, UserPublicSerializer
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 from rest_framework import serializers
@@ -20,8 +21,9 @@ from core.db.models.user import ApprovalStatus
         parameters=[
             OpenApiParameter(name='role', description='Filter by role (e.g. CITIZEN, ELECTED, AGENT, GLOBAL_ADMIN)', required=False, type=str),
             OpenApiParameter(name='approval_status', description='Filter by approval status (e.g. PENDING, APPROVED)', required=False, type=str),
+            OpenApiParameter(name='address', description='Filter by address (partial match)', required=False, type=str),
             OpenApiParameter(name='neighborhood', description='Filter by neighborhood ID', required=False, type=int),
-            OpenApiParameter(name='search', description='Search in username, first_name, last_name, email', required=False, type=str),
+            OpenApiParameter(name='search', description='Search in username, first_name, last_name, email, address', required=False, type=str),
             OpenApiParameter(name='ordering', description='Order by first_name, username, email, role, date_joined', required=False, type=str),
         ]
     ),
@@ -63,8 +65,8 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.select_related('neighborhood').all()
     serializer_class = UserSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = '__all__'
-    search_fields = ['username', 'first_name', 'last_name', 'email']
+    filterset_class = UserFilter
+    search_fields = ['username', 'first_name', 'last_name', 'email', 'address']
     ordering_fields = ['first_name', 'username', 'email', 'role', 'date_joined']
     ordering = ['-date_joined']
     

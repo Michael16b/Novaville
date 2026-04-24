@@ -214,12 +214,12 @@ class TestReportsAPI:
         assert all(r["status"] == "IN_PROGRESS" for r in results)
     
     def test_filter_reports_by_neighborhood(self, authenticated_client, citizen_user, neighborhood):
-        """Test filtering reports by neighborhood"""
+        """Test filtering reports by neighborhood remains available for legacy clients."""
         other_neighborhood = neighborhood.__class__.objects.create(
             name="Other",
             postal_code="75002"
         )
-        
+
         Report.objects.create(
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
@@ -240,18 +240,38 @@ class TestReportsAPI:
         results = response.data.get('results', response.data)
         assert all(r["neighborhood"] == neighborhood.id for r in results)
 
-    def test_filter_reports_with_multiple_attributes(self, authenticated_client, citizen_user, neighborhood):
-        """Test combining multiple report filters in one request"""
-        other_neighborhood = neighborhood.__class__.objects.create(
-            name="Other Multi",
-            postal_code="75003"
+    def test_filter_reports_by_address(self, authenticated_client, citizen_user, neighborhood):
+        """Test filtering reports by a partial address."""
+        matching_report = Report.objects.create(
+            user=citizen_user,
+            problem_type=ProblemTypeEnum.ROADS,
+            description="Report on Victor Hugo",
+            address="15 avenue Victor Hugo",
+            neighborhood=neighborhood,
+        )
+        Report.objects.create(
+            user=citizen_user,
+            problem_type=ProblemTypeEnum.LIGHTING,
+            description="Another report elsewhere",
+            address="9 rue des Fleurs",
+            neighborhood=neighborhood,
         )
 
+        response = authenticated_client.get("/api/v1/reports/?address=victor")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get("results", response.data)
+        result_ids = [r["id"] for r in results]
+
+        assert matching_report.id in result_ids
+        assert all("victor" in r["address"].lower() for r in results)
+
+    def test_filter_reports_with_multiple_attributes(self, authenticated_client, citizen_user, neighborhood):
+        """Test combining multiple report filters in one request"""
         matching_report = Report.objects.create(
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
             description="Multi attr report",
-            address="5 rue E",
+            address="5 rue Victor Hugo",
             status=ReportStatusEnum.IN_PROGRESS,
             neighborhood=neighborhood,
         )
@@ -259,7 +279,7 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
             description="Wrong status",
-            address="6 rue F",
+            address="6 rue Victor Hugo",
             status=ReportStatusEnum.RECORDED,
             neighborhood=neighborhood,
         )
@@ -267,21 +287,21 @@ class TestReportsAPI:
             user=citizen_user,
             problem_type=ProblemTypeEnum.LIGHTING,
             description="Wrong problem type",
-            address="7 rue G",
+            address="7 rue Victor Hugo",
             status=ReportStatusEnum.IN_PROGRESS,
             neighborhood=neighborhood,
         )
         Report.objects.create(
             user=citizen_user,
             problem_type=ProblemTypeEnum.ROADS,
-            description="Wrong neighborhood",
-            address="8 rue H",
+            description="Wrong address",
+            address="8 rue des Lilas",
             status=ReportStatusEnum.IN_PROGRESS,
-            neighborhood=other_neighborhood,
+            neighborhood=neighborhood,
         )
 
         response = authenticated_client.get(
-            f"/api/v1/reports/?status=IN_PROGRESS&problem_type=ROADS&neighborhood={neighborhood.id}"
+            "/api/v1/reports/?status=IN_PROGRESS&problem_type=ROADS&address=victor"
         )
         assert response.status_code == status.HTTP_200_OK
         results = response.data.get('results', response.data)
@@ -291,7 +311,7 @@ class TestReportsAPI:
         for report_data in results:
             assert report_data["status"] == "IN_PROGRESS"
             assert report_data["problem_type"] == "ROADS"
-            assert report_data["neighborhood"] == neighborhood.id
+            assert "victor" in report_data["address"].lower()
 
     def test_non_owner_citizen_cannot_update_report(self, other_citizen_client, report):
         """Test a non-owner citizen receives 403 when updating another user's report"""

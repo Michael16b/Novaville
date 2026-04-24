@@ -416,10 +416,7 @@ class _NewsPageState extends State<NewsPage> {
                 .map(
                   (question) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: _QuestionCard(
-                      question: question,
-                      isStaff: false,
-                    ),
+                    child: _QuestionCard(question: question, isStaff: false),
                   ),
                 )
                 .toList(),
@@ -465,7 +462,9 @@ class _NewsPageState extends State<NewsPage> {
 
     final isPendingTab = selectedTab == _StaffInboxTab.pending;
     final visibleQuestions = isPendingTab ? pendingQuestions : historyQuestions;
-    final currentPage = isPendingTab ? (_pendingPage ?? 1) : (_historyPage ?? 1);
+    final currentPage = isPendingTab
+        ? (_pendingPage ?? 1)
+        : (_historyPage ?? 1);
     final totalPages = _pageCountFor(visibleQuestions.length);
     final paginatedQuestions = _pageItems(visibleQuestions, currentPage);
 
@@ -606,15 +605,17 @@ class _NewsPageState extends State<NewsPage> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.end,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               OutlinedButton.icon(
                 onPressed: onPrevious,
                 icon: const Icon(Icons.chevron_left),
                 label: const Text(AppTextsNews.previousPage),
               ),
-              const SizedBox(width: 8),
               OutlinedButton.icon(
                 onPressed: onNext,
                 icon: const Icon(Icons.chevron_right),

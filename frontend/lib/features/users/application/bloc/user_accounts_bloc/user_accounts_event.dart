@@ -70,12 +70,12 @@ class UserAccountsSearchRequested extends UserAccountsEvent {
   List<Object?> get props => [query, ordering];
 }
 
-/// Event to apply advanced filters (role, neighborhood).
+/// Event to apply advanced filters (role, address).
 class UserAccountsFilterRequested extends UserAccountsEvent {
   /// Creates a [UserAccountsFilterRequested].
   const UserAccountsFilterRequested({
     this.role,
-    this.neighborhood,
+    this.address,
     this.ordering,
     this.search,
   });
@@ -83,8 +83,8 @@ class UserAccountsFilterRequested extends UserAccountsEvent {
   /// Filter by role.
   final String? role;
 
-  /// Filter by neighborhood ID.
-  final int? neighborhood;
+  /// Filter by address.
+  final String? address;
 
   /// Current ordering.
   final String? ordering;
@@ -93,7 +93,7 @@ class UserAccountsFilterRequested extends UserAccountsEvent {
   final String? search;
 
   @override
-  List<Object?> get props => [role, neighborhood, ordering, search];
+  List<Object?> get props => [role, address, ordering, search];
 }
 
 /// Event to load neighborhoods for filter dropdowns.
@@ -101,4 +101,3 @@ class UserAccountsNeighborhoodsLoadRequested extends UserAccountsEvent {
   /// Creates a [UserAccountsNeighborhoodsLoadRequested].
   const UserAccountsNeighborhoodsLoadRequested();
 }
-

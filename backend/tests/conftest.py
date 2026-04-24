@@ -128,6 +128,7 @@ def survey(elected_user):
     return Survey.objects.create(
         title="Test Survey",
         description="Test survey description",
+        address="1 place de la Mairie, Novaville",
         created_by=elected_user,
         start_date=timezone.now(),
         end_date=timezone.now() + timedelta(days=7)

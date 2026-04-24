@@ -85,6 +85,7 @@ class UserRepositoryImpl implements IUserRepository {
     String? search,
     int page = 1,
     String? role,
+    String? address,
     int? neighborhood,
   }) async {
     String url = '/api/v1/users/?page=$page';
@@ -96,6 +97,9 @@ class UserRepositoryImpl implements IUserRepository {
     }
     if (role != null && role.isNotEmpty) {
       url += '&role=$role';
+    }
+    if (address != null && address.trim().isNotEmpty) {
+      url += '&address=${Uri.encodeQueryComponent(address.trim())}';
     }
     if (neighborhood != null) {
       url += '&neighborhood=$neighborhood';

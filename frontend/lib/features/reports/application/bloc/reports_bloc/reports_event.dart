@@ -63,11 +63,7 @@ class ReportsSortRequested extends ReportsEvent {
 /// Event to request a specific page.
 class ReportsPageRequested extends ReportsEvent {
   /// Creates a [ReportsPageRequested].
-  const ReportsPageRequested({
-    required this.page,
-    this.ordering,
-    this.search,
-  });
+  const ReportsPageRequested({required this.page, this.ordering, this.search});
 
   /// Page number.
   final int page;
@@ -116,12 +112,12 @@ class ReportCreateRequested extends ReportsEvent {
 
   @override
   List<Object?> get props => [
-        title,
-        problemType,
-        description,
-        address,
-        neighborhood,
-      ];
+    title,
+    problemType,
+    description,
+    address,
+    neighborhood,
+  ];
 }
 
 /// Event to delete a report.
@@ -186,13 +182,13 @@ class ReportUpdateRequested extends ReportsEvent {
 
   @override
   List<Object?> get props => [
-        reportId,
-        title,
-        description,
-        address,
-        neighborhood,
-        problemType,
-      ];
+    reportId,
+    title,
+    description,
+    address,
+    neighborhood,
+    problemType,
+  ];
 }
 
 /// Event to load neighborhoods for the form dropdowns.
@@ -207,7 +203,7 @@ class ReportsFilterRequested extends ReportsEvent {
   const ReportsFilterRequested({
     this.status,
     this.problemType,
-    this.neighborhood,
+    this.address,
     this.createdAfter,
     this.ordering,
     this.search,
@@ -219,8 +215,8 @@ class ReportsFilterRequested extends ReportsEvent {
   /// Filter by problem type.
   final String? problemType;
 
-  /// Filter by neighborhood ID.
-  final int? neighborhood;
+  /// Filter by address.
+  final String? address;
 
   /// Filter by creation date.
   final DateTime? createdAfter;
@@ -233,11 +229,11 @@ class ReportsFilterRequested extends ReportsEvent {
 
   @override
   List<Object?> get props => [
-        status,
-        problemType,
-        neighborhood,
-        createdAfter,
-        ordering,
-        search,
-      ];
+    status,
+    problemType,
+    address,
+    createdAfter,
+    ordering,
+    search,
+  ];
 }
