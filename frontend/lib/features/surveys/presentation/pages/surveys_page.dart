@@ -64,11 +64,15 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
     final isAuthenticated = authState.status == AuthStatus.authenticated;
-    final isStaff = authState.user?.isStaff ?? false;
+    final isGlobalAdmin = authState.user?.isGlobalAdmin ?? false;
+    final canManageSurveys =
+        isGlobalAdmin || (authState.user?.isElected ?? false);
+    final canFilterTarget =
+        isGlobalAdmin || (authState.user?.isElected ?? false);
 
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: isStaff
+      floatingActionButton: canManageSurveys
           ? ExpandableFabMenu(
               heroTag: 'surveys-fab',
               tooltip: SurveysTexts.createSurvey,
@@ -96,13 +100,18 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
                   breadcrumbItems: [BreadcrumbItem(label: SurveysTexts.title)],
                 ),
                 const SizedBox(height: 16),
-                _buildFiltersCard(context, state),
+                _buildFiltersCard(
+                  context,
+                  state,
+                  canFilterTarget: canFilterTarget,
+                ),
                 const SizedBox(height: 12),
                 _buildResults(
                   context: context,
                   state: state,
                   isAuthenticated: isAuthenticated,
-                  isStaff: isStaff,
+                  canManageSurveys: canManageSurveys,
+                  currentUserRole: authState.user?.role,
                 ),
               ],
             ),
@@ -112,9 +121,14 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
     );
   }
 
-  Widget _buildFiltersCard(BuildContext context, SurveysState state) {
+  Widget _buildFiltersCard(
+    BuildContext context,
+    SurveysState state, {
+    required bool canFilterTarget,
+  }) {
     final hasActiveFilter =
-        _addressController.text.trim().isNotEmpty || _selectedTarget != null;
+        _addressController.text.trim().isNotEmpty ||
+        (canFilterTarget && _selectedTarget != null);
 
     return Card(
       child: Padding(
@@ -156,7 +170,9 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
                           ? () {
                               _addressController.clear();
                               setState(() {
-                                _selectedTarget = null;
+                                if (canFilterTarget) {
+                                  _selectedTarget = null;
+                                }
                               });
                               _applyFilters(context, page: 1);
                             }
@@ -172,25 +188,27 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      SurveysTexts.filterByCitizenType,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.secondaryText,
-                        fontWeight: FontWeight.w600,
+                if (canFilterTarget) ...[
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        SurveysTexts.filterByCitizenType,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.secondaryText,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: _buildCitizenTargetChips(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: _buildCitizenTargetChips(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 _buildPaginationControls(context, state),
               ],
             );
@@ -204,7 +222,8 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
     required BuildContext context,
     required SurveysState state,
     required bool isAuthenticated,
-    required bool isStaff,
+    required bool canManageSurveys,
+    required UserRole? currentUserRole,
   }) {
     if (state.status == SurveysStatus.initial ||
         state.status == SurveysStatus.loading) {
@@ -247,15 +266,18 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
             return SurveyCard(
               survey: survey,
               isAuthenticated: isAuthenticated,
-              isStaff: isStaff,
+              isStaff: canManageSurveys,
+              canVote: _canVoteOnSurvey(currentUserRole, survey),
               onVote: (optionId) => _onVoteTapped(
                 context,
                 surveyId: survey.id,
                 optionId: optionId,
                 isAuthenticated: isAuthenticated,
               ),
-              onEdit: isStaff ? (s) => _showEditDialog(context, s) : null,
-              onDelete: isStaff
+              onEdit: canManageSurveys
+                  ? (s) => _showEditDialog(context, s)
+                  : null,
+              onDelete: canManageSurveys
                   ? () => _showDeleteDialog(context, survey.id)
                   : null,
             );
@@ -402,6 +424,12 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
         },
       );
     }).toList();
+  }
+
+  bool _canVoteOnSurvey(UserRole? role, Survey survey) {
+    if (role == null) return false;
+    if (role == UserRole.globalAdmin) return true;
+    return survey.citizenTarget == null || survey.citizenTarget == role;
   }
 
   Widget _buildSurveysSkeleton() {

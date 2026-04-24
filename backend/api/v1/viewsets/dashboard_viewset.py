@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from core.db.models import Report, Survey, Event, User, Vote, ReportStatusEnum, ProblemTypeEnum, RoleEnum
+from api.v1.survey_access import all_citizens_target_filter, visible_survey_filter
 from django.utils import timezone
 from datetime import timedelta
 from rest_framework.decorators import action
@@ -38,7 +39,12 @@ class DashboardViewSet(viewsets.ViewSet):
 
         # --- Top Stats ---
         pending_reports_count = Report.objects.filter(status=ReportStatusEnum.RECORDED).count()
-        active_surveys_count = Survey.objects.filter(start_date__lte=now, end_date__gte=now).count()
+        active_surveys = Survey.objects.filter(start_date__lte=now, end_date__gte=now)
+        if user.is_authenticated:
+            active_surveys = active_surveys.filter(visible_survey_filter(user))
+        else:
+            active_surveys = active_surveys.filter(all_citizens_target_filter())
+        active_surveys_count = active_surveys.count()
         
         # Calculate start of the week (Monday at 00:00)
         # weekday() returns 0 for Monday, 6 for Sunday
@@ -73,7 +79,6 @@ class DashboardViewSet(viewsets.ViewSet):
         reports_this_month = Report.objects.filter(created_at__gte=start_of_month).count()
 
         # --- User-specific Poll Participation ---
-        active_surveys = Survey.objects.filter(start_date__lte=now, end_date__gte=now)
         active_surveys_total = active_surveys.count()
         
         if active_surveys_total > 0 and user.is_authenticated:
