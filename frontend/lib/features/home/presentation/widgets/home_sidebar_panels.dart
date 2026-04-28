@@ -15,6 +15,12 @@ class RecentActivityPanel extends StatelessWidget {
     return FutureBuilder<DashboardStats>(
       future: statsFuture,
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return const Center(child: Icon(Icons.error_outline));
+        }
         final activities = snapshot.data?.recentActivities ?? const <RecentActivity>[];
 
         return Container(
@@ -61,7 +67,7 @@ class RecentActivityPanel extends StatelessWidget {
                 const Padding(
                   padding: EdgeInsets.all(16),
                   child: Text(
-                    'Aucune activite recente',
+                    'Aucune activité récente',
                     style: TextStyle(color: AppColors.textGrey),
                   ),
                 )
@@ -81,7 +87,7 @@ class RecentActivityPanel extends StatelessWidget {
                         iconData,
                         iconColor,
                         title,
-                        activity.title,
+                        activity.subtitle,
                         activity.elapsedLabel.isNotEmpty
                             ? activity.elapsedLabel
                             : _relativeTime(activity.occurredAt),
@@ -155,7 +161,7 @@ class RecentActivityPanel extends StatelessWidget {
       case 'report':
         return AppTextsHome.newReportActivity;
       case 'survey':
-        return 'Nouveau sondage';
+        return AppTextsHome.newSurveyActivity;
       case 'event':
         return AppTextsHome.eventAddedActivity;
       default:
@@ -166,7 +172,7 @@ class RecentActivityPanel extends StatelessWidget {
   String _relativeTime(DateTime dateTime) {
     final now = DateTime.now();
     final diff = now.difference(dateTime.toLocal());
-    if (diff.inMinutes < 1) return 'A l\'instant';
+    if (diff.inMinutes < 1) return "À l'instant";
     if (diff.inMinutes < 60) return '${diff.inMinutes} min';
     if (diff.inHours < 24) return '${diff.inHours} h';
     return '${diff.inDays} j';

@@ -13,7 +13,7 @@ def _elapsed_label(delta):
     """Return a compact French elapsed-time label."""
     seconds = int(delta.total_seconds())
     if seconds < 60:
-        return "A l'instant"
+        return "À l'instant"
     if seconds < 3600:
         minutes = seconds // 60
         return f"{minutes} min"
@@ -107,58 +107,63 @@ class DashboardViewSet(viewsets.ViewSet):
             poll_participation_rate = 0
 
         # --- Recent Activity (3 latest across reports/surveys/events) ---
-        report_activities = [
-            {
-                'type': 'report',
-                'title': report.title or 'Nouveau signalement',
-                'subtitle': report.address or report.get_problem_type_display(),
-                'occurred_at': report.created_at,
-            }
-            for report in Report.objects.only(
-                'title',
-                'address',
-                'problem_type',
-                'created_at',
-            ).order_by('-created_at')[:10]
-        ]
+        # Only expose recent activities to authenticated users to avoid
+        # leaking report titles and addresses to anonymous visitors.
+        if user.is_authenticated:
+            report_activities = [
+                {
+                    'type': 'report',
+                    'title': report.title or 'Nouveau signalement',
+                    'subtitle': report.address or report.get_problem_type_display(),
+                    'occurred_at': report.created_at,
+                }
+                for report in Report.objects.only(
+                    'title',
+                    'address',
+                    'problem_type',
+                    'created_at',
+                ).order_by('-created_at')[:10]
+            ]
 
-        survey_activities = [
-            {
-                'type': 'survey',
-                'title': survey.title,
-                'subtitle': 'Nouveau sondage',
-                'occurred_at': survey.created_at,
-            }
-            for survey in Survey.objects.only('title', 'created_at').order_by('-created_at')[:10]
-        ]
+            survey_activities = [
+                {
+                    'type': 'survey',
+                    'title': survey.title,
+                    'subtitle': 'Nouveau sondage',
+                    'occurred_at': survey.created_at,
+                }
+                for survey in Survey.objects.only('title', 'created_at').order_by('-created_at')[:10]
+            ]
 
-        event_activities = [
-            {
-                'type': 'event',
-                'title': event.title,
-                'subtitle': 'Agenda participatif',
-                'occurred_at': event.created_at,
-            }
-            for event in Event.objects.only('title', 'created_at').order_by('-created_at')[:10]
-        ]
+            event_activities = [
+                {
+                    'type': 'event',
+                    'title': event.title,
+                    'subtitle': 'Agenda participatif',
+                    'occurred_at': event.created_at,
+                }
+                for event in Event.objects.only('title', 'created_at').order_by('-created_at')[:10]
+            ]
 
-        merged_recent_activities = sorted(
-            [*report_activities, *survey_activities, *event_activities],
-            key=lambda item: item['occurred_at'],
-            reverse=True,
-        )[:3]
+            merged_recent_activities = sorted(
+                [*report_activities, *survey_activities, *event_activities],
+                key=lambda item: item['occurred_at'],
+                reverse=True,
+            )[:3]
 
-        recent_activities = [
-            {
-                'type': item['type'],
-                'title': item['title'],
-                'subtitle': item['subtitle'],
-                'occurred_at': item['occurred_at'].isoformat(),
-                'elapsed_seconds': int((now - item['occurred_at']).total_seconds()),
-                'elapsed_label': _elapsed_label(now - item['occurred_at']),
-            }
-            for item in merged_recent_activities
-        ]
+            recent_activities = [
+                {
+                    'type': item['type'],
+                    'title': item['title'],
+                    'subtitle': item['subtitle'],
+                    'occurred_at': item['occurred_at'].isoformat(),
+                    'elapsed_seconds': int((now - item['occurred_at']).total_seconds()),
+                    'elapsed_label': _elapsed_label(now - item['occurred_at']),
+                }
+                for item in merged_recent_activities
+            ]
+        else:
+            recent_activities = []
 
 
         data = {

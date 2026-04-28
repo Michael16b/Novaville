@@ -23,6 +23,7 @@ class TestDashboardStatsRecentActivities:
         theme,
     ):
         """Dashboard returns the 3 latest creations across report/survey/event."""
+        api_client.force_authenticate(user=citizen_user)
         now = timezone.now()
 
         old_report = Report.objects.create(
@@ -103,3 +104,10 @@ class TestDashboardStatsRecentActivities:
             assert isinstance(activity['elapsed_seconds'], int)
             assert isinstance(activity['elapsed_label'], str)
 
+    def test_recent_activities_empty_for_unauthenticated_user(self, api_client):
+        """Unauthenticated requests receive an empty recent_activities list."""
+        response = api_client.get('/api/v1/dashboard/stats/')
+
+        assert response.status_code == status.HTTP_200_OK
+        assert 'recent_activities' in response.data
+        assert response.data['recent_activities'] == []
