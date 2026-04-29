@@ -60,16 +60,11 @@ class TestUsersAPI:
         assert usernames == sorted(usernames)
 
     def test_filter_users_with_multiple_attributes(self, authenticated_client, neighborhood):
-        """Test combining role, neighborhood and search filters"""
+        """Test combining role, address and search filters"""
         from django.contrib.auth import get_user_model
-        from core.db.models import Neighborhood, RoleEnum
+        from core.db.models import RoleEnum
 
         User = get_user_model()
-
-        other_neighborhood = Neighborhood.objects.create(
-            name="Other Neighborhood",
-            postal_code="75099"
-        )
 
         matching_user = User.objects.create_user(
             username="multi_match_user",
@@ -79,20 +74,22 @@ class TestUsersAPI:
             last_name="MultiAttrToken",
             role=RoleEnum.CITIZEN,
             neighborhood=neighborhood,
+            address="15 avenue Victor Hugo",
         )
 
         User.objects.create_user(
-            username="multi_wrong_neigh",
-            email="multi.neigh@test.com",
+            username="multi_wrong_address",
+            email="multi.address@test.com",
             password="TestPass123",
             first_name="Multi",
             last_name="MultiAttrToken",
             role=RoleEnum.CITIZEN,
-            neighborhood=other_neighborhood,
+            neighborhood=neighborhood,
+            address="9 rue des Lilas",
         )
 
         response = authenticated_client.get(
-            f"/api/v1/users/?role=CITIZEN&neighborhood={neighborhood.id}&search=multiattrtoken"
+            "/api/v1/users/?role=CITIZEN&address=victor&search=multiattrtoken"
         )
         assert response.status_code == status.HTTP_200_OK
         results = response.data.get('results', response.data)
@@ -102,7 +99,44 @@ class TestUsersAPI:
 
         for user in results:
             assert user["role"] == "CITIZEN"
-            assert user["neighborhood"] == neighborhood.id
+            assert "victor" in user["address"].lower()
+
+    def test_filter_users_by_address(self, authenticated_client, neighborhood):
+        """Test filtering users by a partial address."""
+        from django.contrib.auth import get_user_model
+        from core.db.models import RoleEnum
+
+        User = get_user_model()
+
+        matching_user = User.objects.create_user(
+            username="address_match_user",
+            email="address.match@test.com",
+            password="TestPass123",
+            first_name="Alice",
+            last_name="Address",
+            role=RoleEnum.CITIZEN,
+            neighborhood=neighborhood,
+            address="22 boulevard Saint-Germain",
+        )
+
+        User.objects.create_user(
+            username="address_other_user",
+            email="address.other@test.com",
+            password="TestPass123",
+            first_name="Bob",
+            last_name="Elsewhere",
+            role=RoleEnum.CITIZEN,
+            neighborhood=neighborhood,
+            address="4 rue des Lilas",
+        )
+
+        response = authenticated_client.get("/api/v1/users/?address=saint-germain")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get("results", response.data)
+        returned_ids = [user["id"] for user in results]
+
+        assert matching_user.id in returned_ids
+        assert all("saint-germain" in user["address"].lower() for user in results)
     
     def test_create_user(self, api_client, neighborhood):
         """Test creating a new user (registration)"""

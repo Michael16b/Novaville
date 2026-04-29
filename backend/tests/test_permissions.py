@@ -87,6 +87,7 @@ class TestIsOwnerOrStaff:
         survey = Survey.objects.create(
             title='Owner Survey',
             description='Test',
+            address='1 rue des Tests, Novaville',
             start_date=timezone.now(),
             end_date=timezone.now() + timedelta(days=1),
             created_by=citizen_user
@@ -306,6 +307,7 @@ class TestIsOwnerOrReadOnly:
         survey = Survey.objects.create(
             title='Test',
             description='Test',
+            address='2 rue des Tests, Novaville',
             start_date=timezone.now(),
             end_date=timezone.now() + timedelta(days=1),
             created_by=elected_user
@@ -325,6 +327,7 @@ class TestIsOwnerOrReadOnly:
         survey = Survey.objects.create(
             title='Test',
             description='Test',
+            address='3 rue des Tests, Novaville',
             start_date=timezone.now(),
             end_date=timezone.now() + timedelta(days=1),
             created_by=elected_user

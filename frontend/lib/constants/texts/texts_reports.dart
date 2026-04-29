@@ -108,7 +108,6 @@ class ReportTexts {
   /// Generic error label.
   static const error = 'Erreur';
 
-
   /// Delete confirmation dialog title.
   static const confirmDeleteTitle = 'Supprimer le signalement';
 
@@ -126,8 +125,7 @@ class ReportTexts {
   static const titleRequired = 'Le titre est obligatoire';
 
   /// Problem type required validation message.
-  static const problemTypeRequired =
-      'Le type de problème est obligatoire';
+  static const problemTypeRequired = 'Le type de problème est obligatoire';
 
   /// Neighborhood required validation message.
   static const neighborhoodRequired = 'Le quartier est obligatoire';
@@ -155,24 +153,19 @@ class ReportTexts {
   static const statusUpdateSuccess = 'Statut mis à jour avec succès';
 
   /// Fetch reports error message.
-  static const fetchError =
-      'Erreur lors de la récupération des signalements';
+  static const fetchError = 'Erreur lors de la récupération des signalements';
 
   /// Create report error message.
-  static const createError =
-      'Erreur lors de la création du signalement';
+  static const createError = 'Erreur lors de la création du signalement';
 
   /// Update report error message.
-  static const updateError =
-      'Erreur lors de la modification du signalement';
+  static const updateError = 'Erreur lors de la modification du signalement';
 
   /// Delete report error message.
-  static const deleteError =
-      'Erreur lors de la suppression du signalement';
+  static const deleteError = 'Erreur lors de la suppression du signalement';
 
   /// Status update error message.
-  static const statusUpdateError =
-      'Erreur lors de la mise à jour du statut';
+  static const statusUpdateError = 'Erreur lors de la mise à jour du statut';
 
   /// Fetch neighborhoods error message.
   static const fetchNeighborhoodsError =
@@ -186,7 +179,6 @@ class ReportTexts {
 
   /// Created at label.
   static const createdAt = 'Le';
-
 
   /// No neighborhood label.
   static const noNeighborhood = 'Non spécifié';
@@ -207,6 +199,9 @@ class ReportTexts {
   /// Filter by neighborhood label.
   static const filterByNeighborhood = 'Quartier';
 
+  /// Filter by address label.
+  static const filterByAddress = 'Adresse';
+
   /// All option for filters.
   static const all = 'Tous';
 
@@ -218,6 +213,9 @@ class ReportTexts {
 
   /// All neighborhoods option.
   static const allNeighborhoods = 'Tous les quartiers';
+
+  /// Address filter hint.
+  static const addressFilterHint = 'Ex. rue de la Paix';
 
   /// Clear filters button.
   static const clearFilters = 'Réinitialiser les filtres';

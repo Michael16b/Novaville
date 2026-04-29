@@ -37,6 +37,7 @@ class _StubUserRepository implements IUserRepository {
     String? search,
     int page = 1,
     String? role,
+    String? address,
     int? neighborhood,
   }) async {
     throw UnimplementedError();
@@ -277,6 +278,7 @@ class _SequentialUserRepository implements IUserRepository {
     String? search,
     int page = 1,
     String? role,
+    String? address,
     int? neighborhood,
   }) async {
     throw UnimplementedError();

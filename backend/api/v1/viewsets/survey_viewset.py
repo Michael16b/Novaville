@@ -3,12 +3,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from core.db.models import Survey, SurveyOption, RoleEnum
+from api.v1.survey_access import visible_survey_filter
 from api.v1.serializers.survey_serializer import (
     SurveySerializer,
     SurveyCreateSerializer,
     SurveyOptionSerializer
 )
-from api.v1.permissions import IsStaffOrReadOnly
+from api.v1.permissions import IsSurveyManagerOrReadOnly
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from django.utils import timezone
 
@@ -50,14 +51,24 @@ class SurveyViewSet(viewsets.ModelViewSet):
     ViewSet for managing surveys and public consultations.
     
     All authenticated users can view surveys.
-    Only staff can create/update/delete surveys.
+    Only elected users and global admins can create/update/delete surveys.
     """
     queryset = Survey.objects.prefetch_related('options', 'votes').all()
     serializer_class = SurveySerializer
-    permission_classes = [IsStaffOrReadOnly]
+    permission_classes = [IsSurveyManagerOrReadOnly]
     filterset_fields = '__all__'
     search_fields = ['title', 'description', 'address']
     ordering_fields = ['created_at', 'start_date', 'end_date', 'title']
+
+    def get_queryset(self):
+        """Limit surveys to the current user's audience, except for global admins."""
+        queryset = self.queryset
+        user = self.request.user
+
+        if user.role in [RoleEnum.GLOBAL_ADMIN, RoleEnum.ELECTED]:
+            return queryset
+
+        return queryset.filter(visible_survey_filter(user))
 
     def get_serializer_class(self):
         """Use different serializers for different actions"""
@@ -78,7 +89,7 @@ class SurveyViewSet(viewsets.ModelViewSet):
     def active(self, request):
         """Get only active surveys"""
         now = timezone.now()
-        active_surveys = self.queryset.filter(
+        active_surveys = self.get_queryset().filter(
             start_date__lte=now,
             end_date__gte=now
         )
@@ -130,11 +141,21 @@ class SurveyOptionViewSet(viewsets.ModelViewSet):
     queryset = SurveyOption.objects.all()
     serializer_class = SurveyOptionSerializer
     filterset_fields = '__all__'
+
+    def get_queryset(self):
+        """Limit options to surveys visible to the current user."""
+        queryset = self.queryset
+        user = self.request.user
+
+        if user.role in [RoleEnum.GLOBAL_ADMIN, RoleEnum.ELECTED]:
+            return queryset
+
+        return queryset.filter(visible_survey_filter(user, 'survey__citizen_target'))
     
     def get_permissions(self):
         """Allow read for authenticated, write for staff only"""
         if self.action in ['list', 'retrieve']:
             permission_classes = [IsAuthenticated]
         else:
-            permission_classes = [IsStaffOrReadOnly]
+            permission_classes = [IsSurveyManagerOrReadOnly]
         return [permission() for permission in permission_classes]

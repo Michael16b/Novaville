@@ -25,6 +25,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late Future<DashboardStats> _statsFuture;
   late DashboardRepository _dashboardRepository = createDashboardRepository();
+  String? _statsAuthKey;
 
   @override
   void initState() {
@@ -34,37 +35,61 @@ class _HomePageState extends State<HomePage> {
     _statsFuture = _dashboardRepository.getDashboardStats();
   }
 
+  String _authKey(AuthState state) {
+    if (state.status != AuthStatus.authenticated) {
+      return state.status.name;
+    }
+
+    final user = state.user;
+    return '${state.status.name}:${user?.id ?? 'unknown'}:${user?.role?.value ?? 'none'}';
+  }
+
+  void _reloadStatsFor(AuthState state) {
+    final authKey = _authKey(state);
+    if (_statsAuthKey == authKey) {
+      return;
+    }
+
+    _statsAuthKey = authKey;
+    setState(() {
+      _statsFuture = _dashboardRepository.getDashboardStats();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isAuthenticated = context.select<AuthBloc, bool>(
-      (bloc) => bloc.state.status == AuthStatus.authenticated,
-    );
+    return BlocConsumer<AuthBloc, AuthState>(
+      listenWhen: (previous, current) =>
+          _authKey(previous) != _authKey(current),
+      listener: (context, state) => _reloadStatsFor(state),
+      builder: (context, authState) {
+        final isAuthenticated = authState.status == AuthStatus.authenticated;
 
-    return Scaffold(
-      backgroundColor: AppColors.page,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final width = constraints.maxWidth;
-          final isMobile = width < 768;
-          final showSidebarBelow = width < 1100;
-          final horizontalPadding = isMobile
-              ? 16.0
-              : width < 1280
-              ? 24.0
-              : 32.0;
+        return Scaffold(
+          backgroundColor: AppColors.page,
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final isMobile = width < 768;
+              final showSidebarBelow = width < 1100;
+              final horizontalPadding = isMobile
+                  ? 16.0
+                  : width < 1280
+                  ? 24.0
+                  : 32.0;
 
-          final mainColumn = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildGreeting(context, isMobile: isMobile),
-              const SizedBox(height: 48),
-              _buildCardsGrid(context),
-              if (isAuthenticated) ...[
-                const SizedBox(height: 36),
-                BottomStatsBar(statsFuture: _statsFuture),
-              ],
-            ],
-          );
+              final mainColumn = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildGreeting(context, isMobile: isMobile),
+                  const SizedBox(height: 48),
+                  _buildCardsGrid(context),
+                  if (isAuthenticated) ...[
+                    const SizedBox(height: 36),
+                    BottomStatsBar(statsFuture: _statsFuture),
+                  ],
+                ],
+              );
 
           final sidebarColumn = Column(
             children: [
@@ -74,50 +99,52 @@ class _HomePageState extends State<HomePage> {
             ],
           );
 
-          return Stack(
-            children: [
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: isMobile ? 220 : 300,
-                child: Opacity(
-                  opacity: 0.15,
-                  child: Image.asset(
-                    AppAssets.home_background,
-                    fit: BoxFit.cover,
+              return Stack(
+                children: [
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: isMobile ? 220 : 300,
+                    child: Opacity(
+                      opacity: 0.15,
+                      child: Image.asset(
+                        AppAssets.home_background,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              SingleChildScrollView(
-                padding: EdgeInsets.all(horizontalPadding),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1440),
-                    child: showSidebarBelow
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              mainColumn,
-                              const SizedBox(height: 24),
-                              sidebarColumn,
-                            ],
-                          )
-                        : Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(flex: 7, child: mainColumn),
-                              const SizedBox(width: 32),
-                              Expanded(flex: 3, child: sidebarColumn),
-                            ],
-                          ),
+                  SingleChildScrollView(
+                    padding: EdgeInsets.all(horizontalPadding),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1440),
+                        child: showSidebarBelow
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  mainColumn,
+                                  const SizedBox(height: 24),
+                                  sidebarColumn,
+                                ],
+                              )
+                            : Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(flex: 7, child: mainColumn),
+                                  const SizedBox(width: 32),
+                                  Expanded(flex: 3, child: sidebarColumn),
+                                ],
+                              ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 

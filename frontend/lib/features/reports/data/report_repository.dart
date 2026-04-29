@@ -45,6 +45,7 @@ abstract class IReportRepository {
     int page = 1,
     String? status,
     String? problemType,
+    String? address,
     int? neighborhood,
     DateTime? createdAfter,
   });

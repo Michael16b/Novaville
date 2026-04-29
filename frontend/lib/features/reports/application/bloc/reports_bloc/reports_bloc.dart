@@ -11,8 +11,8 @@ part 'reports_state.dart';
 class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   /// Creates a [ReportsBloc].
   ReportsBloc({required IReportRepository repository})
-      : _repository = repository,
-        super(const ReportsState.initial()) {
+    : _repository = repository,
+      super(const ReportsState.initial()) {
     on<ReportsLoadRequested>(_onLoadRequested);
     on<ReportsSearchRequested>(_onSearchRequested);
     on<ReportsSortRequested>(_onSortRequested);
@@ -32,19 +32,17 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   // Current active filters
   String? _filterStatus;
   String? _filterProblemType;
-  int? _filterNeighborhood;
+  String? _filterAddress;
   DateTime? _filterCreatedAfter;
 
   static const Duration _revalidationInterval = Duration(seconds: 20);
-  static const Duration _minimumSkeletonDuration =
-      Duration(milliseconds: 300);
+  static const Duration _minimumSkeletonDuration = Duration(milliseconds: 300);
 
   int _extractPageNumber(String? previous) {
     if (previous == null) return 1;
     final uri = Uri.tryParse(previous);
     if (uri == null) return 1;
-    final prevPage =
-        int.tryParse(uri.queryParameters['page'] ?? '1') ?? 1;
+    final prevPage = int.tryParse(uri.queryParameters['page'] ?? '1') ?? 1;
     return prevPage + 1;
   }
 
@@ -82,8 +80,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     ReportsSortRequested event,
     Emitter<ReportsState> emit,
   ) async {
-    final ordering =
-        event.ascending ? event.column : '-${event.column}';
+    final ordering = event.ascending ? event.column : '-${event.column}';
     await _loadPageWithCache(
       emit: emit,
       page: 1,
@@ -131,7 +128,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   ) async {
     _filterProblemType = event.problemType;
     _filterStatus = event.status;
-    _filterNeighborhood = event.neighborhood;
+    _filterAddress = event.address;
     _filterCreatedAfter = event.createdAfter;
     _pageCache.clear();
     await _loadPageWithCache(
@@ -171,12 +168,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         forceLoadingStateFirst: false,
       );
     } catch (e) {
-      emit(
-        state.copyWith(
-          status: ReportsStatus.failure,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(status: ReportsStatus.failure, error: e.toString()));
     }
   }
 
@@ -214,12 +206,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         forceLoadingStateFirst: false,
       );
     } catch (e) {
-      emit(
-        state.copyWith(
-          status: ReportsStatus.failure,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(status: ReportsStatus.failure, error: e.toString()));
       emit(
         state.copyWith(
           status: ReportsStatus.loaded,
@@ -247,19 +234,11 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
           .toList();
 
       emit(
-        state.copyWith(
-          status: ReportsStatus.updated,
-          reports: updatedReports,
-        ),
+        state.copyWith(status: ReportsStatus.updated, reports: updatedReports),
       );
       emit(state.copyWith(status: ReportsStatus.loaded));
     } catch (e) {
-      emit(
-        state.copyWith(
-          status: ReportsStatus.failure,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(status: ReportsStatus.failure, error: e.toString()));
       emit(state.copyWith(status: ReportsStatus.loaded));
     }
   }
@@ -285,19 +264,11 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
           .toList();
 
       emit(
-        state.copyWith(
-          status: ReportsStatus.updated,
-          reports: updatedReports,
-        ),
+        state.copyWith(status: ReportsStatus.updated, reports: updatedReports),
       );
       emit(state.copyWith(status: ReportsStatus.loaded));
     } catch (e) {
-      emit(
-        state.copyWith(
-          status: ReportsStatus.failure,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(status: ReportsStatus.failure, error: e.toString()));
       emit(state.copyWith(status: ReportsStatus.loaded));
     }
   }
@@ -308,7 +279,9 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   ) async {
     try {
       final neighborhoods = await _repository.listNeighborhoods();
-      emit(state.copyWith(neighborhoods: neighborhoods, neighborhoodsLoaded: true));
+      emit(
+        state.copyWith(neighborhoods: neighborhoods, neighborhoodsLoaded: true),
+      );
     } catch (_) {
       // Silently fail – neighborhoods are optional
       emit(state.copyWith(neighborhoodsLoaded: true));
@@ -336,7 +309,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       search: search,
       status: _filterStatus,
       problemType: _filterProblemType,
-      neighborhood: _filterNeighborhood,
+      address: _filterAddress,
       createdAfter: _filterCreatedAfter,
     );
     final cached = _pageCache[key];
@@ -346,9 +319,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         await _waitForMinimumSkeleton(loadingStartedAt);
         _emitLoadedFromPage(emit, cached.pageData, search: search);
 
-        final needsRevalidation = DateTime.now()
-                .difference(cached.cachedAt) >=
-            _revalidationInterval;
+        final needsRevalidation =
+            DateTime.now().difference(cached.cachedAt) >= _revalidationInterval;
         if (needsRevalidation) {
           try {
             final freshPage = await _repository.listReports(
@@ -357,7 +329,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
               page: page,
               status: _filterStatus,
               problemType: _filterProblemType,
-              neighborhood: _filterNeighborhood,
+              address: _filterAddress,
               createdAfter: _filterCreatedAfter,
             );
             _pageCache[key] = _CachedReportPage(
@@ -388,7 +360,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         page: page,
         status: _filterStatus,
         problemType: _filterProblemType,
-        neighborhood: _filterNeighborhood,
+        address: _filterAddress,
         createdAfter: _filterCreatedAfter,
       );
       _pageCache[key] = _CachedReportPage(
@@ -398,12 +370,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       await _waitForMinimumSkeleton(loadingStartedAt);
       _emitLoadedFromPage(emit, reportPage, search: search);
     } catch (e) {
-      emit(
-        state.copyWith(
-          status: ReportsStatus.failure,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(status: ReportsStatus.failure, error: e.toString()));
     }
   }
 
@@ -459,7 +426,7 @@ class _ReportPageCacheKey extends Equatable {
     required this.search,
     this.status,
     this.problemType,
-    this.neighborhood,
+    this.address,
     this.createdAfter,
   });
 
@@ -468,26 +435,23 @@ class _ReportPageCacheKey extends Equatable {
   final String search;
   final String? status;
   final String? problemType;
-  final int? neighborhood;
+  final String? address;
   final DateTime? createdAfter;
 
   @override
   List<Object?> get props => [
-        page,
-        ordering,
-        search,
-        status,
-        problemType,
-        neighborhood,
-        createdAfter,
-      ];
+    page,
+    ordering,
+    search,
+    status,
+    problemType,
+    address,
+    createdAfter,
+  ];
 }
 
 class _CachedReportPage {
-  const _CachedReportPage({
-    required this.pageData,
-    required this.cachedAt,
-  });
+  const _CachedReportPage({required this.pageData, required this.cachedAt});
 
   final ReportPage pageData;
   final DateTime cachedAt;

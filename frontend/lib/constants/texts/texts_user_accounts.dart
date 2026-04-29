@@ -51,6 +51,8 @@ class UserTexts {
   static const allRoles = 'Tous les rôles';
   static const filterByNeighborhood = 'Quartier';
   static const allNeighborhoods = 'Tous les quartiers';
+  static const filterByAddress = 'Adresse';
+  static const addressFilterHint = 'Ex. rue Victor Hugo';
   static const clearFilters = 'Réinitialiser les filtres';
 
   static const neighborhoodLabel = 'Quartier';
