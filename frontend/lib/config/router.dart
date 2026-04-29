@@ -40,6 +40,23 @@ String? authRedirect({
   required String currentLocation,
   String? fromLocation,
 }) {
+  const knownRoutes = <String>{
+    AppRoutes.home,
+    AppRoutes.login,
+    AppRoutes.register,
+    AppRoutes.loading,
+    AppRoutes.reports,
+    AppRoutes.surveys,
+    AppRoutes.agenda,
+    AppRoutes.news,
+    AppRoutes.usefulInfo,
+    AppRoutes.usefulInfoEdit,
+    AppRoutes.myAccount,
+    AppRoutes.townHall,
+    AppRoutes.userAccounts,
+    AppRoutes.bulkUserCreation,
+    AppRoutes.credentialsShare,
+  };
   const publicRoutes = <String>{
     AppRoutes.home,
     AppRoutes.register,
@@ -57,6 +74,14 @@ String? authRedirect({
   final isCredentialsShare =
       normalizedLocation == AppRoutes.credentialsShare ||
       normalizedLocation.startsWith('${AppRoutes.credentialsShare}/');
+  final isKnownRoute =
+      knownRoutes.contains(normalizedLocation) || isCredentialsShare;
+
+  // Unknown URL => always fallback to home instead of login.
+  if (!isKnownRoute) {
+    return AppRoutes.home;
+  }
+
   final intendedLocation = (fromLocation != null && fromLocation.isNotEmpty)
       ? fromLocation
       : currentLocation;
