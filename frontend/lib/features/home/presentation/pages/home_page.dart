@@ -91,13 +91,13 @@ class _HomePageState extends State<HomePage> {
                 ],
               );
 
-              final sidebarColumn = Column(
-                children: [
-                  const RecentActivityPanel(),
-                  const SizedBox(height: 24),
-                  UsefulInfoPanel(statsFuture: _statsFuture),
-                ],
-              );
+          final sidebarColumn = Column(
+            children: [
+              RecentActivityPanel(statsFuture: _statsFuture),
+              const SizedBox(height: 24),
+              UsefulInfoPanel(statsFuture: _statsFuture),
+            ],
+          );
 
               return Stack(
                 children: [

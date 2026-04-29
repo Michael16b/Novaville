@@ -1,118 +1,113 @@
-"""Tests for Dashboard API endpoints."""
-import pytest
+"""Tests for dashboard API endpoint."""
+
 from datetime import timedelta
+
+import pytest
 from django.utils import timezone
 from rest_framework import status
 
-from core.db.models import RoleEnum
+from core.db.models import Event, Report, Survey
 
 pytestmark = pytest.mark.django_db
 
 
-def _create_active_survey(elected_user, title, citizen_target=None):
-    return elected_user.created_surveys.create(
-        title=title,
-        description=f"{title} description",
-        address=f"{title} address, Novaville",
-        start_date=timezone.now() - timedelta(days=1),
-        end_date=timezone.now() + timedelta(days=7),
-        citizen_target=citizen_target,
-    )
+class TestDashboardStatsRecentActivities:
+    """Tests for recent activities aggregation in dashboard stats."""
 
-
-class TestDashboardAPI:
-    """Tests for dashboard statistics."""
-
-    def test_active_surveys_count_matches_citizen_visibility(
-        self, authenticated_client, elected_user
+    def test_recent_activities_returns_latest_three_mixed_types(
+        self,
+        api_client,
+        citizen_user,
+        elected_user,
+        neighborhood,
+        theme,
     ):
-        """Test citizen dashboard only counts visible active surveys."""
-        all_citizens = _create_active_survey(elected_user, "All Citizens")
-        citizen = _create_active_survey(
-            elected_user,
-            "Citizen",
-            RoleEnum.CITIZEN,
-        )
-        elected = _create_active_survey(
-            elected_user,
-            "Elected",
-            RoleEnum.ELECTED,
-        )
+        """Dashboard returns the 3 latest creations across report/survey/event."""
+        api_client.force_authenticate(user=citizen_user)
+        now = timezone.now()
 
-        response = authenticated_client.get("/api/v1/dashboard/stats/")
-
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["active_surveys"] == 2
-        assert all_citizens.id != elected.id
-        assert citizen.id != elected.id
-
-    def test_active_surveys_count_matches_agent_visibility(
-        self, api_client, agent_user, elected_user
-    ):
-        """Test agent dashboard only counts all-citizens and agent surveys."""
-        api_client.force_authenticate(user=agent_user)
-        _create_active_survey(elected_user, "All Citizens")
-        _create_active_survey(elected_user, "Agent", RoleEnum.AGENT)
-        _create_active_survey(elected_user, "Elected", RoleEnum.ELECTED)
-        _create_active_survey(elected_user, "Citizen", RoleEnum.CITIZEN)
-
-        response = api_client.get("/api/v1/dashboard/stats/")
-
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["active_surveys"] == 2
-
-    def test_active_surveys_count_matches_elected_visibility(
-        self, elected_client, elected_user
-    ):
-        """Test elected dashboard counts every active survey."""
-        _create_active_survey(elected_user, "All Citizens")
-        _create_active_survey(elected_user, "Agent", RoleEnum.AGENT)
-        _create_active_survey(elected_user, "Elected", RoleEnum.ELECTED)
-        _create_active_survey(elected_user, "Citizen", RoleEnum.CITIZEN)
-
-        response = elected_client.get("/api/v1/dashboard/stats/")
-
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["active_surveys"] == 4
-
-    def test_active_surveys_count_matches_admin_visibility(
-        self, admin_client, elected_user
-    ):
-        """Test admin dashboard counts every active survey."""
-        _create_active_survey(elected_user, "All Citizens")
-        _create_active_survey(elected_user, "Agent", RoleEnum.AGENT)
-        _create_active_survey(elected_user, "Elected", RoleEnum.ELECTED)
-        _create_active_survey(elected_user, "Citizen", RoleEnum.CITIZEN)
-
-        response = admin_client.get("/api/v1/dashboard/stats/")
-
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["active_surveys"] == 4
-
-    def test_poll_participation_rate_uses_visible_active_surveys(
-        self, authenticated_client, elected_user, citizen_user
-    ):
-        """Test dashboard participation denominator uses profile-visible surveys."""
-        from core.db.models import SurveyOption, Vote
-
-        visible_voted = _create_active_survey(elected_user, "Visible Voted")
-        visible_not_voted = _create_active_survey(
-            elected_user,
-            "Visible Not Voted",
-            RoleEnum.CITIZEN,
-        )
-        hidden = _create_active_survey(elected_user, "Hidden", RoleEnum.ELECTED)
-        option = SurveyOption.objects.create(survey=visible_voted, text="Yes")
-        SurveyOption.objects.create(survey=visible_not_voted, text="Yes")
-        SurveyOption.objects.create(survey=hidden, text="Yes")
-        Vote.objects.create(
+        old_report = Report.objects.create(
             user=citizen_user,
-            survey=visible_voted,
-            option=option,
+            title="Ancien signalement",
+            description="desc",
+            problem_type="ROADS",
+            address="Rue A",
+            neighborhood=neighborhood,
+        )
+        newest_report = Report.objects.create(
+            user=citizen_user,
+            title="Signalement recent",
+            description="desc",
+            problem_type="LIGHTING",
+            address="Rue B",
+            neighborhood=neighborhood,
         )
 
-        response = authenticated_client.get("/api/v1/dashboard/stats/")
+        old_survey = Survey.objects.create(
+            title="Ancien sondage",
+            description="desc",
+            created_by=elected_user,
+            start_date=now,
+            end_date=now + timedelta(days=7),
+        )
+        newest_survey = Survey.objects.create(
+            title="Sondage recent",
+            description="desc",
+            created_by=elected_user,
+            start_date=now,
+            end_date=now + timedelta(days=7),
+        )
+
+        old_event = Event.objects.create(
+            title="Ancien evenement",
+            description="desc",
+            created_by=elected_user,
+            theme=theme,
+            start_date=now + timedelta(days=1),
+            end_date=now + timedelta(days=1, hours=2),
+        )
+        newest_event = Event.objects.create(
+            title="Evenement recent",
+            description="desc",
+            created_by=elected_user,
+            theme=theme,
+            start_date=now + timedelta(days=2),
+            end_date=now + timedelta(days=2, hours=2),
+        )
+
+        Report.objects.filter(pk=old_report.pk).update(created_at=now - timedelta(hours=10))
+        Report.objects.filter(pk=newest_report.pk).update(created_at=now - timedelta(minutes=50))
+        Survey.objects.filter(pk=old_survey.pk).update(created_at=now - timedelta(hours=8))
+        Survey.objects.filter(pk=newest_survey.pk).update(created_at=now - timedelta(minutes=10))
+        Event.objects.filter(pk=old_event.pk).update(created_at=now - timedelta(hours=6))
+        Event.objects.filter(pk=newest_event.pk).update(created_at=now - timedelta(minutes=30))
+
+        response = api_client.get('/api/v1/dashboard/stats/')
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["active_surveys"] == 2
-        assert response.data["poll_participation_rate"] == 50
+        assert 'recent_activities' in response.data
+
+        recent_activities = response.data['recent_activities']
+        assert len(recent_activities) == 3
+
+        # Expected order: newest survey (10m), newest event (30m), newest report (50m)
+        assert recent_activities[0]['type'] == 'survey'
+        assert recent_activities[0]['title'] == 'Sondage recent'
+        assert recent_activities[1]['type'] == 'event'
+        assert recent_activities[1]['title'] == 'Evenement recent'
+        assert recent_activities[2]['type'] == 'report'
+        assert recent_activities[2]['title'] == 'Signalement recent'
+
+        for activity in recent_activities:
+            assert 'elapsed_seconds' in activity
+            assert 'elapsed_label' in activity
+            assert isinstance(activity['elapsed_seconds'], int)
+            assert isinstance(activity['elapsed_label'], str)
+
+    def test_recent_activities_empty_for_unauthenticated_user(self, api_client):
+        """Unauthenticated requests receive an empty recent_activities list."""
+        response = api_client.get('/api/v1/dashboard/stats/')
+
+        assert response.status_code == status.HTTP_200_OK
+        assert 'recent_activities' in response.data
+        assert response.data['recent_activities'] == []

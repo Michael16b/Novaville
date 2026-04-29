@@ -27,6 +27,7 @@ class AppTextsHome {
   static const String pollParticipationPrefix = 'Participation aux sondages : ';
   static const String recentActivityTitle = 'Activités récentes';
   static const String newReportActivity = 'Nouveau signalement';
+  static const String newSurveyActivity = 'Nouveau sondage';
   static const String newVoteActivity = 'Nouveau vote';
   static const String eventAddedActivity = 'Événement ajouté';
   static const String usefulInfoTitle = 'Infos utiles';

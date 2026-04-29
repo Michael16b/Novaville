@@ -30,6 +30,7 @@ class FakeDashboardRepository implements DashboardRepository {
       unresolvedReportsRoads: 5,
       unresolvedReportsCleanliness: 4,
       unresolvedReportsLighting: 3,
+      recentActivities: const <RecentActivity>[],
     );
   }
 }

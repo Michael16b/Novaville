@@ -206,5 +206,27 @@ void main() {
         },
       );
     });
+
+    group('unknown route fallback', () {
+      test('Given an unknown URL when unauthenticated then it redirects to home', () {
+        expect(
+          authRedirect(
+            authStatus: AuthStatus.unauthenticated,
+            currentLocation: '/does-not-exist',
+          ),
+          AppRoutes.home,
+        );
+      });
+
+      test('Given an unknown URL when authenticated then it redirects to home', () {
+        expect(
+          authRedirect(
+            authStatus: AuthStatus.authenticated,
+            currentLocation: '/does-not-exist',
+          ),
+          AppRoutes.home,
+        );
+      });
+    });
   });
 }
