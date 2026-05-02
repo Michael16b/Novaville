@@ -85,7 +85,13 @@ La sortie fournit `AZURE_CREDENTIALS` au format JSON :
 
 Copier la sortie entière (au format JSON) dans le secret `AZURE_CREDENTIALS`.
 
-### 2. Configurer Azure Container Registry (ACR)
+### 2. Créer le Resource Group
+
+```bash
+az group create --name Novaville --location westeurope
+```
+
+### 3. Configurer Azure Container Registry (ACR)
 
 ```bash
 # Créer l'ACR
@@ -96,22 +102,78 @@ az acr credential show --name mynovaville
 ```
 
 Récupérer et configurer :
-- `AZURE_ACR_NAME` = le nom du registre
+- `AZURE_ACR_NAME` = le nom du registre (ex: `mynovaville`)
 - `AZURE_ACR_USERNAME` = `username` de la sortie ci-dessus
 - `AZURE_ACR_PASSWORD` = `password` de la sortie ci-dessus
 
-### 3. Créer/configurer App Service Azure
+### 4. Créer la Base de Données PostgreSQL
+
+**Option A : Azure Database for PostgreSQL (recommandé pour production)**
 
 ```bash
-# Créer le plan App Service
-az appservice plan create --name NovavillePlan --resource-group Novaville --sku B2
+# Créer le serveur PostgreSQL
+az postgres flexible-server create \
+  --name novaville-db \
+  --resource-group Novaville \
+  --admin-user novaville_admin \
+  --admin-password "{SECURE_PASSWORD}" \
+  --database-name novaville_db \
+  --sku-name Standard_B1ms \
+  --tier Burstable \
+  --storage-size 32 \
+  --version 15 \
+  --public-access Enabled
 
-# Créer l'App Service
-az webapp create --name NovavilleApp --resource-group Novaville \
-  --plan NovavillePlan --deployment-container-image-name-user-provided
+# Configurer les secrets à partir de la sortie
+# DB_HOST: <server-name>.postgres.database.azure.com
+# DB_USER: novaville_admin@novaville-db
+# DB_NAME: novaville_db
+# DB_PASSWORD: le mot de passe défini ci-dessus
 ```
 
-### 4. Générer les clés secrètes
+**Option B : Container PostgreSQL (utilisé dans docker-compose-azure.yml)**
+
+Si vous utilisez Bitnami PostgreSQL dans un conteneur (voir `docker-compose-azure.yml`), générez simplement les credentials :
+
+```bash
+DB_NAME=novaville_db
+DB_USER=novaville_user
+DB_PASSWORD=$(python -c "import secrets; print(secrets.token_urlsafe(20))")
+```
+
+### 5. Créer App Service Azure
+
+```bash
+# Créer le plan App Service (B2 = production, B1 = dev)
+az appservice plan create \
+  --name NovavillePlan \
+  --resource-group Novaville \
+  --sku B2 \
+  --is-linux
+
+# Créer l'App Service
+az webapp create \
+  --name NovavilleApp \
+  --resource-group Novaville \
+  --plan NovavillePlan \
+  --deployment-container-image-name-user-provided \
+  --docker-registry-server-url "https://{AZURE_ACR_NAME}.azurecr.io"
+```
+
+### 6. Configurer Docker dans App Service
+
+```bash
+# Configurer les credentials du registre ACR
+az webapp config container set \
+  --name NovavilleApp \
+  --resource-group Novaville \
+  --docker-custom-image-name "{AZURE_ACR_NAME}.azurecr.io/novaville-frontend:latest" \
+  --docker-registry-server-url "https://{AZURE_ACR_NAME}.azurecr.io" \
+  --docker-registry-server-user "{AZURE_ACR_USERNAME}" \
+  --docker-registry-server-password "{AZURE_ACR_PASSWORD}"
+```
+
+### 7. Générer les clés secrètes
 
 ```bash
 # Générer DJANGO_SECRET_KEY et JWT_SIGNING_KEY (32 chars+)
@@ -121,32 +183,123 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 python -c "import secrets; print(secrets.token_urlsafe(20))"
 ```
 
-### 5. Configurer les secrets GitHub
+### 8. Configurer les secrets GitHub
 
 1. Aller à votre dépôt GitHub → **Settings > Environments**
 2. Créer un environment nommé **`Azure Cloud`**
 3. Ajouter chaque secret (voir tableau ci-dessus)
 
-Exemple (screenshot) :
+Exemple complet :
 ```
 AZURE_ACR_NAME = mynovaville
-AZURE_ACR_USERNAME = username
-AZURE_ACR_PASSWORD = password
-AZURE_CREDENTIALS = { "clientId": "...", ... }
+AZURE_ACR_USERNAME = username_from_acr
+AZURE_ACR_PASSWORD = password_from_acr
+AZURE_CREDENTIALS = { "clientId": "...", "clientSecret": "...", "subscriptionId": "...", "tenantId": "..." }
 DB_NAME = novaville_db
-DB_USER = novaville_user
+DB_USER = novaville_admin@novaville-db
 DB_PASSWORD = GeneratedSecurePassword123!
-DJANGO_SECRET_KEY = GeneratedKey_xyz_abc
-JWT_SIGNING_KEY = GeneratedKey_def_ghi
+DJANGO_SECRET_KEY = GeneratedKey_xyz_abc_with_32_chars
+JWT_SIGNING_KEY = GeneratedKey_def_ghi_with_32_chars
 DJANGO_SUPERUSER_USERNAME = admin
 DJANGO_SUPERUSER_EMAIL = admin@novaville.local
 DJANGO_SUPERUSER_PASSWORD = GeneratedAdminPassword456!
 DJANGO_RESET_ADMIN_ON_DEPLOY = false
 ```
 
+### 9. Premier test : vérifier la configuration
+
+```bash
+# Tester les credentials Azure
+az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+
+# Tester la connexion à ACR
+az acr login --name mynovaville
+
+# Vérifier que l'App Service existe
+az webapp list --resource-group Novaville
+```
+
 ---
 
-## Workflow automatique
+## Configuration post-déploiement (App Settings)
+
+Une fois l'App Service créé, les variables d'environnement et secrets doivent être configurés comme **App Settings** dans Azure.
+
+### Via Azure CLI
+
+```bash
+# Configurer tous les App Settings
+az webapp config appsettings set \
+  --name NovavilleApp \
+  --resource-group Novaville \
+  --settings \
+    DJANGO_SECRET_KEY="{DJANGO_SECRET_KEY}" \
+    JWT_SIGNING_KEY="{JWT_SIGNING_KEY}" \
+    DB_ENGINE="django.db.backends.postgresql" \
+    DB_HOST="{DB_HOST}" \
+    DB_PORT="5432" \
+    DB_NAME="{DB_NAME}" \
+    DB_USER="{DB_USER}" \
+    DB_PASSWORD="{DB_PASSWORD}" \
+    DJANGO_SUPERUSER_USERNAME="{DJANGO_SUPERUSER_USERNAME}" \
+    DJANGO_SUPERUSER_EMAIL="{DJANGO_SUPERUSER_EMAIL}" \
+    DJANGO_SUPERUSER_PASSWORD="{DJANGO_SUPERUSER_PASSWORD}" \
+    DJANGO_RESET_ADMIN_ON_DEPLOY="false" \
+    DJANGO_LOG_LEVEL="INFO" \
+    DEBUG="false" \
+    ALLOWED_HOSTS="novavilleapp.azurewebsites.net,yourdomain.com" \
+    MIGRATE="1" \
+    COLLECTSTATIC="1"
+```
+
+### Via Azure Portal
+
+1. Aller à **NovavilleApp > Settings > Configuration**
+2. Cliquer sur **+ New application setting**
+3. Ajouter chaque variable (voir tableau plus haut)
+
+### Configuration de domaines personnalisés
+
+```bash
+# Ajouter un domaine personnalisé
+az webapp config hostname add \
+  --webapp-name NovavilleApp \
+  --resource-group Novaville \
+  --hostname yourdomain.com
+```
+
+Puis configurer le DNS chez votre registrar :
+- Type: `CNAME`
+- Host: `yourdomain.com` (ou subdomain)
+- Points to: `NovavilleApp.azurewebsites.net`
+
+### Configuration SSL/TLS
+
+```bash
+# Importer un certificat personnalisé
+az webapp config ssl upload \
+  --name NovavilleApp \
+  --resource-group Novaville \
+  --certificate-file /path/to/certificate.pfx \
+  --certificate-password "{PFX_PASSWORD}"
+
+# Ou utiliser Let's Encrypt (via Azure App Service)
+# Voir : https://learn.microsoft.com/en-us/azure/app-service/configure-ssl-certificate
+```
+
+Bind le certificat :
+
+```bash
+az webapp config ssl bind \
+  --name NovavilleApp \
+  --resource-group Novaville \
+  --certificate-thumbprint "{THUMBPRINT}" \
+  --ssl-type SNI
+```
+
+---
+
+## Workflow automatique (GitHub Actions)
 
 Une fois les secrets configurés, le déploiement s'effectue comme suit :
 
