@@ -37,6 +37,7 @@ const sidebars = {
         'technical/local-deployment',
         'technical/internal-guides',
         'technical/azure-deployment',
+        'technical/docs-deployment',
       ],
     },
   ],
@@ -88,4 +89,5 @@ const sidebars = {
 };
 
 module.exports = sidebars;
+
 
