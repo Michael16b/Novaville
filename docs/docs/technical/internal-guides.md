@@ -72,6 +72,14 @@ Checklist rapide pour une modification UI :
 
 Objectif : déployer l'application pour un client avec son propre domaine et variables d'environnement.
 
+Voir [Déploiement sur Azure](./azure-deployment.md) pour les instructions complètes sur :
+- Configuration infrastructure Azure (App Service, ACR, PostgreSQL)
+- Configuration des secrets GitHub Actions
+- Workflow CI/CD automatique
+- Dépannage
+
+Aperçu rapide :
+
 1. Préparer l'infrastructure (Azure / serveur cible) :
    - Créer les ressources (App Service / Container Registry / Database)
    - Configurer le réseau et les règles (NSG, firewalls)

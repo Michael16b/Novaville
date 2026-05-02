@@ -72,6 +72,14 @@ Quick UI change checklist:
 
 Goal: deploy the application for a client using their domain and env variables.
 
+See [Azure Deployment](./azure-deployment.md) for complete instructions on:
+- Setting up Azure infrastructure (App Service, ACR, PostgreSQL)
+- Configuring GitHub Actions secrets
+- Automatic CI/CD workflow
+- Troubleshooting
+
+Quick overview:
+
 1. Prepare infrastructure (Azure / target server):
    - Create resources (App Service / Container Registry / Database)
    - Configure networking and firewall rules

@@ -35,6 +35,7 @@ const sidebars = {
         'technical/architecture',
         'technical/backend',
         'technical/internal-guides',
+        'technical/azure-deployment',
       ],
     },
   ],
