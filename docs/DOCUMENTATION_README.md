@@ -46,7 +46,8 @@ docs/
 │   ├── getting-started/       # Guide de démarrage
 │   ├── technical/             # Documentation technique
 │   ├── api/                   # Documentation API
-│   └── user-manual/           # Manuel utilisateur
+│   ├── dev-onboarding/        # Guide de prise en main pour développeurs
+│   └── contributing/          # Guide contribution
 ├── src/                       # Code source personnalisé
 │   ├── components/            # Composants React personnalisés
 │   ├── css/                   # Styles personnalisés

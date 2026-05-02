@@ -5,9 +5,9 @@ import 'package:frontend/core/network/authenticated_client_factory.dart';
 import 'package:frontend/features/auth/data/auth_storage_impl.dart';
 import 'package:http/http.dart' as http;
 
-import 'useful_info_api.dart';
-import 'useful_info_repository.dart';
-import 'useful_info_repository_impl.dart';
+import 'package:frontend/features/useful_info/data/useful_info_api.dart';
+import 'package:frontend/features/useful_info/data/useful_info_repository.dart';
+import 'package:frontend/features/useful_info/data/useful_info_repository_impl.dart';
 
 /// Factory for creating a [UsefulInfoRepositoryImpl] configured with
 /// authentication.

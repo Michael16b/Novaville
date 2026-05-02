@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
 import 'package:frontend/constants/texts/texts_credentials_share.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 class CredentialsSharePage extends StatefulWidget {
   const CredentialsSharePage({super.key});
@@ -313,7 +313,9 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
                             }
                           },
                           icon: const Icon(Icons.open_in_new),
-                          label: const Text(CredentialsShareTexts.openSiteLabel),
+                          label: const Text(
+                            CredentialsShareTexts.openSiteLabel,
+                          ),
                         ),
                       ),
                     ],

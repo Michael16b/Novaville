@@ -13,10 +13,10 @@ import 'package:frontend/ui/widgets/app_banner.dart';
 import 'package:go_router/go_router.dart';
 
 class MockAuthRepository implements IAuthRepository {
-  bool logoutCalled = false;
-  final bool hasSession;
 
   MockAuthRepository({this.hasSession = true});
+  bool logoutCalled = false;
+  final bool hasSession;
 
   @override
   Future<User> login({
@@ -42,7 +42,7 @@ class MockAuthRepository implements IAuthRepository {
   Future<User?> hasValidSession() async {
     if (!hasSession) return null;
 
-    return User(
+    return const User(
       id: 1,
       username: 'testuser',
       email: 'test@example.com',

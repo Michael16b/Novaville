@@ -88,7 +88,7 @@ class UserRepositoryImpl implements IUserRepository {
     String? address,
     int? neighborhood,
   }) async {
-    String url = '/api/v1/users/?page=$page';
+    var url = '/api/v1/users/?page=$page';
     if (ordering != null && ordering.isNotEmpty) {
       url += '&ordering=$ordering';
     }
@@ -219,10 +219,10 @@ class UserRepositoryImpl implements IUserRepository {
   @override
   Future<User> createUser({
     required String username,
-    String email = '',
     required String firstName,
     required String lastName,
     required String password,
+    String email = '',
     String address = '',
     UserRole role = UserRole.citizen,
     int? neighborhoodId,

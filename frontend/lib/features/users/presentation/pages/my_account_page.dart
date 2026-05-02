@@ -19,9 +19,9 @@ class MyAccountPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => UserProfileBloc(
-        repository: createUserRepository(),
-      )..add(const UserProfileLoadRequested()),
+      create: (context) =>
+          UserProfileBloc(repository: createUserRepository())
+            ..add(const UserProfileLoadRequested()),
       child: const _MyAccountView(),
     );
   }
@@ -180,8 +180,9 @@ class _MyAccountViewState extends State<_MyAccountView> {
                               Container(
                                 padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
-                                  color:
-                                  AppColors.primary.withValues(alpha: 0.12),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.12,
+                                  ),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
@@ -263,8 +264,9 @@ class _MyAccountViewState extends State<_MyAccountView> {
                               Container(
                                 padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
-                                  color:
-                                  AppColors.primary.withValues(alpha: 0.12),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.12,
+                                  ),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
@@ -305,7 +307,9 @@ class _MyAccountViewState extends State<_MyAccountView> {
                                   state.user!.id,
                                 ),
                                 icon: const Icon(Icons.password),
-                                label: const Text(AppTextsProfile.changePassword),
+                                label: const Text(
+                                  AppTextsProfile.changePassword,
+                                ),
                               ),
                             ],
                           ),
@@ -324,13 +328,11 @@ class _MyAccountViewState extends State<_MyAccountView> {
                         const SizedBox(width: 6),
                         Text(
                           AppTextsGeneral.requiredFieldsHint,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
+                          style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
-                            color: AppColors.secondaryText,
-                            fontStyle: FontStyle.italic,
-                          ),
+                                color: AppColors.secondaryText,
+                                fontStyle: FontStyle.italic,
+                              ),
                         ),
                       ],
                     ),
@@ -342,15 +344,15 @@ class _MyAccountViewState extends State<_MyAccountView> {
                           onPressed: state.status == UserProfileStatus.updating
                               ? null
                               : () {
-                            // Reset fields to their original values
-                            _firstNameController.text =
-                                state.user!.firstName;
-                            _lastNameController.text =
-                                state.user!.lastName;
-                            _usernameController.text =
-                                state.user!.username;
-                            _emailController.text = state.user!.email;
-                          },
+                                  // Reset fields to their original values
+                                  _firstNameController.text =
+                                      state.user!.firstName;
+                                  _lastNameController.text =
+                                      state.user!.lastName;
+                                  _usernameController.text =
+                                      state.user!.username;
+                                  _emailController.text = state.user!.email;
+                                },
                           icon: const Icon(Icons.refresh_outlined),
                           label: const Text(AppTextsGeneral.reset),
                         ),
@@ -395,10 +397,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
 }
 
 class _ChangePasswordDialog extends StatefulWidget {
-  const _ChangePasswordDialog({
-    required this.userId,
-    required this.bloc,
-  });
+  const _ChangePasswordDialog({required this.userId, required this.bloc});
 
   final int userId;
   final UserProfileBloc bloc;
@@ -429,10 +428,12 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
     return BlocListener<UserProfileBloc, UserProfileState>(
       bloc: widget.bloc,
       listener: (context, state) {
-        if (state.status == UserProfileStatus.loaded && state.isPasswordUpdate) {
+        if (state.status == UserProfileStatus.loaded &&
+            state.isPasswordUpdate) {
           Navigator.pop(context);
-        } else if (state.status == UserProfileStatus.failure && state.isPasswordUpdate) {
-          String errorMessage = AppTextsProfile.passwordUpdateError;
+        } else if (state.status == UserProfileStatus.failure &&
+            state.isPasswordUpdate) {
+          var errorMessage = AppTextsProfile.passwordUpdateError;
           final error = state.error ?? '';
 
           if (error.contains('password_fields_required')) {
@@ -548,12 +549,13 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
-      widget.bloc.add(UserProfilePasswordUpdateRequested(
-        userId: widget.userId,
-        currentPassword: _currentPasswordController.text,
-        newPassword: _newPasswordController.text,
-      ));
+      widget.bloc.add(
+        UserProfilePasswordUpdateRequested(
+          userId: widget.userId,
+          currentPassword: _currentPasswordController.text,
+          newPassword: _newPasswordController.text,
+        ),
+      );
     }
   }
 }
-

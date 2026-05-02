@@ -1,4 +1,4 @@
-import '../domain/useful_info.dart';
+import 'package:frontend/features/useful_info/domain/useful_info.dart';
 
 abstract class UsefulInfoRepository {
   Future<UsefulInfo> getUsefulInfo();

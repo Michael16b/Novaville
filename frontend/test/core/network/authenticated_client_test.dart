@@ -29,84 +29,87 @@ void main() {
       expect(response.body, '{"data":"success"}');
     });
 
-    test("does not add the Authorization header when the token is null", () async {
-      final mockClient = MockClient((request) async {
-        // Verify the Authorization header is NOT present
-        expect(request.headers.containsKey('Authorization'), false);
-
-        return http.Response('{"data":"public"}', 200);
-      });
-
-      final authenticatedClient = AuthenticatedClient(
-        tokenProvider: () async => null,
-        inner: mockClient,
-      );
-
-      final response = await authenticatedClient.get(
-        Uri.parse('http://localhost:8000/api/public/'),
-      );
-
-      expect(response.statusCode, 200);
-    });
-
-    test("does not add the Authorization header when the token is empty", () async {
-      final mockClient = MockClient((request) async {
-        // Verify the Authorization header is NOT present
-        expect(request.headers.containsKey('Authorization'), false);
-
-        return http.Response('{"data":"public"}', 200);
-      });
-
-      final authenticatedClient = AuthenticatedClient(
-        tokenProvider: () async => '',
-        inner: mockClient,
-      );
-
-      final response = await authenticatedClient.get(
-        Uri.parse('http://localhost:8000/api/public/'),
-      );
-
-      expect(response.statusCode, 200);
-    });
-
     test(
-      'works with different HTTP methods (POST, PUT, DELETE)',
+      'does not add the Authorization header when the token is null',
       () async {
-        var requestCount = 0;
         final mockClient = MockClient((request) async {
-          requestCount++;
+          // Verify the Authorization header is NOT present
+          expect(request.headers.containsKey('Authorization'), false);
 
-          // Verify each request has the Authorization header
-          expect(request.headers['Authorization'], 'Bearer my-token');
-
-          return http.Response('{}', 200);
+          return http.Response('{"data":"public"}', 200);
         });
 
         final authenticatedClient = AuthenticatedClient(
-          tokenProvider: () async => 'my-token',
+          tokenProvider: () async => null,
           inner: mockClient,
         );
 
-        // Test POST
-        await authenticatedClient.post(
-          Uri.parse('http://localhost:8000/api/items/'),
-          body: '{"name":"test"}',
+        final response = await authenticatedClient.get(
+          Uri.parse('http://localhost:8000/api/public/'),
         );
 
-        // Test PUT
-        await authenticatedClient.put(
-          Uri.parse('http://localhost:8000/api/items/1/'),
-          body: '{"name":"updated"}',
-        );
-
-        // Test DELETE
-        await authenticatedClient.delete(
-          Uri.parse('http://localhost:8000/api/items/1/'),
-        );
-
-        expect(requestCount, 3);
+        expect(response.statusCode, 200);
       },
     );
+
+    test(
+      'does not add the Authorization header when the token is empty',
+      () async {
+        final mockClient = MockClient((request) async {
+          // Verify the Authorization header is NOT present
+          expect(request.headers.containsKey('Authorization'), false);
+
+          return http.Response('{"data":"public"}', 200);
+        });
+
+        final authenticatedClient = AuthenticatedClient(
+          tokenProvider: () async => '',
+          inner: mockClient,
+        );
+
+        final response = await authenticatedClient.get(
+          Uri.parse('http://localhost:8000/api/public/'),
+        );
+
+        expect(response.statusCode, 200);
+      },
+    );
+
+    test('works with different HTTP methods (POST, PUT, DELETE)', () async {
+      var requestCount = 0;
+      final mockClient = MockClient((request) async {
+        requestCount++;
+
+        // Verify each request has the Authorization header
+        expect(request.headers['Authorization'], 'Bearer my-token');
+
+        return http.Response('{}', 200);
+      });
+
+      final authenticatedClient = AuthenticatedClient(
+        tokenProvider: () async => 'my-token',
+        inner: mockClient,
+      );
+
+      // Test POST
+      await authenticatedClient.post(
+        Uri.parse('http://localhost:8000/api/items/'),
+        body: '{"name":"test"}',
+      );
+
+      // Test PUT
+      await authenticatedClient.put(
+        Uri.parse('http://localhost:8000/api/items/1/'),
+        body: '{"name":"updated"}',
+      );
+
+      // Test DELETE
+      await authenticatedClient.delete(
+        Uri.parse('http://localhost:8000/api/items/1/'),
+      );
+
+      expect(requestCount, 3);
+    });
 
     test(
       'calls tokenProvider on every request to get the current token',
@@ -278,9 +281,15 @@ void main() {
 
         // Launch 3 simultaneous requests
         final futures = [
-          authenticatedClient.get(Uri.parse('http://localhost:8000/api/test1/')),
-          authenticatedClient.get(Uri.parse('http://localhost:8000/api/test2/')),
-          authenticatedClient.get(Uri.parse('http://localhost:8000/api/test3/')),
+          authenticatedClient.get(
+            Uri.parse('http://localhost:8000/api/test1/'),
+          ),
+          authenticatedClient.get(
+            Uri.parse('http://localhost:8000/api/test2/'),
+          ),
+          authenticatedClient.get(
+            Uri.parse('http://localhost:8000/api/test3/'),
+          ),
         ];
 
         final responses = await Future.wait(futures);

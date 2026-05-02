@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../domain/useful_info.dart';
+import 'package:frontend/features/useful_info/domain/useful_info.dart';
 
 sealed class UsefulInfoEvent extends Equatable {
   const UsefulInfoEvent();
@@ -17,9 +17,8 @@ class UsefulInfoRefreshed extends UsefulInfoEvent {
 }
 
 class UsefulInfoSaved extends UsefulInfoEvent {
-  final UsefulInfo info;
-
   const UsefulInfoSaved(this.info);
+  final UsefulInfo info;
 
   @override
   List<Object?> get props => [info];

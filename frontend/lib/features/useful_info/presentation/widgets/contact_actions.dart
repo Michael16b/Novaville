@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants/texts/texts_useful_info.dart';
 
 class ContactActions extends StatelessWidget {
+  const ContactActions({super.key, this.phone, this.email, this.website});
   final String? phone;
   final String? email;
   final String? website;
-
-  const ContactActions({super.key, this.phone, this.email, this.website});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +13,7 @@ class ContactActions extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if ((email ?? "").isNotEmpty)
+        if ((email ?? '').isNotEmpty)
           Row(
             children: [
               const Icon(Icons.email, size: 20),
@@ -26,7 +25,7 @@ class ContactActions extends StatelessWidget {
             ],
           ),
 
-        if ((phone ?? "").isNotEmpty) ...[
+        if ((phone ?? '').isNotEmpty) ...[
           const SizedBox(height: 8),
           Row(
             children: [
@@ -40,7 +39,7 @@ class ContactActions extends StatelessWidget {
           ),
         ],
 
-        if ((website ?? "").isNotEmpty) ...[
+        if ((website ?? '').isNotEmpty) ...[
           const SizedBox(height: 8),
           Row(
             children: [

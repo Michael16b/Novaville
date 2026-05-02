@@ -37,11 +37,6 @@ class MockAuthRepository implements IAuthRepository {
 }
 
 class MockUserRepository implements IUserRepository {
-  final bool shouldThrow;
-  final bool shouldThrowOnDelete;
-  final List<User> users;
-  final List<Neighborhood> neighborhoods;
-
   MockUserRepository({
     this.shouldThrow = false,
     this.shouldThrowOnDelete = false,
@@ -50,6 +45,10 @@ class MockUserRepository implements IUserRepository {
       Neighborhood(id: 1, name: 'Quartier Centre', postalCode: '75001'),
     ],
   });
+  final bool shouldThrow;
+  final bool shouldThrowOnDelete;
+  final List<User> users;
+  final List<Neighborhood> neighborhoods;
 
   @override
   Future<User> getCurrentUser() async {
@@ -73,12 +72,7 @@ class MockUserRepository implements IUserRepository {
     int? neighborhood,
   }) async {
     if (shouldThrow) throw Exception('Network error');
-    return UserPage(
-      count: users.length,
-      next: null,
-      previous: null,
-      results: users,
-    );
+    return UserPage(count: users.length, results: users);
   }
 
   @override

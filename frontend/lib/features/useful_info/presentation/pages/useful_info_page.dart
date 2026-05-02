@@ -14,16 +14,13 @@ import 'package:frontend/features/useful_info/domain/useful_info.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
 import 'package:go_router/go_router.dart';
 
-import '../widgets/contact_actions.dart';
-import '../widgets/opening_hours_table.dart';
-import '../widgets/social_network_actions.dart';
+import 'package:frontend/features/useful_info/presentation/widgets/contact_actions.dart';
+import 'package:frontend/features/useful_info/presentation/widgets/opening_hours_table.dart';
+import 'package:frontend/features/useful_info/presentation/widgets/social_network_actions.dart';
 import 'package:frontend/ui/widgets/breadcrumb.dart';
 
 class UsefulInfoPage extends StatefulWidget {
-  const UsefulInfoPage({
-    this.startInEditMode = false,
-    super.key,
-  });
+  const UsefulInfoPage({this.startInEditMode = false, super.key});
 
   final bool startInEditMode;
 
@@ -40,7 +37,7 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
     final isAdmin = context.select<AuthBloc, bool>((bloc) {
       final state = bloc.state;
       if (state.status != AuthStatus.authenticated) return false;
-      return state.user?.isGlobalAdmin == true;
+      return state.user?.isGlobalAdmin ?? false;
     });
 
     return Scaffold(
@@ -48,9 +45,7 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
       floatingActionButton: isAdmin
           ? FloatingActionButton(
               heroTag: 'useful-info-fab',
-              tooltip: isEditing
-                  ? AppTextsGeneral.close
-                  : AppTextsGeneral.edit,
+              tooltip: isEditing ? AppTextsGeneral.close : AppTextsGeneral.edit,
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.white,
               onPressed: () {
@@ -121,9 +116,8 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
 }
 
 class _UsefulInfoReadView extends StatelessWidget {
-  final UsefulInfo info;
-
   const _UsefulInfoReadView({required this.info});
+  final UsefulInfo info;
 
   @override
   Widget build(BuildContext context) {
@@ -187,15 +181,14 @@ class _UsefulInfoReadView extends StatelessWidget {
 }
 
 class _UsefulInfoEditView extends StatefulWidget {
-  final UsefulInfo info;
-  final ValueChanged<UsefulInfo> onSave;
-  final VoidCallback onCancel;
-
   const _UsefulInfoEditView({
     required this.info,
     required this.onSave,
     required this.onCancel,
   });
+  final UsefulInfo info;
+  final ValueChanged<UsefulInfo> onSave;
+  final VoidCallback onCancel;
 
   @override
   State<_UsefulInfoEditView> createState() => _UsefulInfoEditViewState();
@@ -297,10 +290,7 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
   }
 
   List<_TimeRange> _parseTimeRanges(List<String> slots) {
-    return slots
-        .map((slot) => _TimeRange.tryParse(slot))
-        .whereType<_TimeRange>()
-        .toList();
+    return slots.map(_TimeRange.tryParse).whereType<_TimeRange>().toList();
   }
 
   Map<String, List<String>> _buildOpeningHoursMap() {
@@ -723,15 +713,14 @@ class _EmptyState extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Widget child;
-
   const _SectionCard({
     required this.title,
     required this.icon,
     required this.child,
   });
+  final String title;
+  final IconData icon;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -771,9 +760,8 @@ class _SectionCard extends StatelessWidget {
 }
 
 class _CityHallBlock extends StatelessWidget {
-  final UsefulInfo info;
-
   const _CityHallBlock({required this.info});
+  final UsefulInfo info;
 
   @override
   Widget build(BuildContext context) {
@@ -800,10 +788,9 @@ class _CityHallBlock extends StatelessWidget {
 }
 
 class _TimeRange {
+  _TimeRange({this.start, this.end});
   TimeOfDay? start;
   TimeOfDay? end;
-
-  _TimeRange({this.start, this.end});
 
   bool get isComplete => start != null && end != null;
 
@@ -857,11 +844,11 @@ class _UsefulInfoSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+    return const SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: const [
+        children: [
           _SkeletonHeader(),
           SizedBox(height: 16),
           _SkeletonCard(height: 110),
@@ -882,9 +869,9 @@ class _SkeletonHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
+      children: [
         _SkeletonBox(height: 28, width: 180),
         SizedBox(height: 12),
         _SkeletonBox(height: 14, width: double.infinity),
@@ -896,9 +883,8 @@ class _SkeletonHeader extends StatelessWidget {
 }
 
 class _SkeletonCard extends StatelessWidget {
-  final double height;
-
   const _SkeletonCard({required this.height});
+  final double height;
 
   @override
   Widget build(BuildContext context) {
@@ -925,15 +911,14 @@ class _SkeletonCard extends StatelessWidget {
 }
 
 class _SkeletonBox extends StatefulWidget {
-  final double height;
-  final double width;
-  final double radius;
-
   const _SkeletonBox({
     required this.height,
     required this.width,
     this.radius = 12,
   });
+  final double height;
+  final double width;
+  final double radius;
 
   @override
   State<_SkeletonBox> createState() => _SkeletonBoxState();

@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SocialNetworkActions extends StatelessWidget {
-  final String? instagram;
-  final String? facebook;
-  final String? x;
-
   const SocialNetworkActions({
     super.key,
     this.instagram,
     this.facebook,
     this.x,
   });
+  final String? instagram;
+  final String? facebook;
+  final String? x;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +19,7 @@ class SocialNetworkActions extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if ((instagram ?? "").isNotEmpty)
+        if ((instagram ?? '').isNotEmpty)
           Row(
             children: [
               const FaIcon(FontAwesomeIcons.instagram, size: 20),
@@ -34,7 +33,7 @@ class SocialNetworkActions extends StatelessWidget {
             ],
           ),
 
-        if ((facebook ?? "").isNotEmpty) ...[
+        if ((facebook ?? '').isNotEmpty) ...[
           const SizedBox(height: 8),
           Row(
             children: [
@@ -50,7 +49,7 @@ class SocialNetworkActions extends StatelessWidget {
           ),
         ],
 
-        if ((x ?? "").isNotEmpty) ...[
+        if ((x ?? '').isNotEmpty) ...[
           const SizedBox(height: 8),
           Row(
             children: [

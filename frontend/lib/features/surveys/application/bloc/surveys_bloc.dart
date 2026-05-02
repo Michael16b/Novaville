@@ -11,8 +11,8 @@ part 'surveys_state.dart';
 class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
   /// Creates a [SurveysBloc].
   SurveysBloc({required ISurveyRepository repository})
-      : _repository = repository,
-        super(const SurveysState.initial()) {
+    : _repository = repository,
+      super(const SurveysState.initial()) {
     on<SurveysLoadRequested>(_onLoadRequested);
     on<SurveysFilterChanged>(_onFilterChanged);
     on<SurveysPageRequested>(_onPageRequested);
@@ -80,7 +80,6 @@ class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
           exactAddress: _exactAddress,
           citizenTarget: _citizenTarget,
           ordering: _ordering,
-          error: null,
         ),
       );
     } catch (e) {
@@ -132,7 +131,7 @@ class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
         citizenTarget: event.citizenTarget,
       );
 
-      emit(state.copyWith(status: SurveysStatus.created, error: null));
+      emit(state.copyWith(status: SurveysStatus.created));
       add(
         SurveysLoadRequested(
           exactAddress: _exactAddress,
@@ -153,7 +152,7 @@ class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
     emit(state.copyWith(status: SurveysStatus.deleting));
     try {
       await _repository.deleteSurvey(surveyId: event.surveyId);
-      emit(state.copyWith(status: SurveysStatus.deleted, error: null));
+      emit(state.copyWith(status: SurveysStatus.deleted));
       add(
         SurveysLoadRequested(
           exactAddress: _exactAddress,
@@ -180,7 +179,7 @@ class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
         address: event.address,
         citizenTarget: event.citizenTarget,
       );
-      emit(state.copyWith(status: SurveysStatus.updated, error: null));
+      emit(state.copyWith(status: SurveysStatus.updated));
       add(
         SurveysLoadRequested(
           exactAddress: _exactAddress,
@@ -200,8 +199,11 @@ class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
   ) async {
     emit(state.copyWith(status: SurveysStatus.voting));
     try {
-      await _repository.vote(surveyId: event.surveyId, optionId: event.optionId);
-      emit(state.copyWith(status: SurveysStatus.voted, error: null));
+      await _repository.vote(
+        surveyId: event.surveyId,
+        optionId: event.optionId,
+      );
+      emit(state.copyWith(status: SurveysStatus.voted));
       add(
         SurveysLoadRequested(
           exactAddress: _exactAddress,
@@ -215,4 +217,3 @@ class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
     }
   }
 }
-

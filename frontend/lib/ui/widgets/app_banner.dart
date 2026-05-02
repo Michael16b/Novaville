@@ -95,11 +95,7 @@ class AppBanner extends StatelessWidget {
     return InkWell(
       onTap: () => context.go(AppRoutes.home),
       borderRadius: BorderRadius.circular(8),
-      child: Image.asset(
-        AppAssets.login_logo,
-        height: 70,
-        width: 70,
-      ),
+      child: Image.asset(AppAssets.login_logo, height: 70, width: 70),
     );
   }
 
@@ -181,9 +177,7 @@ class AppBanner extends StatelessWidget {
     backgroundColor: const WidgetStatePropertyAll<Color>(Colors.white),
     surfaceTintColor: const WidgetStatePropertyAll<Color>(Colors.white),
     shape: WidgetStatePropertyAll<RoundedRectangleBorder>(
-      RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
   );
 
@@ -204,11 +198,7 @@ class AppBanner extends StatelessWidget {
               color: AppColors.primary.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.person,
-              size: 16,
-              color: AppColors.primary,
-            ),
+            child: const Icon(Icons.person, size: 16, color: AppColors.primary),
           ),
           child: const Text(
             AppTextsNavigation.personalInfo,
@@ -226,11 +216,7 @@ class AppBanner extends StatelessWidget {
               color: AppColors.error.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.logout,
-              size: 16,
-              color: AppColors.error,
-            ),
+            child: const Icon(Icons.logout, size: 16, color: AppColors.error),
           ),
           child: const Text(
             AppTextsAuth.logout,
@@ -240,8 +226,8 @@ class AppBanner extends StatelessWidget {
       ],
       builder: (context, controller, child) {
         final userName =
-            ('${authState.user?.firstName ?? ''} '
-                    '${authState.user?.lastName ?? ''}')
+            '${authState.user?.firstName ?? ''} '
+                    '${authState.user?.lastName ?? ''}'
                 .trim();
         return InkWell(
           onTap: () {
@@ -253,10 +239,7 @@ class AppBanner extends StatelessWidget {
           },
           borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 4,
-              vertical: 6,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
             child: Row(
               children: [
                 Container(
@@ -401,6 +384,3 @@ class _BannerNavigationAction {
   final bool isCurrent;
   final VoidCallback onPressed;
 }
-
-
-

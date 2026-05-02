@@ -5,188 +5,211 @@ import 'package:frontend/features/home/presentation/widgets/menu_card.dart';
 
 void main() {
   group('MenuCard', () {
-    testWidgets('Given a menu card when it is rendered and tapped then it shows its content and triggers onTap', (WidgetTester tester) async {
-      bool tapped = false;
+    testWidgets(
+      'Given a menu card when it is rendered and tapped then it shows its content and triggers onTap',
+      (WidgetTester tester) async {
+        var tapped = false;
 
-      // Given / When
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: MenuCard(
-              icon: Icons.report_problem_outlined,
-              title: 'Test Title',
-              subtitle: 'Test Subtitle',
-              onTap: () => tapped = true,
+        // Given / When
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: MenuCard(
+                icon: Icons.report_problem_outlined,
+                title: 'Test Title',
+                subtitle: 'Test Subtitle',
+                onTap: () => tapped = true,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Then
-      expect(find.byIcon(Icons.report_problem_outlined), findsOneWidget);
-      expect(find.text('Test Title'), findsOneWidget);
-      expect(find.text('Test Subtitle'), findsOneWidget);
+        // Then
+        expect(find.byIcon(Icons.report_problem_outlined), findsOneWidget);
+        expect(find.text('Test Title'), findsOneWidget);
+        expect(find.text('Test Subtitle'), findsOneWidget);
 
-      await tester.tap(find.byType(MenuCard));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byType(MenuCard));
+        await tester.pumpAndSettle();
 
-      expect(tapped, isTrue);
-    });
+        expect(tapped, isTrue);
+      },
+    );
 
-    testWidgets('Given a menu card when it is rendered then it uses the expected material and container styling', (WidgetTester tester) async {
-      // Given / When
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: MenuCard(
-              icon: Icons.report_problem_outlined,
-              title: 'Test Title',
-              subtitle: 'Test Subtitle',
-              onTap: () {},
+    testWidgets(
+      'Given a menu card when it is rendered then it uses the expected material and container styling',
+      (WidgetTester tester) async {
+        // Given / When
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: MenuCard(
+                icon: Icons.report_problem_outlined,
+                title: 'Test Title',
+                subtitle: 'Test Subtitle',
+                onTap: () {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Then
-      final materialFinder = find.byWidgetPredicate(
-            (widget) => widget is Material && widget.color == AppColors.primary,
-      );
-      expect(materialFinder, findsOneWidget);
+        // Then
+        final materialFinder = find.byWidgetPredicate(
+          (widget) => widget is Material && widget.color == AppColors.primary,
+        );
+        expect(materialFinder, findsOneWidget);
 
-      final Material material = tester.widget(materialFinder);
-      expect(material.clipBehavior, Clip.antiAlias);
-      expect(material.shape, isA<RoundedRectangleBorder>());
+        final material = tester.widget(materialFinder);
+        expect(material.clipBehavior, Clip.antiAlias);
+        expect(material.shape, isA<RoundedRectangleBorder>());
 
-      final containerFinder = find.byWidgetPredicate((widget) {
-        if (widget is! Container) return false;
-        final decoration = widget.decoration;
-        if (decoration is! BoxDecoration) return false;
-        return decoration.boxShadow != null && decoration.boxShadow!.isNotEmpty;
-      });
+        final containerFinder = find.byWidgetPredicate((widget) {
+          if (widget is! Container) return false;
+          final decoration = widget.decoration;
+          if (decoration is! BoxDecoration) return false;
+          return decoration.boxShadow != null &&
+              decoration.boxShadow!.isNotEmpty;
+        });
 
-      expect(containerFinder, findsOneWidget);
+        expect(containerFinder, findsOneWidget);
 
-      final Container container = tester.widget(containerFinder);
-      final BoxDecoration decoration = container.decoration as BoxDecoration;
-      expect(decoration.borderRadius, isNotNull);
-    });
+        final container = tester.widget(containerFinder);
+        final decoration = container.decoration! as BoxDecoration;
+        expect(decoration.borderRadius, isNotNull);
+      },
+    );
 
-    testWidgets('Given a large menu card when it is rendered then the icon uses the expected size and color', (WidgetTester tester) async {
-      // Given / When
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: MenuCard(
-              icon: Icons.report_problem_outlined,
-              title: 'Test Title',
-              subtitle: 'Test Subtitle',
-              onTap: () {},
+    testWidgets(
+      'Given a large menu card when it is rendered then the icon uses the expected size and color',
+      (WidgetTester tester) async {
+        // Given / When
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: MenuCard(
+                icon: Icons.report_problem_outlined,
+                title: 'Test Title',
+                subtitle: 'Test Subtitle',
+                onTap: () {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Then
-      final iconFinder = find.byIcon(Icons.report_problem_outlined);
-      final Icon icon = tester.widget(iconFinder);
-      expect(icon.size, 28);
-      expect(icon.color, AppColors.secondary);
-    });
+        // Then
+        final iconFinder = find.byIcon(Icons.report_problem_outlined);
+        final icon = tester.widget(iconFinder);
+        expect(icon.size, 28);
+        expect(icon.color, AppColors.secondary);
+      },
+    );
 
-    testWidgets('Given a large menu card when it is rendered then the title uses the expected text style', (WidgetTester tester) async {
-      // Given / When
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: MenuCard(
-              icon: Icons.report_problem_outlined,
-              title: 'Test Title',
-              subtitle: 'Test Subtitle',
-              onTap: () {},
+    testWidgets(
+      'Given a large menu card when it is rendered then the title uses the expected text style',
+      (WidgetTester tester) async {
+        // Given / When
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: MenuCard(
+                icon: Icons.report_problem_outlined,
+                title: 'Test Title',
+                subtitle: 'Test Subtitle',
+                onTap: () {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Then
-      final textFinder = find.text('Test Title');
-      final Text text = tester.widget(textFinder);
-      expect(text.style?.fontSize, 21);
-      expect(text.style?.fontWeight, FontWeight.w700);
-      expect(text.style?.color, Colors.white);
-    });
+        // Then
+        final textFinder = find.text('Test Title');
+        final text = tester.widget(textFinder);
+        expect(text.style?.fontSize, 21);
+        expect(text.style?.fontWeight, FontWeight.w700);
+        expect(text.style?.color, Colors.white);
+      },
+    );
 
-    testWidgets('Given a large menu card when it is rendered then the subtitle uses the expected text style', (WidgetTester tester) async {
-      // Given / When
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: MenuCard(
-              icon: Icons.report_problem_outlined,
-              title: 'Test Title',
-              subtitle: 'Test Subtitle',
-              onTap: () {},
+    testWidgets(
+      'Given a large menu card when it is rendered then the subtitle uses the expected text style',
+      (WidgetTester tester) async {
+        // Given / When
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: MenuCard(
+                icon: Icons.report_problem_outlined,
+                title: 'Test Title',
+                subtitle: 'Test Subtitle',
+                onTap: () {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Then
-      final textFinder = find.text('Test Subtitle');
-      final Text text = tester.widget(textFinder);
-      expect(text.style?.fontSize, 14);
-      expect(text.style?.color, Colors.white70);
-    });
+        // Then
+        final textFinder = find.text('Test Subtitle');
+        final text = tester.widget(textFinder);
+        expect(text.style?.fontSize, 14);
+        expect(text.style?.color, Colors.white70);
+      },
+    );
 
-    testWidgets('Given a menu card when it is rendered then it contains an InkWell', (WidgetTester tester) async {
-      // Given / When
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: MenuCard(
-              icon: Icons.report_problem_outlined,
-              title: 'Test Title',
-              subtitle: 'Test Subtitle',
-              onTap: () {},
+    testWidgets(
+      'Given a menu card when it is rendered then it contains an InkWell',
+      (WidgetTester tester) async {
+        // Given / When
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: MenuCard(
+                icon: Icons.report_problem_outlined,
+                title: 'Test Title',
+                subtitle: 'Test Subtitle',
+                onTap: () {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Then
-      expect(find.byType(InkWell), findsOneWidget);
-    });
+        // Then
+        expect(find.byType(InkWell), findsOneWidget);
+      },
+    );
 
-    testWidgets('Given a large menu card when it is rendered then it uses the expected layout structure', (WidgetTester tester) async {
-      // Given / When
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: MenuCard(
-              icon: Icons.report_problem_outlined,
-              title: 'Test Title',
-              subtitle: 'Test Subtitle',
-              onTap: () {},
+    testWidgets(
+      'Given a large menu card when it is rendered then it uses the expected layout structure',
+      (WidgetTester tester) async {
+        // Given / When
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: MenuCard(
+                icon: Icons.report_problem_outlined,
+                title: 'Test Title',
+                subtitle: 'Test Subtitle',
+                onTap: () {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Then
-      final columnFinder = find.byWidgetPredicate(
-            (widget) => widget is Column &&
-                widget.crossAxisAlignment == CrossAxisAlignment.start,
-      );
-      expect(columnFinder, findsOneWidget);
+        // Then
+        final columnFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Column &&
+              widget.crossAxisAlignment == CrossAxisAlignment.start,
+        );
+        expect(columnFinder, findsOneWidget);
 
-      expect(find.byType(Spacer), findsOneWidget);
-      expect(
-        find.byWidgetPredicate(
-          (widget) => widget is SizedBox && widget.height == 18,
-        ),
-        findsOneWidget,
-      );
-    });
+        expect(find.byType(Spacer), findsOneWidget);
+        expect(
+          find.byWidgetPredicate(
+            (widget) => widget is SizedBox && widget.height == 18,
+          ),
+          findsOneWidget,
+        );
+      },
+    );
   });
 }

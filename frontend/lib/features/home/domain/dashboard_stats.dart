@@ -1,11 +1,4 @@
 class RecentActivity {
-  final String type;
-  final String title;
-  final String subtitle;
-  final DateTime occurredAt;
-  final int elapsedSeconds;
-  final String elapsedLabel;
-
   const RecentActivity({
     required this.type,
     required this.title,
@@ -25,20 +18,15 @@ class RecentActivity {
       elapsedLabel: (json['elapsed_label'] as String?) ?? '',
     );
   }
+  final String type;
+  final String title;
+  final String subtitle;
+  final DateTime occurredAt;
+  final int elapsedSeconds;
+  final String elapsedLabel;
 }
 
 class DashboardStats {
-  final int pendingReports;
-  final int activeSurveys;
-  final int eventsThisWeek;
-  final int unresolvedReportsRoads;
-  final int unresolvedReportsLighting;
-  final int unresolvedReportsCleanliness;
-  final int totalCitizens;
-  final int reportsThisMonth;
-  final int pollParticipationRate;
-  final List<RecentActivity> recentActivities;
-
   DashboardStats({
     required this.pendingReports,
     required this.activeSurveys,
@@ -59,13 +47,27 @@ class DashboardStats {
       eventsThisWeek: json['events_this_week'] as int,
       unresolvedReportsRoads: json['unresolved_reports_roads'] as int,
       unresolvedReportsLighting: json['unresolved_reports_lighting'] as int,
-      unresolvedReportsCleanliness: json['unresolved_reports_cleanliness'] as int,
+      unresolvedReportsCleanliness:
+          json['unresolved_reports_cleanliness'] as int,
       totalCitizens: json['total_citizens'] as int,
       reportsThisMonth: json['reports_this_month'] as int,
       pollParticipationRate: json['poll_participation_rate'] as int,
-      recentActivities: (json['recent_activities'] as List<dynamic>? ?? const <dynamic>[])
-          .map((item) => RecentActivity.fromJson(item as Map<String, dynamic>))
-          .toList(),
+      recentActivities:
+          (json['recent_activities'] as List<dynamic>? ?? const <dynamic>[])
+              .map(
+                (item) => RecentActivity.fromJson(item as Map<String, dynamic>),
+              )
+              .toList(),
     );
   }
+  final int pendingReports;
+  final int activeSurveys;
+  final int eventsThisWeek;
+  final int unresolvedReportsRoads;
+  final int unresolvedReportsLighting;
+  final int unresolvedReportsCleanliness;
+  final int totalCitizens;
+  final int reportsThisMonth;
+  final int pollParticipationRate;
+  final List<RecentActivity> recentActivities;
 }

@@ -57,7 +57,6 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
     return StyledDialog(
       title: UserTexts.addUser,
       icon: Icons.person_add_alt_1,
-      maxWidth: 500,
       actions: [
         StyledDialog.cancelButton(
           label: AppTextsGeneral.cancel,
@@ -66,7 +65,7 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
         StyledDialog.primaryButton(
           label: AppTextsGeneral.create,
           icon: _isSubmitting ? null : Icons.send_outlined,
-          onPressed: _isSubmitting ? null : () => _onSubmit(),
+          onPressed: _isSubmitting ? null : _onSubmit,
         ),
       ],
       body: Form(
@@ -172,20 +171,16 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
             const SizedBox(height: 16),
             _buildLabel('${BulkUserCreationTexts.roleLabel} *'),
             DropdownButtonFormField<UserRole>(
-              value: _selectedRole,
+              initialValue: _selectedRole,
               isExpanded: true,
               menuMaxHeight: 300,
               borderRadius: BorderRadius.circular(12),
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
               items: UserRole.values
                   .where((role) => role != UserRole.globalAdmin)
                   .map(
-                    (role) => DropdownMenuItem(
-                      value: role,
-                      child: Text(role.label),
-                    ),
+                    (role) =>
+                        DropdownMenuItem(value: role, child: Text(role.label)),
                   )
                   .toList(),
               onChanged: (value) {
@@ -223,9 +218,9 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.secondaryText,
-              fontWeight: FontWeight.w600,
-            ),
+          color: AppColors.secondaryText,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -384,8 +379,9 @@ class _CredentialsDialogState extends State<_CredentialsDialog> {
       'email': widget.email,
       'password': widget.password,
     });
-    final encodedShareRef =
-        base64Url.encode(utf8.encode(payload)).replaceAll('=', '');
+    final encodedShareRef = base64Url
+        .encode(utf8.encode(payload))
+        .replaceAll('=', '');
 
     final routeUri = Uri(
       path: AppRoutes.credentialsShare,
@@ -398,7 +394,7 @@ class _CredentialsDialogState extends State<_CredentialsDialog> {
     final usesHashRouting = currentUri.fragment.startsWith('/');
 
     return usesHashRouting
-        ? '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#${routeUri.toString()}'
+        ? '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#${routeUri}'
         : currentUri.resolveUri(routeUri).toString();
   }
 
@@ -559,9 +555,7 @@ class _NeighborhoodAutocompleteFieldState
           validator: (_) => widget.validator?.call(_selectedId),
           decoration: InputDecoration(
             hintText: UserTexts.selectNeighborhood,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 12,
@@ -647,9 +641,9 @@ class _RequiredFieldsHint extends StatelessWidget {
         Text(
           AppTextsGeneral.requiredFieldsHint,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.secondaryText,
-                fontStyle: FontStyle.italic,
-              ),
+            color: AppColors.secondaryText,
+            fontStyle: FontStyle.italic,
+          ),
         ),
       ],
     );

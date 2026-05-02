@@ -62,9 +62,24 @@ class MyAccountSkeleton extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Container(height: 16, width: double.infinity, color: AppColors.textGrey.withValues(alpha: 0.18), margin: const EdgeInsets.only(bottom: 12)),
-                    Container(height: 16, width: double.infinity, color: AppColors.textGrey.withValues(alpha: 0.18), margin: const EdgeInsets.only(bottom: 12)),
-                    Container(height: 16, width: double.infinity, color: AppColors.textGrey.withValues(alpha: 0.18), margin: const EdgeInsets.only(bottom: 12)),
+                    Container(
+                      height: 16,
+                      width: double.infinity,
+                      color: AppColors.textGrey.withValues(alpha: 0.18),
+                      margin: const EdgeInsets.only(bottom: 12),
+                    ),
+                    Container(
+                      height: 16,
+                      width: double.infinity,
+                      color: AppColors.textGrey.withValues(alpha: 0.18),
+                      margin: const EdgeInsets.only(bottom: 12),
+                    ),
+                    Container(
+                      height: 16,
+                      width: double.infinity,
+                      color: AppColors.textGrey.withValues(alpha: 0.18),
+                      margin: const EdgeInsets.only(bottom: 12),
+                    ),
                   ],
                 ),
               ),
@@ -97,9 +112,13 @@ class MyAccountSkeleton extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Container(height: 16, width: double.infinity, color: AppColors.textGrey.withValues(alpha: 0.18), margin: const EdgeInsets.only(bottom: 12)),
+                    Container(
+                      height: 16,
+                      width: double.infinity,
+                      color: AppColors.textGrey.withValues(alpha: 0.18),
+                      margin: const EdgeInsets.only(bottom: 12),
+                    ),
                     Align(
-                      alignment: Alignment.center,
                       child: Container(
                         height: 36,
                         width: 160,
@@ -113,8 +132,17 @@ class MyAccountSkeleton extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(height: 36, width: 100, color: AppColors.primary.withValues(alpha: 0.12), margin: const EdgeInsets.only(right: 16)),
-                  Container(height: 36, width: 120, color: AppColors.primary.withValues(alpha: 0.12)),
+                  Container(
+                    height: 36,
+                    width: 100,
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    margin: const EdgeInsets.only(right: 16),
+                  ),
+                  Container(
+                    height: 36,
+                    width: 120,
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                  ),
                 ],
               ),
               Padding(
@@ -122,8 +150,17 @@ class MyAccountSkeleton extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(width: 16, height: 16, color: AppColors.primary.withValues(alpha: 0.12), margin: const EdgeInsets.only(right: 8)),
-                    Container(height: 14, width: 120, color: AppColors.textGrey.withValues(alpha: 0.18)),
+                    Container(
+                      width: 16,
+                      height: 16,
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      margin: const EdgeInsets.only(right: 8),
+                    ),
+                    Container(
+                      height: 14,
+                      width: 120,
+                      color: AppColors.textGrey.withValues(alpha: 0.18),
+                    ),
                   ],
                 ),
               ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/ui/layouts/secured_layout.dart' show SecuredLayout;
+import 'package:go_router/go_router.dart' show ShellRoute;
 
 /// Base widget for feature pages with a common layout structure.
 ///

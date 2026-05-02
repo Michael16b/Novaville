@@ -1,24 +1,6 @@
 import 'package:equatable/equatable.dart';
 
 class UsefulInfo extends Equatable {
-  final String cityHallName;
-  final String addressLine1;
-  final String? addressLine2;
-  final String postalCode;
-  final String city;
-
-  final String? phone;
-  final String? email;
-  final String? website;
-
-  final String? instagram;
-  final String? facebook;
-  final String? x;
-
-  final Map<String, List<String>> openingHours;
-
-  final String? additionalInfo;
-
   const UsefulInfo({
     required this.cityHallName,
     required this.addressLine1,
@@ -61,6 +43,23 @@ class UsefulInfo extends Equatable {
       additionalInfo: json['additional_info'] as String?,
     );
   }
+  final String cityHallName;
+  final String addressLine1;
+  final String? addressLine2;
+  final String postalCode;
+  final String city;
+
+  final String? phone;
+  final String? email;
+  final String? website;
+
+  final String? instagram;
+  final String? facebook;
+  final String? x;
+
+  final Map<String, List<String>> openingHours;
+
+  final String? additionalInfo;
 
   Map<String, dynamic> toJson() {
     return {

@@ -3,18 +3,16 @@ import 'package:frontend/constants/colors.dart';
 import 'package:go_router/go_router.dart';
 
 class BreadcrumbItem {
+  const BreadcrumbItem({required this.label, this.route});
   final String label;
   final String? route;
-
-  const BreadcrumbItem({required this.label, this.route});
 }
 
 /// A simple breadcrumb widget to display navigation path.
 /// Example: Accueil > Signalements
 class Breadcrumb extends StatelessWidget {
-  final List<BreadcrumbItem> items;
-
   const Breadcrumb({super.key, required this.items});
+  final List<BreadcrumbItem> items;
 
   @override
   Widget build(BuildContext context) {
@@ -69,11 +67,7 @@ class Breadcrumb extends StatelessWidget {
     if (isLast) {
       return ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
-        child: Text(
-          item.label,
-          softWrap: true,
-          style: textStyle,
-        ),
+        child: Text(item.label, softWrap: true, style: textStyle),
       );
     }
 
@@ -81,11 +75,7 @@ class Breadcrumb extends StatelessWidget {
       onTap: item.route != null ? () => context.go(item.route!) : null,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
-        child: Text(
-          item.label,
-          softWrap: true,
-          style: textStyle,
-        ),
+        child: Text(item.label, softWrap: true, style: textStyle),
       ),
     );
   }

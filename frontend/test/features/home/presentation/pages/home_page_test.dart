@@ -36,10 +36,13 @@ class FakeDashboardRepository implements DashboardRepository {
 }
 
 class MockAuthBloc extends Mock implements AuthBloc {}
+
 class MockReportsBloc extends Mock implements ReportsBloc {}
+
 class MockAgendaBloc extends Mock implements AgendaBloc {}
 
 class FakeReportsState extends Fake implements ReportsState {}
+
 class FakeAgendaState extends Fake implements AgendaState {}
 
 void main() {
@@ -60,9 +63,7 @@ void main() {
       mockReportsBloc = MockReportsBloc();
       mockAgendaBloc = MockAgendaBloc();
 
-      when(
-        () => mockAuthBloc.state,
-      ).thenReturn(
+      when(() => mockAuthBloc.state).thenReturn(
         const AuthState.authenticated(
           user: User(
             id: 1,
@@ -70,14 +71,15 @@ void main() {
             email: 'citizen@test.com',
             firstName: 'Test',
             lastName: 'Citizen',
-            role: null,
           ),
         ),
       );
       when(() => mockAuthBloc.stream).thenAnswer((_) => const Stream.empty());
 
       when(() => mockReportsBloc.state).thenReturn(FakeReportsState());
-      when(() => mockReportsBloc.stream).thenAnswer((_) => const Stream.empty());
+      when(
+        () => mockReportsBloc.stream,
+      ).thenAnswer((_) => const Stream.empty());
 
       when(() => mockAgendaBloc.state).thenReturn(FakeAgendaState());
       when(() => mockAgendaBloc.stream).thenAnswer((_) => const Stream.empty());
@@ -115,9 +117,11 @@ void main() {
 
     testWidgets('renders title and subtitle', (WidgetTester tester) async {
       setLargeScreen(tester);
-      await tester.pumpWidget(createTestableWidget(
-        child: HomePage(dashboardRepository: fakeRepository),
-      ));
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: HomePage(dashboardRepository: fakeRepository),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text(AppTextsHome.homeTitle), findsOneWidget);
@@ -126,13 +130,15 @@ void main() {
 
     testWidgets('title has correct styling', (WidgetTester tester) async {
       setLargeScreen(tester);
-      await tester.pumpWidget(createTestableWidget(
-        child: HomePage(dashboardRepository: fakeRepository),
-      ));
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: HomePage(dashboardRepository: fakeRepository),
+        ),
+      );
       await tester.pumpAndSettle();
 
       final titleFinder = find.text(AppTextsHome.homeTitle);
-      final Text titleWidget = tester.widget(titleFinder);
+      final titleWidget = tester.widget(titleFinder);
       expect(titleWidget.style?.fontSize, 32);
       expect(titleWidget.style?.fontWeight, FontWeight.bold);
       expect(titleWidget.style?.color, AppColors.textDark);
@@ -140,46 +146,93 @@ void main() {
 
     testWidgets('subtitle has correct styling', (WidgetTester tester) async {
       setLargeScreen(tester);
-      await tester.pumpWidget(createTestableWidget(
-        child: HomePage(dashboardRepository: fakeRepository),
-      ));
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: HomePage(dashboardRepository: fakeRepository),
+        ),
+      );
       await tester.pumpAndSettle();
 
       final subtitleFinder = find.text(AppTextsHome.homeSubtitle);
-      final Text subtitleWidget = tester.widget(subtitleFinder);
+      final subtitleWidget = tester.widget(subtitleFinder);
       expect(subtitleWidget.style?.fontSize, 24);
       expect(subtitleWidget.style?.color, AppColors.textGrey);
     });
 
-    testWidgets('renders MenuCards for all features', (WidgetTester tester) async {
+    testWidgets('renders MenuCards for all features', (
+      WidgetTester tester,
+    ) async {
       setLargeScreen(tester);
-      await tester.pumpWidget(createTestableWidget(
-        child: HomePage(dashboardRepository: fakeRepository),
-      ));
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: HomePage(dashboardRepository: fakeRepository),
+        ),
+      );
       await tester.pumpAndSettle();
 
-      final reportsCard = find.widgetWithText(MenuCard, AppTextsHome.reportsTitle);
+      final reportsCard = find.widgetWithText(
+        MenuCard,
+        AppTextsHome.reportsTitle,
+      );
       expect(reportsCard, findsOneWidget);
-      expect(find.descendant(of: reportsCard, matching: find.byIcon(Icons.warning_amber_rounded)), findsOneWidget);
+      expect(
+        find.descendant(
+          of: reportsCard,
+          matching: find.byIcon(Icons.warning_amber_rounded),
+        ),
+        findsOneWidget,
+      );
 
-      final surveysCard = find.widgetWithText(MenuCard, AppTextsHome.surveysTitle);
+      final surveysCard = find.widgetWithText(
+        MenuCard,
+        AppTextsHome.surveysTitle,
+      );
       expect(surveysCard, findsOneWidget);
-      expect(find.descendant(of: surveysCard, matching: find.byIcon(Icons.bar_chart)), findsOneWidget);
+      expect(
+        find.descendant(
+          of: surveysCard,
+          matching: find.byIcon(Icons.bar_chart),
+        ),
+        findsOneWidget,
+      );
 
-      final agendaCard = find.widgetWithText(MenuCard, AppTextsHome.agendaTitle);
+      final agendaCard = find.widgetWithText(
+        MenuCard,
+        AppTextsHome.agendaTitle,
+      );
       expect(agendaCard, findsOneWidget);
-      expect(find.descendant(of: agendaCard, matching: find.byIcon(Icons.calendar_month)), findsOneWidget);
+      expect(
+        find.descendant(
+          of: agendaCard,
+          matching: find.byIcon(Icons.calendar_month),
+        ),
+        findsOneWidget,
+      );
 
       final newsCard = find.widgetWithText(MenuCard, AppTextsHome.newsTitle);
       expect(newsCard, findsOneWidget);
-      expect(find.descendant(of: newsCard, matching: find.byIcon(Icons.article_outlined)), findsOneWidget);
+      expect(
+        find.descendant(
+          of: newsCard,
+          matching: find.byIcon(Icons.article_outlined),
+        ),
+        findsOneWidget,
+      );
 
       final infoCard = find.widgetWithText(MenuCard, AppTextsHome.infoTitle);
       expect(infoCard, findsOneWidget);
-      expect(find.descendant(of: infoCard, matching: find.byIcon(Icons.info_outline)), findsOneWidget);
+      expect(
+        find.descendant(
+          of: infoCard,
+          matching: find.byIcon(Icons.info_outline),
+        ),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('MenuCards are tappable and navigation works', (WidgetTester tester) async {
+    testWidgets('MenuCards are tappable and navigation works', (
+      WidgetTester tester,
+    ) async {
       setLargeScreen(tester);
 
       final router = GoRouter(
@@ -187,11 +240,13 @@ void main() {
         routes: [
           GoRoute(
             path: '/',
-            builder: (context, state) => HomePage(dashboardRepository: fakeRepository),
+            builder: (context, state) =>
+                HomePage(dashboardRepository: fakeRepository),
           ),
           GoRoute(
             path: AppRoutes.reports,
-            builder: (context, state) => const Scaffold(body: Text('Reports Page')),
+            builder: (context, state) =>
+                const Scaffold(body: Text('Reports Page')),
           ),
         ],
       );
@@ -206,7 +261,7 @@ void main() {
                 BlocProvider<ReportsBloc>.value(value: mockReportsBloc),
                 BlocProvider<AgendaBloc>.value(value: mockAgendaBloc),
               ],
-              child: Scaffold(body: child!),
+              child: Scaffold(body: child),
             );
           },
         ),
@@ -223,22 +278,30 @@ void main() {
       expect(find.text('Reports Page'), findsOneWidget);
     });
 
-    testWidgets('HomePage layout uses Row and Column', (WidgetTester tester) async {
+    testWidgets('HomePage layout uses Row and Column', (
+      WidgetTester tester,
+    ) async {
       setLargeScreen(tester);
-      await tester.pumpWidget(createTestableWidget(
-        child: HomePage(dashboardRepository: fakeRepository),
-      ));
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: HomePage(dashboardRepository: fakeRepository),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(Row), findsWidgets);
       expect(find.byType(Column), findsWidgets);
     });
 
-    testWidgets('MenuCard widget count matches expected', (WidgetTester tester) async {
+    testWidgets('MenuCard widget count matches expected', (
+      WidgetTester tester,
+    ) async {
       setLargeScreen(tester);
-      await tester.pumpWidget(createTestableWidget(
-        child: HomePage(dashboardRepository: fakeRepository),
-      ));
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: HomePage(dashboardRepository: fakeRepository),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(MenuCard), findsNWidgets(5));
@@ -257,9 +320,18 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining(AppTextsHome.platformUsagePrefix), findsNothing);
-      expect(find.textContaining(AppTextsHome.reportsMonthSuffix), findsNothing);
-      expect(find.textContaining(AppTextsHome.pollParticipationPrefix), findsNothing);
+      expect(
+        find.textContaining(AppTextsHome.platformUsagePrefix),
+        findsNothing,
+      );
+      expect(
+        find.textContaining(AppTextsHome.reportsMonthSuffix),
+        findsNothing,
+      );
+      expect(
+        find.textContaining(AppTextsHome.pollParticipationPrefix),
+        findsNothing,
+      );
     });
   });
 }

@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Novaville',
-  tagline: 'Documentation technique et API',
+  tagline: 'Documentation technique et guide pour reprise par une équipe de développement',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
@@ -92,10 +92,10 @@ const config = {
             label: 'API',
           },
           {
-            type: 'docSidebar',
-            sidebarId: 'userManualSidebar',
+            type: 'doc',
+            docId: 'dev-onboarding',
             position: 'left',
-            label: 'Manuel Utilisateur',
+            label: "Onboarding Devs",
           },
           {to: '/blog', label: 'Notes de version', position: 'left'},
           {
@@ -120,8 +120,8 @@ const config = {
                 to: '/docs/intro',
               },
               {
-                label: 'Manuel Utilisateur',
-                to: '/docs/user-manual/intro',
+                label: 'Onboarding Devs',
+                to: '/docs/dev-onboarding',
               },
               {
                 label: 'Documentation API',

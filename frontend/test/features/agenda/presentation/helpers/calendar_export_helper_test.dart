@@ -4,7 +4,7 @@ import 'package:frontend/features/agenda/presentation/helpers/calendar_export_he
 import 'package:frontend/features/users/data/models/user.dart';
 
 void main() {
-  const _testUser = User(
+  const testUser = User(
     id: 1,
     username: 'agent',
     firstName: 'Agent',
@@ -13,7 +13,7 @@ void main() {
 
   group('CalendarExportHelper.formatGoogleDate', () {
     test('formats a UTC date correctly', () {
-      final date = DateTime.utc(2026, 3, 7, 14, 0, 0);
+      final date = DateTime.utc(2026, 3, 7, 14, 0);
       expect(CalendarExportHelper.formatGoogleDate(date), '20260307T140000Z');
     });
 
@@ -26,7 +26,8 @@ void main() {
       // Build a local DateTime and verify the formatted output matches .toUtc().
       final local = DateTime(2025, 12, 31, 23, 59, 59);
       final expectedUtc = local.toUtc();
-      final expected = '${expectedUtc.year}'
+      final expected =
+          '${expectedUtc.year}'
           '${expectedUtc.month.toString().padLeft(2, '0')}'
           '${expectedUtc.day.toString().padLeft(2, '0')}'
           'T'
@@ -38,7 +39,7 @@ void main() {
     });
 
     test('always ends with Z', () {
-      final date = DateTime.utc(2026, 6, 21, 10, 30, 0);
+      final date = DateTime.utc(2026, 6, 21, 10, 30);
       expect(CalendarExportHelper.formatGoogleDate(date), endsWith('Z'));
     });
   });
@@ -78,9 +79,9 @@ void main() {
       id: 42,
       title: 'Fête de la musique',
       description: 'Concert en plein air',
-      startDate: DateTime.utc(2026, 6, 21, 18, 0, 0),
-      endDate: DateTime.utc(2026, 6, 21, 22, 0, 0),
-      createdBy: _testUser,
+      startDate: DateTime.utc(2026, 6, 21, 18, 0),
+      endDate: DateTime.utc(2026, 6, 21, 22, 0),
+      createdBy: testUser,
     );
 
     late String ics;

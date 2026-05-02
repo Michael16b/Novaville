@@ -3,30 +3,6 @@ import 'package:frontend/features/users/data/models/user_role.dart';
 
 /// Model representing a user.
 class User extends Equatable {
-  const User({
-    required this.id,
-    required this.username,
-    this.email = '',
-    required this.firstName,
-    required this.lastName,
-    this.address = '',
-    this.approvalStatus = 'APPROVED',
-    this.isActive = true,
-    this.role,
-    this.neighborhoodId,
-  });
-
-  final int id;
-  final String username;
-  final String email;
-  final String firstName;
-  final String lastName;
-  final String address;
-  final String approvalStatus;
-  final bool isActive;
-  final UserRole? role;
-  final int? neighborhoodId;
-
   /// Creates a [User] from a JSON map.
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
@@ -44,6 +20,29 @@ class User extends Equatable {
       neighborhoodId: json['neighborhood'] as int?,
     );
   }
+  const User({
+    required this.id,
+    required this.username,
+    required this.firstName,
+    required this.lastName,
+    this.email = '',
+    this.address = '',
+    this.approvalStatus = 'APPROVED',
+    this.isActive = true,
+    this.role,
+    this.neighborhoodId,
+  });
+
+  final int id;
+  final String username;
+  final String email;
+  final String firstName;
+  final String lastName;
+  final String address;
+  final String approvalStatus;
+  final bool isActive;
+  final UserRole? role;
+  final int? neighborhoodId;
 
   /// Converts this [User] to a JSON map.
   Map<String, dynamic> toJson() {

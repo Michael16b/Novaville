@@ -2,10 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class UsefulInfoApi {
+  UsefulInfoApi({required this.client, required this.baseUrl});
   final http.Client client;
   final String baseUrl;
-
-  UsefulInfoApi({required this.client, required this.baseUrl});
 
   /// GET /useful-info
   Future<Map<String, dynamic>> fetchUsefulInfo() async {

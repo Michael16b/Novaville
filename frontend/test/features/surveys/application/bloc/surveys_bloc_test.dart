@@ -21,9 +21,9 @@ final _survey1 = Survey(
   title: 'Sondage test 1',
   description: 'Description 1',
   address: '1 Rue de la Paix, Novaville',
-  startDate: DateTime(2025, 6, 1),
+  startDate: DateTime(2025, 6),
   endDate: DateTime(2025, 12, 31),
-  createdAt: DateTime(2025, 6, 1),
+  createdAt: DateTime(2025, 6),
   totalVotes: 3,
   options: const [],
   createdBy: _testUser,
@@ -34,9 +34,9 @@ final _survey2 = Survey(
   title: 'Sondage test 2',
   description: 'Description 2',
   address: '2 Avenue de la Liberté, Novaville',
-  startDate: DateTime(2025, 7, 1),
+  startDate: DateTime(2025, 7),
   endDate: DateTime(2025, 12, 31),
-  createdAt: DateTime(2025, 7, 1),
+  createdAt: DateTime(2025, 7),
   totalVotes: 0,
   options: const [],
   createdBy: _testUser,
@@ -73,12 +73,7 @@ class _FakeSurveyRepository implements ISurveyRepository {
     int page = 1,
   }) async {
     if (shouldThrow) throw Exception(errorMessage);
-    return SurveyPage(
-      count: surveys.length,
-      results: surveys,
-      next: null,
-      previous: null,
-    );
+    return SurveyPage(count: surveys.length, results: surveys);
   }
 
   @override
@@ -139,8 +134,11 @@ void main() {
       final expectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loading,
+          ),
           isA<SurveysState>()
               .having((s) => s.status, 'status', SurveysStatus.loaded)
               .having((s) => s.surveys, 'surveys', [_survey1, _survey2])
@@ -166,8 +164,11 @@ void main() {
       final expectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loading,
+          ),
           isA<SurveysState>()
               .having((s) => s.status, 'status', SurveysStatus.failure)
               .having((s) => s.error, 'error', contains('Server error')),
@@ -189,10 +190,16 @@ void main() {
       final loadExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loading,
+          ),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const SurveysLoadRequested(citizenTargetSet: true));
@@ -202,8 +209,11 @@ void main() {
       final filterExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loading,
+          ),
           isA<SurveysState>()
               .having((s) => s.status, 'status', SurveysStatus.loaded)
               .having(
@@ -233,10 +243,16 @@ void main() {
       final loadExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loading,
+          ),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const SurveysLoadRequested(citizenTargetSet: true));
@@ -246,10 +262,16 @@ void main() {
       final pageExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loading,
+          ),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const SurveysPageRequested(page: 2));
@@ -259,48 +281,68 @@ void main() {
 
     // ── Create ────────────────────────────────────────────────────────────
 
-    test('SurveyCreateRequested emits creating, created, then reloads',
-        () async {
-      final repo = _FakeSurveyRepository(surveys: [_survey1]);
-      final bloc = SurveysBloc(repository: repo);
+    test(
+      'SurveyCreateRequested emits creating, created, then reloads',
+      () async {
+        final repo = _FakeSurveyRepository(surveys: [_survey1]);
+        final bloc = SurveysBloc(repository: repo);
 
-      // Initial load
-      final loadExpectation = expectLater(
-        bloc.stream,
-        emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
-        ]),
-      );
-      bloc.add(const SurveysLoadRequested(citizenTargetSet: true));
-      await loadExpectation;
+        // Initial load
+        final loadExpectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.loading,
+            ),
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.loaded,
+            ),
+          ]),
+        );
+        bloc.add(const SurveysLoadRequested(citizenTargetSet: true));
+        await loadExpectation;
 
-      final createExpectation = expectLater(
-        bloc.stream,
-        emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.creating),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.created),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
-        ]),
-      );
-      bloc.add(
-        const SurveyCreateRequested(
-          question: 'Nouveau sondage ?',
-          description: 'Description',
-          address: '3 Rue Test, Novaville',
-          options: ['Oui', 'Non'],
-        ),
-      );
-      await createExpectation;
-      await bloc.close();
-    });
+        final createExpectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.creating,
+            ),
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.created,
+            ),
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.loading,
+            ),
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.loaded,
+            ),
+          ]),
+        );
+        bloc.add(
+          const SurveyCreateRequested(
+            question: 'Nouveau sondage ?',
+            description: 'Description',
+            address: '3 Rue Test, Novaville',
+            options: ['Oui', 'Non'],
+          ),
+        );
+        await createExpectation;
+        await bloc.close();
+      },
+    );
 
     test('SurveyCreateRequested emits failure on error', () async {
       final repo = _FakeSurveyRepository(
@@ -314,10 +356,16 @@ void main() {
       final loadExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loading,
+          ),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const SurveysLoadRequested(citizenTargetSet: true));
@@ -326,8 +374,11 @@ void main() {
       final createExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.creating),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.creating,
+          ),
           isA<SurveysState>()
               .having((s) => s.status, 'status', SurveysStatus.failure)
               .having((s) => s.error, 'error', contains('Create failed')),
@@ -347,47 +398,67 @@ void main() {
 
     // ── Update ────────────────────────────────────────────────────────────
 
-    test('SurveyUpdateRequested emits updating, updated, then reloads',
-        () async {
-      final repo = _FakeSurveyRepository(surveys: [_survey1]);
-      final bloc = SurveysBloc(repository: repo);
+    test(
+      'SurveyUpdateRequested emits updating, updated, then reloads',
+      () async {
+        final repo = _FakeSurveyRepository(surveys: [_survey1]);
+        final bloc = SurveysBloc(repository: repo);
 
-      final loadExpectation = expectLater(
-        bloc.stream,
-        emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
-        ]),
-      );
-      bloc.add(const SurveysLoadRequested(citizenTargetSet: true));
-      await loadExpectation;
+        final loadExpectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.loading,
+            ),
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.loaded,
+            ),
+          ]),
+        );
+        bloc.add(const SurveysLoadRequested(citizenTargetSet: true));
+        await loadExpectation;
 
-      final updateExpectation = expectLater(
-        bloc.stream,
-        emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.updating),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.updated),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
-        ]),
-      );
-      bloc.add(
-        const SurveyUpdateRequested(
-          surveyId: 1,
-          question: 'Question modifiée ?',
-          description: 'Nouvelle description',
-          address: '1 Rue de la Paix, Novaville',
-        ),
-      );
-      await updateExpectation;
-      await bloc.close();
-    });
+        final updateExpectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.updating,
+            ),
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.updated,
+            ),
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.loading,
+            ),
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.loaded,
+            ),
+          ]),
+        );
+        bloc.add(
+          const SurveyUpdateRequested(
+            surveyId: 1,
+            question: 'Question modifiée ?',
+            description: 'Nouvelle description',
+            address: '1 Rue de la Paix, Novaville',
+          ),
+        );
+        await updateExpectation;
+        await bloc.close();
+      },
+    );
 
     test('SurveyUpdateRequested emits failure on error', () async {
       final repo = _FakeSurveyRepository(
@@ -400,10 +471,16 @@ void main() {
       final loadExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loading,
+          ),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const SurveysLoadRequested(citizenTargetSet: true));
@@ -412,8 +489,11 @@ void main() {
       final updateExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.updating),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.updating,
+          ),
           isA<SurveysState>()
               .having((s) => s.status, 'status', SurveysStatus.failure)
               .having((s) => s.error, 'error', contains('Update failed')),
@@ -433,41 +513,58 @@ void main() {
 
     // ── Delete ────────────────────────────────────────────────────────────
 
-    test('SurveyDeleteRequested emits deleting, deleted, then reloads',
-        () async {
-      final repo = _FakeSurveyRepository(surveys: [_survey1, _survey2]);
-      final bloc = SurveysBloc(repository: repo);
+    test(
+      'SurveyDeleteRequested emits deleting, deleted, then reloads',
+      () async {
+        final repo = _FakeSurveyRepository(surveys: [_survey1, _survey2]);
+        final bloc = SurveysBloc(repository: repo);
 
-      final loadExpectation = expectLater(
-        bloc.stream,
-        emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded)
-              .having((s) => s.surveys.length, 'count', 2),
-        ]),
-      );
-      bloc.add(const SurveysLoadRequested(citizenTargetSet: true));
-      await loadExpectation;
+        final loadExpectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.loading,
+            ),
+            isA<SurveysState>()
+                .having((s) => s.status, 'status', SurveysStatus.loaded)
+                .having((s) => s.surveys.length, 'count', 2),
+          ]),
+        );
+        bloc.add(const SurveysLoadRequested(citizenTargetSet: true));
+        await loadExpectation;
 
-      final deleteExpectation = expectLater(
-        bloc.stream,
-        emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.deleting),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.deleted),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
-        ]),
-      );
-      bloc.add(const SurveyDeleteRequested(surveyId: 1));
-      await deleteExpectation;
-      await bloc.close();
-    });
+        final deleteExpectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.deleting,
+            ),
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.deleted,
+            ),
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.loading,
+            ),
+            isA<SurveysState>().having(
+              (s) => s.status,
+              'status',
+              SurveysStatus.loaded,
+            ),
+          ]),
+        );
+        bloc.add(const SurveyDeleteRequested(surveyId: 1));
+        await deleteExpectation;
+        await bloc.close();
+      },
+    );
 
     test('SurveyDeleteRequested emits failure on error', () async {
       final repo = _FakeSurveyRepository(
@@ -480,10 +577,16 @@ void main() {
       final loadExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loading,
+          ),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const SurveysLoadRequested(citizenTargetSet: true));
@@ -492,8 +595,11 @@ void main() {
       final deleteExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.deleting),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.deleting,
+          ),
           isA<SurveysState>()
               .having((s) => s.status, 'status', SurveysStatus.failure)
               .having((s) => s.error, 'error', contains('Delete failed')),
@@ -513,10 +619,16 @@ void main() {
       final loadExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loading,
+          ),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const SurveysLoadRequested(citizenTargetSet: true));
@@ -525,14 +637,26 @@ void main() {
       final voteExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.voting),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.voted),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.voting,
+          ),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.voted,
+          ),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loading,
+          ),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const SurveyVoteRequested(surveyId: 1, optionId: 1));
@@ -551,10 +675,16 @@ void main() {
       final loadExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loading),
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.loaded),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loading,
+          ),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const SurveysLoadRequested(citizenTargetSet: true));
@@ -563,8 +693,11 @@ void main() {
       final voteExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<SurveysState>()
-              .having((s) => s.status, 'status', SurveysStatus.voting),
+          isA<SurveysState>().having(
+            (s) => s.status,
+            'status',
+            SurveysStatus.voting,
+          ),
           isA<SurveysState>()
               .having((s) => s.status, 'status', SurveysStatus.failure)
               .having((s) => s.error, 'error', contains('Vote failed')),

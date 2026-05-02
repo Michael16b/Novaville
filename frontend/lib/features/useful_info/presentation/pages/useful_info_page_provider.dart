@@ -5,13 +5,10 @@ import 'package:frontend/features/useful_info/application/bloc/useful_info_bloc.
 import 'package:frontend/features/useful_info/application/bloc/useful_info_event.dart';
 import 'package:frontend/features/useful_info/data/useful_info_repository_factory.dart';
 
-import 'useful_info_page.dart';
+import 'package:frontend/features/useful_info/presentation/pages/useful_info_page.dart';
 
 class UsefulInfoPageProvider extends StatelessWidget {
-  const UsefulInfoPageProvider({
-    this.startInEditMode = false,
-    super.key,
-  });
+  const UsefulInfoPageProvider({this.startInEditMode = false, super.key});
 
   final bool startInEditMode;
 

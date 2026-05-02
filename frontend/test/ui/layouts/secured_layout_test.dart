@@ -12,7 +12,10 @@ import 'package:go_router/go_router.dart';
 
 class _MockAuthRepository implements IAuthRepository {
   @override
-  Future<User> login({required String username, required String password}) async => User(
+  Future<User> login({
+    required String username,
+    required String password,
+  }) async => User(
     id: 1,
     username: username,
     email: 'test@example.com',
@@ -25,7 +28,7 @@ class _MockAuthRepository implements IAuthRepository {
   Future<void> logout() async {}
 
   @override
-  Future<User?> hasValidSession() async => User(
+  Future<User?> hasValidSession() async => const User(
     id: 1,
     username: 'testuser',
     email: 'test@example.com',
@@ -89,151 +92,181 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('Given a secured layout when it is rendered then it displays the child widget', (WidgetTester tester) async {
-      const testText = 'Test Child Content';
+    testWidgets(
+      'Given a secured layout when it is rendered then it displays the child widget',
+      (WidgetTester tester) async {
+        const testText = 'Test Child Content';
 
-      // Given / When
-      await createWidgetUnderTest(
-        tester,
-        child: const Center(child: Text(testText)),
-      );
+        // Given / When
+        await createWidgetUnderTest(
+          tester,
+          child: const Center(child: Text(testText)),
+        );
 
-      // Then
-      expect(find.text(testText), findsOneWidget);
-    });
+        // Then
+        expect(find.text(testText), findsOneWidget);
+      },
+    );
 
-    testWidgets('Given a secured layout when it is rendered then it contains a Scaffold root', (WidgetTester tester) async {
-      // Given / When
-      await createWidgetUnderTest(tester);
+    testWidgets(
+      'Given a secured layout when it is rendered then it contains a Scaffold root',
+      (WidgetTester tester) async {
+        // Given / When
+        await createWidgetUnderTest(tester);
 
-      // Then
-      final scaffoldFinder = find.byType(Scaffold);
-      expect(scaffoldFinder, findsAtLeastNWidgets(1));
-    });
+        // Then
+        final scaffoldFinder = find.byType(Scaffold);
+        expect(scaffoldFinder, findsAtLeastNWidgets(1));
+      },
+    );
 
-    testWidgets('Given a secured layout when it is rendered then the Scaffold uses the page background color', (WidgetTester tester) async {
-      // Given / When
-      await createWidgetUnderTest(tester);
+    testWidgets(
+      'Given a secured layout when it is rendered then the Scaffold uses the page background color',
+      (WidgetTester tester) async {
+        // Given / When
+        await createWidgetUnderTest(tester);
 
-      // Then
-      final scaffold = tester.widget<Scaffold>(
-        find.byType(Scaffold).first,
-      );
+        // Then
+        final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
 
-      expect(scaffold.backgroundColor, AppColors.page);
-    });
+        expect(scaffold.backgroundColor, AppColors.page);
+      },
+    );
 
-    testWidgets('Given a secured layout when it is rendered then it shows the app banner in the app bar', (WidgetTester tester) async {
-      // Given / When
-      await createWidgetUnderTest(tester);
+    testWidgets(
+      'Given a secured layout when it is rendered then it shows the app banner in the app bar',
+      (WidgetTester tester) async {
+        // Given / When
+        await createWidgetUnderTest(tester);
 
-      // Then
-      expect(find.byType(AppBanner), findsOneWidget);
-    });
+        // Then
+        expect(find.byType(AppBanner), findsOneWidget);
+      },
+    );
 
-    testWidgets('Given a secured layout when it is rendered then the app bar uses the expected preferred size', (WidgetTester tester) async {
-      // Given / When
-      await createWidgetUnderTest(tester);
+    testWidgets(
+      'Given a secured layout when it is rendered then the app bar uses the expected preferred size',
+      (WidgetTester tester) async {
+        // Given / When
+        await createWidgetUnderTest(tester);
 
-      // Then
-      final preferredSizeFinder = find.byWidgetPredicate(
-        (widget) =>
-            widget is PreferredSize &&
-            widget.preferredSize == const Size.fromHeight(110),
-      );
+        // Then
+        final preferredSizeFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is PreferredSize &&
+              widget.preferredSize == const Size.fromHeight(110),
+        );
 
-      expect(preferredSizeFinder, findsOneWidget);
-    });
+        expect(preferredSizeFinder, findsOneWidget);
+      },
+    );
 
-    testWidgets('Given a secured layout when it is rendered then the app bar material wrapper has elevation', (WidgetTester tester) async {
-      // Given / When
-      await createWidgetUnderTest(tester);
+    testWidgets(
+      'Given a secured layout when it is rendered then the app bar material wrapper has elevation',
+      (WidgetTester tester) async {
+        // Given / When
+        await createWidgetUnderTest(tester);
 
-      // Then
-      final materialFinder = find.byWidgetPredicate(
-        (widget) =>
-            widget is Material &&
-            widget.elevation == 6 &&
-            widget.color == AppColors.page,
-      );
+        // Then
+        final materialFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Material &&
+              widget.elevation == 6 &&
+              widget.color == AppColors.page,
+        );
 
-      expect(materialFinder, findsOneWidget);
-    });
+        expect(materialFinder, findsOneWidget);
+      },
+    );
 
-    testWidgets('Given a secured layout when it is rendered then the child is placed in the body', (WidgetTester tester) async {
-      const childKey = Key('test-child');
+    testWidgets(
+      'Given a secured layout when it is rendered then the child is placed in the body',
+      (WidgetTester tester) async {
+        const childKey = Key('test-child');
 
-      // Given / When
-      await createWidgetUnderTest(
-        tester,
-        child: const SizedBox(key: childKey),
-      );
+        // Given / When
+        await createWidgetUnderTest(
+          tester,
+          child: const SizedBox(key: childKey),
+        );
 
-      // Then
-      expect(find.byKey(childKey), findsOneWidget);
-    });
+        // Then
+        expect(find.byKey(childKey), findsOneWidget);
+      },
+    );
 
-    testWidgets('Given a secured layout when it is rendered then its layout structure is correct', (WidgetTester tester) async {
-      // Given / When
-      await createWidgetUnderTest(tester);
+    testWidgets(
+      'Given a secured layout when it is rendered then its layout structure is correct',
+      (WidgetTester tester) async {
+        // Given / When
+        await createWidgetUnderTest(tester);
 
-      // Then
-      expect(find.byType(Scaffold), findsAtLeastNWidgets(1));
+        // Then
+        expect(find.byType(Scaffold), findsAtLeastNWidgets(1));
 
-      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
-      expect(scaffold.appBar, isNotNull);
+        final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
+        expect(scaffold.appBar, isNotNull);
 
-      expect(find.text('Test Child'), findsOneWidget);
-    });
+        expect(find.text('Test Child'), findsOneWidget);
+      },
+    );
 
-    testWidgets('Given a secured layout when it receives a list view child then it renders that child content', (WidgetTester tester) async {
-      // Given / When
-      await createWidgetUnderTest(
-        tester,
-        child: ListView(
-          children: const [
-            ListTile(title: Text('Item 1')),
-            ListTile(title: Text('Item 2')),
-          ],
-        ),
-      );
+    testWidgets(
+      'Given a secured layout when it receives a list view child then it renders that child content',
+      (WidgetTester tester) async {
+        // Given / When
+        await createWidgetUnderTest(
+          tester,
+          child: ListView(
+            children: const [
+              ListTile(title: Text('Item 1')),
+              ListTile(title: Text('Item 2')),
+            ],
+          ),
+        );
 
-      // Then
-      expect(find.text('Item 1'), findsOneWidget);
-      expect(find.text('Item 2'), findsOneWidget);
-    });
+        // Then
+        expect(find.text('Item 1'), findsOneWidget);
+        expect(find.text('Item 2'), findsOneWidget);
+      },
+    );
 
-    testWidgets('Given a secured layout when it is rendered then the banner material uses the expected shadow color', (WidgetTester tester) async {
-      // Given / When
-      await createWidgetUnderTest(tester);
+    testWidgets(
+      'Given a secured layout when it is rendered then the banner material uses the expected shadow color',
+      (WidgetTester tester) async {
+        // Given / When
+        await createWidgetUnderTest(tester);
 
-      // Then
-      final materialFinder = find.byWidgetPredicate(
-        (widget) =>
-            widget is Material &&
-            widget.shadowColor == Colors.black54,
-      );
+        // Then
+        final materialFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Material && widget.shadowColor == Colors.black54,
+        );
 
-      expect(materialFinder, findsOneWidget);
-    });
+        expect(materialFinder, findsOneWidget);
+      },
+    );
 
-    testWidgets('Given a secured layout when a stateful child updates then the child state is preserved', (WidgetTester tester) async {
-      final key = GlobalKey<_TestStatefulWidgetState>();
+    testWidgets(
+      'Given a secured layout when a stateful child updates then the child state is preserved',
+      (WidgetTester tester) async {
+        final key = GlobalKey<_TestStatefulWidgetState>();
 
-      // Given / When
-      await createWidgetUnderTest(
-        tester,
-        child: _TestStatefulWidget(key: key),
-      );
+        // Given / When
+        await createWidgetUnderTest(
+          tester,
+          child: _TestStatefulWidget(key: key),
+        );
 
-      // Then
-      expect(find.text('Counter: 0'), findsOneWidget);
+        // Then
+        expect(find.text('Counter: 0'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Increment'));
-      await tester.pump();
+        await tester.tap(find.widgetWithText(ElevatedButton, 'Increment'));
+        await tester.pump();
 
-      expect(find.text('Counter: 1'), findsOneWidget);
-    });
+        expect(find.text('Counter: 1'), findsOneWidget);
+      },
+    );
   });
 }
 

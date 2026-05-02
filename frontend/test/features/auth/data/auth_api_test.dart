@@ -40,24 +40,27 @@ void main() {
       expect(result['user']['username'], 'admin');
     });
 
-    test('login throws AuthFailure with invalidCredentials message on 401', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response('{"detail":"Invalid credentials"}', 401);
-      });
+    test(
+      'login throws AuthFailure with invalidCredentials message on 401',
+      () async {
+        final mockClient = MockClient((request) async {
+          return http.Response('{"detail":"Invalid credentials"}', 401);
+        });
 
-      final authApi = AuthApi(baseUrl: baseUrl, client: mockClient);
+        final authApi = AuthApi(baseUrl: baseUrl, client: mockClient);
 
-      expect(
-        () => authApi.login(username: 'wrong', password: 'wrong'),
-        throwsA(
-          isA<AuthFailure>().having(
-            (e) => e.message,
-            'message',
-            AppTextsAuth.invalidCredentials,
+        expect(
+          () => authApi.login(username: 'wrong', password: 'wrong'),
+          throwsA(
+            isA<AuthFailure>().having(
+              (e) => e.message,
+              'message',
+              AppTextsAuth.invalidCredentials,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test('login maps pending approval code to a localized message', () async {
       final mockClient = MockClient((request) async {
@@ -119,7 +122,7 @@ void main() {
       },
     );
 
-    test("login throws AuthFailure on 500 server error", () async {
+    test('login throws AuthFailure on 500 server error', () async {
       final mockClient = MockClient((request) async {
         return http.Response('{"detail":"Internal server error"}', 500);
       });
@@ -180,7 +183,7 @@ void main() {
       expect(result['access'], 'new-access-token');
     });
 
-    test("refresh throws AuthFailure on error", () async {
+    test('refresh throws AuthFailure on error', () async {
       final mockClient = MockClient((request) async {
         return http.Response('{"detail":"Token expired"}', 401);
       });
@@ -199,7 +202,7 @@ void main() {
       );
     });
 
-    test("login extracts the error message from a list field", () async {
+    test('login extracts the error message from a list field', () async {
       final mockClient = MockClient((request) async {
         return http.Response('{"password":["This field is required"]}', 400);
       });

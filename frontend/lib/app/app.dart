@@ -41,13 +41,11 @@ class _AppState extends State<App> {
       );
     }
     return MaterialApp.router(
-      routerConfig: _router!,
+      routerConfig: _router,
       title: AppTextsGeneral.appName,
       theme: AppTheme.lightTheme,
       locale: const Locale('fr', 'FR'),
-      supportedLocales: const [
-        Locale('fr', 'FR'),
-      ],
+      supportedLocales: const [Locale('fr', 'FR')],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

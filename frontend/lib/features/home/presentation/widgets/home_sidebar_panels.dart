@@ -6,7 +6,7 @@ import 'package:frontend/ui/assets.dart';
 
 // --- WIDGET : RECENT ACTIVITY ---
 class RecentActivityPanel extends StatelessWidget {
-  const RecentActivityPanel({super.key, required this.statsFuture});
+  const RecentActivityPanel({required this.statsFuture, super.key});
 
   final Future<DashboardStats> statsFuture;
 
@@ -21,13 +21,20 @@ class RecentActivityPanel extends StatelessWidget {
         if (snapshot.hasError) {
           return const Center(child: Icon(Icons.error_outline));
         }
-        final activities = snapshot.data?.recentActivities ?? const <RecentActivity>[];
+        final activities =
+            snapshot.data?.recentActivities ?? const <RecentActivity>[];
 
         return Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,7 +43,9 @@ class RecentActivityPanel extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withOpacity(0.08),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -45,8 +54,15 @@ class RecentActivityPanel extends StatelessWidget {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.18), borderRadius: BorderRadius.circular(12)),
-                            child: const Icon(Icons.bar_chart, color: AppColors.primary, size: 20),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.18),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.bar_chart,
+                              color: AppColors.primary,
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           const Expanded(
@@ -54,7 +70,11 @@ class RecentActivityPanel extends StatelessWidget {
                               AppTextsHome.recentActivityTitle,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textDark,
+                              ),
                             ),
                           ),
                         ],
@@ -103,14 +123,23 @@ class RecentActivityPanel extends StatelessWidget {
     );
   }
 
-  Widget _activityItem(IconData icon, Color color, String title, String subtitle, String time) {
+  Widget _activityItem(
+    IconData icon,
+    Color color,
+    String title,
+    String subtitle,
+    String time,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 16),
@@ -118,13 +147,29 @@ class RecentActivityPanel extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 14)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textDark,
+                    fontSize: 14,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(subtitle, style: const TextStyle(color: AppColors.textGrey, fontSize: 13)),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: AppColors.textGrey,
+                    fontSize: 13,
+                  ),
+                ),
               ],
             ),
           ),
-          Text(time, style: const TextStyle(color: AppColors.textGrey, fontSize: 12)),
+          Text(
+            time,
+            style: const TextStyle(color: AppColors.textGrey, fontSize: 12),
+          ),
         ],
       ),
     );
@@ -181,9 +226,8 @@ class RecentActivityPanel extends StatelessWidget {
 
 // --- WIDGET : USEFUL INFO ---
 class UsefulInfoPanel extends StatelessWidget {
-  final Future<DashboardStats> statsFuture;
-
   const UsefulInfoPanel({super.key, required this.statsFuture});
+  final Future<DashboardStats> statsFuture;
 
   @override
   Widget build(BuildContext context) {
@@ -192,14 +236,22 @@ class UsefulInfoPanel extends StatelessWidget {
       builder: (context, snapshot) {
         final stats = snapshot.data;
         final roadsCount = stats?.unresolvedReportsRoads.toString() ?? '-';
-        final cleanlinessCount = stats?.unresolvedReportsCleanliness.toString() ?? '-';
-        final lightingCount = stats?.unresolvedReportsLighting.toString() ?? '-';
+        final cleanlinessCount =
+            stats?.unresolvedReportsCleanliness.toString() ?? '-';
+        final lightingCount =
+            stats?.unresolvedReportsLighting.toString() ?? '-';
 
         return Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,14 +260,23 @@ class UsefulInfoPanel extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withOpacity(0.08),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
                 ),
                 child: Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.18), borderRadius: BorderRadius.circular(12)),
-                      child: const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.info_outline,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     const Expanded(
@@ -223,7 +284,11 @@ class UsefulInfoPanel extends StatelessWidget {
                         AppTextsHome.usefulInfoTitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
+                        ),
                       ),
                     ),
                   ],
@@ -232,7 +297,10 @@ class UsefulInfoPanel extends StatelessWidget {
               Container(
                 height: 160,
                 width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   image: const DecorationImage(
@@ -245,15 +313,30 @@ class UsefulInfoPanel extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    _mapStatItem(Icons.lightbulb_outline, AppColors.info, AppTextsHome.faultyLighting, lightingCount),
+                    _mapStatItem(
+                      Icons.lightbulb_outline,
+                      AppColors.info,
+                      AppTextsHome.faultyLighting,
+                      lightingCount,
+                    ),
                     const SizedBox(height: 12),
-                    _mapStatItem(Icons.delete_outline, AppColors.success, AppTextsHome.overflowingBins, cleanlinessCount),
+                    _mapStatItem(
+                      Icons.delete_outline,
+                      AppColors.success,
+                      AppTextsHome.overflowingBins,
+                      cleanlinessCount,
+                    ),
                     const SizedBox(height: 12),
-                    _mapStatItem(Icons.warning_amber, AppColors.warning, AppTextsHome.roadDamage, roadsCount),
+                    _mapStatItem(
+                      Icons.warning_amber,
+                      AppColors.warning,
+                      AppTextsHome.roadDamage,
+                      roadsCount,
+                    ),
                     const SizedBox(height: 20),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         );
@@ -266,12 +349,24 @@ class UsefulInfoPanel extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: Icon(icon, color: color, size: 18),
         ),
         const SizedBox(width: 12),
-        Expanded(child: Text(label, style: const TextStyle(color: AppColors.textDark))),
-        Text(count, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textDark)),
+        Expanded(
+          child: Text(label, style: const TextStyle(color: AppColors.textDark)),
+        ),
+        Text(
+          count,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: AppColors.textDark,
+          ),
+        ),
       ],
     );
   }

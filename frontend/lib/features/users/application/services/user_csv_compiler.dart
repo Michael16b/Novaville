@@ -1,7 +1,7 @@
 import 'package:csv/csv.dart';
+import 'package:frontend/constants/texts/texts_csv_drop.dart';
 import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
-import 'package:frontend/constants/texts/texts_csv_drop.dart';
 
 class UserCsvCompiler {
   const UserCsvCompiler();
@@ -210,16 +210,10 @@ class UserCsvCompiler {
 
       if (roleRaw.isNotEmpty) {
         if (roleRaw != roleRaw.toLowerCase()) {
-          addError(
-            'role',
-            CsvDropTexts.roleLowercase,
-          );
+          addError('role', CsvDropTexts.roleLowercase);
         }
         if (!_allowedRoles.contains(roleRaw.toLowerCase())) {
-          addError(
-            'role',
-            CsvDropTexts.invalidRoleValue,
-          );
+          addError('role', CsvDropTexts.invalidRoleValue);
         }
       }
 

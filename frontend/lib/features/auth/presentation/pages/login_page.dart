@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/constants/texts/texts_form_labels.dart';
@@ -9,7 +10,6 @@ import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/ui/assets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:frontend/config/app_routes.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

@@ -40,10 +40,10 @@ class _EventFormDialogState extends State<EventFormDialog> {
   @override
   void initState() {
     super.initState();
-    _titleController =
-        TextEditingController(text: widget.event?.title ?? '');
-    _descriptionController =
-        TextEditingController(text: widget.event?.description ?? '');
+    _titleController = TextEditingController(text: widget.event?.title ?? '');
+    _descriptionController = TextEditingController(
+      text: widget.event?.description ?? '',
+    );
     _startDate = widget.event?.startDate;
     _endDate = widget.event?.endDate;
     _selectedTheme = widget.event?.theme;
@@ -58,17 +58,14 @@ class _EventFormDialogState extends State<EventFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final title = _isEditing
-        ? AgendaTexts.editEvent
-        : AgendaTexts.createEvent;
-    final actionLabel =
-        _isEditing ? AppTextsGeneral.save : AppTextsGeneral.create;
+    final title = _isEditing ? AgendaTexts.editEvent : AgendaTexts.createEvent;
+    final actionLabel = _isEditing
+        ? AppTextsGeneral.save
+        : AppTextsGeneral.create;
 
     return StyledDialog(
       title: title,
-      icon: _isEditing
-          ? Icons.edit_outlined
-          : Icons.add_circle_outline,
+      icon: _isEditing ? Icons.edit_outlined : Icons.add_circle_outline,
       closeTooltip: AppTextsGeneral.cancel,
       maxWidth: 520,
       actions: [
@@ -171,8 +168,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
                 }
                 return null;
               },
-              onChanged: (value) =>
-                  setState(() => _selectedTheme = value),
+              onChanged: (value) => setState(() => _selectedTheme = value),
             ),
             const SizedBox(height: 18),
 
@@ -186,8 +182,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
                 }
                 return null;
               },
-              onPicked: (date) =>
-                  setState(() => _startDate = date),
+              onPicked: (date) => setState(() => _startDate = date),
             ),
             const SizedBox(height: 14),
 
@@ -205,8 +200,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
                 }
                 return null;
               },
-              onPicked: (date) =>
-                  setState(() => _endDate = date),
+              onPicked: (date) => setState(() => _endDate = date),
             ),
             const SizedBox(height: 14),
 
@@ -224,9 +218,9 @@ class _EventFormDialogState extends State<EventFormDialog> {
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.secondaryText,
-              fontWeight: FontWeight.w600,
-            ),
+          color: AppColors.secondaryText,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -324,14 +318,14 @@ class _OmniDateTimeFormField extends StatelessWidget {
                     ? Text(
                         displayText,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppColors.primaryText,
-                            ),
+                          color: AppColors.primaryText,
+                        ),
                       )
                     : Text(
                         AgendaTexts.selectDate,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppColors.secondaryText,
-                            ),
+                          color: AppColors.secondaryText,
+                        ),
                       ),
               ),
             ),
@@ -347,9 +341,9 @@ class _OmniDateTimeFormField extends StatelessWidget {
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.secondaryText,
-              fontWeight: FontWeight.w600,
-            ),
+          color: AppColors.secondaryText,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -370,7 +364,6 @@ class _OmniDateTimeFormField extends StatelessWidget {
       is24HourMode: true,
       borderRadius: BorderRadius.circular(12),
       constraints: const BoxConstraints(maxWidth: 350, maxHeight: 650),
-      type: OmniDateTimePickerType.dateAndTime,
     );
 
     if (result != null) {
@@ -411,9 +404,9 @@ class _RequiredFieldsHint extends StatelessWidget {
         Text(
           AppTextsGeneral.requiredFieldsHint,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.secondaryText,
-                fontStyle: FontStyle.italic,
-              ),
+            color: AppColors.secondaryText,
+            fontStyle: FontStyle.italic,
+          ),
         ),
       ],
     );

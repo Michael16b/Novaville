@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/config/app_routes.dart';
@@ -11,8 +12,8 @@ import 'package:frontend/features/home/presentation/pages/home_page.dart';
 import 'package:frontend/features/news/presentation/pages/news_page.dart';
 import 'package:frontend/features/reports/presentation/pages/reports_page.dart';
 import 'package:frontend/features/surveys/presentation/pages/surveys_page.dart';
-import 'package:frontend/features/useful_info/presentation/pages/useful_info_page_provider.dart';
 import 'package:frontend/features/town_hall/presentation/pages/town_hall_page.dart';
+import 'package:frontend/features/useful_info/presentation/pages/useful_info_page_provider.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/presentation/pages/bulk_user_creation_page.dart';
 import 'package:frontend/features/users/presentation/pages/credentials_share_page.dart';
