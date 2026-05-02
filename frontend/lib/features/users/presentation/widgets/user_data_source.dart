@@ -6,6 +6,14 @@ import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 
 class UserDataSource extends DataTableSource {
+  final List<User> _users;
+  final int _rowCount;
+  final int _page;
+  final int _pageSize;
+  final int? currentUserId;
+  final void Function(User) onEdit;
+  final void Function(User) onDelete;
+
   UserDataSource({
     required List<User> users,
     required int rowCount,
@@ -14,17 +22,10 @@ class UserDataSource extends DataTableSource {
     required this.currentUserId,
     required this.onEdit,
     required this.onDelete,
-  }) : _users = users,
-       _rowCount = rowCount,
-       _page = page,
-       _pageSize = pageSize;
-  final List<User> _users;
-  final int _rowCount;
-  final int _page;
-  final int _pageSize;
-  final int? currentUserId;
-  final void Function(User) onEdit;
-  final void Function(User) onDelete;
+  })  : _users = users,
+        _rowCount = rowCount,
+        _page = page,
+        _pageSize = pageSize;
 
   @override
   DataRow? getRow(int index) {
@@ -76,9 +77,8 @@ class UserDataSource extends DataTableSource {
                   size: 18,
                   color: isCurrentUser ? Colors.grey : Colors.red,
                 ),
-                tooltip: isCurrentUser
-                    ? UserTexts.cannotDeleteSelf
-                    : AppTextsGeneral.delete,
+                tooltip:
+                    isCurrentUser ? UserTexts.cannotDeleteSelf : AppTextsGeneral.delete,
                 onPressed: isCurrentUser ? null : () => onDelete(user),
               ),
             ],

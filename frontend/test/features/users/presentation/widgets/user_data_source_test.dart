@@ -55,23 +55,20 @@ void main() {
       expect(buildSource().selectedRowCount, 0);
     });
 
-    test(
-      'getRow returns null when index is before the first row on the page',
-      () {
-        // page=2, pageSize=20: first row on page is at absolute index 20.
-        // Requesting index 0 → localIndex = 0 - 20 = -20 → out of bounds for this page → null.
-        final source = buildSource(users: [user1], rowCount: 21, page: 2);
-        expect(source.getRow(0), isNull);
-      },
-    );
+    test('getRow returns null when index is before the first row on the page', () {
+      // page=2, pageSize=20: first row on page is at absolute index 20.
+      // Requesting index 0 → localIndex = 0 - 20 = -20 → out of bounds for this page → null.
+      final source = buildSource(users: [user1], rowCount: 21, page: 2, pageSize: 20);
+      expect(source.getRow(0), isNull);
+    });
 
     test('getRow returns null when local index exceeds available users', () {
-      final source = buildSource(users: [user1], rowCount: 1);
+      final source = buildSource(users: [user1], rowCount: 1, page: 1, pageSize: 20);
       expect(source.getRow(1), isNull);
     });
 
     test('getRow returns a DataRow for a valid index', () {
-      final source = buildSource(users: [user1, user2], rowCount: 2);
+      final source = buildSource(users: [user1, user2], rowCount: 2, page: 1, pageSize: 20);
       expect(source.getRow(0), isA<DataRow>());
       expect(source.getRow(1), isA<DataRow>());
     });
@@ -80,6 +77,8 @@ void main() {
       final source = buildSource(
         users: [user1],
         rowCount: 1,
+        page: 1,
+        pageSize: 20,
         currentUserId: user1.id,
       );
       final row = source.getRow(0)!;
@@ -92,6 +91,8 @@ void main() {
       final source = buildSource(
         users: [user2],
         rowCount: 1,
+        page: 1,
+        pageSize: 20,
         currentUserId: user1.id, // user1 is current, user2 is not
       );
       final row = source.getRow(0)!;
@@ -105,6 +106,8 @@ void main() {
       final source = buildSource(
         users: [user1, user2],
         rowCount: 2,
+        page: 1,
+        pageSize: 20,
         currentUserId: user1.id, // user1 is current; user2 can be deleted
         onDelete: (u) => deletedUser = u,
       );
@@ -120,6 +123,9 @@ void main() {
       final source = buildSource(
         users: [user1],
         rowCount: 1,
+        page: 1,
+        pageSize: 20,
+        currentUserId: null,
         onEdit: (u) => editedUser = u,
       );
       final row = source.getRow(0)!;
@@ -130,7 +136,7 @@ void main() {
     });
 
     test('getRow returns correct user data in cells', () {
-      final source = buildSource(users: [user1], rowCount: 1);
+      final source = buildSource(users: [user1], rowCount: 1, page: 1, pageSize: 20);
       final row = source.getRow(0)!;
       expect((row.cells[0].child as Text).data, 'Admin User');
       expect((row.cells[1].child as Text).data, 'admin');

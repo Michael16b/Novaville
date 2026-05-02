@@ -87,9 +87,7 @@ class _HomeActionButtonsState extends State<HomeActionButtons> {
         int? themeId;
         if (selectedTheme != null) {
           try {
-            themeId = themes
-                .firstWhere((t) => t.title == selectedTheme.label)
-                .id;
+            themeId = themes.firstWhere((t) => t.title == selectedTheme.label).id;
           } catch (e) {
             themeId = null;
           }
@@ -129,25 +127,22 @@ class _HomeActionButtonsState extends State<HomeActionButtons> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );
 
-    final secondaryButtonStyle =
-        ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          elevation: 1,
-          shadowColor: Colors.black12,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ).copyWith(
-          overlayColor: WidgetStateProperty.resolveWith<Color?>((
-            Set<WidgetState> states,
-          ) {
-            if (states.contains(WidgetState.pressed)) {
-              return AppColors.primary.withOpacity(0.12);
-            }
-            return null;
-          }),
-        );
+    final secondaryButtonStyle = ElevatedButton.styleFrom(
+      backgroundColor: Colors.white,
+      elevation: 1,
+      shadowColor: Colors.black12,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ).copyWith(
+      overlayColor: MaterialStateProperty.resolveWith<Color?>(
+        (Set<MaterialState> states) {
+          if (states.contains(MaterialState.pressed)) {
+            return AppColors.primary.withOpacity(0.12);
+          }
+          return null;
+        },
+      ),
+    );
 
     return Wrap(
       spacing: 16,
@@ -158,37 +153,29 @@ class _HomeActionButtonsState extends State<HomeActionButtons> {
           child: ElevatedButton.icon(
             onPressed: () {},
             icon: const Icon(Icons.add, color: Colors.white),
-            label: const Text(
-              AppTextsHome.newPoll,
-              style: TextStyle(color: Colors.white),
-            ),
+            label: const Text(AppTextsHome.newPoll,
+                style: TextStyle(color: Colors.white)),
             style: primaryButtonStyle,
           ),
         ),
         SizedBox(
           width: useVerticalLayout ? double.infinity : null,
           child: ElevatedButton.icon(
-            onPressed: _isCreatingReport
-                ? null
-                : () => _showCreateReportDialog(context),
+            onPressed: _isCreatingReport ? null : () => _showCreateReportDialog(context),
             icon: _isCreatingReport
                 ? Container(
                     width: 24,
                     height: 24,
-                    padding: const EdgeInsets.all(2),
+                    padding: const EdgeInsets.all(2.0),
                     child: const CircularProgressIndicator(
                       color: AppColors.primary,
                       strokeWidth: 3,
                     ),
                   )
                 : const Icon(Icons.add, color: AppColors.primary),
-            label: const Text(
-              AppTextsHome.newReport,
-              style: TextStyle(
-                color: AppColors.textDark,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            label: const Text(AppTextsHome.newReport,
+                style: TextStyle(
+                    color: AppColors.textDark, fontWeight: FontWeight.bold)),
             style: secondaryButtonStyle,
           ),
         ),
@@ -196,27 +183,21 @@ class _HomeActionButtonsState extends State<HomeActionButtons> {
           SizedBox(
             width: useVerticalLayout ? double.infinity : null,
             child: ElevatedButton.icon(
-              onPressed: _isCreatingEvent
-                  ? null
-                  : () => _showCreateEventDialog(context),
+              onPressed: _isCreatingEvent ? null : () => _showCreateEventDialog(context),
               icon: _isCreatingEvent
                   ? Container(
                       width: 24,
                       height: 24,
-                      padding: const EdgeInsets.all(2),
+                      padding: const EdgeInsets.all(2.0),
                       child: const CircularProgressIndicator(
                         color: AppColors.primary,
                         strokeWidth: 3,
                       ),
                     )
                   : const Icon(Icons.add, color: AppColors.primary),
-              label: const Text(
-                AppTextsHome.addEvent,
-                style: TextStyle(
-                  color: AppColors.textDark,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              label: const Text(AppTextsHome.addEvent,
+                  style: TextStyle(
+                      color: AppColors.textDark, fontWeight: FontWeight.bold)),
               style: secondaryButtonStyle,
             ),
           ),

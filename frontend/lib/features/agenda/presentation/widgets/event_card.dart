@@ -52,8 +52,7 @@ class EventCard extends StatelessWidget {
 
     return Focus(
       child: Semantics(
-        label:
-            '${AgendaTexts.eventDate} ${_formatDate(event.startDate)}, '
+        label: '${AgendaTexts.eventDate} ${_formatDate(event.startDate)}, '
             '${event.title}',
         child: Opacity(
           opacity: isPast ? 0.55 : 1.0,
@@ -97,7 +96,9 @@ class EventCard extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.left,
-                              style: Theme.of(context).textTheme.titleSmall
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
                                   ?.copyWith(
                                     fontWeight: FontWeight.w700,
                                     height: 1.4,
@@ -138,7 +139,7 @@ class EventCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.calendar_today_outlined,
                               size: 12,
                               color: AppColors.secondaryText,
@@ -171,14 +172,18 @@ class EventCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.left,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodyMedium?.copyWith(height: 1.5),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(height: 1.5),
                       ),
                       const SizedBox(height: 10),
                       _InfoRow(
                         icon: Icons.schedule_outlined,
-                        text: _formatDateRange(event.startDate, event.endDate),
+                        text: _formatDateRange(
+                          event.startDate,
+                          event.endDate,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       _InfoRow(
@@ -214,7 +219,9 @@ class EventCard extends StatelessWidget {
                             icon: Icons.edit_outlined,
                             label: AppTextsGeneral.edit,
                             color: AppColors.primary,
-                            onTap: onEdit != null ? () => onEdit!(event) : null,
+                            onTap: onEdit != null
+                                ? () => onEdit!(event)
+                                : null,
                           ),
                         ),
                         const SizedBox(width: 4),
@@ -307,9 +314,9 @@ class _InfoRow extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.primaryText,
-              height: 1.4,
-            ),
+                  color: AppColors.primaryText,
+                  height: 1.4,
+                ),
           ),
         ),
       ],
@@ -366,3 +373,4 @@ class _ActionButton extends StatelessWidget {
     );
   }
 }
+

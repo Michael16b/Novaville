@@ -96,7 +96,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           }
           await _importCsvContent(content, sourceLabel: fileName);
         },
-        shouldAcceptDrop: _isPointInsideCsvDropZone,
+        shouldAcceptDrop: (x, y) => _isPointInsideCsvDropZone(x, y),
         onError: (message) {
           if (!mounted) {
             return;
@@ -552,7 +552,9 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       context: context,
       builder: (dialogContext) {
         return StyledDialog(
-          title: BulkUserCreationTexts.csvCompilationDialogTitle(errors.length),
+          title: BulkUserCreationTexts.csvCompilationDialogTitle(
+            errors.length,
+          ),
           icon: Icons.error_outline,
           accentColor: AppColors.error,
           maxWidth: 720,
@@ -582,7 +584,9 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      for (var index = 0; index < errors.length; index++) ...[
+                      for (var index = 0;
+                          index < errors.length;
+                          index++) ...[
                         Builder(
                           builder: (context) {
                             final error = errors[index];
@@ -590,13 +594,18 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                               dense: true,
                               leading: CircleAvatar(
                                 radius: 14,
-                                backgroundColor: AppColors.error.withValues(
+                                backgroundColor:
+                                    AppColors.error.withValues(
                                   alpha: 0.15,
                                 ),
                                 child: Text(
                                   '${error.line}',
-                                  style: Theme.of(context).textTheme.labelSmall
-                                      ?.copyWith(fontWeight: FontWeight.w700),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                 ),
                               ),
                               title: Text(error.message),
@@ -609,7 +618,8 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                             );
                           },
                         ),
-                        if (index < errors.length - 1) const Divider(height: 1),
+                        if (index < errors.length - 1)
+                          const Divider(height: 1),
                       ],
                     ],
                   ),
@@ -778,7 +788,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
   String _buildPdfFileName(String? suffix) {
     final datePart = _buildPdfDateSuffix();
     final suffixPart = (suffix == null || suffix.isEmpty) ? '' : suffix;
-    return '${BulkUserCreationTexts.pdfFileBaseName}$datePart$suffixPart.pdf';
+    return '${BulkUserCreationTexts.pdfFileBaseName}${datePart}$suffixPart.pdf';
   }
 
   _GridConfig _resolveAutoGridConfig(int itemCount) {
@@ -827,7 +837,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final usesHashRouting = currentUri.fragment.startsWith('/');
 
     if (usesHashRouting) {
-      return '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#${routeUri}';
+      return '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#${routeUri.toString()}';
     }
 
     return currentUri.resolveUri(routeUri).toString();
@@ -1022,14 +1032,14 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final document = pw.Document();
     final primary = PdfColor.fromInt(AppColors.primary.toARGB32());
     final accent = PdfColor.fromInt(AppColors.secondary.toARGB32());
-    const background = PdfColors.white;
+    final background = PdfColors.white;
     final logo = await _loadPdfLogo();
     final fontPack = await _loadPdfFonts();
     final theme = fontPack == null
         ? null
         : pw.ThemeData.withFont(base: fontPack.base, bold: fontPack.bold);
 
-    const horizontalSpacing = 10.0;
+    final horizontalSpacing = 10.0;
     final cardWidth =
         (PdfPageFormat.a4.availableWidth -
             (horizontalSpacing * (safeColumns - 1))) /
@@ -1064,10 +1074,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                 pw.SizedBox(height: 4),
                 pw.Text(
                   BulkUserCreationTexts.groupedPdfSubtitle,
-                  style: const pw.TextStyle(
-                    fontSize: 10,
-                    color: PdfColors.grey700,
-                  ),
+                  style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
                 ),
                 pw.SizedBox(height: 12),
                 pw.Wrap(
@@ -1117,7 +1124,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final document = pw.Document();
     final primary = PdfColor.fromInt(AppColors.primary.toARGB32());
     final accent = PdfColor.fromInt(AppColors.secondary.toARGB32());
-    const background = PdfColors.white;
+    final background = PdfColors.white;
     final logo = await _loadPdfLogo();
     final fontPack = await _loadPdfFonts();
     final theme = fontPack == null
@@ -1157,7 +1164,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final document = pw.Document();
     final primary = PdfColor.fromInt(AppColors.primary.toARGB32());
     final accent = PdfColor.fromInt(AppColors.secondary.toARGB32());
-    const background = PdfColors.white;
+    final background = PdfColors.white;
     final logo = await _loadPdfLogo();
     final fontPack = await _loadPdfFonts();
     final theme = fontPack == null
@@ -1672,6 +1679,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const CircleAvatar(
               backgroundColor: AppColors.highlight,
@@ -1960,9 +1968,9 @@ class _CreatedCredential {
   const _CreatedCredential({
     required this.firstName,
     required this.lastName,
+    this.email,
     required this.username,
     required this.password,
-    this.email,
   });
 
   final String firstName;

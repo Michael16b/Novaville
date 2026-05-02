@@ -29,7 +29,7 @@ class BulkUserCreationTexts {
   static String csvCompilationDialogTitle(int count) =>
       'Compilation CSV échouée ($count)';
   static const csvCompilationDialogMessage =
-      "Le fichier contient des erreurs. Corrigez-les puis relancez l'import.";
+      'Le fichier contient des erreurs. Corrigez-les puis relancez l\'import.';
   static String csvLineAndColumn(int line, String column) =>
       'Ligne $line • Colonne $column';
 
@@ -45,7 +45,7 @@ class BulkUserCreationTexts {
   static const creationErrorsTitle = 'Erreurs de création';
 
   static const backTooltip = 'Retour';
-  static const pageTitle = "Création multiple d'utilisateurs";
+  static const pageTitle = 'Création multiple d\'utilisateurs';
   static const pageSubtitle =
       'Préparez vos utilisateurs en saisie manuelle ou via CSV, puis validez la création finale.';
   static String pendingListCount(int count) =>
@@ -63,7 +63,7 @@ class BulkUserCreationTexts {
   static const roleLabel = 'Rôle';
   static const firstNameLabel = 'Prénom';
   static const lastNameLabel = 'Nom';
-  static const usernameLabel = "Nom d'utilisateur";
+  static const usernameLabel = 'Nom d\'utilisateur';
   static const emailLabel = 'Email';
   static const randomUsernameTooltip = 'Proposer un identifiant aléatoire';
 
@@ -71,7 +71,7 @@ class BulkUserCreationTexts {
   static const or = 'ou';
   static const selectFile = 'Sélectionner un fichier';
   static const importCsvTitle = 'Importer un fichier CSV';
-  static const downloadCsvExample = "TÉLÉCHARGER UN FICHIER D'EXEMPLE";
+  static const downloadCsvExample = 'TÉLÉCHARGER UN FICHIER D\'EXEMPLE';
   static const pendingUsersTitle = 'Utilisateurs en attente';
   static const noPendingUsers = 'Aucun utilisateur en attente.';
   static String editUserTitle(int number) => 'Modification utilisateur $number';
@@ -110,7 +110,7 @@ class BulkUserCreationTexts {
 
   static const pdfBrand = 'Novaville';
   static const pdfEmailLabel = 'Email';
-  static const pdfUsernameLabel = "Nom d'utilisateur";
+  static const pdfUsernameLabel = 'Nom d\'utilisateur';
   static const pdfPasswordLabel = 'Mot de passe';
 
   static const shareTokenPrefix = 'bulk_share_credential_';

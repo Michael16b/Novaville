@@ -3,6 +3,11 @@ import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 
 class UserPage {
+  final int count;
+  final String? next;
+  final String? previous;
+  final List<User> results;
+
   UserPage({
     required this.count,
     this.next,
@@ -20,10 +25,6 @@ class UserPage {
           .toList(),
     );
   }
-  final int count;
-  final String? next;
-  final String? previous;
-  final List<User> results;
 }
 
 /// Repository interface for user operations.
@@ -72,10 +73,10 @@ abstract class IUserRepository {
   /// Creates a new user account.
   Future<User> createUser({
     required String username,
+    String email = '',
     required String firstName,
     required String lastName,
     required String password,
-    String email = '',
     String address = '',
     UserRole role = UserRole.citizen,
     int? neighborhoodId,

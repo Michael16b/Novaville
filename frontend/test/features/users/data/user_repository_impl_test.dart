@@ -49,7 +49,7 @@ void main() {
       );
 
       expect(
-        repo.getCurrentUser,
+        () => repo.getCurrentUser(),
         throwsA(isA<Exception>()),
       );
     });

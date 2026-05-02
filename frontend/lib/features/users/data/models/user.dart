@@ -3,29 +3,12 @@ import 'package:frontend/features/users/data/models/user_role.dart';
 
 /// Model representing a user.
 class User extends Equatable {
-  /// Creates a [User] from a JSON map.
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'] as int,
-      username: json['username'] as String,
-      email: (json['email'] as String?) ?? '',
-      firstName: (json['first_name'] as String?) ?? '',
-      lastName: (json['last_name'] as String?) ?? '',
-      address: (json['address'] as String?) ?? '',
-      approvalStatus: (json['approval_status'] as String?) ?? 'APPROVED',
-      isActive: (json['is_active'] as bool?) ?? true,
-      role: json['role'] != null
-          ? UserRole.fromString(json['role'] as String)
-          : null,
-      neighborhoodId: json['neighborhood'] as int?,
-    );
-  }
   const User({
     required this.id,
     required this.username,
+    this.email = '',
     required this.firstName,
     required this.lastName,
-    this.email = '',
     this.address = '',
     this.approvalStatus = 'APPROVED',
     this.isActive = true,
@@ -43,6 +26,24 @@ class User extends Equatable {
   final bool isActive;
   final UserRole? role;
   final int? neighborhoodId;
+
+  /// Creates a [User] from a JSON map.
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'] as int,
+      username: json['username'] as String,
+      email: (json['email'] as String?) ?? '',
+      firstName: (json['first_name'] as String?) ?? '',
+      lastName: (json['last_name'] as String?) ?? '',
+      address: (json['address'] as String?) ?? '',
+      approvalStatus: (json['approval_status'] as String?) ?? 'APPROVED',
+      isActive: (json['is_active'] as bool?) ?? true,
+      role: json['role'] != null
+          ? UserRole.fromString(json['role'] as String)
+          : null,
+      neighborhoodId: json['neighborhood'] as int?,
+    );
+  }
 
   /// Converts this [User] to a JSON map.
   Map<String, dynamic> toJson() {

@@ -130,10 +130,10 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
                 ),
               ),
               if (_showLoadingOverlay)
-                const Positioned.fill(
+                Positioned.fill(
                   child: ColoredBox(
                     color: AppColors.overlay,
-                    child: Center(
+                    child: const Center(
                       child: CircularProgressIndicator(
                         color: AppColors.primary,
                       ),
@@ -287,6 +287,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
             Wrap(
               spacing: 10,
               runSpacing: 10,
+              crossAxisAlignment: WrapCrossAlignment.start,
               children: [
                 _buildFilterChipGroup<String>(
                   label: ReportTexts.filterByProblemType,
@@ -391,7 +392,10 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
                 padding: EdgeInsets.only(left: 12, right: 8),
                 child: Icon(Icons.home_outlined, size: 20),
               ),
-              prefixIconConstraints: const BoxConstraints(minHeight: 0),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 0,
+                minHeight: 0,
+              ),
               isDense: true,
               border: const OutlineInputBorder(),
               contentPadding: const EdgeInsets.symmetric(
@@ -583,7 +587,7 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
         : null;
 
     return DropdownButtonFormField<int?>(
-      initialValue: selectedValue,
+      value: selectedValue,
       isExpanded: true,
       menuMaxHeight: 300,
       borderRadius: BorderRadius.circular(12),

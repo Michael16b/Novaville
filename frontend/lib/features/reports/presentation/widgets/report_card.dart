@@ -39,8 +39,8 @@ class ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authorName = '${report.user.firstName} ${report.user.lastName}'
-        .trim();
+    final authorName =
+        '${report.user.firstName} ${report.user.lastName}'.trim();
     final dateStr = _formatDate(report.createdAt);
     final locationLabel = report.address.trim().isNotEmpty
         ? report.address
@@ -58,6 +58,7 @@ class ReportCard extends StatelessWidget {
             : null,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.max,
           children: [
             // ── Header ──
             Container(
@@ -86,7 +87,9 @@ class ReportCard extends StatelessWidget {
                       children: [
                         Text(
                           report.problemType.label,
-                          style: Theme.of(context).textTheme.titleSmall
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
                               ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 2),
@@ -107,7 +110,7 @@ class ReportCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.calendar_today_outlined,
                           size: 12,
                           color: AppColors.secondaryText,
@@ -142,17 +145,18 @@ class ReportCard extends StatelessWidget {
                           report.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
                         ),
                       ),
                     Text(
                       report.description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(height: 1.4),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            height: 1.4,
+                          ),
                     ),
                     const SizedBox(height: 10),
                     _InfoRow(
@@ -198,9 +202,7 @@ class ReportCard extends StatelessWidget {
                             icon: Icons.edit_outlined,
                             label: AppTextsGeneral.edit,
                             color: AppColors.primary,
-                            onTap: onEdit != null
-                                ? () => onEdit!(report)
-                                : null,
+                            onTap: onEdit != null ? () => onEdit!(report) : null,
                           ),
                         ),
                         const SizedBox(width: 4),
@@ -209,9 +211,8 @@ class ReportCard extends StatelessWidget {
                             icon: Icons.delete_outline_rounded,
                             label: AppTextsGeneral.delete,
                             color: AppColors.error,
-                            onTap: onDelete != null
-                                ? () => onDelete!(report)
-                                : null,
+                            onTap:
+                                onDelete != null ? () => onDelete!(report) : null,
                           ),
                         ),
                       ],
@@ -273,9 +274,9 @@ class _InfoRow extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.primaryText,
-              height: 1.3,
-            ),
+                  color: AppColors.primaryText,
+                  height: 1.3,
+                ),
           ),
         ),
       ],

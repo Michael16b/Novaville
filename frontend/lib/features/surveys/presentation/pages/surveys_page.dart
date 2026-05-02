@@ -140,13 +140,13 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
               children: [
                 TextField(
                   controller: _addressController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: SurveysTexts.searchAddress,
                     hintText: SurveysTexts.searchAddressHint,
-                    prefixIcon: Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search),
                   ),
                   onChanged: (_) => setState(() {}),
-                  onSubmitted: (_) => _applyFilters(context),
+                  onSubmitted: (_) => _applyFilters(context, page: 1),
                 ),
                 const SizedBox(height: 10),
                 _buildSortControls(constraints.maxWidth),
@@ -174,7 +174,7 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
                                   _selectedTarget = null;
                                 }
                               });
-                              _applyFilters(context);
+                              _applyFilters(context, page: 1);
                             }
                           : null,
                       icon: const Icon(Icons.clear_all, size: 16),
@@ -300,7 +300,7 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
         : null;
 
     return DropdownButtonFormField<int?>(
-      initialValue: selectedValue,
+      value: selectedValue,
       isExpanded: true,
       menuMaxHeight: 300,
       borderRadius: BorderRadius.circular(12),
@@ -420,7 +420,7 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
           setState(() {
             _selectedTarget = role;
           });
-          _applyFilters(context);
+          _applyFilters(context, page: 1);
         },
       );
     }).toList();
@@ -616,6 +616,7 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
         exactAddress: _addressController.text.trim(),
         citizenTarget: _selectedTarget,
         ordering: _currentOrdering,
+        page: 1,
         citizenTargetSet: true,
       ),
     );
@@ -706,17 +707,22 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
     switch (state.status) {
       case SurveysStatus.created:
         CustomSnackBar.showSuccess(context, SurveysTexts.createSuccess);
+        break;
       case SurveysStatus.deleted:
         CustomSnackBar.showSuccess(context, SurveysTexts.deleteSuccess);
+        break;
       case SurveysStatus.updated:
         CustomSnackBar.showSuccess(context, SurveysTexts.updateSuccess);
+        break;
       case SurveysStatus.voted:
         CustomSnackBar.showSuccess(context, SurveysTexts.voteSuccess);
+        break;
       case SurveysStatus.failure:
         CustomSnackBar.showError(
           context,
           state.error ?? SurveysTexts.genericError,
         );
+        break;
       case SurveysStatus.initial:
       case SurveysStatus.loading:
       case SurveysStatus.loaded:

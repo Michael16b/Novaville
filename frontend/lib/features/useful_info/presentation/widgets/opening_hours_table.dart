@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class OpeningHoursTable extends StatelessWidget {
-  const OpeningHoursTable({super.key, required this.openingHours});
   final Map<String, List<String>> openingHours;
 
   // Order of days as they should appear
@@ -14,6 +13,8 @@ class OpeningHoursTable extends StatelessWidget {
     'Samedi',
     'Dimanche',
   ];
+
+  const OpeningHoursTable({super.key, required this.openingHours});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +33,7 @@ class OpeningHoursTable extends StatelessWidget {
       children: sortedEntries.map((entry) {
         final day = entry.key;
         final slots = entry.value;
-        final text = slots.isEmpty ? 'Fermé' : slots.join(' - ');
+        final text = slots.isEmpty ? "Fermé" : slots.join(" - ");
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),

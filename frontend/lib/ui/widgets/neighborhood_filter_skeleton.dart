@@ -11,7 +11,8 @@ class NeighborhoodFilterSkeleton extends StatefulWidget {
       _NeighborhoodFilterSkeletonState();
 }
 
-class _NeighborhoodFilterSkeletonState extends State<NeighborhoodFilterSkeleton>
+class _NeighborhoodFilterSkeletonState
+    extends State<NeighborhoodFilterSkeleton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _pulseController;
 
@@ -45,7 +46,10 @@ class _NeighborhoodFilterSkeletonState extends State<NeighborhoodFilterSkeleton>
         return Container(
           height: 32,
           decoration: BoxDecoration(
-            border: Border.all(color: barColor ?? Colors.grey),
+            border: Border.all(
+              color: barColor ?? Colors.grey,
+              width: 1,
+            ),
             borderRadius: BorderRadius.circular(4),
           ),
           child: Padding(
@@ -53,10 +57,18 @@ class _NeighborhoodFilterSkeletonState extends State<NeighborhoodFilterSkeleton>
             child: Row(
               children: [
                 Expanded(
-                  child: Container(height: 14, width: 80, color: barColor),
+                  child: Container(
+                    height: 14,
+                    width: 80,
+                    color: barColor,
+                  ),
                 ),
                 const SizedBox(width: 8),
-                Container(height: 16, width: 16, color: barColor),
+                Container(
+                  height: 16,
+                  width: 16,
+                  color: barColor,
+                ),
               ],
             ),
           ),

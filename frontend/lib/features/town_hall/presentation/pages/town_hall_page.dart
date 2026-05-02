@@ -160,7 +160,7 @@ class _TownHallPageState extends State<TownHallPage> {
         ),
       ),
     );
-    if (ok ?? false) {
+    if (ok == true) {
       try {
         await _repository.deleteNeighborhood(neighborhood.id);
         await _loadNeighborhoods();
@@ -187,6 +187,7 @@ class _TownHallPageState extends State<TownHallPage> {
         title: title,
         icon: initialName == null ? Icons.add_location_alt : Icons.edit,
         closeTooltip: AppTextsGeneral.cancel,
+        maxWidth: 500,
         actions: [
           StyledDialog.cancelButton(
             label: AppTextsGeneral.cancel,
@@ -285,7 +286,7 @@ class _TownHallPageState extends State<TownHallPage> {
         : null;
 
     return DropdownButtonFormField<int?>(
-      initialValue: selectedValue,
+      value: selectedValue,
       isExpanded: true,
       menuMaxHeight: 300,
       borderRadius: BorderRadius.circular(12),
@@ -548,8 +549,8 @@ class _TownHallNeighborhoodCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                          fontWeight: FontWeight.w700,
+                        ),
                   ),
                 ),
                 Container(
@@ -706,10 +707,7 @@ class _TownHallLoadingSkeletonState extends State<_TownHallLoadingSkeleton>
           children: [
             Card(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -723,9 +721,10 @@ class _TownHallLoadingSkeletonState extends State<_TownHallLoadingSkeleton>
                     const SizedBox(height: 10),
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        final dropdownWidth = constraints.maxWidth < 220
-                            ? constraints.maxWidth
-                            : 220.0;
+                        final dropdownWidth =
+                            constraints.maxWidth < 220
+                                ? constraints.maxWidth
+                                : 220.0;
 
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.end,
@@ -749,7 +748,11 @@ class _TownHallLoadingSkeletonState extends State<_TownHallLoadingSkeleton>
                       spacing: 12,
                       runSpacing: 4,
                       children: [
-                        Container(width: 150, height: 16, color: barColor),
+                        Container(
+                          width: 150,
+                          height: 16,
+                          color: barColor,
+                        ),
                         Container(
                           width: 24,
                           height: 24,
@@ -816,11 +819,7 @@ class _TownHallLoadingSkeletonState extends State<_TownHallLoadingSkeleton>
                                   child: Container(height: 14, color: barColor),
                                 ),
                                 const SizedBox(width: 8),
-                                Container(
-                                  width: 44,
-                                  height: 16,
-                                  color: barColor,
-                                ),
+                                Container(width: 44, height: 16, color: barColor),
                               ],
                             ),
                           ),

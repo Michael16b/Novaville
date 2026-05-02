@@ -1,18 +1,19 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:frontend/features/useful_info/data/useful_info_repository.dart';
-import 'package:frontend/features/useful_info/domain/useful_info.dart';
-import 'package:frontend/features/useful_info/application/bloc/useful_info_event.dart';
-import 'package:frontend/features/useful_info/application/bloc/useful_info_state.dart';
+import '../../data/useful_info_repository.dart';
+import '../../domain/useful_info.dart';
+import 'useful_info_event.dart';
+import 'useful_info_state.dart';
 
 class UsefulInfoBloc extends Bloc<UsefulInfoEvent, UsefulInfoState> {
+  final UsefulInfoRepository repository;
+
   UsefulInfoBloc({required this.repository})
     : super(const UsefulInfoInitial()) {
     on<UsefulInfoRequested>(_onRequested);
     on<UsefulInfoRefreshed>(_onRefreshed);
     on<UsefulInfoSaved>(_onSaved);
   }
-  final UsefulInfoRepository repository;
 
   Future<void> _onRequested(
     UsefulInfoRequested event,
@@ -35,7 +36,7 @@ class UsefulInfoBloc extends Bloc<UsefulInfoEvent, UsefulInfoState> {
 
   Future<void> _fetchAndEmit(Emitter<UsefulInfoState> emit) async {
     try {
-      final info = await repository.getUsefulInfo();
+      final UsefulInfo info = await repository.getUsefulInfo();
       emit(UsefulInfoLoaded(info));
     } catch (e) {
       emit(UsefulInfoFailure(_humanizeError(e)));
@@ -47,8 +48,8 @@ class UsefulInfoBloc extends Bloc<UsefulInfoEvent, UsefulInfoState> {
     Emitter<UsefulInfoState> emit,
   ) async {
     final previousInfo = switch (state) {
-      final UsefulInfoLoaded s => s.info,
-      final UsefulInfoSaving s => s.info,
+      UsefulInfoLoaded s => s.info,
+      UsefulInfoSaving s => s.info,
       _ => null,
     };
 

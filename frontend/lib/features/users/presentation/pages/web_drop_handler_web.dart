@@ -59,7 +59,7 @@ class WebDropHandler {
         return;
       }
 
-      final files = event.dataTransfer.files;
+      final files = event.dataTransfer?.files;
       if (files == null || files.isEmpty) {
         return;
       }
@@ -82,7 +82,9 @@ class WebDropHandler {
         completer.completeError(Exception(CsvDropTexts.unreadableFile));
       });
       reader.onError.listen((_) {
-        completer.completeError(Exception(CsvDropTexts.dropReadFailed));
+        completer.completeError(
+          Exception(CsvDropTexts.dropReadFailed),
+        );
       });
       reader.readAsText(file, 'utf-8');
 
@@ -90,7 +92,7 @@ class WebDropHandler {
         final content = await completer.future;
         await onCsvDropped(fileName, content);
       } catch (_) {
-        onError(CsvDropTexts.dropReadFailed);
+            onError(CsvDropTexts.dropReadFailed);
       }
     });
   }

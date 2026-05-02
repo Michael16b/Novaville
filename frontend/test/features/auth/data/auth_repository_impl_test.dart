@@ -11,10 +11,10 @@ import 'package:http/testing.dart';
 // --- Mocks ---
 
 class _StubUserRepository implements IUserRepository {
-
-  _StubUserRepository({this.returnUser, this.throwOnGetCurrentUser = false});
   final User? returnUser;
   final bool throwOnGetCurrentUser;
+
+  _StubUserRepository({this.returnUser, this.throwOnGetCurrentUser = false});
 
   static const _defaultUser = User(
     id: 1,
@@ -261,10 +261,10 @@ void main() {
 
 /// A [IUserRepository] stub that returns responses from a list in sequence.
 class _SequentialUserRepository implements IUserRepository {
-
-  _SequentialUserRepository({required this.responses});
   final List<User Function()> responses;
   int _index = 0;
+
+  _SequentialUserRepository({required this.responses});
 
   @override
   Future<User> getCurrentUser() async {

@@ -174,7 +174,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
               ),
               if (_showLoadingOverlay)
                 Positioned.fill(
-                  child: ColoredBox(
+                  child: Container(
                     color: Colors.black.withValues(alpha: 0.1),
                     child: const Center(
                       child: CircularProgressIndicator(
@@ -458,7 +458,10 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                 padding: EdgeInsets.only(left: 12, right: 8),
                 child: Icon(Icons.home_outlined, size: 20),
               ),
-              prefixIconConstraints: const BoxConstraints(minHeight: 0),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 0,
+                minHeight: 0,
+              ),
               isDense: true,
               border: const OutlineInputBorder(),
               contentPadding: const EdgeInsets.symmetric(
@@ -590,7 +593,8 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
         : null;
 
     return DropdownButtonFormField<int?>(
-      initialValue: selectedValue,
+      value: selectedValue,
+      isDense: true,
       isExpanded: true,
       menuMaxHeight: 300,
       borderRadius: BorderRadius.circular(12),
@@ -688,7 +692,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
             mainAxisExtent: layout.mainAxisExtent,
           ),
           itemBuilder: (context, index) {
-            return const _UserCardSkeleton();
+            return _UserCardSkeleton();
           },
         );
       },
@@ -742,7 +746,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
     final end = (start + state.users.length - 1).clamp(0, state.count);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -1000,9 +1004,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
         return;
       }
       CustomSnackBar.showSuccess(context, UserTexts.approvedSuccess);
-      context.read<UserAccountsBloc>().add(
-        const UserAccountsRefreshRequested(),
-      );
+      context.read<UserAccountsBloc>().add(UserAccountsRefreshRequested());
       _refreshPendingUsers();
     } catch (e) {
       if (mounted) {
@@ -1187,6 +1189,8 @@ class _UserCardSkeletonState extends State<_UserCardSkeleton>
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1700),
+      lowerBound: 0.0,
+      upperBound: 1.0,
     )..repeat(reverse: true);
   }
 

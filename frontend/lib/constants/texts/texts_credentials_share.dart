@@ -7,7 +7,7 @@ class CredentialsShareTexts {
       'Conservez ces informations de connexion en lieu sûr.';
 
   static const emailLabel = 'Email';
-  static const usernameLabel = "Nom d'utilisateur";
+  static const usernameLabel = 'Nom d\'utilisateur';
   static const passwordLabel = 'Mot de passe';
 
   static const copyTooltip = 'Copier';
@@ -20,7 +20,7 @@ class CredentialsShareTexts {
       'Ce lien ne contient pas de donnée sensible. Transmettez le mot de passe séparément.';
 
   static const emailCopied = 'Email copié.';
-  static const usernameCopied = "Nom d'utilisateur copié.";
+  static const usernameCopied = 'Nom d\'utilisateur copié.';
   static const passwordCopied = 'Mot de passe copié.';
   static const allCopied = 'Identifiants complets copiés.';
 
@@ -38,7 +38,7 @@ class CredentialsShareTexts {
       lines.add('Email: $email');
     }
     if (username.trim().isNotEmpty) {
-      lines.add("Nom d'utilisateur: $username");
+      lines.add('Nom d\'utilisateur: $username');
     }
     if (password.trim().isNotEmpty) {
       lines.add('Mot de passe: $password');

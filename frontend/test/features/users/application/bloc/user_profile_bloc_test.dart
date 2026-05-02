@@ -43,7 +43,12 @@ class _FakeUserRepository implements IUserRepository {
     int? neighborhood,
   }) async {
     if (shouldThrow) throw Exception(errorMessage);
-    return UserPage(count: 1, results: [userToReturn ?? _defaultUser]);
+    return UserPage(
+      count: 1,
+      next: null,
+      previous: null,
+      results: [userToReturn ?? _defaultUser],
+    );
   }
 
   @override

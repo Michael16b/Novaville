@@ -4,6 +4,14 @@ import 'package:frontend/constants/colors.dart';
 enum MenuCardStyle { large, compact }
 
 class MenuCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String? statValue;
+  final String? statLabel;
+  final VoidCallback onTap;
+  final MenuCardStyle style;
+
   const MenuCard({
     super.key,
     required this.icon,
@@ -14,13 +22,6 @@ class MenuCard extends StatelessWidget {
     required this.onTap,
     this.style = MenuCardStyle.large,
   });
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String? statValue;
-  final String? statLabel;
-  final VoidCallback onTap;
-  final MenuCardStyle style;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +60,7 @@ class MenuCard extends StatelessWidget {
               blue: 1,
               alpha: 0.1,
             ),
+            width: 1,
           ),
         ),
         child: InkWell(
@@ -90,26 +92,12 @@ class MenuCard extends StatelessWidget {
       builder: (context, constraints) {
         final isCompact = constraints.maxWidth < 320;
         final isVeryCompact = constraints.maxWidth < 240;
-        final iconSize = isVeryCompact
-            ? 22.0
-            : isCompact
-            ? 24.0
-            : 28.0;
-        final titleSize = isVeryCompact
-            ? 16.0
-            : isCompact
-            ? 18.0
-            : 21.0;
-        final statValueSize = isVeryCompact
-            ? 22.0
-            : isCompact
-            ? 24.0
-            : 30.0;
-        final statLabelSize = isVeryCompact
-            ? 12.0
-            : isCompact
-            ? 13.0
-            : 14.0;
+        final iconSize = isVeryCompact ? 22.0 : isCompact ? 24.0 : 28.0;
+        final titleSize = isVeryCompact ? 16.0 : isCompact ? 18.0 : 21.0;
+        final statValueSize =
+            isVeryCompact ? 22.0 : isCompact ? 24.0 : 30.0;
+        final statLabelSize =
+            isVeryCompact ? 12.0 : isCompact ? 13.0 : 14.0;
         final contentPadding = isVeryCompact
             ? const EdgeInsets.fromLTRB(18, 18, 18, 16)
             : const EdgeInsets.fromLTRB(22, 22, 22, 18);
@@ -153,11 +141,7 @@ class MenuCard extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Icon(
-                      icon,
-                      color: AppColors.secondary,
-                      size: iconSize,
-                    ),
+                    child: Icon(icon, color: AppColors.secondary, size: iconSize),
                   ),
                   SizedBox(height: isVeryCompact ? 12 : 18),
                   Text(

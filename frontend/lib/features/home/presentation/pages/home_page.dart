@@ -14,8 +14,9 @@ import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, this.dashboardRepository});
   final DashboardRepository? dashboardRepository;
+
+  const HomePage({super.key, this.dashboardRepository});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -90,13 +91,13 @@ class _HomePageState extends State<HomePage> {
                 ],
               );
 
-              final sidebarColumn = Column(
-                children: [
-                  RecentActivityPanel(statsFuture: _statsFuture),
-                  const SizedBox(height: 24),
-                  UsefulInfoPanel(statsFuture: _statsFuture),
-                ],
-              );
+          final sidebarColumn = Column(
+            children: [
+              RecentActivityPanel(statsFuture: _statsFuture),
+              const SizedBox(height: 24),
+              UsefulInfoPanel(statsFuture: _statsFuture),
+            ],
+          );
 
               return Stack(
                 children: [

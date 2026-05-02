@@ -208,7 +208,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
   }) async {
     DateTime? loadingStartedAt;
     if (forceLoadingStateFirst) {
-      emit(state.copyWith(status: UserAccountsStatus.loading));
+      emit(state.copyWith(status: UserAccountsStatus.loading, error: null));
       loadingStartedAt = DateTime.now();
     }
 
@@ -255,7 +255,7 @@ class UserAccountsBloc extends Bloc<UserAccountsEvent, UserAccountsState> {
     if (useInitialLoading) {
       emit(const UserAccountsState.loading());
     } else if (!forceLoadingStateFirst) {
-      emit(state.copyWith(status: UserAccountsStatus.loading));
+      emit(state.copyWith(status: UserAccountsStatus.loading, error: null));
     }
 
     try {

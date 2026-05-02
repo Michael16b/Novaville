@@ -5,9 +5,9 @@ import 'package:frontend/features/home/data/dashboard_repository.dart';
 import 'package:frontend/features/home/domain/dashboard_stats.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
-  DashboardRepositoryImpl({required ApiClient apiClient})
-    : _apiClient = apiClient;
   final ApiClient _apiClient;
+
+  DashboardRepositoryImpl({required ApiClient apiClient}) : _apiClient = apiClient;
 
   @override
   Future<DashboardStats> getDashboardStats() async {
