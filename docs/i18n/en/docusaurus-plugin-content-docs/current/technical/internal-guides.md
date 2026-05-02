@@ -123,5 +123,3 @@ docker compose exec backend python manage.py collectstatic --noinput
 - `docs/deploy-playbook.md`: step-by-step playbook for client deployment
 
 ---
-
-I can generate `dev-setup.md` and `deploy-playbook.md` and prepare a PR. Tell me which to prioritise.

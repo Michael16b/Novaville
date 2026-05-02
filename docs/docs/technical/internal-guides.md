@@ -123,5 +123,3 @@ docker compose exec backend python manage.py collectstatic --noinput
 - `docs/deploy-playbook.md` : playbook pas-à-pas pour déploiement chez un client
 
 ---
-
-Si tu veux, je peux générer directement `dev-setup.md` et `deploy-playbook.md` détaillés et préparer un commit/PR. Indique-moi lequel prioriser.
