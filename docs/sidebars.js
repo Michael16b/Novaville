@@ -34,6 +34,7 @@ const sidebars = {
       items: [
         'technical/architecture',
         'technical/backend',
+        'technical/local-deployment',
         'technical/internal-guides',
         'technical/azure-deployment',
       ],
