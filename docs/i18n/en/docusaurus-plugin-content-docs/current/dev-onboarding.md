@@ -81,6 +81,20 @@ Windows:
 - Download installer or SDK from https://flutter.dev/docs/get-started/install/windows
 - Run installer and add `flutter/bin` to PATH, then run `flutter doctor` in PowerShell.
 
+macOS:
+
+```bash
+# Via Homebrew (recommended)
+brew install flutter
+
+# Or download manually from https://flutter.dev/docs/get-started/install/macos
+# and add to PATH:
+export PATH="$PATH:$HOME/Development/flutter/bin"
+
+# Verify installation
+flutter doctor
+```
+
 ### Install Docker
 
 - Official: https://www.docker.com/get-started
@@ -99,6 +113,19 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 sudo usermod -aG docker $USER
 newgrp docker
 docker run hello-world
+```
+
+macOS:
+
+```bash
+# Via Homebrew (recommended)
+brew install docker docker-compose
+
+# Or install Docker Desktop from https://www.docker.com/products/docker-desktop
+# which includes Docker and Docker Compose
+
+docker --version
+docker compose version
 ```
 
 After installing, verify: `docker --version`, `docker compose version`, `flutter --version`
