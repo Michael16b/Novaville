@@ -232,6 +232,12 @@ Pour toute question ou problème avec l'API :
 - **Bruno** : Voir `/api/Novaville/` pour les requêtes pré-configurées
 - **curl** : Exemples fournis dans chaque endpoint
 
+## API détaillée exposée par le backend
+
+Le backend expose une documentation OpenAPI/Swagger détaillée (schémas, modèles, exemples) disponible localement sur `http://localhost:8000/api/docs/` lorsque le service backend est démarré. C'est la source de vérité pour les définitions de champs, les modèles de requêtes/réponses et les exemples.
+
+Vous trouverez également une collection de requêtes préconfigurées sous `api/Novaville/` (Bruno/Postman) dans le dépôt pour tester rapidement les endpoints.
+
 ## Changelog
 
 Consultez les [Notes de version](/blog) pour voir les dernières modifications de l'API.

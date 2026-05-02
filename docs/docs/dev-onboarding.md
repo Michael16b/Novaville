@@ -27,6 +27,52 @@ Les dossiers principaux :
 - Docker & Docker Compose
 - Node.js (pour la doc) et npm
 - Flutter SDK (si vous travaillez sur le frontend)
+ 
+### Installer Flutter
+
+- Site officiel : https://flutter.dev
+
+Pour Linux (extrait) :
+
+```bash
+# Installer les dépendances (ex. Ubuntu)
+sudo apt update
+sudo apt install -y curl git unzip xz-utils libglu1-mesa
+
+# Télécharger le SDK
+cd ~
+curl -LO https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_stable.tar.xz
+tar xf flutter_linux_stable.tar.xz
+export PATH="$PATH:$HOME/flutter/bin"
+flutter doctor
+```
+
+Pour Windows :
+
+- Télécharger l'installateur ou le SDK depuis https://flutter.dev/docs/get-started/install/windows
+- Exécuter l'installateur et ajouter `flutter/bin` au `PATH`, puis exécuter `flutter doctor` dans PowerShell.
+
+### Installer Docker
+
+- Site officiel : https://www.docker.com/get-started
+
+Pour Windows : installez Docker Desktop et activez WSL2 si demandé.
+
+Pour Linux (ex. Ubuntu) :
+
+```bash
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg lsb-release
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo usermod -aG docker $USER
+newgrp docker
+docker run hello-world
+```
+
+Après installation, vérifiez : `docker --version`, `docker compose version`, `flutter --version`
 
 ## Démarrage local (rapide)
 

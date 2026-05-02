@@ -50,3 +50,55 @@ docker compose exec backend pytest
 - Architecture: [Technical documentation](../docs/technical/architecture)
 - API: [API documentation](../docs/api/overview)
 - CI/CD and deployment: see workflows and `docs/DOCUMENTATION_README.md`
+
+### Prerequisites (detailed)
+
+- Docker & Docker Compose
+- Node.js (for docs) and npm
+- Flutter SDK (if working on the frontend)
+
+### Install Flutter
+
+- Official: https://flutter.dev
+
+Linux (example):
+
+```bash
+# Install dependencies (e.g. Ubuntu)
+sudo apt update
+sudo apt install -y curl git unzip xz-utils libglu1-mesa
+
+# Download SDK
+cd ~
+curl -LO https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_stable.tar.xz
+tar xf flutter_linux_stable.tar.xz
+export PATH="$PATH:$HOME/flutter/bin"
+flutter doctor
+```
+
+Windows:
+
+- Download installer or SDK from https://flutter.dev/docs/get-started/install/windows
+- Run installer and add `flutter/bin` to PATH, then run `flutter doctor` in PowerShell.
+
+### Install Docker
+
+- Official: https://www.docker.com/get-started
+
+Windows: install Docker Desktop and enable WSL2 if prompted.
+
+Linux (example, Ubuntu):
+
+```bash
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg lsb-release
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo usermod -aG docker $USER
+newgrp docker
+docker run hello-world
+```
+
+After installing, verify: `docker --version`, `docker compose version`, `flutter --version`
