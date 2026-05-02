@@ -2,55 +2,28 @@
 sidebar_position: 1
 ---
 
-# Welcome to Novaville Docs
+# Novaville Documentation — Developer Team Handover Guide
 
-Welcome to the **Novaville** documentation — a citizen participation platform. This doc mirrors the frontend UI (Novaville logo, palette, and clear sections) and guides you from the first run to advanced integrations.
+This documentation has been reorganized to help a new development team take over the project quickly. It includes what is needed to understand the architecture, start a local environment, run tests and contribute.
 
-## 📚 Audience
+## Target audience
 
-- **Developers**: architecture, API, examples, security
-- **Ops**: Docker/Compose deployment, env vars, monitoring
-- **End users**: UI walkthrough aligned with the frontend
-- **Clients**: functional scope, roadmap, indicative SLAs
+- **Development teams** taking over the project
+- **Production / DevOps engineers** handling deployment and monitoring
 
-## 🚀 Where to start
+## Where to start
 
-### For developers
+- [Developer Onboarding](dev-onboarding): step-by-step setup and handover guide
+- [Getting started](getting-started/introduction): installation and local configuration
+- [Technical documentation](technical/architecture): architecture and technical choices
+- [API documentation](api/overview): endpoints and usage examples
 
-- [Getting started](getting-started/introduction): local setup
-- [Architecture](technical/architecture): Django backend, Flutter frontend, PostgreSQL, JWT auth
-- [API Overview](api/overview): schemas, status codes, pagination
+## Main objective
 
-### For users
+Make the project immediately understandable and runnable by a new team:
 
-- [User manual](user-manual/intro): login, navigation, reports
-- UI consistent with the frontend: same logo, colors, wording
+- reproducible development environment (Docker)
+- startup scripts and automated tests
+- identification of critical modules and operational considerations
 
-### For API integration
-
-- [Auth](api/auth/login) / [Refresh](api/auth/refresh-token): cURL, JS, Python, Dart examples
-
-## 🏗️ Architecture
-
-- **Backend**: Django REST + JWT, PostgreSQL
-- **Frontend**: Flutter (mobile/web), Novaville theme
-- **Infra**: Docker/Compose (api, front, docs, db)
-- **Security**: JWT, CORS, hardened Nginx headers
-
-## 📖 Docs structure
-
-```
-📁 Documentation
-├── 📘 Getting Started — install & configure
-├── 🔧 Technical Docs — architecture & internals
-├── 🌐 API Docs — REST endpoints & auth
-└── 📗 User Manual — end-user guides
-```
-
-## 🤝 Contribute
-
-Maintained regularly. For questions or suggestions, open an issue on the [GitHub repo](https://github.com/Michael16b/Novaville).
-
-## 📝 Release notes
-
-See the [Release notes](/blog) for the latest updates and improvements.
+To contribute, also read [Contributing](contributing).

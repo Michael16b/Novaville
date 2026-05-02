@@ -6,6 +6,8 @@ sidebar_position: 1
 
 Cette page décrit l'architecture globale de la plateforme Novaville.
 
+> Consultez aussi le guide interne : [Guides internes](./internal-guides) — procédures d'installation, premiers pas et playbook de déploiement.
+
 ## Vue d'ensemble
 
 Novaville suit une **architecture en trois tiers** classique :

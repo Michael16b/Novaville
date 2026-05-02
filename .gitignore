@@ -29,3 +29,8 @@ htmlcov/
 .env
 .env.local
 .env.*.local
+frontend/linux/flutter/*.cc
+frontend/linux/flutter/*.h
+frontend/windows/flutter/*.cc
+frontend/windows/flutter/*.h
+frontend/macos/Flutter/*.cc

@@ -3,46 +3,46 @@ sidebar_position: 1
 ---
 
 # Introduction
+ 
+Welcome to the Novaville Getting Started guide!
 
-Bienvenue dans le guide de démarrage de Novaville !
+## What is Novaville?
 
-## Qu'est-ce que Novaville ?
+Novaville is an intelligent citizen engagement platform that enables citizens and municipal teams to collaborate. The platform provides:
 
-Novaville est une **plateforme de gestion citoyenne intelligente** qui permet aux citoyens et aux administrations de collaborer efficacement. La plateforme offre :
+- 📱 Incident reporting: let citizens report urban issues
+- 📅 Event management: organize and promote community events
+- 💬 Citizen participation: surveys and consultations
+- 📊 Dashboards: visualize metrics and KPIs
 
-- 📱 **Signalement d'incidents** : Permettre aux citoyens de signaler des problèmes urbains
-- 📅 **Gestion d'événements** : Organiser et promouvoir des événements citoyens
-- 💬 **Participation citoyenne** : Faciliter l'engagement avec les sondages et consultations
-- 📊 **Tableaux de bord** : Visualiser les statistiques et indicateurs clés
-
-## Stack technologique
+## Technology stack
 
 ### Backend
-- **Framework** : Django 4.x avec Django REST Framework
-- **Langage** : Python 3.11+
-- **Base de données** : PostgreSQL 14+
-- **Cache** : Redis (optionnel)
+- Framework: Django 4.x with Django REST Framework
+- Language: Python 3.11+
+- Database: PostgreSQL 14+
+- Cache: Redis (optional)
 
 ### Frontend
-- **Framework** : Flutter 3.x
-- **Langage** : Dart 3.x
-- **Plateforme** : iOS, Android, Web
+- Framework: Flutter 3.x
+- Language: Dart 3.x
+- Targets: iOS, Android, Web
 
 ### Infrastructure
-- **Conteneurisation** : Docker & Docker Compose
-- **CI/CD** : GitHub Actions
-- **Déploiement** : Azure / Docker
+- Containerization: Docker & Docker Compose
+- CI/CD: GitHub Actions
+- Deployment: Azure / Docker
 
-## Prérequis
+## Prerequisites
 
-Avant de commencer, assurez-vous d'avoir installé :
+Before starting, ensure you have installed:
 
-- Python 3.11 ou supérieur
-- Node.js 18+ (pour les outils de développement)
-- Docker et Docker Compose
-- Flutter SDK (pour le développement mobile)
+- Python 3.11 or higher
+- Node.js 18+ (for docs/tools)
+- Docker & Docker Compose
+- Flutter SDK (for frontend development)
 - Git
 
-## Prochaines étapes
+## Next steps
 
-Continuez avec le guide d'[Installation](./installation) pour configurer votre environnement de développement.
+Continue with the [Installation](./installation) guide to set up your development environment.

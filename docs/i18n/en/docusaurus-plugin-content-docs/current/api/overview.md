@@ -79,8 +79,8 @@ Content-Type: application/json
 
 ```json
 {
-  "data": { /* votre données */ },
-  "message": "Succès",
+  "data": { /* your data */ },
+  "message": "Success",
   "status": 200
 }
 ```
@@ -93,8 +93,8 @@ Content-Type: application/json
   "next": "http://api.example.org/accounts/?page=3",
   "previous": "http://api.example.org/accounts/?page=1",
   "results": [
-    { /* objet 1 */ },
-    { /* objet 2 */ }
+    { /* item 1 */ },
+    { /* item 2 */ }
   ]
 }
 ```
@@ -105,9 +105,9 @@ Content-Type: application/json
 {
   "error": {
     "code": "validation_error",
-    "message": "Les données fournies sont invalides",
+    "message": "Provided data is invalid",
     "details": {
-      "email": ["Ce champ est requis."]
+      "email": ["This field is required."]
     }
   },
   "status": 400
@@ -159,8 +159,8 @@ Use `ordering` to sort results.
 **Exemple :**
 
 ```http
-GET /api/v1/events/?ordering=-created_at  # Décroissant
-GET /api/v1/events/?ordering=title        # Croissant
+GET /api/v1/events/?ordering=-created_at  # descending
+GET /api/v1/events/?ordering=title        # ascending
 ```
 
 ## Search
@@ -170,7 +170,7 @@ Use `search` for text queries.
 **Exemple :**
 
 ```http
-GET /api/v1/reports/?search=nid-de-poule
+GET /api/v1/reports/?search=pothole
 ```
 
 ## Rate limiting
@@ -178,7 +178,8 @@ GET /api/v1/reports/?search=nid-de-poule
 - **Authenticated**: 1000 req/hour
 - **Unauthenticated**: 100 req/hour
 
-Les limites sont indiquées dans les en-têtes de réponse :
+
+Rate limits are indicated in the response headers:
 
 ```http
 X-RateLimit-Limit: 1000
@@ -198,40 +199,41 @@ X-RateLimit-Reset: 1640995200
 - [Update user](./users/update)
 - [Delete user](./users/delete)
 
-### Événements
-- [Liste des événements](./events/list)
-- [Créer un événement](./events/create)
-- [Modifier un événement](./events/update)
-- [Supprimer un événement](./events/delete)
+### Events
+- [List events](./events/list)
+- [Create event](./events/create)
+- [Update event](./events/update)
+- [Delete event](./events/delete)
 
-### Rapports
-- [Liste des rapports](./reports/list)
-- [Créer un rapport](./reports/create)
-- [Modifier un rapport](./reports/update)
-- [Supprimer un rapport](./reports/delete)
+### Reports
+- [List reports](./reports/list)
+- [Create report](./reports/create)
+- [Update report](./reports/update)
+- [Delete report](./reports/delete)
 
-## Versions de l'API
+## API versions
 
-L'API est versionnée dans l'URL. La version actuelle est **v1**.
+The API is versioned in the URL. Current version is **v1**.
 
-- `/api/v1/` - Version actuelle (stable)
+- `/api/v1/` - current stable version
 
-Les anciennes versions seront maintenues pendant au moins 12 mois après la sortie d'une nouvelle version majeure.
+Older versions will be maintained for at least 12 months after the release of a new major version.
 
 ## Support
 
-Pour toute question ou problème avec l'API :
+For API questions or issues:
 
-1. Consultez la documentation complète
-2. Vérifiez les [exemples de code](https://github.com/Michael16b/Novaville/tree/main/examples)
-3. Ouvrez une issue sur [GitHub](https://github.com/YOUR_GITHUBMichael16b_USERNAME/Novaville/issues)
+1. Check the full documentation
+2. Review the [code examples](https://github.com/Michael16b/Novaville/tree/main/examples)
+3. Open an issue on [GitHub](https://github.com/Michael16b/Novaville/issues)
 
-## Outils recommandés
+## Recommended tools
 
-- **Postman** : [Collection Postman](https://www.postman.com/)
-- **Bruno** : Voir `/api/Novaville/` pour les requêtes pré-configurées
-- **curl** : Exemples fournis dans chaque endpoint
+- **Postman**: [Postman collection](https://www.postman.com/)
+- **Bruno**: see `/api/Novaville/` for pre-configured requests (repo `api/Novaville`)
+- **OpenAPI / Swagger (backend)**: the backend exposes a full OpenAPI/Swagger UI (schemas, models, examples) available locally at `http://localhost:8000/api/docs/` when the backend is running — use it to inspect request/response models and examples.
+- **curl**: examples available in each endpoint
 
 ## Changelog
 
-Consultez les [Notes de version](/blog) pour voir les dernières modifications de l'API.
+See the [Release notes](/blog) for recent API changes.
