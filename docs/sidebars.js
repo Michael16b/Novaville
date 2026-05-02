@@ -34,6 +34,7 @@ const sidebars = {
       items: [
         'technical/architecture',
         'technical/backend',
+        'technical/internal-guides',
       ],
     },
   ],

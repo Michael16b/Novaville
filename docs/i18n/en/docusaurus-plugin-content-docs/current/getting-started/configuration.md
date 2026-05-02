@@ -3,21 +3,23 @@ sidebar_position: 3
 ---
 
 # Configuration
+ 
+# Configuration
 
-Ce guide couvre la configuration avancée de Novaville.
+This guide covers advanced configuration of Novaville.
 
-## Configuration du Backend
+## Backend configuration
 
-### Variables d'environnement
+### Environment variables
 
-Le fichier `.env` contient toutes les variables de configuration. Voici les principales :
+The `.env` file holds the main configuration variables. Key ones:
 
-#### Base de données
+#### Database
 
 ```env
 POSTGRES_DB=novaville
 POSTGRES_USER=novaville
-POSTGRES_PASSWORD=votre_mot_de_passe_securise
+POSTGRES_PASSWORD=your_secure_password
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
 ```
@@ -25,34 +27,34 @@ POSTGRES_PORT=5432
 #### Django
 
 ```env
-SECRET_KEY=votre_cle_secrete_django
-DEBUG=False  # Toujours False en production
-ALLOWED_HOSTS=votre-domaine.com,www.votre-domaine.com
-CSRF_TRUSTED_ORIGINS=https://votre-domaine.com
+SECRET_KEY=your_django_secret_key
+DEBUG=False  # Always False in production
+ALLOWED_HOSTS=your-domain.com,www.your-domain.com
+CSRF_TRUSTED_ORIGINS=https://your-domain.com
 ```
 
 #### CORS
 
 ```env
-CORS_ALLOWED_ORIGINS=https://votre-domaine.com,https://app.votre-domaine.com
+CORS_ALLOWED_ORIGINS=https://your-domain.com,https://app.your-domain.com
 ```
 
 #### JWT
 
 ```env
-JWT_ACCESS_TOKEN_LIFETIME=60  # en minutes
-JWT_REFRESH_TOKEN_LIFETIME=1440  # en minutes (24h)
+JWT_ACCESS_TOKEN_LIFETIME=60  # minutes
+JWT_REFRESH_TOKEN_LIFETIME=1440  # minutes (24h)
 ```
 
-### Configuration Django
+### Django settings
 
-Le fichier `config/settings.py` contient la configuration principale.
+Primary configuration lives in `config/settings.py`.
 
-## Configuration du Frontend
+## Frontend configuration
 
-### Variables d'environnement
+### Environment variables
 
-Le fichier `lib/config/environment.dart` :
+In `lib/config/environment.dart`:
 
 ```dart
 class Environment {
@@ -68,44 +70,44 @@ class Environment {
 }
 ```
 
-### Compilation avec variables
+### Build with variables
 
 ```bash
-# Développement
+# Development
 flutter run --dart-define=API_URL=http://localhost:8000
 
 # Production
 flutter build apk \
-  --dart-define=API_URL=https://api.votre-domaine.com \
+  --dart-define=API_URL=https://api.your-domain.com \
   --dart-define=PRODUCTION=true
 ```
 
-## Configuration de la base de données
+## Database configuration
 
 ### PostgreSQL
 
-Recommandations de configuration :
+Recommended setup:
 
 ```sql
--- Créer la base de données
+-- Create database
 CREATE DATABASE novaville;
 
--- Créer l'utilisateur
-CREATE USER novaville WITH PASSWORD 'votre_mot_de_passe';
+-- Create user
+CREATE USER novaville WITH PASSWORD 'your_password';
 
--- Accorder les privilèges
+-- Grant privileges
 GRANT ALL PRIVILEGES ON DATABASE novaville TO novaville;
 
--- Extensions recommandées
+-- Recommended extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "postgis";  -- Si utilisation de données géographiques
+CREATE EXTENSION IF NOT EXISTS "postgis";  -- If using geospatial data
 ```
 
-## Configuration Docker
+## Docker configuration
 
 ### docker-compose.yml
 
-Le fichier `docker-compose.yml` définit les services :
+The `docker-compose.yml` defines services:
 
 ```yaml
 version: '3.8'
@@ -133,55 +135,55 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
 ```
 
-## Configuration de sécurité
+## Security configuration
 
-### En production
+### In production
 
-Assurez-vous de :
+Ensure you:
 
-1. **Désactiver DEBUG**
+1. **Disable DEBUG**
    ```python
    DEBUG = False
    ```
 
-2. **Configurer SECRET_KEY de manière sécurisée**
+2. **Configure SECRET_KEY securely**
    ```bash
    python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
    ```
 
-3. **Configurer ALLOWED_HOSTS**
+3. **Set ALLOWED_HOSTS**
    ```python
-   ALLOWED_HOSTS = ['votre-domaine.com', 'www.votre-domaine.com']
+   ALLOWED_HOSTS = ['your-domain.com', 'www.your-domain.com']
    ```
 
-4. **Activer HTTPS**
+4. **Enable HTTPS**
    ```python
    SECURE_SSL_REDIRECT = True
    SESSION_COOKIE_SECURE = True
    CSRF_COOKIE_SECURE = True
    ```
 
-5. **Configurer les en-têtes de sécurité**
+5. **Set security headers**
    ```python
    SECURE_HSTS_SECONDS = 31536000
    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
    SECURE_HSTS_PRELOAD = True
    ```
 
-## Sauvegarde et restauration
+## Backup and restore
 
-### Sauvegarde de la base de données
+### Backup database
 
 ```bash
 docker-compose exec db pg_dump -U novaville novaville > backup.sql
 ```
 
-### Restauration
+### Restore
 
 ```bash
 docker-compose exec -T db psql -U novaville novaville < backup.sql
 ```
 
-## Prochaines étapes
+## Next steps
 
-Consultez la [Documentation Technique](../technical/architecture) pour comprendre l'architecture du système.
+See [Technical documentation](../technical/architecture) to understand the system architecture.

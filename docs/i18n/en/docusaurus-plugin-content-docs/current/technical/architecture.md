@@ -4,11 +4,13 @@ sidebar_position: 1
 
 # Architecture
 
-Cette page décrit l'architecture globale de la plateforme Novaville.
+This page describes the overall architecture of the Novaville platform.
 
-## Vue d'ensemble
+> See also the internal guide: [Internal Guides](./internal-guides) — installation procedures, first-steps and deployment playbook.
 
-Novaville suit une **architecture en trois tiers** classique :
+## Overview
+
+Novaville follows a classic **three-tier architecture**:
 
 ```
 ┌─────────────────┐
