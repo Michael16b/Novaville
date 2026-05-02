@@ -26,12 +26,18 @@ const sidebars = {
         'getting-started/configuration',
       ],
     },
+    'dev-onboarding',
+    'contributing',
     {
       type: 'category',
       label: 'Documentation technique',
       items: [
         'technical/architecture',
         'technical/backend',
+        'technical/local-deployment',
+        'technical/internal-guides',
+        'technical/azure-deployment',
+        'technical/docs-deployment',
       ],
     },
   ],
@@ -79,42 +85,9 @@ const sidebars = {
     },
   ],
 
-  // User Manual
-  userManualSidebar: [
-    'user-manual/intro',
-    {
-      type: 'category',
-      label: 'Premiers pas',
-      items: [
-        'user-manual/first-steps/login',
-        'user-manual/first-steps/dashboard',
-        'user-manual/first-steps/navigation',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Événements',
-      items: [
-        'user-manual/events/participate',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Rapports',
-      items: [
-        'user-manual/reports/create',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'FAQ',
-      items: [
-        'user-manual/faq/general',
-        'user-manual/faq/troubleshooting',
-      ],
-    },
-  ],
+  
 };
 
 module.exports = sidebars;
+
 
