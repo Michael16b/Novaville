@@ -50,6 +50,7 @@ class UsefulInfoBloc extends Bloc<UsefulInfoEvent, UsefulInfoState> {
     final previousInfo = switch (state) {
       UsefulInfoLoaded s => s.info,
       UsefulInfoSaving s => s.info,
+      UsefulInfoSaveFailure s => s.info,
       _ => null,
     };
 
@@ -61,7 +62,9 @@ class UsefulInfoBloc extends Bloc<UsefulInfoEvent, UsefulInfoState> {
       emit(UsefulInfoLoaded(event.info));
     } catch (e) {
       if (previousInfo != null) {
-        emit(UsefulInfoLoaded(previousInfo));
+        emit(
+          UsefulInfoSaveFailure(info: previousInfo, message: _humanizeError(e)),
+        );
       } else {
         emit(UsefulInfoFailure(_humanizeError(e)));
       }

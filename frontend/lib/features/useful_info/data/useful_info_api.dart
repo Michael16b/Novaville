@@ -1,6 +1,19 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+class UsefulInfoApiException implements Exception {
+  final int statusCode;
+  final String message;
+
+  const UsefulInfoApiException({
+    required this.statusCode,
+    required this.message,
+  });
+
+  @override
+  String toString() => message;
+}
+
 class UsefulInfoApi {
   final http.Client client;
   final String baseUrl;
@@ -15,7 +28,13 @@ class UsefulInfoApi {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Erreur récupération useful info');
+      throw UsefulInfoApiException(
+        statusCode: response.statusCode,
+        message: _buildErrorMessage(
+          response,
+          fallback: 'Erreur récupération useful info',
+        ),
+      );
     }
 
     return jsonDecode(response.body) as Map<String, dynamic>;
@@ -30,7 +49,28 @@ class UsefulInfoApi {
     );
 
     if (response.statusCode != 200 && response.statusCode != 204) {
-      throw Exception('Erreur mise à jour useful info');
+      throw UsefulInfoApiException(
+        statusCode: response.statusCode,
+        message: _buildErrorMessage(
+          response,
+          fallback: 'Erreur mise à jour useful info',
+        ),
+      );
+    }
+  }
+
+  String _buildErrorMessage(
+    http.Response response, {
+    required String fallback,
+  }) {
+    final body = response.body.trim();
+    if (body.isEmpty) return '$fallback (${response.statusCode})';
+
+    try {
+      final decoded = jsonDecode(body);
+      return '$fallback (${response.statusCode}) : $decoded';
+    } catch (_) {
+      return '$fallback (${response.statusCode}) : $body';
     }
   }
 }

@@ -20,10 +20,7 @@ import '../widgets/social_network_actions.dart';
 import 'package:frontend/ui/widgets/breadcrumb.dart';
 
 class UsefulInfoPage extends StatefulWidget {
-  const UsefulInfoPage({
-    this.startInEditMode = false,
-    super.key,
-  });
+  const UsefulInfoPage({this.startInEditMode = false, super.key});
 
   final bool startInEditMode;
 
@@ -48,14 +45,15 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
       floatingActionButton: isAdmin
           ? FloatingActionButton(
               heroTag: 'useful-info-fab',
-              tooltip: isEditing
-                  ? AppTextsGeneral.close
-                  : AppTextsGeneral.edit,
+              tooltip: isEditing ? AppTextsGeneral.close : AppTextsGeneral.edit,
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.white,
               onPressed: () {
                 final blocState = context.read<UsefulInfoBloc>().state;
-                if (blocState is! UsefulInfoLoaded) return;
+                if (blocState is! UsefulInfoLoaded &&
+                    blocState is! UsefulInfoSaveFailure) {
+                  return;
+                }
                 context.go(
                   isEditing ? AppRoutes.usefulInfo : AppRoutes.usefulInfoEdit,
                 );
@@ -76,6 +74,13 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
           }
+
+          if (state is UsefulInfoSaveFailure) {
+            _redirectToReadAfterSave = false;
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
+          }
         },
         child: BlocBuilder<UsefulInfoBloc, UsefulInfoState>(
           builder: (context, state) {
@@ -91,11 +96,15 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
               return Center(child: Text(state.message));
             }
 
-            if (state is! UsefulInfoLoaded) {
+            final info = switch (state) {
+              UsefulInfoLoaded s => s.info,
+              UsefulInfoSaveFailure s => s.info,
+              _ => null,
+            };
+
+            if (info == null) {
               return const SizedBox.shrink();
             }
-
-            final info = state.info;
 
             if (isEditing && isAdmin) {
               return _UsefulInfoEditView(

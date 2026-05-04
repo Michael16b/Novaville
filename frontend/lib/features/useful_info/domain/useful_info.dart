@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+const Object _unset = Object();
+
 class UsefulInfo extends Equatable {
   final String cityHallName;
   final String addressLine1;
@@ -88,32 +90,36 @@ class UsefulInfo extends Equatable {
   UsefulInfo copyWith({
     String? cityHallName,
     String? addressLine1,
-    String? addressLine2,
+    Object? addressLine2 = _unset,
     String? postalCode,
     String? city,
-    String? phone,
-    String? email,
-    String? website,
-    String? instagram,
-    String? facebook,
-    String? x,
+    Object? phone = _unset,
+    Object? email = _unset,
+    Object? website = _unset,
+    Object? instagram = _unset,
+    Object? facebook = _unset,
+    Object? x = _unset,
     Map<String, List<String>>? openingHours,
-    String? additionalInfo,
+    Object? additionalInfo = _unset,
   }) {
     return UsefulInfo(
       cityHallName: cityHallName ?? this.cityHallName,
       addressLine1: addressLine1 ?? this.addressLine1,
-      addressLine2: addressLine2 ?? this.addressLine2,
+      addressLine2: addressLine2 == _unset
+          ? this.addressLine2
+          : addressLine2 as String?,
       postalCode: postalCode ?? this.postalCode,
       city: city ?? this.city,
-      phone: phone ?? this.phone,
-      email: email ?? this.email,
-      website: website ?? this.website,
-      instagram: instagram ?? this.instagram,
-      facebook: facebook ?? this.facebook,
-      x: x ?? this.x,
+      phone: phone == _unset ? this.phone : phone as String?,
+      email: email == _unset ? this.email : email as String?,
+      website: website == _unset ? this.website : website as String?,
+      instagram: instagram == _unset ? this.instagram : instagram as String?,
+      facebook: facebook == _unset ? this.facebook : facebook as String?,
+      x: x == _unset ? this.x : x as String?,
       openingHours: openingHours ?? this.openingHours,
-      additionalInfo: additionalInfo ?? this.additionalInfo,
+      additionalInfo: additionalInfo == _unset
+          ? this.additionalInfo
+          : additionalInfo as String?,
     );
   }
 
