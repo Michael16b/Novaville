@@ -51,3 +51,14 @@ class UsefulInfoSaving extends UsefulInfoState {
   @override
   List<Object?> get props => [info];
 }
+
+/// A save operation failed, but the previous useful info remains available.
+class UsefulInfoSaveFailure extends UsefulInfoState {
+  final UsefulInfo info;
+  final String message;
+
+  const UsefulInfoSaveFailure({required this.info, required this.message});
+
+  @override
+  List<Object?> get props => [info, message];
+}

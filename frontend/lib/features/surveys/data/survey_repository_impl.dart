@@ -7,9 +7,8 @@ import 'package:frontend/features/users/data/models/user_role.dart';
 /// HTTP implementation of [ISurveyRepository].
 class SurveyRepositoryImpl implements ISurveyRepository {
   /// Creates a [SurveyRepositoryImpl].
-  SurveyRepositoryImpl({
-    required ApiClient authenticatedApiClient,
-  }) : _authenticatedApiClient = authenticatedApiClient;
+  SurveyRepositoryImpl({required ApiClient authenticatedApiClient})
+    : _authenticatedApiClient = authenticatedApiClient;
 
   final ApiClient _authenticatedApiClient;
 
@@ -69,7 +68,9 @@ class SurveyRepositoryImpl implements ISurveyRepository {
     );
 
     if (response.statusCode != 201) {
-      throw Exception('Erreur creation sondage: ${response.statusCode}');
+      throw Exception(
+        'Erreur creation sondage: ${response.statusCode} ${response.body}',
+      );
     }
   }
 
@@ -92,13 +93,17 @@ class SurveyRepositoryImpl implements ISurveyRepository {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Erreur modification sondage: ${response.statusCode}');
+      throw Exception(
+        'Erreur modification sondage: ${response.statusCode} ${response.body}',
+      );
     }
   }
 
   @override
   Future<void> deleteSurvey({required int surveyId}) async {
-    final response = await _authenticatedApiClient.delete('/api/v1/surveys/$surveyId/');
+    final response = await _authenticatedApiClient.delete(
+      '/api/v1/surveys/$surveyId/',
+    );
     if (response.statusCode != 204 && response.statusCode != 200) {
       throw Exception('Erreur suppression sondage: ${response.statusCode}');
     }
@@ -116,4 +121,3 @@ class SurveyRepositoryImpl implements ISurveyRepository {
     }
   }
 }
-
