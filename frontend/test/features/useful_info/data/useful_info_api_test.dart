@@ -5,6 +5,24 @@ import 'package:http/testing.dart';
 
 void main() {
   group('UsefulInfoApi', () {
+    test('uses the trailing slash expected by the Django route', () async {
+      late Uri requestedUrl;
+      final api = UsefulInfoApi(
+        client: MockClient((request) async {
+          requestedUrl = request.url;
+          return http.Response(
+            '{"city_hall_name":"Mairie","address_line1":"1 rue de la Mairie","postal_code":"75000","city":"Novaville","opening_hours":{}}',
+            200,
+          );
+        }),
+        baseUrl: 'http://localhost:8000',
+      );
+
+      await api.fetchUsefulInfo();
+
+      expect(requestedUrl.path, '/api/v1/useful-info/');
+    });
+
     test('throws a detailed exception when update returns 400', () async {
       final api = UsefulInfoApi(
         client: MockClient(

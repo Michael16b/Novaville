@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/features/useful_info/application/bloc/useful_info_bloc.dart';
 import 'package:frontend/features/useful_info/application/bloc/useful_info_event.dart';
 import 'package:frontend/features/useful_info/application/bloc/useful_info_state.dart';
+import 'package:frontend/features/useful_info/data/useful_info_api.dart';
 import 'package:frontend/features/useful_info/data/useful_info_repository.dart';
 import 'package:frontend/features/useful_info/domain/useful_info.dart';
 
@@ -33,7 +34,7 @@ void main() {
         contains(
           const UsefulInfoSaveFailure(
             info: info,
-            message: 'Exception: Erreur mise à jour useful info (400)',
+            message: 'Impossible de modifier les infos utiles.',
           ),
         ),
       );
@@ -54,6 +55,9 @@ class _FailingSaveUsefulInfoRepository implements UsefulInfoRepository {
 
   @override
   Future<void> saveUsefulInfo(UsefulInfo info) async {
-    throw Exception('Erreur mise à jour useful info (400)');
+    throw const UsefulInfoApiException(
+      statusCode: 400,
+      message: 'Erreur mise à jour useful info (400)',
+    );
   }
 }

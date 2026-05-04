@@ -26,6 +26,8 @@ class UsefulInfoTexts {
 
   /// Generic error label (optional, if you want to standardize).
   static const error = 'Erreur';
+  static const loadError = 'Impossible de charger les infos utiles.';
+  static const saveError = 'Impossible de modifier les infos utiles.';
 
   /// Loading label (optional if you ever display text instead of spinner).
   static const loading = 'Chargement...';

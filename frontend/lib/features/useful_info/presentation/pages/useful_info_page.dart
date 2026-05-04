@@ -11,6 +11,7 @@ import 'package:frontend/features/useful_info/application/bloc/useful_info_event
 import 'package:frontend/features/useful_info/application/bloc/useful_info_state.dart';
 import 'package:frontend/features/useful_info/domain/useful_info.dart';
 
+import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
 import 'package:go_router/go_router.dart';
 
@@ -70,16 +71,12 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
 
           if (state is UsefulInfoFailure) {
             _redirectToReadAfterSave = false;
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            CustomSnackBar.showError(context, state.message);
           }
 
           if (state is UsefulInfoSaveFailure) {
             _redirectToReadAfterSave = false;
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            CustomSnackBar.showError(context, state.message);
           }
         },
         child: BlocBuilder<UsefulInfoBloc, UsefulInfoState>(

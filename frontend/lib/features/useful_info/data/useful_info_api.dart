@@ -23,7 +23,7 @@ class UsefulInfoApi {
   /// GET /useful-info
   Future<Map<String, dynamic>> fetchUsefulInfo() async {
     final response = await client.get(
-      Uri.parse('$baseUrl/api/v1/useful-info'),
+      Uri.parse('$baseUrl/api/v1/useful-info/'),
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -43,7 +43,7 @@ class UsefulInfoApi {
   /// PUT /useful-info (admin only)
   Future<void> updateUsefulInfo(Map<String, dynamic> payload) async {
     final response = await client.put(
-      Uri.parse('$baseUrl/api/v1/useful-info'),
+      Uri.parse('$baseUrl/api/v1/useful-info/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(payload),
     );
