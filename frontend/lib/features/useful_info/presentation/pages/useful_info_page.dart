@@ -498,7 +498,7 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
                                       child: Text(
                                         slot.start != null
                                             ? '${slot.start!.hour.toString().padLeft(2, '0')}:${slot.start!.minute.toString().padLeft(2, '0')}'
-                                            : 'Début',
+                                            : 'Début *',
                                       ),
                                     ),
                                   ),
@@ -518,7 +518,7 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
                                       child: Text(
                                         slot.end != null
                                             ? '${slot.end!.hour.toString().padLeft(2, '0')}:${slot.end!.minute.toString().padLeft(2, '0')}'
-                                            : 'Fin',
+                                            : 'Fin *',
                                       ),
                                     ),
                                   ),
@@ -557,33 +557,30 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
                   TextFormField(
                     controller: _phoneController,
                     decoration: InputDecoration(
-                      labelText: UsefulInfoTexts.phoneLabel.replaceAll(
-                        ' :',
-                        '',
-                      ),
+                      labelText:
+                          '${UsefulInfoTexts.phoneLabel.replaceAll(' :', '')} *',
                     ),
+                    validator: _requiredValidator,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _emailController,
                     decoration: InputDecoration(
-                      labelText: UsefulInfoTexts.emailLabel.replaceAll(
-                        ' :',
-                        '',
-                      ),
+                      labelText:
+                          '${UsefulInfoTexts.emailLabel.replaceAll(' :', '')} *',
                     ),
                     keyboardType: TextInputType.emailAddress,
+                    validator: _requiredValidator,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _websiteController,
                     decoration: InputDecoration(
-                      labelText: UsefulInfoTexts.websiteLabel.replaceAll(
-                        ' :',
-                        '',
-                      ),
+                      labelText:
+                          '${UsefulInfoTexts.websiteLabel.replaceAll(' :', '')} *',
                     ),
                     keyboardType: TextInputType.url,
+                    validator: _requiredValidator,
                   ),
                 ],
               ),
