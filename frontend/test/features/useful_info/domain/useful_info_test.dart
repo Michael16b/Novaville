@@ -35,5 +35,21 @@ void main() {
       expect(updated.x, info.x);
       expect(updated.additionalInfo, info.additionalInfo);
     });
+
+    test('toJson sends empty strings for backend-required contact fields', () {
+      const infoWithoutContact = UsefulInfo(
+        cityHallName: 'Mairie de Novaville',
+        addressLine1: '1 place de la Mairie',
+        postalCode: '75000',
+        city: 'Novaville',
+        openingHours: {},
+      );
+
+      final json = infoWithoutContact.toJson();
+
+      expect(json['phone'], '');
+      expect(json['email'], '');
+      expect(json['website'], '');
+    });
   });
 }

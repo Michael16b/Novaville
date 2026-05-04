@@ -1,4 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/constants/texts/texts_useful_info.dart';
+
+import '../../data/useful_info_api.dart';
 
 import '../../data/useful_info_repository.dart';
 import '../../domain/useful_info.dart';
@@ -39,7 +42,11 @@ class UsefulInfoBloc extends Bloc<UsefulInfoEvent, UsefulInfoState> {
       final UsefulInfo info = await repository.getUsefulInfo();
       emit(UsefulInfoLoaded(info));
     } catch (e) {
-      emit(UsefulInfoFailure(_humanizeError(e)));
+      emit(
+        UsefulInfoFailure(
+          _humanizeError(e, fallback: UsefulInfoTexts.loadError),
+        ),
+      );
     }
   }
 
@@ -66,12 +73,22 @@ class UsefulInfoBloc extends Bloc<UsefulInfoEvent, UsefulInfoState> {
           UsefulInfoSaveFailure(info: previousInfo, message: _humanizeError(e)),
         );
       } else {
-        emit(UsefulInfoFailure(_humanizeError(e)));
+        emit(
+          UsefulInfoFailure(
+            _humanizeError(e, fallback: UsefulInfoTexts.saveError),
+          ),
+        );
       }
     }
   }
 
-  String _humanizeError(Object e) {
+  String _humanizeError(
+    Object e, {
+    String fallback = UsefulInfoTexts.saveError,
+  }) {
+    if (e is UsefulInfoApiException) {
+      return fallback;
+    }
     return e.toString();
   }
 }
