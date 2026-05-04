@@ -38,21 +38,15 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
     _targetRole = survey?.citizenTarget;
 
     if (survey == null) {
-      _optionControllers = [
-        TextEditingController(),
-        TextEditingController(),
-      ];
+      _optionControllers = [TextEditingController(), TextEditingController()];
       return;
     }
 
     _optionControllers = survey.options.isNotEmpty
         ? survey.options
-            .map((option) => TextEditingController(text: option.text))
-            .toList()
-        : [
-            TextEditingController(),
-            TextEditingController(),
-          ];
+              .map((option) => TextEditingController(text: option.text))
+              .toList()
+        : [TextEditingController(), TextEditingController()];
   }
 
   @override
@@ -150,7 +144,7 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
               onChanged: (value) => setState(() => _targetRole = value),
             ),
             const SizedBox(height: 14),
-            _buildFieldLabel(SurveysTexts.descriptionLabel),
+            _buildFieldLabel('${SurveysTexts.descriptionLabel} *'),
             TextFormField(
               controller: _descriptionController,
               maxLines: 3,
@@ -159,11 +153,21 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return SurveysTexts.descriptionRequired;
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 14),
             if (!_isEditing) ...[
               _buildFieldLabel('${SurveysTexts.optionsLabel} *'),
-              for (var index = 0; index < _optionControllers.length; index++) ...[
+              for (
+                var index = 0;
+                index < _optionControllers.length;
+                index++
+              ) ...[
                 Row(
                   children: [
                     Expanded(
@@ -188,7 +192,9 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
                       onPressed: _optionControllers.length > 2
                           ? () {
                               setState(() {
-                                final controller = _optionControllers.removeAt(index);
+                                final controller = _optionControllers.removeAt(
+                                  index,
+                                );
                                 controller.dispose();
                               });
                             }
@@ -213,9 +219,9 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
             Text(
               AppTextsGeneral.requiredFieldsHint,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.secondaryText,
-                    fontStyle: FontStyle.italic,
-                  ),
+                color: AppColors.secondaryText,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
         ),
@@ -229,9 +235,9 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.secondaryText,
-              fontWeight: FontWeight.w600,
-            ),
+          color: AppColors.secondaryText,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -248,23 +254,19 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
         .toList();
 
     if (!_isEditing && options.length < 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(SurveysTexts.minOptions)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(SurveysTexts.minOptions)));
       return;
     }
 
-    Navigator.pop<Map<String, dynamic>>(
-      context,
-      {
-        if (_isEditing) 'survey_id': widget.survey!.id,
-        'question': _questionController.text.trim(),
-        'description': _descriptionController.text.trim(),
-        'address': _addressController.text.trim(),
-        'citizen_target': _targetRole,
-        if (!_isEditing) 'options': options,
-      },
-    );
+    Navigator.pop<Map<String, dynamic>>(context, {
+      if (_isEditing) 'survey_id': widget.survey!.id,
+      'question': _questionController.text.trim(),
+      'description': _descriptionController.text.trim(),
+      'address': _addressController.text.trim(),
+      'citizen_target': _targetRole,
+      if (!_isEditing) 'options': options,
+    });
   }
 }
-

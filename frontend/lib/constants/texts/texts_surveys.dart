@@ -40,7 +40,8 @@ class SurveysTexts {
 
   static const questionLabel = 'Question';
   static const questionRequired = 'La question est obligatoire.';
-  static const questionHint = 'Ex: Souhaitez-vous plus de bancs dans ce quartier ?';
+  static const questionHint =
+      'Ex: Souhaitez-vous plus de bancs dans ce quartier ?';
 
   static const addressLabel = 'Adresse exacte';
   static const addressRequired = "L'adresse est obligatoire.";
@@ -55,6 +56,9 @@ class SurveysTexts {
   static const addOption = 'Ajouter une réponse';
 
   static const descriptionLabel = 'Description';
+
+  /// Validation message for the survey description field.
+  static const descriptionRequired = 'La description est obligatoire.';
   static const vote = 'Voter';
   static const totalVotes = 'votes';
   static const targetedAudience = 'Cible';
