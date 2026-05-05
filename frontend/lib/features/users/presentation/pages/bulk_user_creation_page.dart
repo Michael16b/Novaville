@@ -552,9 +552,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       context: context,
       builder: (dialogContext) {
         return StyledDialog(
-          title: BulkUserCreationTexts.csvCompilationDialogTitle(
-            errors.length,
-          ),
+          title: BulkUserCreationTexts.csvCompilationDialogTitle(errors.length),
           icon: Icons.error_outline,
           accentColor: AppColors.error,
           maxWidth: 720,
@@ -584,9 +582,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      for (var index = 0;
-                          index < errors.length;
-                          index++) ...[
+                      for (var index = 0; index < errors.length; index++) ...[
                         Builder(
                           builder: (context) {
                             final error = errors[index];
@@ -594,18 +590,13 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                               dense: true,
                               leading: CircleAvatar(
                                 radius: 14,
-                                backgroundColor:
-                                    AppColors.error.withValues(
+                                backgroundColor: AppColors.error.withValues(
                                   alpha: 0.15,
                                 ),
                                 child: Text(
                                   '${error.line}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(fontWeight: FontWeight.w700),
                                 ),
                               ),
                               title: Text(error.message),
@@ -618,8 +609,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                             );
                           },
                         ),
-                        if (index < errors.length - 1)
-                          const Divider(height: 1),
+                        if (index < errors.length - 1) const Divider(height: 1),
                       ],
                     ],
                   ),
@@ -820,12 +810,14 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       'last_name': credential.lastName,
       'username': credential.username,
       'email': credential.email ?? '',
-      'password': credential.password,
     });
+
+    // Encode to base64url (standard allows padding removal, but we keep consistency)
     final encodedShareRef = base64Url
         .encode(utf8.encode(payload))
         .replaceAll('=', '');
 
+    // Build route with query parameters
     final routeUri = Uri(
       path: AppRoutes.credentialsShare,
       queryParameters: {
@@ -836,10 +828,14 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final currentUri = Uri.base;
     final usesHashRouting = currentUri.fragment.startsWith('/');
 
+    // Generate share link - ensure proper URL construction
     if (usesHashRouting) {
-      return '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#${routeUri.toString()}';
+      // Hash routing: https://example.com/#/credentials-share?share_ref=xyz
+      final fullPath = routeUri.toString();
+      return '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#$fullPath';
     }
 
+    // Path routing: https://example.com/credentials-share?share_ref=xyz
     return currentUri.resolveUri(routeUri).toString();
   }
 
@@ -1000,7 +996,23 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           pw.SizedBox(height: compact ? 6 : 10),
           lineItem(BulkUserCreationTexts.pdfEmailLabel, credential.email ?? ''),
           lineItem(BulkUserCreationTexts.pdfUsernameLabel, credential.username),
-          lineItem(BulkUserCreationTexts.pdfPasswordLabel, credential.password),
+          pw.SizedBox(height: compact ? 8 : 12),
+          pw.Container(
+            padding: pw.EdgeInsets.all(compact ? 6 : 8),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.grey100,
+              borderRadius: pw.BorderRadius.circular(6),
+              border: pw.Border.all(color: PdfColors.grey300),
+            ),
+            child: pw.Text(
+              BulkUserCreationTexts.pdfPasswordNotice,
+              style: pw.TextStyle(
+                fontSize: compact ? 7.5 : 8.5,
+                color: PdfColors.grey700,
+                fontStyle: pw.FontStyle.italic,
+              ),
+            ),
+          ),
         ],
       ),
     );

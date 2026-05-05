@@ -245,3 +245,54 @@ class UserViewSet(viewsets.ModelViewSet):
             {"detail": "password_reset_success"},
             status=status.HTTP_200_OK
         )
+
+    @extend_schema(
+        summary="Set initial password (first login)",
+        description="Allows a newly created user to set their initial password without knowing the old one",
+        tags=["Users"],
+        request=serializers.Serializer,
+        responses={200: None}
+    )
+    @action(detail=True, methods=['post'], url_path='set_initial_password', permission_classes=[IsAuthenticated])
+    def set_initial_password(self, request, pk=None):
+        """Allow a user to set their password on first login"""
+        user = self.get_object()
+
+        # Only allow users to set their own initial password
+        if user != request.user:
+            return Response(
+                {"code": "forbidden"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Only allow if first login not yet completed
+        if user.first_login_completed:
+            return Response(
+                {"code": "already_initialized"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        new_password = request.data.get('password')
+
+        if not new_password:
+            return Response(
+                {"code": "password_required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            validate_password(new_password, user)
+        except serializers.ValidationError as e:
+            return Response(
+                {"code": "password_invalid", "details": e.messages},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.set_password(new_password)
+        user.first_login_completed = True
+        user.save(update_fields=['password', 'first_login_completed'])
+
+        return Response(
+            {"detail": "initial_password_set_success"},
+            status=status.HTTP_200_OK
+        )

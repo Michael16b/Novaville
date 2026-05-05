@@ -92,7 +92,7 @@ class _LoginPageState extends State<LoginPage> {
                                     const SizedBox(height: 24),
                                     TextFormField(
                                       controller: _usernameController,
-                                      keyboardType: TextInputType.name,
+                                      keyboardType: TextInputType.emailAddress,
                                       textInputAction: TextInputAction.next,
                                       validator: (v) => (v == null || v.isEmpty)
                                           ? AppValidatorMessages
@@ -100,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
                                           : null,
                                       decoration: const InputDecoration(
                                         labelText:
-                                            '${AppFormLabels.username} *',
+                                            '${AppTextsAuth.usernameOrEmail} *',
                                       ),
                                     ),
                                     const SizedBox(height: 24),

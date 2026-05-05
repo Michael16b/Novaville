@@ -176,16 +176,12 @@ class _SingleUserEditDialogState extends State<SingleUserEditDialog> {
               isExpanded: true,
               menuMaxHeight: 300,
               borderRadius: BorderRadius.circular(12),
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
               items: UserRole.values
                   .where((role) => role != UserRole.globalAdmin)
                   .map(
-                    (role) => DropdownMenuItem(
-                      value: role,
-                      child: Text(role.label),
-                    ),
+                    (role) =>
+                        DropdownMenuItem(value: role, child: Text(role.label)),
                   )
                   .toList(),
               onChanged: (value) {
@@ -236,9 +232,9 @@ class _SingleUserEditDialogState extends State<SingleUserEditDialog> {
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.secondaryText,
-              fontWeight: FontWeight.w600,
-            ),
+          color: AppColors.secondaryText,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -394,10 +390,10 @@ class _CredentialsDialogState extends State<_CredentialsDialog> {
       'last_name': widget.lastName,
       'username': widget.username,
       'email': widget.email,
-      'password': widget.password,
     });
-    final encodedShareRef =
-        base64Url.encode(utf8.encode(payload)).replaceAll('=', '');
+    final encodedShareRef = base64Url
+        .encode(utf8.encode(payload))
+        .replaceAll('=', '');
 
     final routeUri = Uri(
       path: AppRoutes.credentialsShare,
@@ -571,9 +567,7 @@ class _NeighborhoodAutocompleteFieldState
           validator: (_) => widget.validator?.call(_selectedId),
           decoration: InputDecoration(
             hintText: UserTexts.selectNeighborhood,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 12,
@@ -659,9 +653,9 @@ class _RequiredFieldsHint extends StatelessWidget {
         Text(
           AppTextsGeneral.requiredFieldsHint,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.secondaryText,
-                fontStyle: FontStyle.italic,
-              ),
+            color: AppColors.secondaryText,
+            fontStyle: FontStyle.italic,
+          ),
         ),
       ],
     );

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/config/app_routes.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
@@ -75,10 +76,20 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
     }
 
     try {
+      // Step 1: Normalize base64 padding
       final normalized = base64Url.normalize(shareRef.trim());
-      final decodedJson = utf8.decode(base64Url.decode(normalized));
+
+      // Step 2: Decode from base64
+      final decodedBytes = base64Url.decode(normalized);
+
+      // Step 3: Convert bytes to UTF-8 string
+      final decodedJson = utf8.decode(decodedBytes);
+
+      // Step 4: Parse JSON
       final decoded = jsonDecode(decodedJson);
+
       if (decoded is! Map<String, dynamic>) {
+        // Invalid JSON structure
         return null;
       }
 
@@ -88,14 +99,12 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
       final lastName = safeString(decoded['last_name']);
       final username = safeString(decoded['username']);
       final email = safeString(decoded['email']);
-      final password = safeString(decoded['password']);
 
       final hasAtLeastOneValue =
           firstName.isNotEmpty ||
           lastName.isNotEmpty ||
           username.isNotEmpty ||
-          email.isNotEmpty ||
-          password.isNotEmpty;
+          email.isNotEmpty;
 
       if (!hasAtLeastOneValue) {
         return null;
@@ -106,16 +115,49 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
         lastName: lastName,
         username: username,
         email: email,
-        password: password,
       );
-    } catch (_) {
+    } on FormatException catch (e) {
+      print('[CredentialsShare] Decode error: $e');
+      return null;
+    } catch (e) {
+      print('[CredentialsShare] Decode error: $e');
       return null;
     }
   }
 
+  Uri _buildRegisterUri(_ShareCredentialData data) {
+    return Uri(
+      path: AppRoutes.register,
+      queryParameters: {
+        'first_name': data.firstName,
+        'last_name': data.lastName,
+        'username': data.username,
+        'email': data.email,
+      },
+    );
+  }
+
   Future<_ShareCredentialData?> _loadShareData() async {
     final params = _collectShareParams();
+
+    // Log collected parameters for debugging
+    if (params.isEmpty) {
+      print('[CredentialsShare] No parameters found in URL');
+    } else {
+      print('[CredentialsShare] Parameters collected: ${params.keys.toList()}');
+    }
+
     final shareRef = params[BulkUserCreationTexts.shareReferenceKey];
+
+    if (shareRef == null) {
+      print(
+        '[CredentialsShare] No share_ref parameter found (looking for: ${BulkUserCreationTexts.shareReferenceKey})',
+      );
+      print('[CredentialsShare] Available keys: ${params.keys.toList()}');
+    } else {
+      print('[CredentialsShare] Found share_ref (length: ${shareRef.length})');
+    }
+
     return _decodeShareRef(shareRef);
   }
 
@@ -225,14 +267,14 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
                           color: AppColors.secondaryText,
                         ),
                       ),
-                      if (data.password.isEmpty) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          CredentialsShareTexts.noSensitiveData,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: AppColors.secondaryText),
+                      const SizedBox(height: 8),
+                      Text(
+                        CredentialsShareTexts.registerHint,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.secondaryText,
+                          fontStyle: FontStyle.italic,
                         ),
-                      ],
+                      ),
                       const SizedBox(height: 18),
                       _CredentialRow(
                         label: CredentialsShareTexts.usernameLabel,
@@ -265,23 +307,27 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
                           },
                         ),
                       ],
-                      if (data.password.isNotEmpty) ...[
-                        const SizedBox(height: 10),
-                        _CredentialRow(
-                          label: CredentialsShareTexts.passwordLabel,
-                          value: data.password,
-                          onCopy: () async {
-                            await Clipboard.setData(
-                              ClipboardData(text: data.password),
-                            );
-                            if (!context.mounted) return;
-                            CustomSnackBar.showSuccess(
-                              context,
-                              CredentialsShareTexts.passwordCopied,
-                            );
-                          },
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: AppColors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: () =>
+                              context.go(_buildRegisterUri(data).toString()),
+                          icon: const Icon(Icons.lock_reset),
+                          label: const Text(CredentialsShareTexts.registerCta),
                         ),
-                      ],
+                      ),
                       const SizedBox(height: 24),
                       Center(
                         child: FilledButton.icon(
@@ -313,7 +359,9 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
                             }
                           },
                           icon: const Icon(Icons.open_in_new),
-                          label: const Text(CredentialsShareTexts.openSiteLabel),
+                          label: const Text(
+                            CredentialsShareTexts.openSiteLabel,
+                          ),
                         ),
                       ),
                     ],
@@ -334,7 +382,6 @@ class _ShareCredentialData {
     required this.lastName,
     required this.username,
     required this.email,
-    required this.password,
   });
 
   factory _ShareCredentialData.fromMap(Map<String, dynamic> map) {
@@ -345,7 +392,6 @@ class _ShareCredentialData {
       lastName: safeString(map['last_name']),
       username: safeString(map['username']),
       email: safeString(map['email']),
-      password: safeString(map['password']),
     );
   }
 
@@ -353,7 +399,6 @@ class _ShareCredentialData {
   final String lastName;
   final String username;
   final String email;
-  final String password;
 }
 
 class _CredentialRow extends StatelessWidget {
