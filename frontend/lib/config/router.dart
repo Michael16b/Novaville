@@ -82,6 +82,10 @@ String? authRedirect({
     return AppRoutes.home;
   }
 
+  if (isCredentialsShare) {
+    return null;
+  }
+
   final intendedLocation = (fromLocation != null && fromLocation.isNotEmpty)
       ? fromLocation
       : currentLocation;
