@@ -1,3 +1,8 @@
+# Environment files - MUST NOT be copied to image
+.env
+.env.*
+!.env.example
+
 # Caches et builds Flutter (doivent être reconstruits dans le conteneur)
 .dart_tool/
 .packages

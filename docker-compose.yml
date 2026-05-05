@@ -6,7 +6,7 @@ services:
     environment:
       - POSTGRES_USER=${DB_USER:-novaville_user}
       - POSTGRES_DB=${DB_NAME:-novaville_db}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-novaville_dev_password}
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
@@ -35,7 +35,7 @@ services:
       - DJANGO_SUPERUSER_FIRST_NAME=${DJANGO_SUPERUSER_FIRST_NAME:-Admin}
       - DJANGO_SUPERUSER_LAST_NAME=${DJANGO_SUPERUSER_LAST_NAME:-Novaville}
       # Required: admin account is only created when this variable is set (see ensure_admin command)
-      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD:-ChangeMe123}
       # WARNING: The following keys use development-only defaults. MUST be changed for any deployment beyond local development.
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-dev-only-unsafe-key-change-me-32chars}
       - JWT_SIGNING_KEY=${JWT_SIGNING_KEY:-dev-only-unsafe-key-change-me-32chars}
@@ -48,7 +48,7 @@ services:
       - DB_NAME=${DB_NAME:-novaville_db}
       - DB_USER=${DB_USER:-novaville_user}
       # Required: must match POSTGRES_PASSWORD set on the postgres service
-      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PASSWORD=${DB_PASSWORD:-novaville_dev_password}
       # Options démarrage
       - MIGRATE=1
       - COLLECTSTATIC=1
