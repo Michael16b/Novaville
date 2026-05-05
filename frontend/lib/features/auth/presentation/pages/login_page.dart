@@ -173,6 +173,16 @@ class _LoginPageState extends State<LoginPage> {
                                       icon: const Icon(Icons.person_add_alt_1),
                                       label: const Text(AppTextsAuth.register),
                                     ),
+                                    const SizedBox(height: 8),
+                                    TextButton.icon(
+                                      onPressed: isLoading
+                                          ? null
+                                          : () => context.push('/set-password'),
+                                      icon: const Icon(Icons.vpn_key_outlined),
+                                      label: const Text(
+                                        AppTextsAuth.firstConnectionButton,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),

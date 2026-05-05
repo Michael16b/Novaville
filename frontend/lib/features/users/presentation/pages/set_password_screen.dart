@@ -29,25 +29,39 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  late final TextEditingController _usernameController;
+  late final TextEditingController _tempPasswordController;
 
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _obscureTempPassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _usernameController = TextEditingController(text: widget.username);
+    _tempPasswordController = TextEditingController(
+      text: widget.tempPassword ?? '',
+    );
+  }
 
   @override
   void dispose() {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _usernameController.dispose();
+    _tempPasswordController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (widget.tempPassword == null || widget.tempPassword!.isEmpty) {
+    if (_tempPasswordController.text.isEmpty) {
       CustomSnackBar.showError(
         context,
-        'Mot de passe temporaire manquant. Impossible de mettre à jour.',
+        'Le code d\'activation ou mot de passe temporaire est requis.',
       );
       return;
     }
@@ -60,8 +74,8 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
         Uri.parse('http://localhost:8000/api/v1/auth/token/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'username': widget.username,
-          'password': widget.tempPassword,
+          'username': _usernameController.text,
+          'password': _tempPasswordController.text,
         }),
       );
 
@@ -221,10 +235,57 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                           children: [
                             if (fullName.isNotEmpty)
                               _buildInfoField('Nom complet', fullName),
-                            _buildInfoField(
-                              'Nom d\'utilisateur',
-                              widget.username,
-                            ),
+
+                            // Si le username n'est pas fourni dans l'URL, on laisse l'utilisateur le saisir
+                            if (widget.username.isEmpty)
+                              TextFormField(
+                                controller: _usernameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Nom d\'utilisateur',
+                                  hintText: 'Saisissez votre identifiant',
+                                  border: OutlineInputBorder(),
+                                ),
+                                validator: (value) =>
+                                    value == null || value.isEmpty
+                                    ? 'L\'identifiant est requis'
+                                    : null,
+                              )
+                            else
+                              _buildInfoField(
+                                'Nom d\'utilisateur',
+                                widget.username,
+                              ),
+
+                            const SizedBox(height: 12),
+
+                            // Si le tempPassword n'est pas fourni dans l'URL, on demande le code d'activation
+                            if (widget.tempPassword == null ||
+                                widget.tempPassword!.isEmpty)
+                              TextFormField(
+                                controller: _tempPasswordController,
+                                obscureText: _obscureTempPassword,
+                                decoration: InputDecoration(
+                                  labelText:
+                                      'Code d\'activation (mot de passe reçu)',
+                                  border: const OutlineInputBorder(),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscureTempPassword
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                    ),
+                                    onPressed: () => setState(
+                                      () => _obscureTempPassword =
+                                          !_obscureTempPassword,
+                                    ),
+                                  ),
+                                ),
+                                validator: (value) =>
+                                    value == null || value.isEmpty
+                                    ? 'Le code d\'activation est requis'
+                                    : null,
+                              ),
+
                             if (widget.email.isNotEmpty)
                               _buildInfoField('Email', widget.email),
                           ],

@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/core/validation_patterns.dart';
@@ -912,10 +913,17 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     required PdfColor background,
     pw.MemoryImage? logo,
     bool compact = false,
+    required String shareUrl,
   }) {
     final titleSize = compact ? 11.0 : 15.0;
     final valueSize = compact ? 9.5 : 11.5;
     final nameSize = compact ? 12.0 : 17.0;
+
+    final currentUri = Uri.base;
+    final usesHashRouting = currentUri.fragment.startsWith('/');
+    final setPasswordUrl = usesHashRouting
+        ? '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#/set-password'
+        : currentUri.resolve('/set-password').toString();
 
     pw.Widget lineItem(String label, String value) {
       return pw.Container(
@@ -1005,13 +1013,71 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
               borderRadius: pw.BorderRadius.circular(6),
               border: pw.Border.all(color: PdfColors.grey300),
             ),
-            child: pw.Text(
-              BulkUserCreationTexts.pdfPasswordNotice,
-              style: pw.TextStyle(
-                fontSize: compact ? 7.5 : 8.5,
-                color: PdfColors.grey700,
-                fontStyle: pw.FontStyle.italic,
-              ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  AppTextsAuth.pdfFirstConnectionNote,
+                  style: pw.TextStyle(
+                    fontSize: compact ? 7.5 : 8.5,
+                    color: PdfColors.grey700,
+                    fontStyle: pw.FontStyle.italic,
+                  ),
+                ),
+                pw.SizedBox(height: 4),
+                pw.Text(
+                  '${AppTextsAuth.pdfActivationCode}${credential.password}',
+                  style: pw.TextStyle(
+                    fontSize: compact ? 9.5 : 11.5,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: compact ? 8 : 12),
+          pw.Center(
+            child: pw.BarcodeWidget(
+              barcode: pw.Barcode.qrCode(),
+              data: shareUrl,
+              color: primary,
+              width: compact ? 60 : 90,
+              height: compact ? 60 : 90,
+            ),
+          ),
+          pw.SizedBox(height: 4),
+          pw.Center(
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Text(
+                  'Scannez le QR Code pour l\'activation',
+                  style: pw.TextStyle(
+                    fontSize: compact ? 7.5 : 9.5,
+                    color: primary,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: compact ? 6 : 8),
+                pw.Text(
+                  '--- OU ---',
+                  style: pw.TextStyle(
+                    fontSize: compact ? 6.5 : 8.5,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+                pw.SizedBox(height: compact ? 6 : 8),
+                pw.Text(
+                  'Allez sur la page :\n$setPasswordUrl\n\n--- OU ---\n\nAllez sur l\'application puis le bouton "Se connecter"\npuis "${AppTextsAuth.firstConnectionButton}"\net entrez les informations sur le pdf.',
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(
+                    fontSize: compact ? 6.5 : 8.5,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -1104,6 +1170,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                           background: background,
                           logo: logo,
                           compact: pageItems.length > 4,
+                          shareUrl: _createCredentialShareLink(item),
                         ),
                       ),
                   ],
@@ -1159,6 +1226,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   accent: accent,
                   background: background,
                   logo: logo,
+                  shareUrl: _createCredentialShareLink(credential),
                 ),
               ),
             );
@@ -1198,6 +1266,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                 accent: accent,
                 background: background,
                 logo: logo,
+                shareUrl: _createCredentialShareLink(credential),
               ),
             ),
           );

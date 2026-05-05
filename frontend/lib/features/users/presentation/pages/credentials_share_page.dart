@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:frontend/config/app_routes.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import 'package:frontend/constants/colors.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
 import 'package:frontend/constants/texts/texts_credentials_share.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
@@ -210,6 +211,13 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
 
         final fullName = '${data.firstName} ${data.lastName}'.trim();
 
+        final path = _buildRegisterUri(data).toString();
+        final currentUri = Uri.base;
+        final usesHashRouting = currentUri.fragment.startsWith('/');
+        final fullUrl = usesHashRouting
+            ? '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#$path'
+            : currentUri.resolve(path).toString();
+
         return Scaffold(
           backgroundColor: AppColors.white,
           body: Center(
@@ -311,6 +319,22 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
                         ),
                       ],
                       const SizedBox(height: 24),
+                      Center(
+                        child: QrImageView(
+                          data: fullUrl,
+                          version: QrVersions.auto,
+                          size: 160.0,
+                          eyeStyle: const QrEyeStyle(
+                            eyeShape: QrEyeShape.square,
+                            color: AppColors.primary,
+                          ),
+                          dataModuleStyle: const QrDataModuleStyle(
+                            dataModuleShape: QrDataModuleShape.square,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
                       Row(
                         children: [
                           Expanded(
@@ -350,14 +374,6 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
                                 ),
                               ),
                               onPressed: () async {
-                                final path = _buildRegisterUri(data).toString();
-                                final currentUri = Uri.base;
-                                final usesHashRouting = currentUri.fragment
-                                    .startsWith('/');
-                                final fullUrl = usesHashRouting
-                                    ? '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#$path'
-                                    : currentUri.resolve(path).toString();
-
                                 final uri = Uri.parse(fullUrl);
                                 if (await url_launcher.canLaunchUrl(uri)) {
                                   await url_launcher.launchUrl(

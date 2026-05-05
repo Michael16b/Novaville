@@ -7,7 +7,7 @@ class AppTextsAuth {
   static const String registerDescription =
       "Renseignez vos informations. Votre compte restera bloque tant qu'un administrateur n'aura pas valide la demande.";
   static const String registerInviteDescription =
-      'Vos informations sont deja pre-remplies. Choisissez simplement votre mot de passe pour activer votre compte.';
+      'Vos informations sont deja pré-remplies. Choisissez simplement votre mot de passe pour activer votre compte.';
   static const String registerInviteTitle = 'Bienvenue';
   static const String completePasswordSetup = 'Choisir mon mot de passe';
   static const String backToHome = "Retour a l'accueil";
@@ -26,4 +26,11 @@ class AppTextsAuth {
       "L'email ou le mot de passe est vide";
   static const String emptyUsernameOrPassword =
       "Le nom d'utilisateur ou le mot de passe est vide";
+
+  static const String firstConnectionButton =
+      '1ère connexion (Activer mon compte)';
+  static const String pdfFirstConnectionNote =
+      'Important : Votre mot de passe sera à définir lors de votre 1ère connexion.';
+  static const String pdfActivationCode =
+      'Code d\'activation (mot de passe temporaire) : ';
 }
