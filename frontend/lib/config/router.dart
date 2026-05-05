@@ -17,6 +17,7 @@ import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/presentation/pages/bulk_user_creation_page.dart';
 import 'package:frontend/features/users/presentation/pages/credentials_share_page.dart';
 import 'package:frontend/features/users/presentation/pages/my_account_page.dart';
+import 'package:frontend/features/users/presentation/pages/set_password_screen.dart';
 import 'package:frontend/features/users/presentation/pages/user_accounts_page.dart';
 import 'package:frontend/ui/layouts/secured_layout.dart';
 import 'package:go_router/go_router.dart';
@@ -56,6 +57,7 @@ String? authRedirect({
     AppRoutes.userAccounts,
     AppRoutes.bulkUserCreation,
     AppRoutes.credentialsShare,
+    '/set-password',
   };
   const publicRoutes = <String>{
     AppRoutes.home,
@@ -63,6 +65,7 @@ String? authRedirect({
     AppRoutes.reports,
     AppRoutes.agenda,
     AppRoutes.usefulInfo,
+    '/set-password',
   };
   final normalizedLocation =
       currentLocation.endsWith('/') && currentLocation.length > 1
@@ -180,6 +183,22 @@ GoRouter buildRouter(AuthBloc authBloc) {
         path: AppRoutes.register,
         pageBuilder: (context, state) =>
             NoTransitionPage(key: state.pageKey, child: const RegisterPage()),
+      ),
+      GoRoute(
+        path: '/set-password',
+        pageBuilder: (context, state) {
+          final query = state.uri.queryParameters;
+          return NoTransitionPage(
+            key: state.pageKey,
+            child: SetPasswordScreen(
+              username: query['username'] ?? '',
+              email: query['email'] ?? '',
+              firstName: query['first_name'],
+              lastName: query['last_name'],
+              tempPassword: query['temp_password'],
+            ),
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.credentialsShare,

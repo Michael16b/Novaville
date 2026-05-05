@@ -810,6 +810,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       'last_name': credential.lastName,
       'username': credential.username,
       'email': credential.email ?? '',
+      'password': credential.password,
     });
 
     // Encode to base64url (standard allows padding removal, but we keep consistency)

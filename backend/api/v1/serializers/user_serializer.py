@@ -17,7 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'date_joined', 'first_login_completed']
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True},
         }
 
     def validate_role(self, value):
@@ -27,14 +27,6 @@ class UserSerializer(serializers.ModelSerializer):
             if self.instance:
                 return self.instance.role
             return RoleEnum.CITIZEN
-        return value
-
-    def validate_username(self, value):
-        queryset = User.objects.filter(username__iexact=value)
-        if self.instance is not None:
-            queryset = queryset.exclude(pk=self.instance.pk)
-        if queryset.exists():
-            raise serializers.ValidationError("username_already_exists")
         return value
 
     def validate_approval_status(self, value):
@@ -54,7 +46,7 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        """Create a new user with hashed password"""
+        """Create a new user or finalize an existing pending user"""
         password = validated_data.pop('password', None)
         if not password:
             raise serializers.ValidationError({"password": "This field is required."})
@@ -63,6 +55,7 @@ class UserSerializer(serializers.ModelSerializer):
         is_staff_request = bool(
             request and request.user.is_authenticated and request.user.is_staff
         )
+
         if not is_staff_request:
             validated_data['role'] = RoleEnum.CITIZEN
             validated_data['approval_status'] = ApprovalStatus.PENDING

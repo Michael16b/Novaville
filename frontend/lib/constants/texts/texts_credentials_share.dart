@@ -4,10 +4,12 @@ class CredentialsShareTexts {
   static const openSiteLabel = 'Accéder au site';
   static const pageTitle = 'Vos accès Novaville';
   static const subtitle =
-      'Conservez ces informations et rendez-vous sur S\'inscrire pour choisir votre mot de passe lors de la premiere connexion.';
-  static const registerCta = 'S\'inscrire et choisir mon mot de passe';
+      'Conservez ces informations et définissez votre mot de passe pour finaliser la création de votre compte.';
+  static const registerCta = 'Définir mon mot de passe';
   static const registerHint =
-      'Cliquez sur le bouton ci-dessous pour accéder à la page d\'inscription pré-remplie.';
+      'Cliquez sur le bouton ci-dessous pour activer votre compte.';
+  static const openInNewTabTooltip =
+      'Définir mon mot de passe dans un nouvel onglet';
 
   static const emailLabel = 'Email';
   static const usernameLabel = 'Nom d\'utilisateur';

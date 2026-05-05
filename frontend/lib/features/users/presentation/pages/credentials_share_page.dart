@@ -99,6 +99,7 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
       final lastName = safeString(decoded['last_name']);
       final username = safeString(decoded['username']);
       final email = safeString(decoded['email']);
+      final password = safeString(decoded['password']);
 
       final hasAtLeastOneValue =
           firstName.isNotEmpty ||
@@ -115,6 +116,7 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
         lastName: lastName,
         username: username,
         email: email,
+        password: password,
       );
     } on FormatException catch (e) {
       print('[CredentialsShare] Decode error: $e');
@@ -127,12 +129,13 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
 
   Uri _buildRegisterUri(_ShareCredentialData data) {
     return Uri(
-      path: AppRoutes.register,
+      path: '/set-password',
       queryParameters: {
         'first_name': data.firstName,
         'last_name': data.lastName,
         'username': data.username,
         'email': data.email,
+        'temp_password': data.password,
       },
     );
   }
@@ -308,61 +311,67 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
                         ),
                       ],
                       const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: AppColors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: () =>
-                              context.go(_buildRegisterUri(data).toString()),
-                          icon: const Icon(Icons.lock_reset),
-                          label: const Text(CredentialsShareTexts.registerCta),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Center(
-                        child: FilledButton.icon(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: AppColors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FilledButton.icon(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: AppColors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: () => context.go(
+                                _buildRegisterUri(data).toString(),
+                              ),
+                              icon: const Icon(Icons.lock_reset),
+                              label: const Text(
+                                CredentialsShareTexts.registerCta,
+                              ),
                             ),
                           ),
-                          onPressed: () async {
-                            const url = CredentialsShareTexts.novavilleUrl;
-                            final uri = Uri.parse(url);
-                            if (await url_launcher.canLaunchUrl(uri)) {
-                              await url_launcher.launchUrl(
-                                uri,
-                                mode:
-                                    url_launcher.LaunchMode.externalApplication,
-                              );
-                            } else {
-                              CustomSnackBar.showError(
-                                context,
-                                CredentialsShareTexts.openSiteError,
-                              );
-                            }
-                          },
-                          icon: const Icon(Icons.open_in_new),
-                          label: const Text(
-                            CredentialsShareTexts.openSiteLabel,
+                          const SizedBox(width: 8),
+                          Tooltip(
+                            message: CredentialsShareTexts.openInNewTabTooltip,
+                            child: IconButton(
+                              style: IconButton.styleFrom(
+                                backgroundColor: AppColors.primary.withOpacity(
+                                  0.1,
+                                ),
+                                foregroundColor: AppColors.primary,
+                                padding: const EdgeInsets.all(12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: () async {
+                                final path = _buildRegisterUri(data).toString();
+                                final currentUri = Uri.base;
+                                final usesHashRouting = currentUri.fragment
+                                    .startsWith('/');
+                                final fullUrl = usesHashRouting
+                                    ? '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#$path'
+                                    : currentUri.resolve(path).toString();
+
+                                final uri = Uri.parse(fullUrl);
+                                if (await url_launcher.canLaunchUrl(uri)) {
+                                  await url_launcher.launchUrl(
+                                    uri,
+                                    mode: url_launcher
+                                        .LaunchMode
+                                        .externalApplication,
+                                  );
+                                }
+                              },
+                              icon: const Icon(Icons.open_in_new),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
@@ -382,6 +391,7 @@ class _ShareCredentialData {
     required this.lastName,
     required this.username,
     required this.email,
+    required this.password,
   });
 
   factory _ShareCredentialData.fromMap(Map<String, dynamic> map) {
@@ -392,6 +402,7 @@ class _ShareCredentialData {
       lastName: safeString(map['last_name']),
       username: safeString(map['username']),
       email: safeString(map['email']),
+      password: safeString(map['password']),
     );
   }
 
@@ -399,6 +410,7 @@ class _ShareCredentialData {
   final String lastName;
   final String username;
   final String email;
+  final String password;
 }
 
 class _CredentialRow extends StatelessWidget {
