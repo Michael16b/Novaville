@@ -112,6 +112,8 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
+  windows: true
+  macos: true
   web:
     generate: true
     image_path: "assets/images/logo.png"

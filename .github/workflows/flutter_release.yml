@@ -52,6 +52,9 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
+      - name: Generate App Icons
+        run: dart run flutter_launcher_icons
+
       - name: Rename App
         shell: bash
         run: |
@@ -100,6 +103,9 @@ jobs:
 
       - name: Pub get
         run: flutter pub get
+
+      - name: Generate App Icons
+        run: dart run flutter_launcher_icons
 
       - name: Rename App
         shell: bash
@@ -160,6 +166,9 @@ jobs:
 
       - name: Pub get
         run: flutter pub get
+
+      - name: Generate App Icons
+        run: dart run flutter_launcher_icons
 
       - name: Rename App
         shell: bash
@@ -234,6 +243,9 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
+      - name: Generate App Icons
+        run: dart run flutter_launcher_icons
+
       - name: Rename App
         shell: bash
         run: |
@@ -296,6 +308,10 @@ jobs:
         shell: bash
         run: flutter pub get
         
+      - name: Generate App Icons
+        shell: bash
+        run: dart run flutter_launcher_icons
+
       - name: Rename App
         shell: bash
         run: |
@@ -362,6 +378,9 @@ jobs:
 
       - name: Pub get
         run: flutter pub get
+
+      - name: Generate App Icons
+        run: dart run flutter_launcher_icons
 
       - name: Rename App
         shell: bash
