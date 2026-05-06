@@ -157,17 +157,6 @@ class UserAccountCard extends StatelessWidget {
                         : AppColors.primary,
                     onTap: isCurrentUser ? null : () => onEdit(user),
                   ),
-                  if (onResetPassword != null)
-                    _ActionButton(
-                      icon: Icons.lock_reset,
-                      label: 'Mot de passe',
-                      color: isCurrentUser
-                          ? AppColors.disabled
-                          : AppColors.warning,
-                      onTap: isCurrentUser
-                          ? null
-                          : () => onResetPassword!(user),
-                    ),
                   _ActionButton(
                     icon: Icons.delete_outline_rounded,
                     label: 'Supprimer',
