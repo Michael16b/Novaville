@@ -1022,7 +1022,7 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                   'last_name': user.lastName,
                   'username': user.username,
                   'email': user.email,
-                  'password': tempPassword,
+                  'temp_password': tempPassword,
                 });
                 final encodedShareRef = base64Url
                     .encode(utf8.encode(payload))

@@ -368,6 +368,7 @@ class _CredentialsDialogState extends State<_CredentialsDialog> {
       'last_name': widget.lastName,
       'username': widget.username,
       'email': widget.email,
+      'temp_password': widget.password,
     });
     final encodedShareRef = base64Url
         .encode(utf8.encode(payload))

@@ -101,6 +101,9 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
       final username = safeString(decoded['username']);
       final email = safeString(decoded['email']);
       final password = safeString(decoded['password']);
+      final password = safeString(
+        decoded['temp_password'] ?? decoded['password'],
+      );
 
       final hasAtLeastOneValue =
           firstName.isNotEmpty ||
@@ -129,6 +132,13 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
   }
 
   Uri _buildRegisterUri(_ShareCredentialData data) {
+    final queryParams = <String, String>{};
+    if (data.firstName.isNotEmpty) queryParams['first_name'] = data.firstName;
+    if (data.lastName.isNotEmpty) queryParams['last_name'] = data.lastName;
+    if (data.username.isNotEmpty) queryParams['username'] = data.username;
+    if (data.email.isNotEmpty) queryParams['email'] = data.email;
+    if (data.password.isNotEmpty) queryParams['temp_password'] = data.password;
+
     return Uri(
       path: '/set-password',
       queryParameters: {
@@ -138,6 +148,7 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
         'email': data.email,
         'temp_password': data.password,
       },
+      queryParameters: queryParams.isNotEmpty ? queryParams : null,
     );
   }
 
@@ -419,6 +430,7 @@ class _ShareCredentialData {
       username: safeString(map['username']),
       email: safeString(map['email']),
       password: safeString(map['password']),
+      password: safeString(map['temp_password'] ?? map['password']),
     );
   }
 
