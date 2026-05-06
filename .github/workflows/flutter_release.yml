@@ -159,7 +159,7 @@ jobs:
       - name: Validate backend URL
         run: |
           if [ -z "$BACKEND_API_URL" ]; then
-            BACKEND_API_URL="https://${{ secrets.AZURE_ACR_NAME }}.azurecr.io/api"
+            BACKEND_API_URL="https://${{ secrets.AZURE_ACR_NAME }}app.azurewebsites.net/"
             echo "BACKEND_API_URL=$BACKEND_API_URL" >> $GITHUB_ENV
           fi
           printf 'API_BASE_URL=%s\nDEBUG=false\n' "$BACKEND_API_URL" > .env
@@ -299,7 +299,7 @@ jobs:
         shell: bash
         run: |
           if [ -z "$BACKEND_API_URL" ]; then
-            BACKEND_API_URL="https://${{ secrets.AZURE_ACR_NAME }}app.azurewebsites.net/api"
+            BACKEND_API_URL="https://${{ secrets.AZURE_ACR_NAME }}app.azurewebsites.net"
             echo "BACKEND_API_URL=$BACKEND_API_URL" >> $GITHUB_ENV
           fi
           printf 'API_BASE_URL=%s\nDEBUG=false\n' "$BACKEND_API_URL" > .env
