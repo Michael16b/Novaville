@@ -121,8 +121,8 @@ jobs:
       - name: Validate backend URL
         run: |
           if [ -z "$BACKEND_API_URL" ]; then
-            echo "Missing backend_api_url. Set workflow_dispatch.backend_api_url or repository variable FLUTTER_BACKEND_API." >&2
-            exit 1
+            BACKEND_API_URL="https://${{ secrets.AZURE_ACR_NAME }}.azurecr.io/api"
+            echo "BACKEND_API_URL=$BACKEND_API_URL" >> $GITHUB_ENV
           fi
           printf 'API_BASE_URL=%s\nDEBUG=false\n' "$BACKEND_API_URL" > .env
 
@@ -173,8 +173,8 @@ jobs:
       - name: Validate backend URL
         run: |
           if [ -z "$BACKEND_API_URL" ]; then
-            echo "Missing backend_api_url. Set workflow_dispatch.backend_api_url or repository variable FLUTTER_BACKEND_API." >&2
-            exit 1
+            BACKEND_API_URL="https://${{ secrets.AZURE_ACR_NAME }}.azurecr.io/api"
+            echo "BACKEND_API_URL=$BACKEND_API_URL" >> $GITHUB_ENV
           fi
           printf 'API_BASE_URL=%s\nDEBUG=false\n' "$BACKEND_API_URL" > .env
 
@@ -219,8 +219,8 @@ jobs:
         shell: bash
         run: |
           if [ -z "$BACKEND_API_URL" ]; then
-            echo "Missing backend_api_url. Set workflow_dispatch.backend_api_url or repository variable FLUTTER_BACKEND_API." >&2
-            exit 1
+            BACKEND_API_URL="https://${{ secrets.AZURE_ACR_NAME }}.azurecr.io/api"
+            echo "BACKEND_API_URL=$BACKEND_API_URL" >> $GITHUB_ENV
           fi
           printf 'API_BASE_URL=%s\nDEBUG=false\n' "$BACKEND_API_URL" > .env
 
@@ -268,8 +268,8 @@ jobs:
       - name: Validate backend URL
         run: |
           if [ -z "$BACKEND_API_URL" ]; then
-            echo "Missing backend_api_url. Set workflow_dispatch.backend_api_url or repository variable FLUTTER_BACKEND_API." >&2
-            exit 1
+            BACKEND_API_URL="https://${{ secrets.AZURE_ACR_NAME }}.azurecr.io/api"
+            echo "BACKEND_API_URL=$BACKEND_API_URL" >> $GITHUB_ENV
           fi
           printf 'API_BASE_URL=%s\nDEBUG=false\n' "$BACKEND_API_URL" > .env
 
