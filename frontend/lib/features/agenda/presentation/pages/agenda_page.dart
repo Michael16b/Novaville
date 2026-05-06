@@ -50,13 +50,13 @@ class AgendaPage extends StatelessWidget {
     final repository = eventRepository ?? createEventRepository();
 
     return BlocProvider(
-      create: (context) => AgendaBloc(repository: repository)
-        ..add(const AgendaLoadRequested(ordering: 'start_date')),
+      create: (context) =>
+          AgendaBloc(repository: repository)
+            ..add(const AgendaLoadRequested(ordering: 'start_date')),
       child: const _AgendaPageContent(),
     );
   }
 }
-
 
 class _AgendaPageContent extends StatefulWidget {
   const _AgendaPageContent();
@@ -95,8 +95,6 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
     super.dispose();
   }
 
-
-
   DateTime _normalizeDate(DateTime date) {
     final localDate = date.toLocal();
     return DateTime(localDate.year, localDate.month, localDate.day);
@@ -126,12 +124,12 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
   /// (start_date >= today at midnight), sorted by start_date.
   List<CommunityEvent> _getUpcomingEvents(List<CommunityEvent> all) {
     final now = _normalizeDate(DateTime.now());
-    final upcoming = all
-        .where((e) => !e.startDate.isBefore(now))
-        .toList()
-      ..sort((a, b) => _sortAscending
-          ? a.startDate.compareTo(b.startDate)
-          : b.startDate.compareTo(a.startDate));
+    final upcoming = all.where((e) => !e.startDate.isBefore(now)).toList()
+      ..sort(
+        (a, b) => _sortAscending
+            ? a.startDate.compareTo(b.startDate)
+            : b.startDate.compareTo(a.startDate),
+      );
     return upcoming;
   }
 
@@ -201,7 +199,6 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -239,9 +236,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                 const Positioned.fill(
                   child: ColoredBox(
                     color: AppColors.overlay,
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    child: Center(child: CircularProgressIndicator()),
                   ),
                 ),
             ],
@@ -250,7 +245,6 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
       ),
     );
   }
-
 
   Widget? _buildFab(BuildContext context) {
     final currentUser = context.read<AuthBloc>().state.user;
@@ -270,16 +264,12 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
     );
   }
 
-
   void _handleStateChanges(BuildContext context, AgendaState state) {
     _handleLoadingOverlay(state);
 
     switch (state.status) {
       case AgendaStatus.failure:
-        CustomSnackBar.showError(
-          context,
-          state.error ?? AgendaTexts.error,
-        );
+        CustomSnackBar.showError(context, state.error ?? AgendaTexts.error);
         break;
       case AgendaStatus.created:
         CustomSnackBar.showSuccess(context, AgendaTexts.createSuccess);
@@ -328,20 +318,9 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
 
   // ─── Controls section (search, theme filter) ───────────────────
 
-  Widget _buildControlsSection(
-    BuildContext context,
-    AgendaState state,
-  ) {
+  Widget _buildControlsSection(BuildContext context, AgendaState state) {
     final hasActiveFilter = _filterTheme != null;
 
-    return Card(
-      color: AppColors.white,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -369,21 +348,6 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                       ),
               ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(
-                  Icons.filter_list,
-                  size: 18,
-                  color: AppColors.secondaryText,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  AgendaTexts.advancedFilters,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                const SizedBox(width: 8),
-                TextButton.icon(
           ),
         ),
         const SizedBox(height: 8),
@@ -406,16 +370,10 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                     visualDensity: VisualDensity.compact,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            _buildThemeFilterChips(),
-          ],
               ),
             ],
           ),
         ),
-      ),
       ],
     );
   }
@@ -423,8 +381,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
   Widget _buildThemeFilterChips() {
     final options = <({String label, IconData? icon, EventTheme? value})>[
       (label: AgendaTexts.allThemes, icon: null, value: null),
-      ...EventTheme.values
-          .map((t) => (label: t.label, icon: t.icon, value: t)),
+      ...EventTheme.values.map((t) => (label: t.label, icon: t.icon, value: t)),
     ];
 
     return Column(
@@ -435,9 +392,9 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
           child: Text(
             AgendaTexts.filterByTheme,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.secondaryText,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: AppColors.secondaryText,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         Wrap(
@@ -446,9 +403,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
           children: options.map((option) {
             final isSelected = _filterTheme == option.value;
             return ChoiceChip(
-              avatar: option.icon != null
-                  ? Icon(option.icon, size: 16)
-                  : null,
+              avatar: option.icon != null ? Icon(option.icon, size: 16) : null,
               showCheckmark: false,
               label: Text(option.label),
               selected: isSelected,
@@ -470,12 +425,12 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
   void _applyFilters() {
     _flushSearchDebounce();
     context.read<AgendaBloc>().add(
-          AgendaFilterRequested(
-            themeTitle: _filterTheme?.label,
-            ordering: _currentOrdering,
-            search: _searchQuery,
-          ),
-        );
+      AgendaFilterRequested(
+        themeTitle: _filterTheme?.label,
+        ordering: _currentOrdering,
+        search: _searchQuery,
+      ),
+    );
   }
 
   void _clearAllFilters() {
@@ -489,10 +444,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
   // Shows ALL events (past + future) as dot markers.
   // Clicking a day opens a modal dialog listing that day's events.
 
-  Widget _buildCalendarSection(
-    BuildContext context,
-    AgendaState state,
-  ) {
+  Widget _buildCalendarSection(BuildContext context, AgendaState state) {
     if (state.status == AgendaStatus.initial ||
         state.status == AgendaStatus.loading) {
       return _buildCalendarSkeleton();
@@ -547,13 +499,17 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
           calendarBuilders: CalendarBuilders<CommunityEvent>(
             defaultBuilder: (context, day, focusedDay) {
               return _buildRippleDay(
-                context, day, eventsByDay,
+                context,
+                day,
+                eventsByDay,
                 textColor: AppColors.primaryText,
               );
             },
             todayBuilder: (context, day, focusedDay) {
               return _buildRippleDay(
-                context, day, eventsByDay,
+                context,
+                day,
+                eventsByDay,
                 textColor: AppColors.primaryText,
                 decoration: const BoxDecoration(
                   color: AppColors.calendarToday,
@@ -564,14 +520,18 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
             },
             outsideBuilder: (context, day, focusedDay) {
               return _buildRippleDay(
-                context, day, eventsByDay,
+                context,
+                day,
+                eventsByDay,
                 textColor: AppColors.calendarOutside,
                 fontSize: 14,
               );
             },
             disabledBuilder: (context, day, focusedDay) {
               return _buildRippleDay(
-                context, day, eventsByDay,
+                context,
+                day,
+                eventsByDay,
                 textColor: AppColors.calendarOutside.withValues(alpha: 0.5),
                 enabled: false,
               );
@@ -701,8 +661,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: AppColors.emptyState
-                              .withValues(alpha: 0.15),
+                          color: AppColors.emptyState.withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -715,13 +674,10 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                       Text(
                         AgendaTexts.noEventsOnDay,
                         textAlign: TextAlign.center,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyLarge
-                            ?.copyWith(
-                              color: AppColors.secondaryText,
-                              height: 1.5,
-                            ),
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: AppColors.secondaryText,
+                          height: 1.5,
+                        ),
                       ),
                     ],
                   ),
@@ -731,8 +687,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                   child: ListView.separated(
                     shrinkWrap: true,
                     itemCount: dayEvents.length,
-                    separatorBuilder: (_, __) =>
-                        const SizedBox(height: 8),
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (_, index) {
                       final event = dayEvents[index];
                       return EventCard(
@@ -767,10 +722,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
   // Follows the same pagination pattern as reports_page.dart:
   // "X-Y sur Z" label + chevron buttons.
 
-  Widget _buildUpcomingEventsSection(
-    BuildContext context,
-    AgendaState state,
-  ) {
+  Widget _buildUpcomingEventsSection(BuildContext context, AgendaState state) {
     if (state.status == AgendaStatus.initial ||
         state.status == AgendaStatus.loading) {
       return _buildUpcomingEventsSkeleton();
@@ -778,8 +730,10 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
 
     final upcoming = _getUpcomingEvents(state.events);
     final totalCount = upcoming.length;
-    final totalPages =
-        (totalCount / _pageSize).ceil().clamp(1, double.infinity).toInt();
+    final totalPages = (totalCount / _pageSize)
+        .ceil()
+        .clamp(1, double.infinity)
+        .toInt();
 
     // Ensure current page is within bounds after filter/data changes
     if (_currentPage > totalPages) {
@@ -810,15 +764,19 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                 color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(Icons.upcoming_rounded, size: 20, color: AppColors.primary),
+              child: Icon(
+                Icons.upcoming_rounded,
+                size: 20,
+                color: AppColors.primary,
+              ),
             ),
             const SizedBox(width: 8),
             Text(
               AgendaTexts.upcomingEvents,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryText,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryText,
+              ),
             ),
           ],
         ),
@@ -826,9 +784,9 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
         Text(
           AgendaTexts.upcomingEventsDescription,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.secondaryText,
-                height: 1.4,
-              ),
+            color: AppColors.secondaryText,
+            height: 1.4,
+          ),
         ),
         const SizedBox(height: 12),
 
@@ -836,10 +794,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
         Card(
           color: AppColors.white,
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 8,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final isCompact = constraints.maxWidth < 720;
@@ -944,8 +899,12 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                         child: EventCard(
                           event: chunk[j],
                           isStaff: isStaff,
-                          onEdit: isStaff ? (e) => _showEditDialog(context, e) : null,
-                          onDelete: isStaff ? (e) => _showDeleteDialog(context, e) : null,
+                          onEdit: isStaff
+                              ? (e) => _showEditDialog(context, e)
+                              : null,
+                          onDelete: isStaff
+                              ? (e) => _showDeleteDialog(context, e)
+                              : null,
                           onAddToCalendar: _handleAddToCalendar,
                         ),
                       ),
@@ -985,7 +944,10 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
     final chunks = <List<T>>[];
     for (var i = 0; i < list.length; i += chunkSize) {
       chunks.add(
-        list.sublist(i, i + chunkSize > list.length ? list.length : i + chunkSize),
+        list.sublist(
+          i,
+          i + chunkSize > list.length ? list.length : i + chunkSize,
+        ),
       );
     }
     return chunks;
@@ -997,7 +959,8 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
       null,
       for (var count = 1; count <= maxAllowedCount; count++) count,
     ];
-    final selectedValue = (_preferredCardsPerRow != null &&
+    final selectedValue =
+        (_preferredCardsPerRow != null &&
             _preferredCardsPerRow! <= maxAllowedCount)
         ? _preferredCardsPerRow
         : null;
@@ -1016,9 +979,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
             (option) => DropdownMenuItem<int?>(
               value: option,
               child: Text(
-                option == null
-                    ? AgendaTexts.auto
-                    : option.toString(),
+                option == null ? AgendaTexts.auto : option.toString(),
               ),
             ),
           )
@@ -1077,9 +1038,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
           padding: compact ? const EdgeInsets.all(4) : null,
           icon: const Icon(Icons.chevron_left),
           tooltip: AgendaTexts.previousPage,
-          onPressed: hasPrevious
-              ? () => setState(() => _currentPage--)
-              : null,
+          onPressed: hasPrevious ? () => setState(() => _currentPage--) : null,
         ),
         IconButton(
           visualDensity: compact ? VisualDensity.compact : null,
@@ -1087,14 +1046,11 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
           padding: compact ? const EdgeInsets.all(4) : null,
           icon: const Icon(Icons.chevron_right),
           tooltip: AgendaTexts.nextPage,
-          onPressed: hasNext
-              ? () => setState(() => _currentPage++)
-              : null,
+          onPressed: hasNext ? () => setState(() => _currentPage++) : null,
         ),
       ],
     );
   }
-
 
   Widget _buildCalendarSkeleton() {
     return Card(
@@ -1248,26 +1204,21 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
         padding: const EdgeInsets.all(32),
         child: Column(
           children: [
-            const Icon(
-              Icons.event_busy,
-              size: 48,
-              color: AppColors.emptyState,
-            ),
+            const Icon(Icons.event_busy, size: 48, color: AppColors.emptyState),
             const SizedBox(height: 12),
             Text(
               AgendaTexts.noUpcomingEvents,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.secondaryText,
-                    height: 1.5,
-                  ),
+                color: AppColors.secondaryText,
+                height: 1.5,
+              ),
             ),
           ],
         ),
       ),
     );
   }
-
 
   Widget _buildErrorState(BuildContext context, String error) {
     return Center(
@@ -1293,11 +1244,11 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
           ElevatedButton.icon(
             onPressed: () {
               context.read<AgendaBloc>().add(
-                    AgendaLoadRequested(
-                      ordering: _currentOrdering,
-                      search: _searchQuery,
-                    ),
-                  );
+                AgendaLoadRequested(
+                  ordering: _currentOrdering,
+                  search: _searchQuery,
+                ),
+              );
             },
             icon: const Icon(Icons.refresh),
             label: const Text(AppTextsGeneral.retry),
@@ -1306,7 +1257,6 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
       ),
     );
   }
-
 
   void _flushSearchDebounce() {
     if (_searchDebounce?.isActive ?? false) {
@@ -1321,26 +1271,19 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
   void _onSearchChanged(String value) {
     setState(() {});
     _searchDebounce?.cancel();
-    _searchDebounce = Timer(
-      const Duration(milliseconds: 350),
-      () {
-        if (!mounted) return;
-        final nextQuery = value.trim();
-        if (nextQuery == _searchQuery) return;
-        setState(() {
-          _searchQuery = nextQuery;
-          _currentPage = 1;
-        });
-        context.read<AgendaBloc>().add(
-              AgendaSearchRequested(
-                query: _searchQuery,
-                ordering: _currentOrdering,
-              ),
-            );
-      },
-    );
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      if (!mounted) return;
+      final nextQuery = value.trim();
+      if (nextQuery == _searchQuery) return;
+      setState(() {
+        _searchQuery = nextQuery;
+        _currentPage = 1;
+      });
+      context.read<AgendaBloc>().add(
+        AgendaSearchRequested(query: _searchQuery, ordering: _currentOrdering),
+      );
+    });
   }
-
 
   Future<void> _showCreateDialog(BuildContext context) async {
     final bloc = context.read<AgendaBloc>();
@@ -1411,8 +1354,8 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
             onPressed: () {
               Navigator.pop(dialogContext);
               context.read<AgendaBloc>().add(
-                    AgendaEventDeleteRequested(eventId: event.id),
-                  );
+                AgendaEventDeleteRequested(eventId: event.id),
+              );
             },
           ),
         ],
@@ -1427,16 +1370,15 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
             Text(
               AgendaTexts.irreversible,
               style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
-                    color: AppColors.error,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: AppColors.error,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
       ),
     );
   }
-
 
   void _handleAddToCalendar(CommunityEvent event) {
     showDialog<void>(
@@ -1458,10 +1400,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                 leading: const GoogleCalendarIcon(size: 36),
                 title: const Text(
                   AgendaTexts.googleCalendar,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -1470,9 +1409,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                 onTap: () async {
                   Navigator.pop(dialogContext);
                   final success =
-                      await CalendarExportHelper.exportToGoogleCalendar(
-                    event,
-                  );
+                      await CalendarExportHelper.exportToGoogleCalendar(event);
                   if (!mounted) return;
                   if (success) {
                     CustomSnackBar.showSuccess(
@@ -1497,10 +1434,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                 leading: const AppleCalendarIcon(size: 36),
                 title: const Text(
                   AgendaTexts.appleCalendar,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -1509,9 +1443,7 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                 onTap: () async {
                   Navigator.pop(dialogContext);
                   final success =
-                      await CalendarExportHelper.exportToIcsCalendar(
-                    event,
-                  );
+                      await CalendarExportHelper.exportToIcsCalendar(event);
                   if (!mounted) return;
                   if (success) {
                     CustomSnackBar.showSuccess(

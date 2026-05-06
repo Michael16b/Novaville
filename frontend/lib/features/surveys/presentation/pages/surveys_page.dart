@@ -14,6 +14,7 @@ import 'package:frontend/features/surveys/presentation/widgets/survey_form_dialo
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/ui/widgets/breadcrumb.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
+import 'package:frontend/ui/widgets/collapsible_filter_section.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
 
@@ -126,10 +127,6 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
     SurveysState state, {
     required bool canFilterTarget,
   }) {
-    final hasActiveFilter =
-        _addressController.text.trim().isNotEmpty ||
-        (canFilterTarget && _selectedTarget != null);
-
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -144,68 +141,69 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
                     labelText: SurveysTexts.searchAddress,
                     hintText: SurveysTexts.searchAddressHint,
                     prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _addressController.text.isEmpty
+                        ? null
+                        : IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () {
+                              _addressController.clear();
+                              setState(() {});
+                              _applyFilters(context, page: 1);
+                            },
+                          ),
                   ),
                   onChanged: (_) => setState(() {}),
                   onSubmitted: (_) => _applyFilters(context, page: 1),
                 ),
                 const SizedBox(height: 10),
                 _buildSortControls(constraints.maxWidth),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.filter_list,
-                      size: 18,
-                      color: AppColors.secondaryText,
-                    ),
-                    Text(
-                      SurveysTexts.advancedFilters,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    TextButton.icon(
-                      onPressed: hasActiveFilter
-                          ? () {
-                              _addressController.clear();
-                              setState(() {
-                                if (canFilterTarget) {
-                                  _selectedTarget = null;
-                                }
-                              });
-                              _applyFilters(context, page: 1);
-                            }
-                          : null,
-                      icon: const Icon(Icons.clear_all, size: 16),
-                      label: const Text(AppTextsGeneral.resetFilters),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        visualDensity: VisualDensity.compact,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
                 if (canFilterTarget) ...[
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        SurveysTexts.filterByCitizenType,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.secondaryText,
-                          fontWeight: FontWeight.w600,
+                  const SizedBox(height: 10),
+                  CollapsibleFilterSection(
+                    title: SurveysTexts.advancedFilters,
+                    initiallyExpanded: _selectedTarget != null,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          SurveysTexts.filterByCitizenType,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: AppColors.secondaryText,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: _buildCitizenTargetChips(context),
-                      ),
-                    ],
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: _buildCitizenTargetChips(context),
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton.icon(
+                            onPressed: _selectedTarget != null
+                                ? () {
+                                    setState(() {
+                                      _selectedTarget = null;
+                                    });
+                                    _applyFilters(context, page: 1);
+                                  }
+                                : null,
+                            icon: const Icon(Icons.clear_all, size: 16),
+                            label: const Text(AppTextsGeneral.resetFilters),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
                 ],
