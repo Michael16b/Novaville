@@ -33,4 +33,46 @@ class AppTextsAuth {
       'Important : Votre mot de passe sera à définir lors de votre 1ère connexion.';
   static const String pdfActivationCode =
       'Code d\'activation (mot de passe temporaire) : ';
+
+  static String pdfAlternativeInstructions(String url) =>
+      'Allez sur la page :\n$url\n\n--- OU ---\n\nAllez sur l\'application puis le bouton "Se connecter"\npuis "$firstConnectionButton"\net entrez les informations du pdf.';
+
+  // Set Password Screen / Activation
+  static const String activationCodeRequired =
+      "Le code d'activation ou mot de passe temporaire est requis.";
+  static const String invalidOrExpiredLink =
+      "Le lien est invalide ou le mot de passe temporaire a expiré.";
+  static String passwordChangeError(int code) =>
+      "Erreur lors du changement de mot de passe ($code)";
+  static const String passwordSetupSuccess =
+      "Mot de passe configuré avec succès !";
+  static String errorPrefix(String error) => "Erreur : $error";
+
+  static const String fullName = "Nom complet";
+  static const String usernameLabel = "Nom d'utilisateur";
+  static const String usernameHint = "Saisissez votre identifiant";
+  static const String usernameRequired = "L'identifiant est requis";
+  static const String emailLabel = "Adresse e-mail";
+  static const String activationCodeLabel =
+      "Code d'activation (mot de passe reçu)";
+  static const String newPasswordLabel = "Nouveau mot de passe";
+  static const String passwordTooShort =
+      "Le mot de passe doit contenir au moins 8 caractères";
+  static const String confirmPasswordLabel = "Confirmer le mot de passe";
+  static const String confirmPasswordRequired =
+      "Veuillez confirmer le mot de passe";
+  static const String passwordsDoNotMatch =
+      "Les mots de passe ne correspondent pas";
+  static const String setPasswordTitle = "Configurer mon mot de passe";
+  static const String setPasswordDescription =
+      "Vérifiez vos informations et choisissez un nouveau mot de passe pour sécuriser votre compte.";
+  static const String creationInProgress = "Création en cours...";
+  static const String validateAndCreateAccount = "Valider et créer mon compte";
+
+  // Admin Password Reset
+  static const String adminResetPasswordTitle = "Réinitialiser le mot de passe";
+  static const String adminResetPasswordConfirm =
+      "Êtes-vous sûr de vouloir réinitialiser le mot de passe de cet utilisateur ? Un e-mail contenant son code d'activation lui sera automatiquement envoyé.";
+  static const String adminResetPasswordSuccess =
+      "Réinitialisation effectuée. L'e-mail a bien été envoyé à l'utilisateur.";
 }

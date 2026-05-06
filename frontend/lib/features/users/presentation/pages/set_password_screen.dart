@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:go_router/go_router.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
 
 class SetPasswordScreen extends StatefulWidget {
   final String username;
@@ -59,19 +60,20 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_tempPasswordController.text.isEmpty) {
-      CustomSnackBar.showError(
-        context,
-        'Le code d\'activation ou mot de passe temporaire est requis.',
-      );
+      CustomSnackBar.showError(context, AppTextsAuth.activationCodeRequired);
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      // Étape 1 : S'authentifier avec le mot de passe temporaire pour obtenir le JWT
+      const baseUrl = String.fromEnvironment(
+        'FLUTTER_BACKEND_API',
+        defaultValue: 'http://localhost:8000',
+      );
+
       final loginResponse = await http.post(
-        Uri.parse('http://localhost:8000/api/v1/auth/token/'),
+        Uri.parse('$baseUrl/api/v1/auth/token/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': _usernameController.text,
@@ -80,9 +82,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
       );
 
       if (loginResponse.statusCode != 200) {
-        throw Exception(
-          'Le lien est invalide ou le mot de passe temporaire a expiré.',
-        );
+        throw Exception(AppTextsAuth.invalidOrExpiredLink);
       }
 
       final loginData = jsonDecode(loginResponse.body);
@@ -91,7 +91,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
 
       // Étape 2 : Mettre à jour le mot de passe de l'utilisateur existant
       final updateResponse = await http.patch(
-        Uri.parse('http://localhost:8000/api/v1/users/$userId/'),
+        Uri.parse('$baseUrl/api/v1/users/$userId/'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken',
@@ -102,20 +102,20 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
       if (updateResponse.statusCode != 200 &&
           updateResponse.statusCode != 204) {
         throw Exception(
-          'Erreur lors du changement de mot de passe (${updateResponse.statusCode})',
+          AppTextsAuth.passwordChangeError(updateResponse.statusCode),
         );
       }
 
       if (mounted) {
-        CustomSnackBar.showSuccess(
-          context,
-          'Mot de passe configuré avec succès !',
-        );
+        CustomSnackBar.showSuccess(context, AppTextsAuth.passwordSetupSuccess);
         context.go('/login');
       }
     } catch (e) {
       if (mounted) {
-        CustomSnackBar.showError(context, 'Erreur : $e');
+        CustomSnackBar.showError(
+          context,
+          AppTextsAuth.errorPrefix(e.toString()),
+        );
       }
     } finally {
       if (mounted) {
@@ -203,7 +203,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: Text(
-                              'Définir mon mot de passe',
+                              AppTextsAuth.setPasswordTitle,
                               style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(
                                     color: AppColors.primary,
@@ -215,7 +215,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                       ),
                       const SizedBox(height: 24),
                       const Text(
-                        'Vérifiez vos informations et choisissez un mot de passe pour finaliser la création de votre compte.',
+                        AppTextsAuth.setPasswordDescription,
                         style: TextStyle(color: AppColors.secondaryText),
                       ),
                       const SizedBox(height: 24),
@@ -234,25 +234,25 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (fullName.isNotEmpty)
-                              _buildInfoField('Nom complet', fullName),
+                              _buildInfoField(AppTextsAuth.fullName, fullName),
 
                             // Si le username n'est pas fourni dans l'URL, on laisse l'utilisateur le saisir
                             if (widget.username.isEmpty)
                               TextFormField(
                                 controller: _usernameController,
                                 decoration: const InputDecoration(
-                                  labelText: 'Nom d\'utilisateur',
-                                  hintText: 'Saisissez votre identifiant',
+                                  labelText: AppTextsAuth.usernameLabel,
+                                  hintText: AppTextsAuth.usernameHint,
                                   border: OutlineInputBorder(),
                                 ),
                                 validator: (value) =>
                                     value == null || value.isEmpty
-                                    ? 'L\'identifiant est requis'
+                                    ? AppTextsAuth.usernameRequired
                                     : null,
                               )
                             else
                               _buildInfoField(
-                                'Nom d\'utilisateur',
+                                AppTextsAuth.usernameLabel,
                                 widget.username,
                               ),
 
@@ -265,8 +265,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                                 controller: _tempPasswordController,
                                 obscureText: _obscureTempPassword,
                                 decoration: InputDecoration(
-                                  labelText:
-                                      'Code d\'activation (mot de passe reçu)',
+                                  labelText: AppTextsAuth.activationCodeLabel,
                                   border: const OutlineInputBorder(),
                                   suffixIcon: IconButton(
                                     icon: Icon(
@@ -282,12 +281,15 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                                 ),
                                 validator: (value) =>
                                     value == null || value.isEmpty
-                                    ? 'Le code d\'activation est requis'
+                                    ? AppTextsAuth.activationCodeRequired
                                     : null,
                               ),
 
                             if (widget.email.isNotEmpty)
-                              _buildInfoField('Email', widget.email),
+                              _buildInfoField(
+                                AppTextsAuth.emailLabel,
+                                widget.email,
+                              ),
                           ],
                         ),
                       ),
@@ -297,7 +299,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          labelText: 'Nouveau mot de passe',
+                          labelText: AppTextsAuth.newPasswordLabel,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -315,7 +317,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                         ),
                         validator: (value) => value != null && value.length >= 8
                             ? null
-                            : 'Le mot de passe doit contenir au moins 8 caractères',
+                            : AppTextsAuth.passwordTooShort,
                       ),
                       const SizedBox(height: 16),
 
@@ -323,7 +325,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                         controller: _confirmPasswordController,
                         obscureText: _obscureConfirmPassword,
                         decoration: InputDecoration(
-                          labelText: 'Confirmer le mot de passe',
+                          labelText: AppTextsAuth.confirmPasswordLabel,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -342,10 +344,10 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Veuillez confirmer le mot de passe';
+                            return AppTextsAuth.confirmPasswordRequired;
                           }
                           if (value != _passwordController.text) {
-                            return 'Les mots de passe ne correspondent pas';
+                            return AppTextsAuth.passwordsDoNotMatch;
                           }
                           return null;
                         },
@@ -374,8 +376,8 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                             : const Icon(Icons.check_circle_outline),
                         label: Text(
                           _isLoading
-                              ? 'Création en cours...'
-                              : 'Valider et créer mon compte',
+                              ? AppTextsAuth.creationInProgress
+                              : AppTextsAuth.validateAndCreateAccount,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

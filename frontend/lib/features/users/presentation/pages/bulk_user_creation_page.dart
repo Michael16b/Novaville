@@ -1070,7 +1070,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                 ),
                 pw.SizedBox(height: compact ? 6 : 8),
                 pw.Text(
-                  'Allez sur la page :\n$setPasswordUrl\n\n--- OU ---\n\nAllez sur l\'application puis le bouton "Se connecter"\npuis "${AppTextsAuth.firstConnectionButton}"\net entrez les informations sur le pdf.',
+                  AppTextsAuth.pdfAlternativeInstructions(setPasswordUrl),
                   textAlign: pw.TextAlign.center,
                   style: pw.TextStyle(
                     fontSize: compact ? 6.5 : 8.5,
