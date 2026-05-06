@@ -1,8 +1,5 @@
 import string
 import secrets
-import urllib.parse
-from django.core.mail import send_mail
-from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -83,14 +80,14 @@ class UserViewSet(viewsets.ModelViewSet):
         elif self.action in ['list', 'retrieve', 'me']:
             # Authenticated users can view users
             permission_classes = [IsAuthenticated]
-        elif self.action in ['update', 'partial_update']:
+        elif self.action in ['update', 'partial_update', 'change_password', 'set_initial_password']:
             # Users can update their own profile, admins can update anyone
             permission_classes = [IsAuthenticated]
-        elif self.action == 'reset_password':
-            # Only admins can reset passwords
+        elif self.action in ['reset_password', 'approve', 'reject', 'pending', 'destroy']:
+            # Only admins can do this
             permission_classes = [IsAdminUser]
         else:
-            # Delete: admin only
+            # Fallback
             permission_classes = [IsAdminUser]
         return [permission() for permission in permission_classes]
     
@@ -218,60 +215,34 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Reset user password",
-        description="Reset a user's password automatically and send an email (admin only)",
+        description="Reset a user's password and return a temporary password (admin only)",
         tags=["Users"],
         request=None,
         responses={200: None}
     )
     @action(detail=True, methods=['post'], url_path='reset_password', permission_classes=[IsAdminUser])
     def reset_password(self, request, pk=None):
-        """Allow an admin to reset a user's password and send a magic link"""
+        """Allow an admin to reset a user's password and get a temporary password"""
         user = self.get_object()
-
-        if not user.email:
-            return Response(
-                {"code": "email_required", "detail": "L'utilisateur n'a pas d'adresse e-mail."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
         # 1. Génération du code d'activation (mot de passe temporaire)
         alphabet = string.ascii_letters + string.digits
-        temp_password = ''.join(secrets.choice(alphabet) for i in range(8))
+        
+        for _ in range(10):
+            temp_password = str(''.join(secrets.choice(alphabet) for i in range(12)))
+            try:
+                validate_password(temp_password, user=user)
+                break
+            except Exception:
+                continue
 
         user.set_password(temp_password)
         user.save()
 
-        # 2. Création du lien magique
-        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:8080')
-        query_params = urllib.parse.urlencode({
-            'username': user.username,
-            'temp_password': temp_password
-        })
-        magic_link = f"{frontend_url}/#/set-password?{query_params}"
-
-        # 3. Envoi du mail
-        try:
-            send_mail(
-                subject="Novaville - Réinitialisation de votre mot de passe",
-                message=(
-                    f"Bonjour {user.first_name or user.username},\n\n"
-                    f"Votre mot de passe a été réinitialisé par un administrateur.\n\n"
-                    f"Code d'activation (mot de passe temporaire) : {temp_password}\n\n"
-                    f"Veuillez cliquer sur le lien ci-dessous pour configurer votre nouveau mot de passe :\n"
-                    f"{magic_link}\n\n"
-                    f"⚠️ Note : Ce message ayant été généré automatiquement, pensez à vérifier votre dossier Spam ou Courriers Indésirables si vous attendez d'autres e-mails de notre part.\n\n"
-                    f"Si vous n'êtes pas à l'origine de cette action, veuillez nous contacter."
-                ),
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@novaville.fr'),
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
-            return Response({"detail": "password_reset_success"}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response(
-                {"code": "email_failed", "details": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        return Response(
+            {"detail": "password_reset_success", "temp_password": temp_password}, 
+            status=status.HTTP_200_OK
+        )
 
     @extend_schema(
         summary="Set initial password (first login)",

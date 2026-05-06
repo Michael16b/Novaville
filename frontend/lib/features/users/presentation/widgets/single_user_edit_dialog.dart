@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
@@ -239,30 +239,11 @@ class _SingleUserEditDialogState extends State<SingleUserEditDialog> {
     );
   }
 
-  String _generatePassword() {
-    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-    const digits = '23456789';
-    const all = '$letters$digits';
-
-    final random = Random.secure();
-    final chars = <String>[
-      letters[random.nextInt(letters.length)],
-      digits[random.nextInt(digits.length)],
-    ];
-
-    while (chars.length < 8) {
-      chars.add(all[random.nextInt(all.length)]);
-    }
-
-    chars.shuffle(random);
-    return chars.join();
-  }
-
   Future<void> _onResetPassword() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => StyledDialog(
-        title: UserTexts.resetPasswordTitle,
+        title: AppTextsAuth.adminResetPasswordTitle,
         icon: Icons.warning_amber_rounded,
         accentColor: AppColors.error,
         closeTooltip: AppTextsGeneral.cancel,
@@ -278,7 +259,7 @@ class _SingleUserEditDialogState extends State<SingleUserEditDialog> {
           ),
         ],
         body: Text(
-          UserTexts.resetPasswordWarning,
+          AppTextsAuth.adminResetPasswordConfirm,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       ),
@@ -288,12 +269,9 @@ class _SingleUserEditDialogState extends State<SingleUserEditDialog> {
 
     setState(() => _isSubmitting = true);
 
-    final newPassword = _generatePassword();
-
     try {
-      await widget.userRepository.resetPassword(
+      final tempPassword = await widget.userRepository.resetPassword(
         userId: widget.user.id,
-        newPassword: newPassword,
       );
 
       if (!mounted) return;
@@ -306,7 +284,7 @@ class _SingleUserEditDialogState extends State<SingleUserEditDialog> {
           firstName: _firstNameController.text.trim(),
           lastName: _lastNameController.text.trim(),
           username: _usernameController.text.trim(),
-          password: newPassword,
+          password: tempPassword,
           email: _emailController.text.trim(),
         ),
       );

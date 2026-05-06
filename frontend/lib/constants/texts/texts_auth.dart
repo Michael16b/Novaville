@@ -72,7 +72,7 @@ class AppTextsAuth {
   // Admin Password Reset
   static const String adminResetPasswordTitle = "Réinitialiser le mot de passe";
   static const String adminResetPasswordConfirm =
-      "Êtes-vous sûr de vouloir réinitialiser le mot de passe de cet utilisateur ? Un e-mail contenant son code d'activation lui sera automatiquement envoyé.";
+      "Êtes-vous sûr de vouloir réinitialiser le mot de passe de cet utilisateur ? Un nouveau mot de passe temporaire sera généré et vous pourrez le partager via PDF.";
   static const String adminResetPasswordSuccess =
-      "Réinitialisation effectuée. L'e-mail a bien été envoyé à l'utilisateur.";
+      "Réinitialisation effectuée avec succès.";
 }
