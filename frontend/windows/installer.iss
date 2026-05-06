@@ -1,12 +1,17 @@
+#define MyAppName GetEnv("APP_NAME")
+#if MyAppName == ""
+  #define MyAppName "Novaville"
+#endif
+
 [Setup]
 AppId={{NOVAVILLE-APP-GUID-123456789}
-AppName=Novaville
+AppName={#MyAppName}
 AppVersion=1.0.0
-AppPublisher=Novaville
-DefaultDirName={autopf}\Novaville
+AppPublisher={#MyAppName}
+DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=..\build\windows\x64\installer
-OutputBaseFilename=Novaville-Windows-Setup
+OutputBaseFilename={#MyAppName}-Windows-Setup
 SetupIconFile=runner\resources\app_icon.ico
 Compression=lzma
 SolidCompression=yes
@@ -26,13 +31,14 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-; Copie l'exécutable principal et tous les fichiers annexes (.dll, data, etc.)
-Source: "..\build\windows\x64\runner\Release\Novaville.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; L'exécutable généré par Flutter porte le nom du projet (frontend.exe). On le renomme dynamiquement.
+Source: "..\build\windows\x64\runner\Release\frontend.exe"; DestDir: "{app}"; DestName: "{#MyAppName}.exe"; Flags: ignoreversion
+; On copie le reste des fichiers sans l'exécutable d'origine pour éviter les doublons
+Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Excludes: "frontend.exe"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\Novaville"; Filename: "{app}\Novaville.exe"
-Name: "{autodesktop}\Novaville"; Filename: "{app}\Novaville.exe"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppName}.exe"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppName}.exe"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\Novaville.exe"; Description: "{cm:LaunchProgram,Novaville}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppName}.exe"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent

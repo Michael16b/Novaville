@@ -322,10 +322,6 @@ jobs:
         shell: cmd
         run: '"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" windows\installer.iss'
 
-      - name: Rename Windows output
-        shell: bash
-        run: mv frontend/build/windows/x64/installer/Novaville-Windows-Setup.exe "frontend/build/windows/x64/installer/${{ env.APP_NAME }}-Windows-Setup.exe"
-
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
