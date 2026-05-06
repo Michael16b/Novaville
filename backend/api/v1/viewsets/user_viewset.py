@@ -1,6 +1,7 @@
 import string
 import secrets
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -199,9 +200,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
         try:
             validate_password(new_password, user)
-        except serializers.ValidationError:
+        except DjangoValidationError as e:
             return Response(
-                {"code": "password_invalid"},
+                {"code": "password_invalid", "details": list(e.messages)},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -233,7 +234,7 @@ class UserViewSet(viewsets.ModelViewSet):
             try:
                 validate_password(temp_password, user=user)
                 break
-            except Exception:
+            except DjangoValidationError:
                 continue
 
         user.set_password(temp_password)
@@ -280,9 +281,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
         try:
             validate_password(new_password, user)
-        except serializers.ValidationError as e:
+        except DjangoValidationError as e:
             return Response(
-                {"code": "password_invalid", "details": e.messages},
+                {"code": "password_invalid", "details": list(e.messages)},
                 status=status.HTTP_400_BAD_REQUEST
             )
 

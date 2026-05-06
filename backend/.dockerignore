@@ -37,8 +37,8 @@ Thumbs.db
 Dockerfile
 docker-compose.yml
 
-# Tests and docs
-tests/
+# Tests and docs  
+# tests/  # Tests MUST be included for CI/CD to work
 README.md
 docs/
 *.md

@@ -157,5 +157,9 @@ class TestUserSerializerIncludesFirstLogin:
         response = client.get('/api/v1/users/')
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) >= 1
-        assert all('first_login_completed' in item for item in response.data)
+        # DRF uses pagination, so response.data is a dict with 'results' key
+        results = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
+        assert len(results) >= 1, f"No users in response. Response: {response.data}"
+        
+        # Check that all items have first_login_completed field
+        assert all('first_login_completed' in item for item in results), f"Missing first_login_completed. First item keys: {list(results[0].keys()) if results else 'empty'}"
