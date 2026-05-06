@@ -100,7 +100,6 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
       final lastName = safeString(decoded['last_name']);
       final username = safeString(decoded['username']);
       final email = safeString(decoded['email']);
-      final password = safeString(decoded['password']);
       final password = safeString(
         decoded['temp_password'] ?? decoded['password'],
       );
@@ -141,13 +140,6 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
 
     return Uri(
       path: '/set-password',
-      queryParameters: {
-        'first_name': data.firstName,
-        'last_name': data.lastName,
-        'username': data.username,
-        'email': data.email,
-        'temp_password': data.password,
-      },
       queryParameters: queryParams.isNotEmpty ? queryParams : null,
     );
   }
@@ -429,7 +421,6 @@ class _ShareCredentialData {
       lastName: safeString(map['last_name']),
       username: safeString(map['username']),
       email: safeString(map['email']),
-      password: safeString(map['password']),
       password: safeString(map['temp_password'] ?? map['password']),
     );
   }
