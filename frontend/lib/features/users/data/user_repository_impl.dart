@@ -202,16 +202,16 @@ class UserRepositoryImpl implements IUserRepository {
   }
 
   @override
-  Future<void> resetPassword({
-    required int userId,
-    required String newPassword,
-  }) async {
+  Future<String> resetPassword({required int userId}) async {
     final response = await _apiClient.post(
       '/api/v1/users/$userId/reset_password/',
-      body: {'new_password': newPassword},
+      body: const {},
     );
 
-    if (response.statusCode != 200 && response.statusCode != 204) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return json['temp_password'] as String;
+    } else {
       throw Exception(AppTextsProfile.updatePasswordError);
     }
   }

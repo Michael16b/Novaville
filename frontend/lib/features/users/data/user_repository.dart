@@ -62,10 +62,7 @@ abstract class IUserRepository {
   });
 
   /// Resets the user's password (admin action).
-  Future<void> resetPassword({
-    required int userId,
-    required String newPassword,
-  });
+  Future<String> resetPassword({required int userId});
 
   /// Deletes a user.
   Future<void> deleteUser({required int userId});

@@ -38,15 +38,17 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if username and password:
             user_model = get_user_model()
             try:
-                candidate = user_model.objects.get(**{username_field: username})
+                candidate = user_model.objects.get(**{f"{username_field}__iexact": username})
             except user_model.DoesNotExist:
-                candidate = None
+                candidate = user_model.objects.filter(email__iexact=username).first()
 
             if candidate and candidate.check_password(password):
                 if candidate.approval_status != ApprovalStatus.APPROVED:
                     raise AuthenticationFailed("pending_approval")
                 if not candidate.is_active:
                     raise AuthenticationFailed("account_disabled")
+                attrs = attrs.copy()
+                attrs[username_field] = candidate.get_username()
 
         data = super().validate(attrs)
 

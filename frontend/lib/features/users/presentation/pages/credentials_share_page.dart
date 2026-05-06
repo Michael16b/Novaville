@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/config/app_routes.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import 'package:frontend/constants/colors.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
 import 'package:frontend/constants/texts/texts_credentials_share.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
@@ -75,10 +77,20 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
     }
 
     try {
+      // Step 1: Normalize base64 padding
       final normalized = base64Url.normalize(shareRef.trim());
-      final decodedJson = utf8.decode(base64Url.decode(normalized));
+
+      // Step 2: Decode from base64
+      final decodedBytes = base64Url.decode(normalized);
+
+      // Step 3: Convert bytes to UTF-8 string
+      final decodedJson = utf8.decode(decodedBytes);
+
+      // Step 4: Parse JSON
       final decoded = jsonDecode(decodedJson);
+
       if (decoded is! Map<String, dynamic>) {
+        // Invalid JSON structure
         return null;
       }
 
@@ -88,14 +100,15 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
       final lastName = safeString(decoded['last_name']);
       final username = safeString(decoded['username']);
       final email = safeString(decoded['email']);
-      final password = safeString(decoded['password']);
+      final password = safeString(
+        decoded['temp_password'] ?? decoded['password'],
+      );
 
       final hasAtLeastOneValue =
           firstName.isNotEmpty ||
           lastName.isNotEmpty ||
           username.isNotEmpty ||
-          email.isNotEmpty ||
-          password.isNotEmpty;
+          email.isNotEmpty;
 
       if (!hasAtLeastOneValue) {
         return null;
@@ -108,14 +121,50 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
         email: email,
         password: password,
       );
-    } catch (_) {
+    } on FormatException catch (e) {
+      print('[CredentialsShare] Decode error: $e');
+      return null;
+    } catch (e) {
+      print('[CredentialsShare] Decode error: $e');
       return null;
     }
   }
 
+  Uri _buildRegisterUri(_ShareCredentialData data) {
+    final queryParams = <String, String>{};
+    if (data.firstName.isNotEmpty) queryParams['first_name'] = data.firstName;
+    if (data.lastName.isNotEmpty) queryParams['last_name'] = data.lastName;
+    if (data.username.isNotEmpty) queryParams['username'] = data.username;
+    if (data.email.isNotEmpty) queryParams['email'] = data.email;
+    if (data.password.isNotEmpty) queryParams['temp_password'] = data.password;
+
+    return Uri(
+      path: '/set-password',
+      queryParameters: queryParams.isNotEmpty ? queryParams : null,
+    );
+  }
+
   Future<_ShareCredentialData?> _loadShareData() async {
     final params = _collectShareParams();
+
+    // Log collected parameters for debugging
+    if (params.isEmpty) {
+      print('[CredentialsShare] No parameters found in URL');
+    } else {
+      print('[CredentialsShare] Parameters collected: ${params.keys.toList()}');
+    }
+
     final shareRef = params[BulkUserCreationTexts.shareReferenceKey];
+
+    if (shareRef == null) {
+      print(
+        '[CredentialsShare] No share_ref parameter found (looking for: ${BulkUserCreationTexts.shareReferenceKey})',
+      );
+      print('[CredentialsShare] Available keys: ${params.keys.toList()}');
+    } else {
+      print('[CredentialsShare] Found share_ref (length: ${shareRef.length})');
+    }
+
     return _decodeShareRef(shareRef);
   }
 
@@ -164,6 +213,13 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
         }
 
         final fullName = '${data.firstName} ${data.lastName}'.trim();
+
+        final path = _buildRegisterUri(data).toString();
+        final currentUri = Uri.base;
+        final usesHashRouting = currentUri.fragment.startsWith('/');
+        final fullUrl = usesHashRouting
+            ? '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#$path'
+            : currentUri.resolve(path).toString();
 
         return Scaffold(
           backgroundColor: AppColors.white,
@@ -225,14 +281,14 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
                           color: AppColors.secondaryText,
                         ),
                       ),
-                      if (data.password.isEmpty) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          CredentialsShareTexts.noSensitiveData,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: AppColors.secondaryText),
+                      const SizedBox(height: 8),
+                      Text(
+                        CredentialsShareTexts.registerHint,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.secondaryText,
+                          fontStyle: FontStyle.italic,
                         ),
-                      ],
+                      ),
                       const SizedBox(height: 18),
                       _CredentialRow(
                         label: CredentialsShareTexts.usernameLabel,
@@ -265,56 +321,76 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
                           },
                         ),
                       ],
-                      if (data.password.isNotEmpty) ...[
-                        const SizedBox(height: 10),
-                        _CredentialRow(
-                          label: CredentialsShareTexts.passwordLabel,
-                          value: data.password,
-                          onCopy: () async {
-                            await Clipboard.setData(
-                              ClipboardData(text: data.password),
-                            );
-                            if (!context.mounted) return;
-                            CustomSnackBar.showSuccess(
-                              context,
-                              CredentialsShareTexts.passwordCopied,
-                            );
-                          },
-                        ),
-                      ],
                       const SizedBox(height: 24),
                       Center(
-                        child: FilledButton.icon(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: AppColors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                        child: QrImageView(
+                          data: fullUrl,
+                          version: QrVersions.auto,
+                          size: 160.0,
+                          eyeStyle: const QrEyeStyle(
+                            eyeShape: QrEyeShape.square,
+                            color: AppColors.primary,
+                          ),
+                          dataModuleStyle: const QrDataModuleStyle(
+                            dataModuleShape: QrDataModuleShape.square,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FilledButton.icon(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: AppColors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: () => context.go(
+                                _buildRegisterUri(data).toString(),
+                              ),
+                              icon: const Icon(Icons.lock_reset),
+                              label: const Text(
+                                CredentialsShareTexts.registerCta,
+                              ),
                             ),
                           ),
-                          onPressed: () async {
-                            const url = CredentialsShareTexts.novavilleUrl;
-                            final uri = Uri.parse(url);
-                            if (await url_launcher.canLaunchUrl(uri)) {
-                              await url_launcher.launchUrl(
-                                uri,
-                                mode:
-                                    url_launcher.LaunchMode.externalApplication,
-                              );
-                            } else {
-                              CustomSnackBar.showError(
-                                context,
-                                CredentialsShareTexts.openSiteError,
-                              );
-                            }
-                          },
-                          icon: const Icon(Icons.open_in_new),
-                          label: const Text(CredentialsShareTexts.openSiteLabel),
-                        ),
+                          const SizedBox(width: 8),
+                          Tooltip(
+                            message: CredentialsShareTexts.openInNewTabTooltip,
+                            child: IconButton(
+                              style: IconButton.styleFrom(
+                                backgroundColor: AppColors.primary.withOpacity(
+                                  0.1,
+                                ),
+                                foregroundColor: AppColors.primary,
+                                padding: const EdgeInsets.all(12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: () async {
+                                final uri = Uri.parse(fullUrl);
+                                if (await url_launcher.canLaunchUrl(uri)) {
+                                  await url_launcher.launchUrl(
+                                    uri,
+                                    mode: url_launcher
+                                        .LaunchMode
+                                        .externalApplication,
+                                  );
+                                }
+                              },
+                              icon: const Icon(Icons.open_in_new),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -345,7 +421,7 @@ class _ShareCredentialData {
       lastName: safeString(map['last_name']),
       username: safeString(map['username']),
       email: safeString(map['email']),
-      password: safeString(map['password']),
+      password: safeString(map['temp_password'] ?? map['password']),
     );
   }
 

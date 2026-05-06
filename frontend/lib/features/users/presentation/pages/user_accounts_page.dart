@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
+import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
@@ -730,6 +733,8 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
               neighborhoodName: neighborhoodName,
               onEdit: (value) => _showEditDialog(context, value),
               onDelete: (value) => _showDeleteDialog(context, value),
+              onResetPassword: (value) =>
+                  _showResetPasswordDialog(context, value),
               getRoleColor: _getRoleColor,
             );
           },
@@ -972,6 +977,82 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                 color: AppColors.error,
                 fontWeight: FontWeight.w600,
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showResetPasswordDialog(BuildContext context, User user) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StyledDialog(
+        title: AppTextsAuth.adminResetPasswordTitle,
+        icon: Icons.lock_reset,
+        accentColor: AppColors.warning,
+        closeTooltip: AppTextsGeneral.cancel,
+        maxWidth: 420,
+        actions: [
+          StyledDialog.cancelButton(
+            label: AppTextsGeneral.cancel,
+            onPressed: () => Navigator.pop(dialogContext),
+          ),
+          StyledDialog.primaryButton(
+            label: 'Réinitialiser',
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              setState(() {
+                _showLoadingOverlay = true;
+              });
+              try {
+                final repository = context.read<IUserRepository>();
+                final tempPassword = await repository.resetPassword(
+                  userId: user.id,
+                );
+                if (!mounted) return;
+                CustomSnackBar.showSuccess(
+                  context,
+                  AppTextsAuth.adminResetPasswordSuccess,
+                );
+
+                final payload = jsonEncode({
+                  'v': 1,
+                  'first_name': user.firstName,
+                  'last_name': user.lastName,
+                  'username': user.username,
+                  'email': user.email,
+                  'temp_password': tempPassword,
+                });
+                final encodedShareRef = base64Url
+                    .encode(utf8.encode(payload))
+                    .replaceAll('=', '');
+
+                context.push(
+                  '${AppRoutes.credentialsShare}?${BulkUserCreationTexts.shareReferenceKey}=$encodedShareRef',
+                );
+              } catch (e) {
+                if (!mounted) return;
+                CustomSnackBar.showError(
+                  context,
+                  AppTextsAuth.errorPrefix(e.toString()),
+                );
+              } finally {
+                if (mounted) {
+                  setState(() {
+                    _showLoadingOverlay = false;
+                  });
+                }
+              }
+            },
+          ),
+        ],
+        body: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              AppTextsAuth.adminResetPasswordConfirm,
+              style: Theme.of(dialogContext).textTheme.bodyMedium,
             ),
           ],
         ),

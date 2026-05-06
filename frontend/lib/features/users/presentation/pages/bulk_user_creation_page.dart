@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/core/validation_patterns.dart';
@@ -552,9 +553,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       context: context,
       builder: (dialogContext) {
         return StyledDialog(
-          title: BulkUserCreationTexts.csvCompilationDialogTitle(
-            errors.length,
-          ),
+          title: BulkUserCreationTexts.csvCompilationDialogTitle(errors.length),
           icon: Icons.error_outline,
           accentColor: AppColors.error,
           maxWidth: 720,
@@ -584,9 +583,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      for (var index = 0;
-                          index < errors.length;
-                          index++) ...[
+                      for (var index = 0; index < errors.length; index++) ...[
                         Builder(
                           builder: (context) {
                             final error = errors[index];
@@ -594,18 +591,13 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                               dense: true,
                               leading: CircleAvatar(
                                 radius: 14,
-                                backgroundColor:
-                                    AppColors.error.withValues(
+                                backgroundColor: AppColors.error.withValues(
                                   alpha: 0.15,
                                 ),
                                 child: Text(
                                   '${error.line}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(fontWeight: FontWeight.w700),
                                 ),
                               ),
                               title: Text(error.message),
@@ -618,8 +610,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                             );
                           },
                         ),
-                        if (index < errors.length - 1)
-                          const Divider(height: 1),
+                        if (index < errors.length - 1) const Divider(height: 1),
                       ],
                     ],
                   ),
@@ -822,10 +813,13 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       'email': credential.email ?? '',
       'password': credential.password,
     });
+
+    // Encode to base64url (standard allows padding removal, but we keep consistency)
     final encodedShareRef = base64Url
         .encode(utf8.encode(payload))
         .replaceAll('=', '');
 
+    // Build route with query parameters
     final routeUri = Uri(
       path: AppRoutes.credentialsShare,
       queryParameters: {
@@ -836,10 +830,14 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final currentUri = Uri.base;
     final usesHashRouting = currentUri.fragment.startsWith('/');
 
+    // Generate share link - ensure proper URL construction
     if (usesHashRouting) {
-      return '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#${routeUri.toString()}';
+      // Hash routing: https://example.com/#/credentials-share?share_ref=xyz
+      final fullPath = routeUri.toString();
+      return '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#$fullPath';
     }
 
+    // Path routing: https://example.com/credentials-share?share_ref=xyz
     return currentUri.resolveUri(routeUri).toString();
   }
 
@@ -915,10 +913,17 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     required PdfColor background,
     pw.MemoryImage? logo,
     bool compact = false,
+    required String shareUrl,
   }) {
     final titleSize = compact ? 11.0 : 15.0;
     final valueSize = compact ? 9.5 : 11.5;
     final nameSize = compact ? 12.0 : 17.0;
+
+    final currentUri = Uri.base;
+    final usesHashRouting = currentUri.fragment.startsWith('/');
+    final setPasswordUrl = usesHashRouting
+        ? '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#/set-password'
+        : currentUri.resolve('/set-password').toString();
 
     pw.Widget lineItem(String label, String value) {
       return pw.Container(
@@ -1000,7 +1005,81 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           pw.SizedBox(height: compact ? 6 : 10),
           lineItem(BulkUserCreationTexts.pdfEmailLabel, credential.email ?? ''),
           lineItem(BulkUserCreationTexts.pdfUsernameLabel, credential.username),
-          lineItem(BulkUserCreationTexts.pdfPasswordLabel, credential.password),
+          pw.SizedBox(height: compact ? 8 : 12),
+          pw.Container(
+            padding: pw.EdgeInsets.all(compact ? 6 : 8),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.grey100,
+              borderRadius: pw.BorderRadius.circular(6),
+              border: pw.Border.all(color: PdfColors.grey300),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  AppTextsAuth.pdfFirstConnectionNote,
+                  style: pw.TextStyle(
+                    fontSize: compact ? 7.5 : 8.5,
+                    color: PdfColors.grey700,
+                    fontStyle: pw.FontStyle.italic,
+                  ),
+                ),
+                pw.SizedBox(height: 4),
+                pw.Text(
+                  '${AppTextsAuth.pdfActivationCode}${credential.password}',
+                  style: pw.TextStyle(
+                    fontSize: compact ? 9.5 : 11.5,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: compact ? 8 : 12),
+          pw.Center(
+            child: pw.BarcodeWidget(
+              barcode: pw.Barcode.qrCode(),
+              data: shareUrl,
+              color: primary,
+              width: compact ? 60 : 90,
+              height: compact ? 60 : 90,
+            ),
+          ),
+          pw.SizedBox(height: 4),
+          pw.Center(
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Text(
+                  'Scannez le QR Code pour l\'activation',
+                  style: pw.TextStyle(
+                    fontSize: compact ? 7.5 : 9.5,
+                    color: primary,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: compact ? 6 : 8),
+                pw.Text(
+                  '--- OU ---',
+                  style: pw.TextStyle(
+                    fontSize: compact ? 6.5 : 8.5,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+                pw.SizedBox(height: compact ? 6 : 8),
+                pw.Text(
+                  AppTextsAuth.pdfAlternativeInstructions(setPasswordUrl),
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(
+                    fontSize: compact ? 6.5 : 8.5,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -1091,6 +1170,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                           background: background,
                           logo: logo,
                           compact: pageItems.length > 4,
+                          shareUrl: _createCredentialShareLink(item),
                         ),
                       ),
                   ],
@@ -1146,6 +1226,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   accent: accent,
                   background: background,
                   logo: logo,
+                  shareUrl: _createCredentialShareLink(credential),
                 ),
               ),
             );
@@ -1185,6 +1266,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                 accent: accent,
                 background: background,
                 logo: logo,
+                shareUrl: _createCredentialShareLink(credential),
               ),
             ),
           );

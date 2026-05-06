@@ -92,7 +92,7 @@ class _LoginPageState extends State<LoginPage> {
                                     const SizedBox(height: 24),
                                     TextFormField(
                                       controller: _usernameController,
-                                      keyboardType: TextInputType.name,
+                                      keyboardType: TextInputType.emailAddress,
                                       textInputAction: TextInputAction.next,
                                       validator: (v) => (v == null || v.isEmpty)
                                           ? AppValidatorMessages
@@ -100,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
                                           : null,
                                       decoration: const InputDecoration(
                                         labelText:
-                                            '${AppFormLabels.username} *',
+                                            '${AppTextsAuth.usernameOrEmail} *',
                                       ),
                                     ),
                                     const SizedBox(height: 24),
@@ -172,6 +172,16 @@ class _LoginPageState extends State<LoginPage> {
                                                 context.go(AppRoutes.register),
                                       icon: const Icon(Icons.person_add_alt_1),
                                       label: const Text(AppTextsAuth.register),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    TextButton.icon(
+                                      onPressed: isLoading
+                                          ? null
+                                          : () => context.push('/set-password'),
+                                      icon: const Icon(Icons.vpn_key_outlined),
+                                      label: const Text(
+                                        AppTextsAuth.firstConnectionButton,
+                                      ),
                                     ),
                                   ],
                                 ),

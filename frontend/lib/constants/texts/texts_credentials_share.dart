@@ -4,7 +4,12 @@ class CredentialsShareTexts {
   static const openSiteLabel = 'Accéder au site';
   static const pageTitle = 'Vos accès Novaville';
   static const subtitle =
-      'Conservez ces informations de connexion en lieu sûr.';
+      'Conservez ces informations et définissez votre mot de passe pour finaliser la création de votre compte.';
+  static const registerCta = 'Définir mon mot de passe';
+  static const registerHint =
+      'Cliquez sur le bouton ci-dessous pour activer votre compte.';
+  static const openInNewTabTooltip =
+      'Définir mon mot de passe dans un nouvel onglet';
 
   static const emailLabel = 'Email';
   static const usernameLabel = 'Nom d\'utilisateur';
@@ -15,9 +20,9 @@ class CredentialsShareTexts {
   static const loading = 'Chargement des informations...';
   static const unavailableTitle = 'Informations indisponibles';
   static const unavailableMessage =
-      'Ce lien de partage est invalide, expiré ou déjà supprimé.';
+      'Ce lien est invalide, expiré ou incomplet.';
   static const noSensitiveData =
-      'Ce lien ne contient pas de donnée sensible. Transmettez le mot de passe séparément.';
+      'Le mot de passe se choisit lors de la premiere connexion via S\'inscrire.';
 
   static const emailCopied = 'Email copié.';
   static const usernameCopied = 'Nom d\'utilisateur copié.';

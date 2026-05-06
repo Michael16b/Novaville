@@ -42,6 +42,10 @@ class User(AbstractUser):
         default=ApprovalStatus.APPROVED,
         help_text="Approval workflow status for user registrations",
     )
+    first_login_completed = models.BooleanField(
+        default=False,
+        help_text="Whether the user has completed their first login and set their own password"
+    )
     
     class Meta:
         db_table = 'users'

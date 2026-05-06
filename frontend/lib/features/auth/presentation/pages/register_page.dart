@@ -33,11 +33,39 @@ class _RegisterPageState extends State<RegisterPage> {
   late final IUserRepository _repository;
   bool _isSubmitting = false;
   String? _submissionError;
+  bool _inviteMode = false;
+  bool _prefillApplied = false;
 
   @override
   void initState() {
     super.initState();
     _repository = widget.userRepository ?? createPublicUserRepository();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_prefillApplied) {
+      return;
+    }
+    _prefillApplied = true;
+
+    final params = GoRouterState.of(context).uri.queryParameters;
+    final firstName = params['first_name']?.trim() ?? '';
+    final lastName = params['last_name']?.trim() ?? '';
+    final username = params['username']?.trim() ?? '';
+    final email = params['email']?.trim() ?? '';
+
+    _firstNameController.text = firstName;
+    _lastNameController.text = lastName;
+    _usernameController.text = username;
+    _emailController.text = email;
+
+    _inviteMode =
+        firstName.isNotEmpty ||
+        lastName.isNotEmpty ||
+        username.isNotEmpty ||
+        email.isNotEmpty;
   }
 
   @override
@@ -92,6 +120,16 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  String get _welcomeLabel {
+    final fullName =
+        '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}'
+            .trim();
+    if (fullName.isEmpty) {
+      return _usernameController.text.trim();
+    }
+    return fullName;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,7 +173,9 @@ class _RegisterPageState extends State<RegisterPage> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 Text(
-                                  AppTextsAuth.register,
+                                  _inviteMode
+                                      ? AppTextsAuth.registerInviteTitle
+                                      : AppTextsAuth.register,
                                   style: Theme.of(
                                     context,
                                   ).textTheme.headlineSmall,
@@ -143,85 +183,152 @@ class _RegisterPageState extends State<RegisterPage> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  AppTextsAuth.registerDescription,
+                                  _inviteMode
+                                      ? AppTextsAuth.registerInviteDescription
+                                      : AppTextsAuth.registerDescription,
                                   style: Theme.of(context).textTheme.bodyMedium
                                       ?.copyWith(
                                         color: AppColors.secondaryText,
                                       ),
                                   textAlign: TextAlign.center,
                                 ),
+                                if (_inviteMode) ...[
+                                  const SizedBox(height: 20),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: AppColors.secondaryText
+                                            .withOpacity(0.15),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _welcomeLabel,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        if (_usernameController.text
+                                            .trim()
+                                            .isNotEmpty)
+                                          Text(
+                                            'Identifiant: ${_usernameController.text.trim()}',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color:
+                                                      AppColors.secondaryText,
+                                                ),
+                                          ),
+                                        if (_emailController.text
+                                            .trim()
+                                            .isNotEmpty)
+                                          Text(
+                                            'Email: ${_emailController.text.trim()}',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color:
+                                                      AppColors.secondaryText,
+                                                ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                                 const SizedBox(height: 24),
-                                _buildField(
-                                  controller: _firstNameController,
-                                  label: AppFormLabels.firstName,
-                                  validator: (value) {
-                                    if (value == null || value.trim().isEmpty) {
-                                      return AppValidatorMessages
-                                          .firstNameRequired;
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                _buildField(
-                                  controller: _lastNameController,
-                                  label: AppFormLabels.lastName,
-                                  validator: (value) {
-                                    if (value == null || value.trim().isEmpty) {
-                                      return AppValidatorMessages
-                                          .lastNameRequired;
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                _buildField(
-                                  controller: _addressController,
-                                  label: AppFormLabels.address,
-                                  maxLines: 2,
-                                  validator: (value) {
-                                    if (value == null || value.trim().isEmpty) {
-                                      return AppValidatorMessages
-                                          .addressRequired;
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                _buildField(
-                                  controller: _emailController,
-                                  label: AppFormLabels.email,
-                                  keyboardType: TextInputType.emailAddress,
-                                  validator: (value) {
-                                    final trimmed = value?.trim() ?? '';
-                                    if (trimmed.isEmpty) {
-                                      return AppValidatorMessages.emailRequired;
-                                    }
-                                    if (!ValidationPatterns.email.hasMatch(
-                                      trimmed,
-                                    )) {
-                                      return AppValidatorMessages.emailInvalid;
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                _buildField(
-                                  controller: _usernameController,
-                                  label: AppFormLabels.login,
-                                  validator: (value) {
-                                    final trimmed = value?.trim() ?? '';
-                                    if (trimmed.isEmpty) {
-                                      return AppValidatorMessages.loginRequired;
-                                    }
-                                    if (trimmed.contains(RegExp(r'\s'))) {
-                                      return AppValidatorMessages
-                                          .loginInvalidWhitespace;
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
+                                if (!_inviteMode) ...[
+                                  _buildField(
+                                    controller: _firstNameController,
+                                    label: AppFormLabels.firstName,
+                                    validator: (value) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
+                                        return AppValidatorMessages
+                                            .firstNameRequired;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildField(
+                                    controller: _lastNameController,
+                                    label: AppFormLabels.lastName,
+                                    validator: (value) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
+                                        return AppValidatorMessages
+                                            .lastNameRequired;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildField(
+                                    controller: _addressController,
+                                    label: AppFormLabels.address,
+                                    maxLines: 2,
+                                    validator: (value) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
+                                        return AppValidatorMessages
+                                            .addressRequired;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildField(
+                                    controller: _emailController,
+                                    label: AppFormLabels.email,
+                                    keyboardType: TextInputType.emailAddress,
+                                    validator: (value) {
+                                      final trimmed = value?.trim() ?? '';
+                                      if (trimmed.isEmpty) {
+                                        return AppValidatorMessages
+                                            .emailRequired;
+                                      }
+                                      if (!ValidationPatterns.email.hasMatch(
+                                        trimmed,
+                                      )) {
+                                        return AppValidatorMessages
+                                            .emailInvalid;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildField(
+                                    controller: _usernameController,
+                                    label: AppFormLabels.login,
+                                    validator: (value) {
+                                      final trimmed = value?.trim() ?? '';
+                                      if (trimmed.isEmpty) {
+                                        return AppValidatorMessages
+                                            .loginRequired;
+                                      }
+                                      if (trimmed.contains(RegExp(r'\s'))) {
+                                        return AppValidatorMessages
+                                            .loginInvalidWhitespace;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
                                 _buildField(
                                   controller: _passwordController,
                                   label: AppFormLabels.password,
@@ -292,7 +399,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 SizedBox(
                                   width: double.infinity,
                                   child: CustomElevatedFlatButton(
-                                    text: AppTextsAuth.register,
+                                    text: _inviteMode
+                                        ? AppTextsAuth.completePasswordSetup
+                                        : AppTextsAuth.register,
                                     isLoading: _isSubmitting,
                                     onPressed: _submit,
                                   ),

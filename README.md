@@ -2,9 +2,10 @@
 
 A citizen participation and reporting platform built with Django (Backend), Flutter (Frontend), and PostgreSQL.
 
-> **📚 Full documentation available in English at http://localhost:3000**
+> **🎯 First time here?** Start with [GETTING_STARTED.md](GETTING_STARTED.md) - complete beginner guide with step-by-step setup.
 >
-> **Quick start:** `bash control-center.sh` → Choose option 1
+>
+> **Quick start (experienced):** `bash control-center.sh` → Choose option 1
 
 ## Quick Start - Launch Documentation
 
@@ -17,6 +18,58 @@ cd docs && docker-compose up -d
 
 # Then access: http://localhost:3000 (English) or /fr (French)
 ```
+
+---
+
+## Central Documentation Index
+
+To help contributors, this repository centralizes key README files and troubleshooting steps below:
+
+- [Backend README](backend/README.md)
+- [Backend fixtures README](backend/tests/fixtures/README.md)
+- [Frontend README](frontend/README.md)
+- [Docs README](docs/README.md)
+- [Docker Compose file](docker-compose.yml)
+
+### ⚡ Quick Start (Development)
+
+**One command to rule them all:**
+
+```bash
+docker compose up -d --build
+```
+
+That's it! 🎉 Everything starts automatically:
+- ✓ PostgreSQL database
+- ✓ Django backend (http://localhost:8000)
+- ✓ Flutter frontend (http://localhost:80)
+- ✓ Database migrations
+- ✓ Admin account (admin / ChangeMe123)
+
+**Access the application:**
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:80 |
+| API (Swagger) | http://localhost:8000/api/docs/ |
+| Django Admin | http://localhost:8000/admin/ |
+
+### (Optional) Load Sample Data
+
+```bash
+docker compose exec backend python manage.py shell -c "exec(open('tests/fixtures/create_sample_data.py', encoding='utf-8').read())"
+```
+
+This loads test data: neighborhoods, users, reports, surveys, events.
+
+### Customization (Optional)
+
+To customize passwords or settings:
+1. Create `.env` file (copy from `.env.example`)
+2. Edit values as needed
+3. Restart: `docker compose down -v && docker compose up -d --build`
+
+See [GETTING_STARTED.md](GETTING_STARTED.md) for full customization guide.
 
 ---
 
