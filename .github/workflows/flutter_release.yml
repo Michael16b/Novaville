@@ -307,8 +307,7 @@ jobs:
           fi
           echo "Renaming app to: $APP_NAME"
           dart pub global activate rename
-          export PATH="$PATH":"$HOME/.pub-cache/bin"
-          rename setAppName --targets ios,android,macos,windows,linux --value "$APP_NAME"
+          dart pub global run rename setAppName --targets ios,android,macos,windows,linux --value "$APP_NAME"
 
       - name: Enable Windows desktop
         shell: bash
