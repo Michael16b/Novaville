@@ -141,9 +141,7 @@ class MockUserRepository implements IUserRepository {
   }
 
   @override
-  Future<String> resetPassword({
-    required int userId,
-  }) async {
+  Future<String> resetPassword({required int userId}) async {
     // Return a dummy temporary password for tests
     return 'TempPass123!';
   }

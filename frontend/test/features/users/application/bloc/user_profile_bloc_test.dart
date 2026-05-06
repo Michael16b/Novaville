@@ -120,9 +120,7 @@ class _FakeUserRepository implements IUserRepository {
   }
 
   @override
-  Future<String> resetPassword({
-    required int userId,
-  }) async {
+  Future<String> resetPassword({required int userId}) async {
     // Return a dummy temporary password for tests
     if (shouldThrow) throw Exception(errorMessage);
     return 'TempPass123!';
