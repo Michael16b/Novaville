@@ -107,6 +107,21 @@ String? authRedirect({
     if (isCredentialsShare || isLoggingIn || isPublicRoute) {
       return null;
     }
+
+    if (isOnLoading) {
+      final normalizedIntended =
+          intendedLocation.endsWith('/') && intendedLocation.length > 1
+          ? intendedLocation.substring(0, intendedLocation.length - 1)
+          : intendedLocation;
+      final isIntendedPublic =
+          publicRoutes.contains(normalizedIntended) ||
+          normalizedIntended == AppRoutes.credentialsShare ||
+          normalizedIntended.startsWith('${AppRoutes.credentialsShare}/');
+      if (isIntendedPublic) {
+        return intendedLocation;
+      }
+    }
+
     final encodedFrom = Uri.encodeQueryComponent(intendedLocation);
     return '${AppRoutes.login}?from=$encodedFrom';
   }
