@@ -225,11 +225,11 @@ function HomepageHeader() {
 }
 
 function DownloadsSection() {
-  const {siteConfig} = useDocusaurusContext();
+  const {siteConfig, i18n} = useDocusaurusContext();
   const customFields = siteConfig.customFields as unknown as CustomFields;
-  const locale = siteConfig.i18n.currentLocale;
+  const locale = i18n.currentLocale;
   const downloads = getDownloads(customFields, locale);
-  const isEnglish = locale.startsWith('en');
+  const isEnglish = typeof locale === 'string' ? locale.startsWith('en') : false;
   const releasePageUrl = customFields.releasePageUrl;
   const appLogoUrl = customFields.appLogoUrl;
 
