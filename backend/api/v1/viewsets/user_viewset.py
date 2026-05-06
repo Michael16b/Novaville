@@ -225,19 +225,25 @@ class UserViewSet(viewsets.ModelViewSet):
     def reset_password(self, request, pk=None):
         """Allow an admin to reset a user's password and get a temporary password"""
         user = self.get_object()
-
-        # 1. Génération du code d'activation (mot de passe temporaire)
         alphabet = string.ascii_letters + string.digits
         
+        valid_temp_password = None
         for _ in range(10):
-            temp_password = str(''.join(secrets.choice(alphabet) for i in range(12)))
+            candidate = str(''.join(secrets.choice(alphabet) for i in range(12)))
             try:
-                validate_password(temp_password, user=user)
+                validate_password(candidate, user=user)
+                valid_temp_password = candidate
                 break
             except DjangoValidationError:
                 continue
 
-        user.set_password(temp_password)
+        if not valid_temp_password:
+            return Response(
+                {"code": "password_generation_failed"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        user.set_password(valid_temp_password)
         user.save()
 
         return Response(
