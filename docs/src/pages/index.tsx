@@ -61,8 +61,9 @@ function AppleIcon() {
   );
 }
 
-function getDownloads(customFields: CustomFields, locale: string): DownloadItem[] {
-  const isEnglish = locale.startsWith('en');
+function getDownloads(customFields: CustomFields, locale: string | undefined): DownloadItem[] {
+  const localeSafe = typeof locale === 'string' ? locale : undefined;
+  const isEnglish = typeof localeSafe === 'string' ? localeSafe.startsWith('en') : false;
   const {releaseBaseUrl, releasePageUrl} = customFields;
 
   return isEnglish
