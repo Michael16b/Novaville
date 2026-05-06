@@ -101,9 +101,28 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
 
       if (updateResponse.statusCode != 200 &&
           updateResponse.statusCode != 204) {
-        throw Exception(
-          AppTextsAuth.passwordChangeError(updateResponse.statusCode),
+        String errorMessage = AppTextsAuth.passwordChangeError(
+          updateResponse.statusCode,
         );
+        try {
+          final errorData = jsonDecode(updateResponse.body);
+          if (errorData is Map) {
+            if (errorData.containsKey('password')) {
+              final pwdErrors = errorData['password'];
+              if (pwdErrors is List && pwdErrors.isNotEmpty) {
+                errorMessage = pwdErrors.first.toString();
+              }
+            } else if (errorData.containsKey('detail')) {
+              errorMessage = errorData['detail'].toString();
+            } else if (errorData.isNotEmpty) {
+              final firstError = errorData.values.first;
+              if (firstError is List && firstError.isNotEmpty) {
+                errorMessage = firstError.first.toString();
+              }
+            }
+          }
+        } catch (_) {}
+        throw Exception(errorMessage);
       }
 
       if (mounted) {
@@ -112,10 +131,11 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
       }
     } catch (e) {
       if (mounted) {
-        CustomSnackBar.showError(
-          context,
-          AppTextsAuth.errorPrefix(e.toString()),
-        );
+        String errMsg = e.toString();
+        if (errMsg.startsWith('Exception: ')) {
+          errMsg = errMsg.substring(11);
+        }
+        CustomSnackBar.showError(context, AppTextsAuth.errorPrefix(errMsg));
       }
     } finally {
       if (mounted) {
@@ -244,6 +264,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                                   labelText: AppTextsAuth.usernameLabel,
                                   hintText: AppTextsAuth.usernameHint,
                                   border: OutlineInputBorder(),
+                                  errorMaxLines: 3,
                                 ),
                                 validator: (value) =>
                                     value == null || value.isEmpty
@@ -278,6 +299,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                                           !_obscureTempPassword,
                                     ),
                                   ),
+                                  errorMaxLines: 3,
                                 ),
                                 validator: (value) =>
                                     value == null || value.isEmpty
@@ -314,10 +336,18 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                               () => _obscurePassword = !_obscurePassword,
                             ),
                           ),
+                          errorMaxLines: 3,
                         ),
-                        validator: (value) => value != null && value.length >= 8
-                            ? null
-                            : AppTextsAuth.passwordTooShort,
+                        validator: (value) {
+                          if (value == null || value.length < 8) {
+                            return AppTextsAuth.passwordTooShort;
+                          }
+                          // Check if the password contains only digits
+                          if (RegExp(r'^[0-9]+$').hasMatch(value)) {
+                            return AppTextsAuth.passwordEntirelyNumeric;
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 16),
 
@@ -341,6 +371,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                                   !_obscureConfirmPassword,
                             ),
                           ),
+                          errorMaxLines: 3,
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {

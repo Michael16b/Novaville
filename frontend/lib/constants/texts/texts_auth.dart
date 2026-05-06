@@ -58,6 +58,8 @@ class AppTextsAuth {
   static const String newPasswordLabel = "Nouveau mot de passe";
   static const String passwordTooShort =
       "Le mot de passe doit contenir au moins 8 caractères";
+  static const String passwordEntirelyNumeric =
+      "Le mot de passe ne peut pas être entièrement numérique";
   static const String confirmPasswordLabel = "Confirmer le mot de passe";
   static const String confirmPasswordRequired =
       "Veuillez confirmer le mot de passe";
