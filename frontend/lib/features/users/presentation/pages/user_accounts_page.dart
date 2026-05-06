@@ -20,6 +20,7 @@ import 'package:frontend/features/users/presentation/widgets/single_user_creatio
 import 'package:frontend/features/users/presentation/widgets/single_user_edit_dialog.dart';
 import 'package:frontend/features/users/presentation/widgets/user_account_card.dart';
 import 'package:frontend/ui/widgets/breadcrumb.dart';
+import 'package:frontend/ui/widgets/collapsible_filter_section.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
@@ -352,24 +353,19 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
   Widget _buildAdvancedFilters(BuildContext context, UserAccountsState state) {
     final hasActiveFilter = _filterRole != null || _filterAddress.isNotEmpty;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            const Icon(
-              Icons.filter_list,
-              size: 18,
-              color: AppColors.secondaryText,
-            ),
-            Text(
-              UserTexts.advancedFilters,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            TextButton.icon(
+    return CollapsibleFilterSection(
+      title: UserTexts.advancedFilters,
+      initiallyExpanded: hasActiveFilter,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildRoleFilterChips(),
+          const SizedBox(height: 10),
+          _buildAddressFilter(),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
               onPressed: hasActiveFilter ? _clearAllFilters : null,
               icon: const Icon(Icons.clear_all, size: 16),
               label: const Text(UserTexts.clearFilters),
@@ -379,18 +375,9 @@ class _UserAccountsPageContentState extends State<_UserAccountsPageContent> {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildRoleFilterChips(),
-            const SizedBox(height: 10),
-            _buildAddressFilter(),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 

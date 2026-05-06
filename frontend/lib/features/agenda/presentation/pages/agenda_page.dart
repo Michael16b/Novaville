@@ -19,6 +19,7 @@ import 'package:frontend/features/agenda/presentation/widgets/event_form_dialog.
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/ui/widgets/breadcrumb.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
+import 'package:frontend/ui/widgets/collapsible_filter_section.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -341,6 +342,14 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Card(
+          color: AppColors.white,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: TextField(
               controller: _searchController,
               onChanged: _onSearchChanged,
               textInputAction: TextInputAction.search,
@@ -375,6 +384,20 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                 ),
                 const SizedBox(width: 8),
                 TextButton.icon(
+          ),
+        ),
+        const SizedBox(height: 8),
+        CollapsibleFilterSection(
+          title: AgendaTexts.advancedFilters,
+          initiallyExpanded: hasActiveFilter,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildThemeFilterChips(),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
                   onPressed: hasActiveFilter ? _clearAllFilters : null,
                   icon: const Icon(Icons.clear_all, size: 16),
                   label: const Text(AgendaTexts.clearFilters),
@@ -388,8 +411,12 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
             const SizedBox(height: 8),
             _buildThemeFilterChips(),
           ],
+              ),
+            ],
+          ),
         ),
       ),
+      ],
     );
   }
 
