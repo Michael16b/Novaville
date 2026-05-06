@@ -15,6 +15,12 @@ const config = {
   // GitHub Pages is served under https://<user>.github.io/<project>/
   baseUrl: '/Novaville/',
 
+  customFields: {
+    appLogoUrl: 'https://raw.githubusercontent.com/Michael16b/Novaville/main/frontend/assets/images/logo.png',
+    releaseBaseUrl: 'https://github.com/Michael16b/Novaville/releases/latest/download',
+    releasePageUrl: 'https://github.com/Michael16b/Novaville/releases/latest',
+  },
+
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'Michael16b', // Usually your GitHub org/user name.
@@ -76,7 +82,7 @@ const config = {
         title: 'Novaville',
         logo: {
           alt: 'Novaville Logo',
-          src: 'img/logo.svg',
+          src: 'https://raw.githubusercontent.com/Michael16b/Novaville/main/frontend/assets/images/logo.png',
         },
         items: [
           {

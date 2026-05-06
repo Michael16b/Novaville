@@ -18,6 +18,7 @@ import 'package:frontend/features/reports/presentation/widgets/report_form_dialo
 import 'package:frontend/features/reports/presentation/widgets/report_status_dialog.dart';
 import 'package:frontend/ui/widgets/breadcrumb.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
+import 'package:frontend/ui/widgets/collapsible_filter_section.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
 
@@ -251,24 +252,54 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
         _filterAddress.isNotEmpty ||
         _filterDatePeriod != DateFilterPeriod.all;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            const Icon(
-              Icons.filter_list,
-              size: 18,
-              color: AppColors.secondaryText,
-            ),
-            Text(
-              ReportTexts.advancedFilters,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            TextButton.icon(
+    return CollapsibleFilterSection(
+      title: ReportTexts.advancedFilters,
+      initiallyExpanded: hasActiveFilter,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            crossAxisAlignment: WrapCrossAlignment.start,
+            children: [
+              _buildFilterChipGroup<String>(
+                label: ReportTexts.filterByProblemType,
+                selectedValue: _filterProblemType,
+                options: [
+                  (label: ReportTexts.allProblemTypes, value: null),
+                  ...ProblemType.values.map(
+                    (t) => (label: t.label, value: t.value),
+                  ),
+                ],
+                onSelected: (value) {
+                  setState(() => _filterProblemType = value);
+                  _applyFilters();
+                },
+              ),
+              _buildFilterChipGroup<String>(
+                label: ReportTexts.filterByStatus,
+                selectedValue: _filterStatus,
+                options: [
+                  (label: ReportTexts.allStatuses, value: null),
+                  ...ReportStatus.values.map(
+                    (s) => (label: s.label, value: s.value),
+                  ),
+                ],
+                onSelected: (value) {
+                  setState(() => _filterStatus = value);
+                  _applyFilters();
+                },
+              ),
+              _buildDateFilter(),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _buildAddressFilter(),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
               onPressed: hasActiveFilter ? _clearAllFilters : null,
               icon: const Icon(Icons.clear_all, size: 16),
               label: const Text(ReportTexts.clearFilters),
@@ -278,53 +309,9 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              crossAxisAlignment: WrapCrossAlignment.start,
-              children: [
-                _buildFilterChipGroup<String>(
-                  label: ReportTexts.filterByProblemType,
-                  selectedValue: _filterProblemType,
-                  options: [
-                    (label: ReportTexts.allProblemTypes, value: null),
-                    ...ProblemType.values.map(
-                      (t) => (label: t.label, value: t.value),
-                    ),
-                  ],
-                  onSelected: (value) {
-                    setState(() => _filterProblemType = value);
-                    _applyFilters();
-                  },
-                ),
-                _buildFilterChipGroup<String>(
-                  label: ReportTexts.filterByStatus,
-                  selectedValue: _filterStatus,
-                  options: [
-                    (label: ReportTexts.allStatuses, value: null),
-                    ...ReportStatus.values.map(
-                      (s) => (label: s.label, value: s.value),
-                    ),
-                  ],
-                  onSelected: (value) {
-                    setState(() => _filterStatus = value);
-                    _applyFilters();
-                  },
-                ),
-                _buildDateFilter(),
-              ],
-            ),
-            const SizedBox(height: 10),
-            _buildAddressFilter(),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 

@@ -13,6 +13,7 @@ import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
+import 'package:frontend/features/users/presentation/pages/pdf_generation_util.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
 
 class SingleUserCreationDialog extends StatefulWidget {
@@ -378,6 +379,7 @@ class _CredentialsDialogState extends State<_CredentialsDialog> {
       'last_name': widget.lastName,
       'username': widget.username,
       'email': widget.email,
+      'temp_password': widget.password,
     });
     final encodedShareRef = base64Url
         .encode(utf8.encode(payload))
@@ -452,6 +454,32 @@ class _CredentialsDialogState extends State<_CredentialsDialog> {
                 ),
                 icon: Icon(_isCopied ? Icons.check : Icons.copy, size: 20),
                 label: Text(_isCopied ? UserTexts.copied : UserTexts.copy),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await PdfGenerationUtil.generateAndDownloadSingleUserPdf(
+                      context: context,
+                      firstName: widget.firstName,
+                      lastName: widget.lastName,
+                      username: widget.username,
+                      email: widget.email,
+                      password: widget.password,
+                      shareUrl: _linkController.text,
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 56),
+                  ),
+                  icon: const Icon(Icons.picture_as_pdf, size: 20),
+                  label: const Text(UserTexts.downloadPdf),
+                ),
               ),
             ],
           ),

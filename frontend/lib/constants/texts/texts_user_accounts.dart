@@ -74,4 +74,8 @@ class UserTexts {
   static const passwordResetSuccess = 'Mot de passe réinitialisé';
   static const passwordResetSuccessMessage =
       'Le mot de passe a été réinitialisé avec succès. Voici le lien contenant les nouvelles informations de connexion :';
+
+  static const downloadPdf = 'Télécharger en PDF';
+  static const activationCode = 'Code d\'activation (mot de passe provisoire)';
+  static const activationCodeCopied = 'Code d\'activation copié';
 }

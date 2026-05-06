@@ -8,6 +8,7 @@ import 'package:frontend/constants/colors.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
 import 'package:frontend/constants/texts/texts_credentials_share.dart';
+import 'package:frontend/constants/texts/texts_user_accounts.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:go_router/go_router.dart';
 
@@ -317,6 +318,23 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
                             CustomSnackBar.showSuccess(
                               context,
                               CredentialsShareTexts.emailCopied,
+                            );
+                          },
+                        ),
+                      ],
+                      if (data.password.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        _CredentialRow(
+                          label: UserTexts.activationCode,
+                          value: data.password,
+                          onCopy: () async {
+                            await Clipboard.setData(
+                              ClipboardData(text: data.password),
+                            );
+                            if (!context.mounted) return;
+                            CustomSnackBar.showSuccess(
+                              context,
+                              UserTexts.activationCodeCopied,
                             );
                           },
                         ),
