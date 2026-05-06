@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     tags:
       - "v*"
+      - "V*"
     paths:
       - "frontend/**"
       - ".github/workflows/flutter_release.yml"
@@ -50,6 +51,12 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
+      - name: Rename App
+        run: |
+          dart pub global activate rename
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          rename setAppName --targets ios,android,macos,windows,linux --value "Novaville"
+
       - name: Analyze
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
@@ -83,6 +90,12 @@ jobs:
 
       - name: Pub get
         run: flutter pub get
+
+      - name: Rename App
+        run: |
+          dart pub global activate rename
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          rename setAppName --targets ios,android,macos,windows,linux --value "Novaville"
 
       - name: Build web release
         run: |
@@ -129,19 +142,31 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
+      - name: Rename App
+        run: |
+          dart pub global activate rename
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          rename setAppName --targets ios,android,macos,windows,linux --value "Novaville"
+
       - name: Build APK
         run: flutter build apk --release --dart-define=FLUTTER_BACKEND_API="$BACKEND_API_URL"
 
       - name: Build App Bundle
         run: flutter build appbundle --release --dart-define=FLUTTER_BACKEND_API="$BACKEND_API_URL"
 
-      - name: Upload Android artifacts
+      - name: Upload Android APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: novaville-android
-          path: |
-            frontend/build/app/outputs/flutter-apk/app-release.apk
-            frontend/build/app/outputs/bundle/release/app-release.aab
+          name: novaville-android-apk
+          path: frontend/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Android AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: novaville-android-aab
+          path: frontend/build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 14
 
@@ -180,6 +205,12 @@ jobs:
 
       - name: Pub get
         run: flutter pub get
+
+      - name: Rename App
+        run: |
+          dart pub global activate rename
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          rename setAppName --targets ios,android,macos,windows,linux --value "Novaville"
 
       - name: Enable Linux desktop
         run: flutter config --enable-linux-desktop
@@ -227,6 +258,13 @@ jobs:
       - name: Pub get
         shell: bash
         run: flutter pub get
+        
+      - name: Rename App
+        shell: bash
+        run: |
+          dart pub global activate rename
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          rename setAppName --targets ios,android,macos,windows,linux --value "Novaville"
 
       - name: Enable Windows desktop
         shell: bash
@@ -276,6 +314,12 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
+      - name: Rename App
+        run: |
+          dart pub global activate rename
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          rename setAppName --targets ios,android,macos,windows,linux --value "Novaville"
+
       - name: Enable desktop and iOS
         run: flutter config --enable-macos-desktop --enable-ios
 
@@ -304,6 +348,7 @@ jobs:
       - linux
       - windows
     if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/V')
     permissions:
       contents: write
     steps:
@@ -313,11 +358,17 @@ jobs:
           name: novaville-web-pwa
           path: release-assets/web
 
-      - name: Download Android artifact
+      - name: Download Android APK
         uses: actions/download-artifact@v4
         with:
-          name: novaville-android
-          path: release-assets/android
+          name: novaville-android-apk
+          path: release-assets/android-apk
+
+      - name: Download Android AAB
+        uses: actions/download-artifact@v4
+        with:
+          name: novaville-android-aab
+          path: release-assets/android-aab
 
       - name: Download Linux artifact
         uses: actions/download-artifact@v4
@@ -351,9 +402,8 @@ jobs:
           zip_dir(root / 'linux', root / 'novaville-linux.zip')
           zip_dir(root / 'windows', root / 'novaville-windows.zip')
 
-          android_dir = root / 'android'
-          shutil.copy2(next(android_dir.rglob('app-release.apk')), root / 'novaville-android.apk')
-          shutil.copy2(next(android_dir.rglob('app-release.aab')), root / 'novaville-android.aab')
+          shutil.copy2(next((root / 'android-apk').rglob('*.apk')), root / 'novaville-android.apk')
+          shutil.copy2(next((root / 'android-aab').rglob('*.aab')), root / 'novaville-android.aab')
           PY
 
       - name: Collect release files

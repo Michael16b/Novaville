@@ -16,50 +16,8 @@ type DownloadItem = {
   key: string;
   title: string;
   description: string;
-  href: string;
-  label: string;
-  icon: React.ReactNode;
+  links: Array<{ href: string; label: string }>;
 };
-
-function AndroidIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M7 7.5c.4 0 .75-.16 1.01-.42l1 1.03a4.7 4.7 0 0 0-1.56 3.52V16a1 1 0 0 0 1 1h1.25V19a1 1 0 1 0 2 0v-2h1.5V19a1 1 0 1 0 2 0v-2H16a1 1 0 0 0 1-1v-4.37c0-1.34-.56-2.55-1.56-3.52l1-1.03A1.49 1.49 0 0 0 18.5 7.5a1.5 1.5 0 1 0-1.51-1.5c0 .24.06.47.15.67l-1.12 1.15A6.73 6.73 0 0 0 12 6.5a6.73 6.73 0 0 0-3.99 1.32L6.89 6.67c.09-.2.15-.43.15-.67A1.5 1.5 0 1 0 7 7.5Zm2.5 3A.5.5 0 1 1 9.5 10a.5.5 0 0 1 0 1Zm5 0A.5.5 0 1 1 14.5 10a.5.5 0 0 1 0 1Z" />
-    </svg>
-  );
-}
-
-function WindowsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M3 5.5 11 4v7H3V5.5Zm0 13V13h8v7l-8-1.5Zm9-14.5L21 3v8h-9V4Zm0 16v-7h9v8l-9-1Z" />
-    </svg>
-  );
-}
-
-function LinuxIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 3c2.21 0 4 1.79 4 4v2.1c0 .48.19.94.53 1.28l1.12 1.12c.84.84 1.35 1.99 1.35 3.21V19a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-4.29c0-1.22.49-2.37 1.35-3.21l1.12-1.12c.34-.34.53-.8.53-1.28V7c0-2.21 1.79-4 4-4Zm-2.2 8.2c-.6 0-1.1.5-1.1 1.1s.5 1.1 1.1 1.1 1.1-.5 1.1-1.1-.5-1.1-1.1-1.1Zm4.4 0c-.6 0-1.1.5-1.1 1.1s.5 1.1 1.1 1.1 1.1-.5 1.1-1.1-.5-1.1-1.1-1.1ZM9.1 18c.62-1.2 1.63-1.8 2.9-1.8s2.28.6 2.9 1.8H9.1Z" />
-    </svg>
-  );
-}
-
-function WebIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 3a9 9 0 1 0 9 9 9 9 0 0 0-9-9Zm5.93 8h-2.78a12.18 12.18 0 0 0-1.08-4.15A7.03 7.03 0 0 1 17.93 11ZM12 5.1c.7 1.06 1.3 2.54 1.66 4.9h-3.32c.36-2.36.96-3.84 1.66-4.9ZM5.47 13h2.78c.2 1.5.58 2.93 1.08 4.15A7.03 7.03 0 0 1 5.47 13Zm2.78-2H5.47a7.03 7.03 0 0 1 3.86-4.15A12.18 12.18 0 0 0 8.25 11Zm1.93 2h3.64A10.22 10.22 0 0 1 12 18.88 10.22 10.22 0 0 1 10.18 13Zm3.64-2H10.18A10.22 10.22 0 0 1 12 5.12 10.22 10.22 0 0 1 13.82 11Zm.33 6.15c.5-1.22.88-2.65 1.08-4.15h2.78a7.03 7.03 0 0 1-3.86 4.15Z" />
-    </svg>
-  );
-}
-
-function AppleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M16.2 12.4c-.02-2.2 1.8-3.25 1.88-3.3a4.1 4.1 0 0 0-3.2-1.73c-1.38-.14-2.69.81-3.39.81-.72 0-1.8-.79-2.96-.77a4.33 4.33 0 0 0-3.64 2.22c-1.56 2.7-.4 6.68 1.1 8.86.75 1.07 1.63 2.27 2.78 2.22 1.12-.05 1.54-.72 2.89-.72 1.34 0 1.72.72 2.9.69 1.22-.02 1.99-1.11 2.73-2.19a9.4 9.4 0 0 0 1.24-2.51 3.96 3.96 0 0 1-2.33-3.58ZM14.04 5.76c.62-.75 1.04-1.77.93-2.79-.9.04-1.99.6-2.64 1.35-.58.67-1.1 1.71-1 2.7 1 .08 2.02-.5 2.71-1.26Z" />
-    </svg>
-  );
-}
 
 function getDownloads(customFields: CustomFields, locale: string | undefined): DownloadItem[] {
   const localeSafe = typeof locale === 'string' ? locale : undefined;
@@ -69,102 +27,72 @@ function getDownloads(customFields: CustomFields, locale: string | undefined): D
   return isEnglish
     ? [
         {
-          key: 'android-apk',
-          title: 'Android APK',
-          description: 'Direct installation on an Android phone or tablet.',
-          href: `${releaseBaseUrl}/novaville-android.apk`,
-          label: 'Download APK',
-          icon: <AndroidIcon />,
-        },
-        {
-          key: 'android-aab',
-          title: 'Android AAB',
-          description: 'Recommended package for Google Play Store publishing.',
-          href: `${releaseBaseUrl}/novaville-android.aab`,
-          label: 'Download AAB',
-          icon: <AndroidIcon />,
+          key: 'android',
+          title: 'Android',
+          description: 'Direct installation on your device (APK) or recommended package for the Play Store (AAB).',
+          links: [
+            { href: `${releaseBaseUrl}/novaville-android.apk`, label: 'Download APK' },
+            { href: `${releaseBaseUrl}/novaville-android.aab`, label: 'Download AAB' },
+          ]
         },
         {
           key: 'web-pwa',
           title: 'Web / PWA',
           description: 'Web build packed for installable PWA use or static hosting.',
-          href: `${releaseBaseUrl}/novaville-web-pwa.zip`,
-          label: 'Download web build',
-          icon: <WebIcon />,
+          links: [{ href: `${releaseBaseUrl}/novaville-web-pwa.zip`, label: 'Download web build' }],
         },
         {
           key: 'windows',
           title: 'Windows',
           description: 'Desktop application for Windows.',
-          href: `${releaseBaseUrl}/novaville-windows.zip`,
-          label: 'Download Windows',
-          icon: <WindowsIcon />,
+          links: [{ href: `${releaseBaseUrl}/novaville-windows.zip`, label: 'Download Windows' }],
         },
         {
           key: 'linux',
           title: 'Linux',
           description: 'Desktop application for Linux.',
-          href: `${releaseBaseUrl}/novaville-linux.zip`,
-          label: 'Download Linux',
-          icon: <LinuxIcon />,
+          links: [{ href: `${releaseBaseUrl}/novaville-linux.zip`, label: 'Download Linux' }],
         },
         {
           key: 'macos-ios',
           title: 'macOS / iOS',
           description: 'Best-effort publication depending on signing and certificates.',
-          href: releasePageUrl,
-          label: 'View release',
-          icon: <AppleIcon />,
+          links: [{ href: releasePageUrl, label: 'View release' }],
         },
       ]
     : [
         {
-          key: 'android-apk',
-          title: 'Android APK',
-          description: 'Installation directe sur téléphone ou tablette Android.',
-          href: `${releaseBaseUrl}/novaville-android.apk`,
-          label: 'Télécharger APK',
-          icon: <AndroidIcon />,
-        },
-        {
-          key: 'android-aab',
-          title: 'Android AAB',
-          description: 'Format recommandé pour la publication sur Google Play.',
-          href: `${releaseBaseUrl}/novaville-android.aab`,
-          label: 'Télécharger AAB',
-          icon: <AndroidIcon />,
+          key: 'android',
+          title: 'Android',
+          description: 'Installation directe sur téléphone (APK) ou format recommandé pour Google Play (AAB).',
+          links: [
+            { href: `${releaseBaseUrl}/novaville-android.apk`, label: 'Télécharger APK' },
+            { href: `${releaseBaseUrl}/novaville-android.aab`, label: 'Télécharger AAB' },
+          ]
         },
         {
           key: 'web-pwa',
           title: 'Web / PWA',
           description: 'Version web packagée pour installation ou hébergement statique.',
-          href: `${releaseBaseUrl}/novaville-web-pwa.zip`,
-          label: 'Télécharger le build web',
-          icon: <WebIcon />,
+          links: [{ href: `${releaseBaseUrl}/novaville-web-pwa.zip`, label: 'Télécharger le build web' }],
         },
         {
           key: 'windows',
           title: 'Windows',
           description: 'Application desktop pour Windows.',
-          href: `${releaseBaseUrl}/novaville-windows.zip`,
-          label: 'Télécharger Windows',
-          icon: <WindowsIcon />,
+          links: [{ href: `${releaseBaseUrl}/novaville-windows.zip`, label: 'Télécharger Windows' }],
         },
         {
           key: 'linux',
           title: 'Linux',
           description: 'Application desktop pour Linux.',
-          href: `${releaseBaseUrl}/novaville-linux.zip`,
-          label: 'Télécharger Linux',
-          icon: <LinuxIcon />,
+          links: [{ href: `${releaseBaseUrl}/novaville-linux.zip`, label: 'Télécharger Linux' }],
         },
         {
           key: 'macos-ios',
           title: 'macOS / iOS',
           description: 'Publication best effort selon la signature et les certificats disponibles.',
-          href: releasePageUrl,
-          label: 'Voir la release',
-          icon: <AppleIcon />,
+          links: [{ href: releasePageUrl, label: 'Voir la release' }],
         },
       ];
 }
@@ -238,7 +166,6 @@ function DownloadsSection() {
       <div className="container">
         <div className={styles.downloadsHeader}>
           <div className={styles.downloadsBrandRow}>
-            <img className={styles.appLogo} src={appLogoUrl} alt="Novaville app logo" />
             <div>
               <h2 className={styles.downloadsTitle}>{isEnglish ? 'Downloads' : 'Téléchargements'}</h2>
               <p className={styles.downloadsIntro}>
@@ -253,15 +180,15 @@ function DownloadsSection() {
         <div className={styles.downloadsGrid}>
           {downloads.map((item) => (
             <article key={item.key} className={styles.downloadCard}>
-              <div className={styles.downloadCardTop}>
-                <div className={styles.platformIcon}>{item.icon}</div>
-                <img className={styles.inlineAppLogo} src={appLogoUrl} alt="Novaville" />
-              </div>
               <h3 className={styles.downloadCardTitle}>{item.title}</h3>
               <p className={styles.downloadCardDescription}>{item.description}</p>
-              <Link className="button button--primary button--md" href={item.href}>
-                {item.label}
-              </Link>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {item.links.map(link => (
+                  <Link key={link.label} className="button button--primary button--md" href={link.href}>
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
             </article>
           ))}
         </div>
@@ -270,12 +197,6 @@ function DownloadsSection() {
           {isEnglish
             ? 'For web installation, the PWA version is also available directly in the browser after the public frontend is deployed.'
             : 'Pour l\'installation web, la version PWA reste également accessible via le navigateur après déploiement du frontend public.'}
-        </p>
-
-        <p className={styles.downloadsNote}>
-          {isEnglish
-            ? `The app logo used here is the same one shipped with the Flutter frontend.`
-            : 'Le logo affiché ici est le même que celui embarqué dans le frontend Flutter.'}
         </p>
 
         <div className={styles.downloadsNote}>
