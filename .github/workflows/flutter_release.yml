@@ -306,6 +306,7 @@ jobs:
             APP_NAME=$(echo "$RAW_NAME" | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
           fi
           echo "Renaming app to: $APP_NAME"
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
           dart pub global activate rename
           dart pub global run rename setAppName --targets ios,android,macos,windows,linux --value "$APP_NAME"
 
@@ -321,11 +322,15 @@ jobs:
         shell: cmd
         run: '"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" windows\installer.iss'
 
+      - name: Rename Windows output
+        shell: bash
+        run: mv frontend/build/windows/x64/installer/Novaville-Windows-Setup.exe "frontend/build/windows/x64/installer/${{ env.APP_NAME }}-Windows-Setup.exe"
+
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: novaville-windows-exe
-          path: frontend/build/windows/x64/installer/Novaville-Windows-Setup.exe
+          path: frontend/build/windows/x64/installer/${{ env.APP_NAME }}-Windows-Setup.exe
           if-no-files-found: error
           retention-days: 14
 
