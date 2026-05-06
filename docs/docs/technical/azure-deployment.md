@@ -384,4 +384,5 @@ az webapp log tail --name NovavilleApp --resource-group Novaville --provider doc
 
 - [Internal Guides](./internal-guides) — procédures d'installation et première setup
 - [Architecture](./architecture) — vue globale de l'application
+- [Distribution des applications](./app-distribution) — build et publication des applications
 - [GitHub Actions workflow](https://github.com/Michael16b/Novaville/blob/main/.github/workflows/deploy_docker_azure.yml)

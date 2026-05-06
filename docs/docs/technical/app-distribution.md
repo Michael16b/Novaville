@@ -26,7 +26,7 @@ Cela garantit que l'application compilée portera toujours le nom correct aux ye
 
 ### 2. Compilation ciblée et Artefacts
 
-Le workflow va compiler l'application pour Android (APK et AAB), Linux, Windows, macOS/iOS, et Web (PWA). Les fichiers générés sont stockés temporairement en tant que **GitHub Artifacts** (conservation de 14 jours, nécessite d'être connecté à GitHub pour télécharger).
+Le workflow va compiler l'application pour Android (APK et AAB), Linux, Windows (Installeur `.exe` via Inno Setup), macOS/iOS, et Web (PWA). Les fichiers générés sont stockés temporairement en tant que **GitHub Artifacts** (conservation de 14 jours, nécessite d'être connecté à GitHub pour télécharger).
 
 ### 3. GitHub Releases
 

@@ -26,7 +26,7 @@ This guarantees the compiled application will always bear the correct name for t
 
 ### 2. Targeted Compilation & Artifacts
 
-The workflow compiles the application for Android (APK & AAB), Linux, Windows, macOS/iOS, and Web (PWA). Output files are temporarily stored as **GitHub Artifacts** (14-day retention, requires a GitHub login to download).
+The workflow compiles the application for Android (APK & AAB), Linux, Windows (`.exe` Installer via Inno Setup), macOS/iOS, and Web (PWA). Output files are temporarily stored as **GitHub Artifacts** (14-day retention, requires a GitHub login to download).
 
 ### 3. GitHub Releases
 

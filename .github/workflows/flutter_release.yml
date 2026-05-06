@@ -115,6 +115,7 @@ jobs:
     name: Build Android APK and AAB
     runs-on: ubuntu-latest
     needs: quality
+    environment: Azure Cloud
     env:
       BACKEND_API_URL: ${{ github.event.inputs.backend_api_url || vars.FLUTTER_BACKEND_API }}
     defaults:
@@ -174,6 +175,7 @@ jobs:
     name: Build Linux desktop
     runs-on: ubuntu-latest
     needs: quality
+    environment: Azure Cloud
     env:
       BACKEND_API_URL: ${{ github.event.inputs.backend_api_url || vars.FLUTTER_BACKEND_API }}
     defaults:
@@ -230,6 +232,7 @@ jobs:
     name: Build Windows desktop
     runs-on: windows-latest
     needs: quality
+    environment: Azure Cloud
     env:
       BACKEND_API_URL: ${{ github.event.inputs.backend_api_url || vars.FLUTTER_BACKEND_API }}
     defaults:
@@ -274,11 +277,15 @@ jobs:
         shell: bash
         run: flutter build windows --release --dart-define=FLUTTER_BACKEND_API="$BACKEND_API_URL"
 
+      - name: Build Windows Installer with Inno Setup
+        shell: cmd
+        run: '"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" windows\installer.iss'
+
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: novaville-windows
-          path: frontend/build/windows/x64/runner/Release
+          name: novaville-windows-exe
+          path: frontend/build/windows/x64/installer/Novaville-Windows-Setup.exe
           if-no-files-found: error
           retention-days: 14
 
@@ -287,6 +294,7 @@ jobs:
     runs-on: macos-14
     needs: quality
     continue-on-error: true
+    environment: Azure Cloud
     env:
       BACKEND_API_URL: ${{ github.event.inputs.backend_api_url || vars.FLUTTER_BACKEND_API }}
     defaults:
@@ -379,8 +387,8 @@ jobs:
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: novaville-windows
-          path: release-assets/windows
+          name: novaville-windows-exe
+          path: release-assets/windows-exe
 
       - name: Package desktop and web downloads
         shell: bash
@@ -400,8 +408,8 @@ jobs:
 
           zip_dir(root / 'web', root / 'novaville-web-pwa.zip')
           zip_dir(root / 'linux', root / 'novaville-linux.zip')
-          zip_dir(root / 'windows', root / 'novaville-windows.zip')
 
+          shutil.copy2(next((root / 'windows-exe').rglob('*.exe')), root / 'novaville-windows.exe')
           shutil.copy2(next((root / 'android-apk').rglob('*.apk')), root / 'novaville-android.apk')
           shutil.copy2(next((root / 'android-aab').rglob('*.aab')), root / 'novaville-android.aab')
           PY
@@ -421,7 +429,7 @@ jobs:
           printf 'android_aab=%s\n' "$android_aab" >> "$GITHUB_OUTPUT"
           printf 'web_zip=%s\n' "release-assets/novaville-web-pwa.zip" >> "$GITHUB_OUTPUT"
           printf 'linux_zip=%s\n' "release-assets/novaville-linux.zip" >> "$GITHUB_OUTPUT"
-          printf 'windows_zip=%s\n' "release-assets/novaville-windows.zip" >> "$GITHUB_OUTPUT"
+          printf 'windows_exe=%s\n' "release-assets/novaville-windows.exe" >> "$GITHUB_OUTPUT"
 
       - name: Create or update GitHub release
         uses: softprops/action-gh-release@v2
@@ -431,4 +439,4 @@ jobs:
             ${{ steps.release-files.outputs.android_aab }}
             ${{ steps.release-files.outputs.web_zip }}
             ${{ steps.release-files.outputs.linux_zip }}
-            ${{ steps.release-files.outputs.windows_zip }}
+            ${{ steps.release-files.outputs.windows_exe }}

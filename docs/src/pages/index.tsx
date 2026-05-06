@@ -44,8 +44,8 @@ function getDownloads(customFields: CustomFields, locale: string | undefined): D
         {
           key: 'windows',
           title: 'Windows',
-          description: 'Desktop application for Windows.',
-          links: [{ href: `${releaseBaseUrl}/novaville-windows.zip`, label: 'Download Windows' }],
+          description: 'Windows Installer (.exe).',
+          links: [{ href: `${releaseBaseUrl}/novaville-windows.exe`, label: 'Download Windows' }],
         },
         {
           key: 'linux',
@@ -55,8 +55,8 @@ function getDownloads(customFields: CustomFields, locale: string | undefined): D
         },
         {
           key: 'macos-ios',
-          title: 'macOS / iOS',
-          description: 'Best-effort publication depending on signing and certificates.',
+          title: 'Apple (macOS / iOS)',
+          description: 'Application for Apple devices (Mac, iPhone, iPad).',
           links: [{ href: releasePageUrl, label: 'View release' }],
         },
       ]
@@ -79,8 +79,8 @@ function getDownloads(customFields: CustomFields, locale: string | undefined): D
         {
           key: 'windows',
           title: 'Windows',
-          description: 'Application desktop pour Windows.',
-          links: [{ href: `${releaseBaseUrl}/novaville-windows.zip`, label: 'Télécharger Windows' }],
+          description: 'Installateur Windows (.exe).',
+          links: [{ href: `${releaseBaseUrl}/novaville-windows.exe`, label: 'Télécharger Windows' }],
         },
         {
           key: 'linux',
@@ -90,8 +90,8 @@ function getDownloads(customFields: CustomFields, locale: string | undefined): D
         },
         {
           key: 'macos-ios',
-          title: 'macOS / iOS',
-          description: 'Publication best effort selon la signature et les certificats disponibles.',
+          title: 'Apple (macOS / iOS)',
+          description: 'Application pour les appareils Apple (Mac, iPhone, iPad).',
           links: [{ href: releasePageUrl, label: 'Voir la release' }],
         },
       ];
@@ -170,8 +170,8 @@ function DownloadsSection() {
               <h2 className={styles.downloadsTitle}>{isEnglish ? 'Downloads' : 'Téléchargements'}</h2>
               <p className={styles.downloadsIntro}>
                 {isEnglish
-                  ? 'The links below always point to the latest published GitHub release. When a new app version is published, the links stay the same and automatically move to the updated assets.'
-                  : 'Les liens ci-dessous pointent vers la dernière release GitHub publiée. Quand une nouvelle version de l\'application sort, les liens restent identiques et basculent automatiquement vers les nouveaux assets.'}
+                  ? 'Download the Novaville application for your device. These links will always provide you with the most recent version.'
+                  : 'Téléchargez l\'application Novaville pour votre appareil. Ces liens vous fourniront toujours la version la plus récente.'}
               </p>
             </div>
           </div>
@@ -193,12 +193,6 @@ function DownloadsSection() {
           ))}
         </div>
 
-        <p className={styles.downloadsNote}>
-          {isEnglish
-            ? 'For web installation, the PWA version is also available directly in the browser after the public frontend is deployed.'
-            : 'Pour l\'installation web, la version PWA reste également accessible via le navigateur après déploiement du frontend public.'}
-        </p>
-
         <div className={styles.downloadsNote}>
           <Link className="button button--secondary button--sm" href={releasePageUrl}>
             {isEnglish ? 'Open latest release' : 'Ouvrir la dernière release'}
@@ -213,7 +207,7 @@ export default function Home() {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title={siteConfig.title}
+      title="Docs"
       description="Documentation technique, onboarding et téléchargements des builds applicatifs">
       <HomepageHeader />
       <main>
