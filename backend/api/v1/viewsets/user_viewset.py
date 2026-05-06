@@ -246,12 +246,17 @@ class UserViewSet(viewsets.ModelViewSet):
         try:
             validate_password(valid_temp_password, user=user)
             user.set_password(valid_temp_password)
-        except DjangoValidationError:
+            user.save()
+        except DjangoValidationError as e:
             return Response(
-                {"code": "password_generation_failed"},
+                {"code": "password_validation_failed", "details": list(e.messages)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {"code": "password_reset_error", "details": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        user.save()
 
         return Response(
             {"detail": "password_reset_success", "temp_password": valid_temp_password}, 
