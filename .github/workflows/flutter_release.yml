@@ -331,7 +331,7 @@ jobs:
           retention-days: 14
 
   macos-ios:
-    name: Build macOS and attempt iOS
+    name: Build macOS and iOS
     runs-on: macos-14
     needs: quality
     continue-on-error: true
