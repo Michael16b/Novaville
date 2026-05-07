@@ -147,6 +147,29 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
     final dayEvents = _getEventsForDay(day, eventsByDay);
     final hasEvents = dayEvents.isNotEmpty;
 
+    final eventDecoration = hasEvents
+        ? BoxDecoration(
+            color: AppColors.calendarEventBackground,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: AppColors.calendarEventBorder,
+              width: 1.5,
+            ),
+          )
+        : null;
+
+    final effectiveDecoration = decoration == null
+        ? eventDecoration
+        : hasEvents
+            ? decoration.copyWith(
+                border: Border.all(
+                  color: AppColors.calendarEventBorder,
+                  width: 1.5,
+                ),
+                color: decoration.color ?? AppColors.calendarEventBackground,
+              )
+            : decoration;
+
     return Padding(
       padding: const EdgeInsets.all(4),
       child: Material(
@@ -162,10 +185,11 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                 }
               : null,
           child: Container(
-            decoration: decoration,
+            decoration: effectiveDecoration,
             alignment: Alignment.center,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
               children: [
                 Text(
                   '${day.day}',
@@ -175,22 +199,6 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
                     fontWeight: fontWeight,
                   ),
                 ),
-                if (hasEvents)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(
-                      dayEvents.length.clamp(0, 3).toInt(),
-                      (_) => Container(
-                        width: 5,
-                        height: 5,
-                        margin: const EdgeInsets.symmetric(horizontal: 0.5),
-                        decoration: const BoxDecoration(
-                          color: AppColors.calendarMarker,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -460,164 +468,169 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
       color: AppColors.white,
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: TableCalendar<CommunityEvent>(
-          firstDay: DateTime.now().subtract(const Duration(days: 730)),
-          lastDay: DateTime.now().add(const Duration(days: 730)),
-          focusedDay: _focusedDay,
-          calendarFormat: _calendarFormat,
-          startingDayOfWeek: StartingDayOfWeek.monday,
-          locale: 'fr_FR',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TableCalendar<CommunityEvent>(
+              firstDay: DateTime.now().subtract(const Duration(days: 730)),
+              lastDay: DateTime.now().add(const Duration(days: 730)),
+              focusedDay: _focusedDay,
+              calendarFormat: _calendarFormat,
+              startingDayOfWeek: StartingDayOfWeek.monday,
+              locale: 'fr_FR',
 
-          // No day selection highlight — day click opens a modal
-          selectedDayPredicate: (_) => false,
+              // No day selection highlight — day click opens a modal
+              selectedDayPredicate: (_) => false,
 
-          eventLoader: (day) => _getEventsForDay(day, eventsByDay),
+              eventLoader: (day) => _getEventsForDay(day, eventsByDay),
 
-          // Open modal on day tap
-          // Open modal on day tap — handled by custom builders' InkWell.
-          // onDaySelected only updates focusedDay for calendar navigation.
-          onDaySelected: (selectedDay, focusedDay) {
-            setState(() => _focusedDay = focusedDay);
-            final dayEvents = _getEventsForDay(selectedDay, eventsByDay);
-            _showDayEventsModal(context, selectedDay, dayEvents);
-          },
+              // Open modal on day tap
+              // Open modal on day tap — handled by custom builders' InkWell.
+              // onDaySelected only updates focusedDay for calendar navigation.
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() => _focusedDay = focusedDay);
+                final dayEvents = _getEventsForDay(selectedDay, eventsByDay);
+                _showDayEventsModal(context, selectedDay, dayEvents);
+              },
 
-          onPageChanged: (focusedDay) {
-            setState(() => _focusedDay = focusedDay);
-          },
+              onPageChanged: (focusedDay) {
+                setState(() => _focusedDay = focusedDay);
+              },
 
-          onFormatChanged: (format) {
-            setState(() => _calendarFormat = format);
-          },
+              onFormatChanged: (format) {
+                setState(() => _calendarFormat = format);
+              },
 
-          availableCalendarFormats: const {
-            CalendarFormat.month: AgendaTexts.formatMonth,
-            CalendarFormat.twoWeeks: AgendaTexts.format2Weeks,
-            CalendarFormat.week: AgendaTexts.formatWeek,
-          },
+              availableCalendarFormats: const {
+                CalendarFormat.month: AgendaTexts.formatMonth,
+                CalendarFormat.twoWeeks: AgendaTexts.format2Weeks,
+                CalendarFormat.week: AgendaTexts.formatWeek,
+              },
 
-          calendarBuilders: CalendarBuilders<CommunityEvent>(
-            defaultBuilder: (context, day, focusedDay) {
-              return _buildRippleDay(
-                context,
-                day,
-                eventsByDay,
-                textColor: AppColors.primaryText,
-              );
-            },
-            todayBuilder: (context, day, focusedDay) {
-              return _buildRippleDay(
-                context,
-                day,
-                eventsByDay,
-                textColor: AppColors.primaryText,
-                decoration: const BoxDecoration(
+              calendarBuilders: CalendarBuilders<CommunityEvent>(
+                defaultBuilder: (context, day, focusedDay) {
+                  return _buildRippleDay(
+                    context,
+                    day,
+                    eventsByDay,
+                    textColor: AppColors.primaryText,
+                  );
+                },
+                todayBuilder: (context, day, focusedDay) {
+                  return _buildRippleDay(
+                    context,
+                    day,
+                    eventsByDay,
+                    textColor: AppColors.primaryText,
+                    decoration: const BoxDecoration(
+                      color: AppColors.calendarToday,
+                      shape: BoxShape.circle,
+                    ),
+                    fontWeight: FontWeight.bold,
+                  );
+                },
+                outsideBuilder: (context, day, focusedDay) {
+                  return _buildRippleDay(
+                    context,
+                    day,
+                    eventsByDay,
+                    textColor: AppColors.calendarOutside,
+                    fontSize: 14,
+                  );
+                },
+                disabledBuilder: (context, day, focusedDay) {
+                  return _buildRippleDay(
+                    context,
+                    day,
+                    eventsByDay,
+                    textColor: AppColors.calendarOutside.withValues(alpha: 0.5),
+                    enabled: false,
+                  );
+                },
+              ),
+
+              calendarStyle: const CalendarStyle(
+                todayDecoration: BoxDecoration(
                   color: AppColors.calendarToday,
                   shape: BoxShape.circle,
                 ),
-                fontWeight: FontWeight.bold,
-              );
-            },
-            outsideBuilder: (context, day, focusedDay) {
-              return _buildRippleDay(
-                context,
-                day,
-                eventsByDay,
-                textColor: AppColors.calendarOutside,
-                fontSize: 14,
-              );
-            },
-            disabledBuilder: (context, day, focusedDay) {
-              return _buildRippleDay(
-                context,
-                day,
-                eventsByDay,
-                textColor: AppColors.calendarOutside.withValues(alpha: 0.5),
-                enabled: false,
-              );
-            },
-          ),
+                todayTextStyle: TextStyle(
+                  color: AppColors.primaryText,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+                selectedDecoration: BoxDecoration(
+                  color: AppColors.calendarSelected,
+                  shape: BoxShape.circle,
+                ),
+                selectedTextStyle: TextStyle(
+                  color: AppColors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+                defaultTextStyle: TextStyle(
+                  color: AppColors.primaryText,
+                  fontSize: 15,
+                ),
+                weekendTextStyle: TextStyle(
+                  color: AppColors.calendarWeekend,
+                  fontSize: 15,
+                ),
+                outsideTextStyle: TextStyle(
+                  color: AppColors.calendarOutside,
+                  fontSize: 14,
+                ),
+                markerDecoration: BoxDecoration(
+                  color: AppColors.calendarMarker,
+                  shape: BoxShape.circle,
+                ),
+                markerSize: 0,
+                markersMaxCount: 0,
+                markerMargin: EdgeInsets.zero,
+                cellMargin: EdgeInsets.all(4),
+              ),
 
-          calendarStyle: const CalendarStyle(
-            todayDecoration: BoxDecoration(
-              color: AppColors.calendarToday,
-              shape: BoxShape.circle,
-            ),
-            todayTextStyle: TextStyle(
-              color: AppColors.primaryText,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-            selectedDecoration: BoxDecoration(
-              color: AppColors.calendarSelected,
-              shape: BoxShape.circle,
-            ),
-            selectedTextStyle: TextStyle(
-              color: AppColors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-            defaultTextStyle: TextStyle(
-              color: AppColors.primaryText,
-              fontSize: 15,
-            ),
-            weekendTextStyle: TextStyle(
-              color: AppColors.calendarWeekend,
-              fontSize: 15,
-            ),
-            outsideTextStyle: TextStyle(
-              color: AppColors.calendarOutside,
-              fontSize: 14,
-            ),
-            markerDecoration: BoxDecoration(
-              color: AppColors.calendarMarker,
-              shape: BoxShape.circle,
-            ),
-            markerSize: 0,
-            markersMaxCount: 0,
-            markerMargin: EdgeInsets.zero,
-            cellMargin: EdgeInsets.all(4),
-          ),
+              headerStyle: HeaderStyle(
+                titleCentered: true,
+                titleTextStyle: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryText,
+                ),
+                formatButtonTextStyle: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.primary,
+                ),
+                formatButtonDecoration: BoxDecoration(
+                  border: Border.all(color: AppColors.primary),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                leftChevronIcon: const Icon(
+                  Icons.chevron_left,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
+                rightChevronIcon: const Icon(
+                  Icons.chevron_right,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
+              ),
 
-          headerStyle: HeaderStyle(
-            titleCentered: true,
-            titleTextStyle: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primaryText,
+              daysOfWeekStyle: const DaysOfWeekStyle(
+                weekdayStyle: TextStyle(
+                  color: AppColors.primaryText,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+                weekendStyle: TextStyle(
+                  color: AppColors.calendarWeekend,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
             ),
-            formatButtonTextStyle: const TextStyle(
-              fontSize: 13,
-              color: AppColors.primary,
-            ),
-            formatButtonDecoration: BoxDecoration(
-              border: Border.all(color: AppColors.primary),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            leftChevronIcon: const Icon(
-              Icons.chevron_left,
-              color: AppColors.primary,
-              size: 28,
-            ),
-            rightChevronIcon: const Icon(
-              Icons.chevron_right,
-              color: AppColors.primary,
-              size: 28,
-            ),
-          ),
-
-          daysOfWeekStyle: const DaysOfWeekStyle(
-            weekdayStyle: TextStyle(
-              color: AppColors.primaryText,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
-            weekendStyle: TextStyle(
-              color: AppColors.calendarWeekend,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
-          ),
+          ],
         ),
       ),
     );
