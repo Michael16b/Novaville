@@ -129,6 +129,7 @@ class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
         description: event.description,
         neighborhoodId: event.neighborhoodId,
         options: event.options,
+        multipleAnswers: event.multipleAnswers,
         citizenTarget: event.citizenTarget,
       );
 
@@ -178,6 +179,7 @@ class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
         question: event.question,
         description: event.description,
         neighborhoodId: event.neighborhoodId,
+        multipleAnswers: event.multipleAnswers,
         citizenTarget: event.citizenTarget,
       );
       emit(state.copyWith(status: SurveysStatus.updated, error: null));
@@ -202,7 +204,7 @@ class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
     try {
       await _repository.vote(
         surveyId: event.surveyId,
-        optionId: event.optionId,
+        optionIds: event.optionIds,
       );
       emit(state.copyWith(status: SurveysStatus.voted, error: null));
       add(

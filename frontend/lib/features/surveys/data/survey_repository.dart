@@ -52,6 +52,7 @@ abstract class ISurveyRepository {
     required String description,
     required int? neighborhoodId,
     required List<String> options,
+    required bool multipleAnswers,
     UserRole? citizenTarget,
   });
 
@@ -61,12 +62,13 @@ abstract class ISurveyRepository {
     required String question,
     required String description,
     required int? neighborhoodId,
+    required bool multipleAnswers,
     UserRole? citizenTarget,
   });
 
   /// Deletes a survey (staff only).
   Future<void> deleteSurvey({required int surveyId});
 
-  /// Casts or updates a vote for the current user.
-  Future<void> vote({required int surveyId, required int optionId});
+  /// Casts or updates votes for the current user.
+  Future<void> vote({required int surveyId, required List<int> optionIds});
 }

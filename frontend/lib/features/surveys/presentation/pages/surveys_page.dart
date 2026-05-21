@@ -301,10 +301,10 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
               isAuthenticated: isAuthenticated,
               isStaff: canManageSurveys,
               canVote: _canVoteOnSurvey(currentUserRole, survey),
-              onVote: (optionId) => _onVoteTapped(
+              onVote: (optionIds) => _onVoteTapped(
                 context,
                 surveyId: survey.id,
-                optionId: optionId,
+                optionIds: optionIds,
                 isAuthenticated: isAuthenticated,
               ),
               onEdit: canManageSurveys
@@ -672,7 +672,8 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
         question: result['question'] as String,
         description: result['description'] as String,
         neighborhoodId: result['neighborhood_id'] as int?,
-        options: result['options'] as List<String>,
+        options: List<String>.from(result['options'] as List<dynamic>),
+        multipleAnswers: result['multiple_answers'] as bool,
         citizenTarget: result['citizen_target'] as UserRole?,
       ),
     );
@@ -697,6 +698,7 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
         question: result['question'] as String,
         description: result['description'] as String,
         neighborhoodId: result['neighborhood_id'] as int?,
+        multipleAnswers: result['multiple_answers'] as bool,
         citizenTarget: result['citizen_target'] as UserRole?,
       ),
     );
@@ -733,7 +735,7 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
   void _onVoteTapped(
     BuildContext context, {
     required int surveyId,
-    required int optionId,
+    required List<int> optionIds,
     required bool isAuthenticated,
   }) {
     if (!isAuthenticated) {
@@ -741,7 +743,7 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
       return;
     }
     context.read<SurveysBloc>().add(
-      SurveyVoteRequested(surveyId: surveyId, optionId: optionId),
+      SurveyVoteRequested(surveyId: surveyId, optionIds: optionIds),
     );
   }
 

@@ -30,6 +30,7 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
 
   UserRole? _targetRole;
   int? _selectedNeighborhoodId;
+  bool _multipleAnswers = false;
   bool get _isEditing => widget.survey != null;
   int? get _availableSelectedNeighborhoodId {
     final selectedId = _selectedNeighborhoodId;
@@ -50,6 +51,7 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
       _selectedNeighborhoodId = null;
     }
     _targetRole = survey?.citizenTarget;
+    _multipleAnswers = survey?.multipleAnswers ?? false;
 
     if (survey == null) {
       _optionControllers = [TextEditingController(), TextEditingController()];
@@ -186,6 +188,19 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
               },
             ),
             const SizedBox(height: 14),
+            CheckboxListTile(
+              value: _multipleAnswers,
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              title: const Text(SurveysTexts.multipleAnswersLabel),
+              subtitle: const Text(SurveysTexts.multipleAnswersHint),
+              onChanged: (value) {
+                setState(() {
+                  _multipleAnswers = value ?? false;
+                });
+              },
+            ),
+            const SizedBox(height: 14),
             if (!_isEditing) ...[
               _buildFieldLabel('${SurveysTexts.optionsLabel} *'),
               for (
@@ -291,6 +306,7 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
       'description': _descriptionController.text.trim(),
       'neighborhood_id': _selectedNeighborhoodId,
       'citizen_target': _targetRole,
+      'multiple_answers': _multipleAnswers,
       if (!_isEditing) 'options': options,
     });
   }

@@ -2,13 +2,15 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from core.db.models import Survey, SurveyOption, RoleEnum
+from django.db import transaction
+from core.db.models import Survey, SurveyOption, Vote, RoleEnum
 from api.v1.survey_access import visible_survey_filter
 from api.v1.serializers.survey_serializer import (
     SurveySerializer,
     SurveyCreateSerializer,
     SurveyOptionSerializer
 )
+from api.v1.serializers.vote_serializer import VoteCreateSerializer, VoteSerializer
 from api.v1.permissions import IsSurveyManagerOrReadOnly
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from django.utils import timezone
@@ -107,6 +109,49 @@ class SurveyViewSet(viewsets.ModelViewSet):
         survey = self.get_object()
         serializer = self.get_serializer(survey)
         return Response(serializer.data)
+
+    @extend_schema(
+        summary="Vote on a survey",
+        description="Cast or update one or several selected options for a survey",
+        tags=["Surveys"]
+    )
+    @action(detail=True, methods=['post'])
+    def vote(self, request, pk=None):
+        """Create or replace the current user's vote selection for this survey."""
+        survey = self.get_object()
+        payload = request.data.copy()
+        payload['survey'] = survey.id
+
+        serializer = VoteCreateSerializer(
+            data=payload,
+            context={'request': request},
+        )
+        serializer.is_valid(raise_exception=True)
+        options = serializer.validated_data['options']
+
+        with transaction.atomic():
+            if survey.multiple_answers:
+                Vote.objects.filter(user=request.user, survey=survey).exclude(
+                    option__in=options
+                ).delete()
+                votes = [
+                    Vote.objects.get_or_create(
+                        user=request.user,
+                        survey=survey,
+                        option=option,
+                    )[0]
+                    for option in options
+                ]
+                return Response(VoteSerializer(votes, many=True).data)
+
+            vote, created = Vote.objects.update_or_create(
+                user=request.user,
+                survey=survey,
+                defaults={'option': options[0]},
+            )
+
+        response_status = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(VoteSerializer(vote).data, status=response_status)
 
 
 @extend_schema_view(

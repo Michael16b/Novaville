@@ -36,6 +36,10 @@ class Survey(models.Model):
         null=True,
         help_text="Target role for this survey"
     )
+    multiple_answers = models.BooleanField(
+        default=False,
+        help_text="Whether users can select several options for this survey"
+    )
     # Foreign keys
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -107,8 +111,12 @@ class Vote(models.Model):
         ordering = ['-created_at']
         verbose_name = 'Vote'
         verbose_name_plural = 'Votes'
-        # Ensure a user can only vote once per survey
-        unique_together = [['user', 'survey']]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'survey', 'option'],
+                name='unique_vote_per_user_survey_option',
+            ),
+        ]
     
     def __str__(self):
         return f"{self.user.username} voted on {self.survey.title}"

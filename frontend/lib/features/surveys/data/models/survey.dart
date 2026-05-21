@@ -47,12 +47,15 @@ class Survey extends Equatable {
     required this.createdAt,
     required this.totalVotes,
     required this.options,
+    required this.multipleAnswers,
     this.neighborhoodId,
     this.neighborhood,
     this.citizenTarget,
     this.createdBy,
     this.currentUserVoteId,
     this.currentUserVoteOptionId,
+    this.currentUserVoteIds = const <int>[],
+    this.currentUserVoteOptionIds = const <int>[],
   });
 
   /// Creates a [Survey] from JSON.
@@ -72,6 +75,7 @@ class Survey extends Equatable {
       endDate: DateTime.parse(json['end_date'] as String),
       createdAt: DateTime.parse(json['created_at'] as String),
       citizenTarget: _roleFromJson(json['citizen_target'] as String?),
+      multipleAnswers: (json['multiple_answers'] as bool?) ?? false,
       createdBy: json['created_by'] is Map<String, dynamic>
           ? User.fromJson(json['created_by'] as Map<String, dynamic>)
           : null,
@@ -81,6 +85,15 @@ class Survey extends Equatable {
           .toList(),
       currentUserVoteId: json['current_user_vote_id'] as int?,
       currentUserVoteOptionId: json['current_user_vote_option_id'] as int?,
+      currentUserVoteIds:
+          (json['current_user_vote_ids'] as List<dynamic>? ?? const <dynamic>[])
+              .whereType<int>()
+              .toList(),
+      currentUserVoteOptionIds:
+          (json['current_user_vote_option_ids'] as List<dynamic>? ??
+                  const <dynamic>[])
+              .whereType<int>()
+              .toList(),
     );
   }
 
@@ -114,6 +127,9 @@ class Survey extends Equatable {
   /// Optional target audience role.
   final UserRole? citizenTarget;
 
+  /// Whether users can select several options.
+  final bool multipleAnswers;
+
   /// Survey author.
   final User? createdBy;
 
@@ -129,6 +145,12 @@ class Survey extends Equatable {
   /// Current user selected option id.
   final int? currentUserVoteOptionId;
 
+  /// Current user vote identifiers.
+  final List<int> currentUserVoteIds;
+
+  /// Current user selected option ids.
+  final List<int> currentUserVoteOptionIds;
+
   @override
   List<Object?> get props => [
     id,
@@ -141,11 +163,14 @@ class Survey extends Equatable {
     endDate,
     createdAt,
     citizenTarget,
+    multipleAnswers,
     createdBy,
     totalVotes,
     options,
     currentUserVoteId,
     currentUserVoteOptionId,
+    currentUserVoteIds,
+    currentUserVoteOptionIds,
   ];
 
   static UserRole? _roleFromJson(String? value) {

@@ -26,6 +26,7 @@ final _survey1 = Survey(
   createdAt: DateTime(2025, 6, 1),
   totalVotes: 3,
   options: const [],
+  multipleAnswers: false,
   createdBy: _testUser,
 );
 
@@ -39,6 +40,7 @@ final _survey2 = Survey(
   createdAt: DateTime(2025, 7, 1),
   totalVotes: 0,
   options: const [],
+  multipleAnswers: false,
   createdBy: _testUser,
 );
 
@@ -87,6 +89,7 @@ class _FakeSurveyRepository implements ISurveyRepository {
     required String description,
     required int? neighborhoodId,
     required List<String> options,
+    required bool multipleAnswers,
     UserRole? citizenTarget,
   }) async {
     if (shouldThrowOnCreate) throw Exception(errorMessage);
@@ -98,6 +101,7 @@ class _FakeSurveyRepository implements ISurveyRepository {
     required String question,
     required String description,
     required int? neighborhoodId,
+    required bool multipleAnswers,
     UserRole? citizenTarget,
   }) async {
     if (shouldThrowOnUpdate) throw Exception(errorMessage);
@@ -109,7 +113,10 @@ class _FakeSurveyRepository implements ISurveyRepository {
   }
 
   @override
-  Future<void> vote({required int surveyId, required int optionId}) async {
+  Future<void> vote({
+    required int surveyId,
+    required List<int> optionIds,
+  }) async {
     if (shouldThrowOnVote) throw Exception(errorMessage);
   }
 }
@@ -342,6 +349,7 @@ void main() {
             description: 'Description',
             neighborhoodId: null,
             options: ['Oui', 'Non'],
+            multipleAnswers: false,
           ),
         );
         await createExpectation;
@@ -395,6 +403,7 @@ void main() {
           description: 'Desc',
           neighborhoodId: null,
           options: ['Oui', 'Non'],
+          multipleAnswers: false,
         ),
       );
       await createExpectation;
@@ -458,6 +467,7 @@ void main() {
             question: 'Question modifiée ?',
             description: 'Nouvelle description',
             neighborhoodId: null,
+            multipleAnswers: false,
           ),
         );
         await updateExpectation;
@@ -510,6 +520,7 @@ void main() {
           question: 'Question ?',
           description: 'Description',
           neighborhoodId: null,
+          multipleAnswers: false,
         ),
       );
       await updateExpectation;
@@ -664,7 +675,7 @@ void main() {
           ),
         ]),
       );
-      bloc.add(const SurveyVoteRequested(surveyId: 1, optionId: 1));
+      bloc.add(const SurveyVoteRequested(surveyId: 1, optionIds: [1]));
       await voteExpectation;
       await bloc.close();
     });
@@ -708,7 +719,7 @@ void main() {
               .having((s) => s.error, 'error', contains('Vote failed')),
         ]),
       );
-      bloc.add(const SurveyVoteRequested(surveyId: 1, optionId: 1));
+      bloc.add(const SurveyVoteRequested(surveyId: 1, optionIds: [1]));
       await voteExpectation;
       await bloc.close();
     });
