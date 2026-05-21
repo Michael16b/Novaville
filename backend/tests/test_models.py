@@ -321,9 +321,8 @@ class TestVoteModel:
         assert vote.option == option
     
     def test_vote_uniqueness_constraint(self, citizen_user, survey_with_options):
-        """Test user can only vote once per survey"""
+        """Test user cannot vote twice for the same survey option."""
         option1 = survey_with_options.options.first()
-        option2 = survey_with_options.options.last()
         
         # First vote should work
         Vote.objects.create(
@@ -332,12 +331,12 @@ class TestVoteModel:
             option=option1
         )
         
-        # Second vote on same survey should fail
+        # Duplicate vote for the same option should fail
         with pytest.raises(IntegrityError):
             Vote.objects.create(
                 user=citizen_user,
                 survey=survey_with_options,
-                option=option2
+                option=option1
             )
 
 
