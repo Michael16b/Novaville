@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/constants/texts/texts_form_labels.dart';
@@ -9,9 +10,10 @@ import 'package:frontend/design_systems/custom_elevated_flat_button.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/ui/assets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:frontend/config/app_routes.dart';
 
+/// Displays the login form.
 class LoginPage extends StatefulWidget {
+  /// Creates the login page.
   const LoginPage({super.key});
 
   @override
@@ -68,17 +70,24 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 Expanded(
-                  child: CustomScrollView(
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    slivers: [
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 400),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isCompactHeight = constraints.maxHeight < 720;
+                      final logoHeight = isCompactHeight ? 220.0 : 300.0;
+                      final largeGap = isCompactHeight ? 16.0 : 24.0;
+                      final bottomGap = isCompactHeight ? 4.0 : 8.0;
+
+                      return SingleChildScrollView(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        padding: const EdgeInsets.all(16),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight - 32,
+                          ),
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 400),
                               child: Form(
                                 key: _formKey,
                                 child: Column(
@@ -86,10 +95,10 @@ class _LoginPageState extends State<LoginPage> {
                                   children: [
                                     Image.asset(
                                       AppAssets.login_logo,
-                                      height: 300,
+                                      height: logoHeight,
                                       fit: BoxFit.contain,
                                     ),
-                                    const SizedBox(height: 24),
+                                    SizedBox(height: largeGap),
                                     TextFormField(
                                       controller: _usernameController,
                                       keyboardType: TextInputType.emailAddress,
@@ -103,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                                             '${AppTextsAuth.usernameOrEmail} *',
                                       ),
                                     ),
-                                    const SizedBox(height: 24),
+                                    SizedBox(height: largeGap),
                                     TextFormField(
                                       controller: _passwordController,
                                       obscureText: true,
@@ -119,7 +128,6 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                     ),
                                     const SizedBox(height: 12),
-                                    // Required fields hint
                                     Row(
                                       children: [
                                         const Icon(
@@ -141,7 +149,6 @@ class _LoginPageState extends State<LoginPage> {
                                       ],
                                     ),
                                     const SizedBox(height: 12),
-                                    // Display the authentication error if present
                                     if (state.status == AuthStatus.failure &&
                                         state.error != null)
                                       Padding(
@@ -155,7 +162,7 @@ class _LoginPageState extends State<LoginPage> {
                                           ),
                                         ),
                                       ),
-                                    const SizedBox(height: 24),
+                                    SizedBox(height: largeGap),
                                     SizedBox(
                                       width: double.infinity,
                                       child: CustomElevatedFlatButton(
@@ -173,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
                                       icon: const Icon(Icons.person_add_alt_1),
                                       label: const Text(AppTextsAuth.register),
                                     ),
-                                    const SizedBox(height: 8),
+                                    SizedBox(height: bottomGap),
                                     TextButton.icon(
                                       onPressed: isLoading
                                           ? null
@@ -181,6 +188,7 @@ class _LoginPageState extends State<LoginPage> {
                                       icon: const Icon(Icons.vpn_key_outlined),
                                       label: const Text(
                                         AppTextsAuth.firstConnectionButton,
+                                        textAlign: TextAlign.center,
                                       ),
                                     ),
                                   ],
@@ -189,8 +197,8 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
               ],
