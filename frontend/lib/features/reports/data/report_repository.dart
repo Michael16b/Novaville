@@ -1,5 +1,9 @@
+import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
+
+/// Photo selected locally before creating a report.
+typedef ReportPhotoAttachment = MultipartApiFile;
 
 /// Paginated response for reports.
 class ReportPage {
@@ -60,6 +64,7 @@ abstract class IReportRepository {
     required String description,
     required String address,
     int? neighborhood,
+    List<ReportPhotoAttachment> photos = const [],
   });
 
   /// Updates an existing report.
@@ -70,6 +75,8 @@ abstract class IReportRepository {
     String? address,
     int? neighborhood,
     String? problemType,
+    List<ReportPhotoAttachment> photos = const [],
+    List<int> deletedPhotoIds = const [],
   });
 
   /// Deletes a report.

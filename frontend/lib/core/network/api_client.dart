@@ -1,6 +1,26 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+
+/// Binary file attached to a multipart API request.
+class MultipartApiFile {
+  /// Creates a multipart file payload.
+  const MultipartApiFile({
+    required this.field,
+    required this.filename,
+    required this.bytes,
+  });
+
+  /// Multipart field name.
+  final String field;
+
+  /// Original file name.
+  final String filename;
+
+  /// File bytes.
+  final Uint8List bytes;
+}
 
 /// Base class for all API clients.
 /// Provides common methods to build URLs and handle HTTP requests.
@@ -68,6 +88,56 @@ class ApiClient {
     final uri = buildUri(path, queryParameters);
     final mergedHeaders = {...defaultHeaders, ...?headers};
     return client.post(uri, headers: mergedHeaders, body: jsonEncode(body));
+  }
+
+  /// Performs a multipart POST request.
+  Future<http.StreamedResponse> postMultipart(
+    String path, {
+    required Map<String, String> fields,
+    required List<MultipartApiFile> files,
+    Map<String, String?>? queryParameters,
+    Map<String, String>? headers,
+  }) {
+    final uri = buildUri(path, queryParameters);
+    final request = http.MultipartRequest('POST', uri)
+      ..headers.addAll({'Accept': 'application/json', ...?headers})
+      ..fields.addAll(fields)
+      ..files.addAll(
+        files.map(
+          (file) => http.MultipartFile.fromBytes(
+            file.field,
+            file.bytes,
+            filename: file.filename,
+          ),
+        ),
+      );
+
+    return client.send(request);
+  }
+
+  /// Performs a multipart PATCH request.
+  Future<http.StreamedResponse> patchMultipart(
+    String path, {
+    required Map<String, String> fields,
+    required List<MultipartApiFile> files,
+    Map<String, String?>? queryParameters,
+    Map<String, String>? headers,
+  }) {
+    final uri = buildUri(path, queryParameters);
+    final request = http.MultipartRequest('PATCH', uri)
+      ..headers.addAll({'Accept': 'application/json', ...?headers})
+      ..fields.addAll(fields)
+      ..files.addAll(
+        files.map(
+          (file) => http.MultipartFile.fromBytes(
+            file.field,
+            file.bytes,
+            filename: file.filename,
+          ),
+        ),
+      );
+
+    return client.send(request);
   }
 
   /// Performs a PUT request.

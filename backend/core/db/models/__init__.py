@@ -20,7 +20,7 @@ from core.db.enums import (
 # Import models
 from .user import User
 from .neighborhood import Neighborhood
-from .report import Report
+from .report import Report, ReportPhoto
 from .survey import Survey, SurveyOption, Vote
 from .event import Event, ThemeEvent
 from .useful_info import UsefulInfo
@@ -37,6 +37,7 @@ __all__ = [
     'User',
     'Neighborhood',
     'Report',
+    'ReportPhoto',
     'Survey',
     'SurveyOption',
     'Vote',

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SocialNetworkActions extends StatelessWidget {
   final String? instagram;
@@ -23,7 +22,7 @@ class SocialNetworkActions extends StatelessWidget {
         if ((instagram ?? "").isNotEmpty)
           Row(
             children: [
-              const FaIcon(FontAwesomeIcons.instagram, size: 20),
+              const Icon(Icons.camera_alt_outlined, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -38,7 +37,7 @@ class SocialNetworkActions extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              const FaIcon(FontAwesomeIcons.facebook, size: 20),
+              const Icon(Icons.facebook, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -54,7 +53,7 @@ class SocialNetworkActions extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              const FaIcon(FontAwesomeIcons.xTwitter, size: 20),
+              const Icon(Icons.alternate_email, size: 20),
               const SizedBox(width: 8),
               Expanded(child: Text('X : $x', style: textTheme.bodyMedium)),
             ],

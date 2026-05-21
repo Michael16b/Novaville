@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from core.db.models import (
-    User, Neighborhood, Report, Survey, SurveyOption,
+    User, Neighborhood, Report, ReportPhoto, Survey, SurveyOption,
     Vote, Event, ThemeEvent, UsefulInfo, NewsQuestion, NewsPhoto
 )
 
@@ -37,6 +37,15 @@ class ReportAdmin(admin.ModelAdmin):
     search_fields = ['title', 'description', 'user__first_name', 'user__last_name']
     date_hierarchy = 'created_at'
     raw_id_fields = ['user', 'neighborhood']
+
+
+@admin.register(ReportPhoto)
+class ReportPhotoAdmin(admin.ModelAdmin):
+    """Admin configuration for report photos."""
+
+    list_display = ["id", "report", "uploaded_at"]
+    list_filter = ["uploaded_at"]
+    raw_id_fields = ["report"]
 
 
 @admin.register(Survey)

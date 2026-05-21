@@ -59,3 +59,42 @@ class Report(models.Model):
     
     def __str__(self):
         return f"Report #{self.id} - {self.title} ({self.get_status_display()})"
+
+
+class ReportPhoto(models.Model):
+    """Photo attached to a citizen report."""
+
+    report = models.ForeignKey(
+        Report,
+        on_delete=models.CASCADE,
+        related_name="photos",
+        help_text="Report associated with this photo",
+    )
+    filename = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Original uploaded photo filename",
+    )
+    content_type = models.CharField(
+        max_length=100,
+        blank=True,
+        default="application/octet-stream",
+        help_text="Uploaded photo MIME type",
+    )
+    image_data = models.BinaryField(
+        help_text="Uploaded report photo bytes stored in the database",
+    )
+    uploaded_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="Photo upload date",
+    )
+
+    class Meta:
+        db_table = "report_photos"
+        ordering = ["uploaded_at"]
+        verbose_name = "Report photo"
+        verbose_name_plural = "Report photos"
+
+    def __str__(self):
+        return f"Photo #{self.id} for report #{self.report_id}"
