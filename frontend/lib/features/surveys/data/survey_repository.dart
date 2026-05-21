@@ -50,7 +50,7 @@ abstract class ISurveyRepository {
   Future<void> createSurvey({
     required String question,
     required String description,
-    required String address,
+    required int? neighborhoodId,
     required List<String> options,
     UserRole? citizenTarget,
   });
@@ -60,7 +60,7 @@ abstract class ISurveyRepository {
     required int surveyId,
     required String question,
     required String description,
-    required String address,
+    required int? neighborhoodId,
     UserRole? citizenTarget,
   });
 
@@ -70,4 +70,3 @@ abstract class ISurveyRepository {
   /// Casts or updates a vote for the current user.
   Future<void> vote({required int surveyId, required int optionId});
 }
-

@@ -57,7 +57,7 @@ class SurveyViewSet(viewsets.ModelViewSet):
     serializer_class = SurveySerializer
     permission_classes = [IsSurveyManagerOrReadOnly]
     filterset_fields = '__all__'
-    search_fields = ['title', 'description', 'address']
+    search_fields = ['title', 'description', 'address', 'neighborhood__name']
     ordering_fields = ['created_at', 'start_date', 'end_date', 'title']
 
     def get_queryset(self):

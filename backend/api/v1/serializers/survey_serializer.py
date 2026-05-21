@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from core.db.models import Survey, SurveyOption, Vote
+from api.v1.serializers.neighborhood_serializer import NeighborhoodSerializer
 from api.v1.serializers.user_serializer import UserPublicSerializer
 
 
@@ -20,6 +21,7 @@ class SurveyOptionSerializer(serializers.ModelSerializer):
 class SurveySerializer(serializers.ModelSerializer):
     """Serializer for Survey model"""
     created_by = UserPublicSerializer(read_only=True)
+    neighborhood_detail = NeighborhoodSerializer(source='neighborhood', read_only=True)
     options = SurveyOptionSerializer(many=True, read_only=True)
     is_active = serializers.BooleanField(read_only=True)
     total_votes = serializers.SerializerMethodField()
@@ -29,12 +31,17 @@ class SurveySerializer(serializers.ModelSerializer):
     class Meta:
         model = Survey
         fields = [
-            'id', 'title', 'description', 'address', 'created_at', 'start_date',
+            'id', 'title', 'description', 'address', 'neighborhood',
+            'neighborhood_detail', 'created_at', 'start_date',
             'end_date', 'citizen_target', 'created_by', 'options',
             'is_active', 'total_votes', 'current_user_vote_id',
             'current_user_vote_option_id',
         ]
         read_only_fields = ['id', 'created_at', 'created_by']
+        extra_kwargs = {
+            'address': {'required': False, 'allow_blank': True},
+            'neighborhood': {'required': False, 'allow_null': True},
+        }
     
     def get_total_votes(self, obj):
         """Get the total number of votes for this survey"""
@@ -88,10 +95,14 @@ class SurveyCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Survey
         fields = [
-            'id', 'title', 'description', 'address', 'start_date', 'end_date',
-            'citizen_target', 'options',
+            'id', 'title', 'description', 'address', 'neighborhood',
+            'start_date', 'end_date', 'citizen_target', 'options',
         ]
         read_only_fields = ['id']
+        extra_kwargs = {
+            'address': {'required': False, 'allow_blank': True},
+            'neighborhood': {'required': False, 'allow_null': True},
+        }
     
     def validate_options(self, value):
         """Ensure at least two options are provided"""

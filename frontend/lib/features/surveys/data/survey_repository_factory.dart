@@ -42,8 +42,5 @@ ISurveyRepository createSurveyRepository({http.Client? client}) {
     client: authenticatedClient,
   );
 
-  return SurveyRepositoryImpl(
-    authenticatedApiClient: authenticatedApiClient,
-  );
+  return SurveyRepositoryImpl(authenticatedApiClient: authenticatedApiClient);
 }
-

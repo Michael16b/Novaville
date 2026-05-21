@@ -14,7 +14,17 @@ class Survey(models.Model):
     description = models.TextField(help_text="Survey description")
     address = models.CharField(
         max_length=255,
-        help_text="Exact address targeted by the survey"
+        blank=True,
+        default="",
+        help_text="Legacy exact address targeted by the survey"
+    )
+    neighborhood = models.ForeignKey(
+        'Neighborhood',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='surveys',
+        help_text="Neighborhood targeted by the survey. Empty means all neighborhoods."
     )
     created_at = models.DateTimeField(auto_now_add=True, help_text="Survey creation date")
     start_date = models.DateTimeField(help_text="Survey start date")

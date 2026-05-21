@@ -22,7 +22,7 @@ class SurveyRepositoryImpl implements ISurveyRepository {
     final query = <String, String?>{
       'page': '$page',
       if (exactAddress != null && exactAddress.trim().isNotEmpty)
-        'address': exactAddress.trim(),
+        'search': exactAddress.trim(),
       if (citizenTarget != null) 'citizen_target': citizenTarget.value,
       'ordering': ordering ?? '-created_at',
     };
@@ -47,7 +47,7 @@ class SurveyRepositoryImpl implements ISurveyRepository {
   Future<void> createSurvey({
     required String question,
     required String description,
-    required String address,
+    required int? neighborhoodId,
     required List<String> options,
     UserRole? citizenTarget,
   }) async {
@@ -59,10 +59,11 @@ class SurveyRepositoryImpl implements ISurveyRepository {
       body: {
         'title': question,
         'description': description,
-        'address': address,
+        'address': '',
+        'neighborhood': neighborhoodId,
         'start_date': startDate.toIso8601String(),
         'end_date': endDate.toIso8601String(),
-        if (citizenTarget != null) 'citizen_target': citizenTarget.value,
+        'citizen_target': citizenTarget?.value,
         'options': options,
       },
     );
@@ -79,7 +80,7 @@ class SurveyRepositoryImpl implements ISurveyRepository {
     required int surveyId,
     required String question,
     required String description,
-    required String address,
+    required int? neighborhoodId,
     UserRole? citizenTarget,
   }) async {
     final response = await _authenticatedApiClient.patch(
@@ -87,8 +88,9 @@ class SurveyRepositoryImpl implements ISurveyRepository {
       body: {
         'title': question,
         'description': description,
-        'address': address,
-        if (citizenTarget != null) 'citizen_target': citizenTarget.value,
+        'address': '',
+        'neighborhood': neighborhoodId,
+        'citizen_target': citizenTarget?.value,
       },
     );
 

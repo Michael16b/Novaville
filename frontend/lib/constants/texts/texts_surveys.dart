@@ -24,8 +24,8 @@ class SurveysTexts {
   static const loadError = 'Impossible de charger les sondages.';
   static const genericError = 'Une erreur est survenue avec les sondages.';
 
-  static const searchAddress = 'Filtrer par adresse exacte';
-  static const searchAddressHint = 'Ex: 12 Rue de la Paix, Novaville';
+  static const searchAddress = 'Filtrer par quartier';
+  static const searchAddressHint = 'Nom du quartier';
   static const applyFilters = 'Filtrer';
   static const clearFilters = 'Réinitialiser les filtres';
   static const advancedFilters = 'Filtres avancés';
@@ -43,8 +43,11 @@ class SurveysTexts {
   static const questionHint =
       'Ex: Souhaitez-vous plus de bancs dans ce quartier ?';
 
-  static const addressLabel = 'Adresse exacte';
-  static const addressRequired = "L'adresse est obligatoire.";
+  static const neighborhoodLabel = 'Quartier';
+  static const neighborhoodRequired = 'Le quartier est obligatoire.';
+  static const allNeighborhoods = 'Tous les quartiers';
+  static const neighborhoodsLoadError =
+      'Impossible de charger les quartiers.';
 
   static const targetLabel = 'Type de citoyen cible';
   static const targetAll = 'Tous les citoyens';

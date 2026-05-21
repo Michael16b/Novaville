@@ -44,6 +44,11 @@ class SurveyCard extends StatelessWidget {
     final totalVotes = survey.totalVotes;
     final canManage = isStaff;
     final dateStr = _formatDate(survey.createdAt);
+    final neighborhoodLabel =
+        survey.neighborhood?.name ??
+        (survey.address.trim().isNotEmpty
+            ? survey.address
+            : SurveysTexts.allNeighborhoods);
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -130,7 +135,7 @@ class SurveyCard extends StatelessWidget {
                   const SizedBox(height: 10),
                   _InfoRow(
                     icon: Icons.location_on_outlined,
-                    text: survey.address,
+                    text: neighborhoodLabel,
                   ),
                   const SizedBox(height: 6),
                   _InfoRow(

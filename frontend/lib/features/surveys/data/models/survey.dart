@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 
@@ -46,6 +47,8 @@ class Survey extends Equatable {
     required this.createdAt,
     required this.totalVotes,
     required this.options,
+    this.neighborhoodId,
+    this.neighborhood,
     this.citizenTarget,
     this.createdBy,
     this.currentUserVoteId,
@@ -59,6 +62,12 @@ class Survey extends Equatable {
       title: (json['title'] as String?) ?? '',
       description: (json['description'] as String?) ?? '',
       address: (json['address'] as String?) ?? '',
+      neighborhoodId: json['neighborhood'] as int?,
+      neighborhood: json['neighborhood_detail'] is Map<String, dynamic>
+          ? Neighborhood.fromJson(
+              json['neighborhood_detail'] as Map<String, dynamic>,
+            )
+          : null,
       startDate: DateTime.parse(json['start_date'] as String),
       endDate: DateTime.parse(json['end_date'] as String),
       createdAt: DateTime.parse(json['created_at'] as String),
@@ -86,6 +95,12 @@ class Survey extends Equatable {
 
   /// Exact target address.
   final String address;
+
+  /// Target neighborhood id. Null means all neighborhoods.
+  final int? neighborhoodId;
+
+  /// Target neighborhood detail when provided by the API.
+  final Neighborhood? neighborhood;
 
   /// Start date.
   final DateTime startDate;
@@ -116,20 +131,22 @@ class Survey extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        description,
-        address,
-        startDate,
-        endDate,
-        createdAt,
-        citizenTarget,
-        createdBy,
-        totalVotes,
-        options,
-        currentUserVoteId,
-        currentUserVoteOptionId,
-      ];
+    id,
+    title,
+    description,
+    address,
+    neighborhoodId,
+    neighborhood,
+    startDate,
+    endDate,
+    createdAt,
+    citizenTarget,
+    createdBy,
+    totalVotes,
+    options,
+    currentUserVoteId,
+    currentUserVoteOptionId,
+  ];
 
   static UserRole? _roleFromJson(String? value) {
     if (value == null || value.isEmpty) return null;
@@ -140,4 +157,3 @@ class Survey extends Equatable {
     }
   }
 }
-

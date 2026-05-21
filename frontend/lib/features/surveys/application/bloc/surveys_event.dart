@@ -37,12 +37,12 @@ class SurveysLoadRequested extends SurveysEvent {
 
   @override
   List<Object?> get props => [
-        exactAddress,
-        citizenTarget,
-        ordering,
-        page,
-        citizenTargetSet,
-      ];
+    exactAddress,
+    citizenTarget,
+    ordering,
+    page,
+    citizenTargetSet,
+  ];
 }
 
 /// Updates filters then reloads surveys.
@@ -73,12 +73,12 @@ class SurveysFilterChanged extends SurveysEvent {
 
   @override
   List<Object?> get props => [
-        exactAddress,
-        citizenTarget,
-        ordering,
-        page,
-        citizenTargetSet,
-      ];
+    exactAddress,
+    citizenTarget,
+    ordering,
+    page,
+    citizenTargetSet,
+  ];
 }
 
 /// Requests a specific surveys page.
@@ -99,7 +99,7 @@ class SurveyCreateRequested extends SurveysEvent {
   const SurveyCreateRequested({
     required this.question,
     required this.description,
-    required this.address,
+    required this.neighborhoodId,
     required this.options,
     this.citizenTarget,
   });
@@ -110,8 +110,8 @@ class SurveyCreateRequested extends SurveysEvent {
   /// Survey description.
   final String description;
 
-  /// Exact address.
-  final String address;
+  /// Target neighborhood id. Null means all neighborhoods.
+  final int? neighborhoodId;
 
   /// Survey options.
   final List<String> options;
@@ -120,7 +120,13 @@ class SurveyCreateRequested extends SurveysEvent {
   final UserRole? citizenTarget;
 
   @override
-  List<Object?> get props => [question, description, address, options, citizenTarget];
+  List<Object?> get props => [
+    question,
+    description,
+    neighborhoodId,
+    options,
+    citizenTarget,
+  ];
 }
 
 /// Deletes a survey.
@@ -142,7 +148,7 @@ class SurveyUpdateRequested extends SurveysEvent {
     required this.surveyId,
     required this.question,
     required this.description,
-    required this.address,
+    required this.neighborhoodId,
     this.citizenTarget,
   });
 
@@ -155,20 +161,20 @@ class SurveyUpdateRequested extends SurveysEvent {
   /// Survey description.
   final String description;
 
-  /// Exact address.
-  final String address;
+  /// Target neighborhood id. Null means all neighborhoods.
+  final int? neighborhoodId;
 
   /// Target audience.
   final UserRole? citizenTarget;
 
   @override
   List<Object?> get props => [
-        surveyId,
-        question,
-        description,
-        address,
-        citizenTarget,
-      ];
+    surveyId,
+    question,
+    description,
+    neighborhoodId,
+    citizenTarget,
+  ];
 }
 
 /// Casts or updates vote on one option.
@@ -185,4 +191,3 @@ class SurveyVoteRequested extends SurveysEvent {
   @override
   List<Object?> get props => [surveyId, optionId];
 }
-
