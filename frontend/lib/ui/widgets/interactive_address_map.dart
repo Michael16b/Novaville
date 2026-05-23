@@ -14,6 +14,7 @@ class InteractiveAddressMap extends StatefulWidget {
     this.height = 220,
     this.initialCenter = _defaultCenter,
     this.initialZoom = 13,
+    this.markers = const [],
     this.onAddressSelected,
     super.key,
   });
@@ -28,6 +29,9 @@ class InteractiveAddressMap extends StatefulWidget {
 
   /// Initial zoom level.
   final double initialZoom;
+
+  /// Markers rendered on the map.
+  final List<InteractiveAddressMapMarker> markers;
 
   /// Called with the reverse-geocoded address when the user taps the map.
   final ValueChanged<String>? onAddressSelected;
@@ -72,6 +76,7 @@ class _InteractiveAddressMapState extends State<InteractiveAddressMap> {
                   initialZoom: widget.initialZoom,
                   minZoom: _minZoom,
                   maxZoom: _maxZoom,
+                  initialCameraFit: _initialCameraFit(),
                   onTap: _isSelectable
                       ? (_, point) => _selectPoint(point)
                       : null,
@@ -82,6 +87,25 @@ class _InteractiveAddressMapState extends State<InteractiveAddressMap> {
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.example.novaville',
                   ),
+                  if (widget.markers.isNotEmpty)
+                    MarkerLayer(
+                      markers: widget.markers
+                          .map(
+                            (marker) => Marker(
+                              point: marker.point,
+                              height: 36,
+                              alignment: Alignment.topCenter,
+                              child: Tooltip(
+                                message: marker.tooltip,
+                                child: GestureDetector(
+                                  onTap: marker.onTap,
+                                  child: _MapPinMarker(color: marker.color),
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
                   if (_selectedPoint != null)
                     MarkerLayer(
                       markers: [
@@ -140,6 +164,34 @@ class _InteractiveAddressMapState extends State<InteractiveAddressMap> {
       final zoomDelta = scrollEvent.scrollDelta.dy < 0 ? 0.75 : -0.75;
       _changeZoom(zoomDelta);
     });
+  }
+
+  CameraFit? _initialCameraFit() {
+    if (widget.markers.isEmpty) return null;
+    if (widget.markers.length == 1) {
+      return CameraFit.coordinates(
+        coordinates: [widget.markers.first.point],
+        maxZoom: 14,
+      );
+    }
+
+    final points = widget.markers.map((marker) => marker.point).toList();
+    final latitudes = points.map((point) => point.latitude);
+    final longitudes = points.map((point) => point.longitude);
+    final southWest = LatLng(
+      latitudes.reduce((a, b) => a < b ? a : b),
+      longitudes.reduce((a, b) => a < b ? a : b),
+    );
+    final northEast = LatLng(
+      latitudes.reduce((a, b) => a > b ? a : b),
+      longitudes.reduce((a, b) => a > b ? a : b),
+    );
+
+    return CameraFit.bounds(
+      bounds: LatLngBounds(southWest, northEast),
+      padding: const EdgeInsets.all(28),
+      maxZoom: 14,
+    );
   }
 
   void _changeZoom(double delta) {
@@ -219,6 +271,29 @@ class _InteractiveAddressMapState extends State<InteractiveAddressMap> {
   }
 }
 
+/// Marker rendered by [InteractiveAddressMap].
+class InteractiveAddressMapMarker {
+  /// Creates a map marker.
+  const InteractiveAddressMapMarker({
+    required this.point,
+    required this.color,
+    required this.tooltip,
+    this.onTap,
+  });
+
+  /// Marker geographic position.
+  final LatLng point;
+
+  /// Marker display color.
+  final Color color;
+
+  /// Tooltip displayed on hover.
+  final String tooltip;
+
+  /// Called when the marker is clicked.
+  final VoidCallback? onTap;
+}
+
 class _MapZoomControls extends StatelessWidget {
   const _MapZoomControls({required this.onZoomIn, required this.onZoomOut});
 
@@ -249,6 +324,52 @@ class _MapZoomControls extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _MapPinMarker extends StatelessWidget {
+  const _MapPinMarker({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.topCenter,
+      children: [
+        Positioned(
+          bottom: 1,
+          child: Container(
+            width: 10,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+        ),
+        Icon(
+          Icons.location_on,
+          color: Colors.black.withValues(alpha: 0.28),
+          size: 31,
+        ),
+        Positioned(
+          top: 1,
+          child: Icon(Icons.location_on, color: color, size: 29),
+        ),
+        Positioned(
+          top: 9,
+          child: Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(
+              color: AppColors.white.withValues(alpha: 0.88),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

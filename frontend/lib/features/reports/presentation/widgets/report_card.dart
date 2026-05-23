@@ -263,19 +263,27 @@ class ReportCard extends StatelessWidget {
   }
 }
 
-class _ReportPhotoPreview extends StatelessWidget {
+class _ReportPhotoPreview extends StatefulWidget {
   const _ReportPhotoPreview({required this.photos});
 
   final List<ReportPhoto> photos;
 
   @override
+  State<_ReportPhotoPreview> createState() => _ReportPhotoPreviewState();
+}
+
+class _ReportPhotoPreviewState extends State<_ReportPhotoPreview> {
+  int _currentIndex = 0;
+
+  @override
   Widget build(BuildContext context) {
-    final firstPhoto = photos.first;
-    final imageUrl = _resolveImageUrl(firstPhoto);
+    final currentPhoto = widget.photos[_currentIndex];
+    final imageUrl = _resolveImageUrl(currentPhoto);
+    final hasSeveralPhotos = widget.photos.length > 1;
 
     return InkWell(
       borderRadius: BorderRadius.circular(10),
-      onTap: () => _openPhoto(context, firstPhoto),
+      onTap: () => _openPhoto(context, _currentIndex),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: SizedBox(
@@ -300,10 +308,33 @@ class _ReportPhotoPreview extends StatelessWidget {
                   ),
                 ),
               ),
+              if (hasSeveralPhotos) ...[
+                Positioned(
+                  left: 8,
+                  top: 0,
+                  bottom: 0,
+                  child: _PhotoArrowButton(
+                    icon: Icons.chevron_left,
+                    onPressed: _showPreviousPhoto,
+                  ),
+                ),
+                Positioned(
+                  right: 8,
+                  top: 0,
+                  bottom: 0,
+                  child: _PhotoArrowButton(
+                    icon: Icons.chevron_right,
+                    onPressed: _showNextPhoto,
+                  ),
+                ),
+              ],
               Positioned(
                 right: 8,
                 bottom: 8,
-                child: _PhotoCountBadge(count: photos.length),
+                child: _PhotoCountBadge(
+                  current: _currentIndex + 1,
+                  total: widget.photos.length,
+                ),
               ),
             ],
           ),
@@ -312,51 +343,122 @@ class _ReportPhotoPreview extends StatelessWidget {
     );
   }
 
-  void _openPhoto(BuildContext context, ReportPhoto photo) {
-    final imageUrl = _resolveImageUrl(photo);
+  void _showPreviousPhoto() {
+    setState(() {
+      _currentIndex =
+          (_currentIndex - 1 + widget.photos.length) % widget.photos.length;
+    });
+  }
+
+  void _showNextPhoto() {
+    setState(() {
+      _currentIndex = (_currentIndex + 1) % widget.photos.length;
+    });
+  }
+
+  void _openPhoto(BuildContext context, int initialIndex) {
+    var currentIndex = initialIndex;
 
     showDialog<void>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.82),
       builder: (dialogContext) {
-        return Dialog.fullscreen(
-          backgroundColor: Colors.transparent,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Center(
-                    child: InteractiveViewer(
-                      minScale: 0.8,
-                      maxScale: 4,
-                      child: Image.network(
-                        imageUrl,
-                        width: MediaQuery.sizeOf(dialogContext).width,
-                        height: MediaQuery.sizeOf(dialogContext).height,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const _PhotoPlaceholder();
-                        },
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final imageUrl = _resolveImageUrl(widget.photos[currentIndex]);
+            final hasSeveralPhotos = widget.photos.length > 1;
+
+            void showPreviousPhoto() {
+              setDialogState(() {
+                currentIndex =
+                    (currentIndex - 1 + widget.photos.length) %
+                    widget.photos.length;
+              });
+              setState(() {
+                _currentIndex = currentIndex;
+              });
+            }
+
+            void showNextPhoto() {
+              setDialogState(() {
+                currentIndex = (currentIndex + 1) % widget.photos.length;
+              });
+              setState(() {
+                _currentIndex = currentIndex;
+              });
+            }
+
+            return Dialog.fullscreen(
+              backgroundColor: Colors.transparent,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Center(
+                        child: InteractiveViewer(
+                          minScale: 0.8,
+                          maxScale: 4,
+                          child: Image.network(
+                            imageUrl,
+                            width: MediaQuery.sizeOf(dialogContext).width,
+                            height: MediaQuery.sizeOf(dialogContext).height,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const _PhotoPlaceholder();
+                            },
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
-              Positioned(
-                top: 18,
-                right: 18,
-                child: IconButton.filled(
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.white,
-                    foregroundColor: AppColors.primaryText,
+                  if (hasSeveralPhotos) ...[
+                    Positioned(
+                      left: 18,
+                      top: 0,
+                      bottom: 0,
+                      child: _FullscreenPhotoArrowButton(
+                        icon: Icons.chevron_left,
+                        onPressed: showPreviousPhoto,
+                      ),
+                    ),
+                    Positioned(
+                      right: 18,
+                      top: 0,
+                      bottom: 0,
+                      child: _FullscreenPhotoArrowButton(
+                        icon: Icons.chevron_right,
+                        onPressed: showNextPhoto,
+                      ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 24,
+                      child: Center(
+                        child: _PhotoCountBadge(
+                          current: currentIndex + 1,
+                          total: widget.photos.length,
+                        ),
+                      ),
+                    ),
+                  ],
+                  Positioned(
+                    top: 18,
+                    right: 18,
+                    child: IconButton.filled(
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.white,
+                        foregroundColor: AppColors.primaryText,
+                      ),
+                      onPressed: () => Navigator.pop(dialogContext),
+                      icon: const Icon(Icons.close),
+                    ),
                   ),
-                  onPressed: () => Navigator.pop(dialogContext),
-                  icon: const Icon(Icons.close),
-                ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -367,6 +469,55 @@ class _ReportPhotoPreview extends StatelessWidget {
         '${photo.imageUrl}'
         '?v=${photo.uploadedAt.millisecondsSinceEpoch}';
     return Uri.parse(apiBaseUrl).resolve(apiPath).toString();
+  }
+}
+
+class _PhotoArrowButton extends StatelessWidget {
+  const _PhotoArrowButton({required this.icon, required this.onPressed});
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: IconButton.filled(
+        constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+        padding: EdgeInsets.zero,
+        style: IconButton.styleFrom(
+          backgroundColor: Colors.black.withValues(alpha: 0.42),
+          foregroundColor: AppColors.white,
+        ),
+        onPressed: onPressed,
+        icon: Icon(icon, size: 24),
+      ),
+    );
+  }
+}
+
+class _FullscreenPhotoArrowButton extends StatelessWidget {
+  const _FullscreenPhotoArrowButton({
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: IconButton.filled(
+        constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+        padding: EdgeInsets.zero,
+        style: IconButton.styleFrom(
+          backgroundColor: AppColors.white.withValues(alpha: 0.9),
+          foregroundColor: AppColors.primaryText,
+        ),
+        onPressed: onPressed,
+        icon: Icon(icon, size: 34),
+      ),
+    );
   }
 }
 
@@ -390,9 +541,10 @@ class _PhotoPlaceholder extends StatelessWidget {
 }
 
 class _PhotoCountBadge extends StatelessWidget {
-  const _PhotoCountBadge({required this.count});
+  const _PhotoCountBadge({required this.current, required this.total});
 
-  final int count;
+  final int current;
+  final int total;
 
   @override
   Widget build(BuildContext context) {
@@ -412,7 +564,7 @@ class _PhotoCountBadge extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            count.toString(),
+            '$current / $total',
             style: const TextStyle(
               color: AppColors.white,
               fontSize: 12,
