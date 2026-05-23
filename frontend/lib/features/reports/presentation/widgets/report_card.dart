@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_reports.dart';
+import 'package:frontend/core/api_config.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
 import 'package:frontend/features/reports/data/models/report_status.dart';
@@ -39,8 +40,8 @@ class ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authorName =
-        '${report.user.firstName} ${report.user.lastName}'.trim();
+    final authorName = '${report.user.firstName} ${report.user.lastName}'
+        .trim();
     final dateStr = _formatDate(report.createdAt);
     final locationLabel = report.address.trim().isNotEmpty
         ? report.address
@@ -48,6 +49,9 @@ class ReportCard extends StatelessWidget {
     final canModify = isOwner || isStaff;
     final isResolved = report.status == ReportStatus.resolved;
     final typeColor = _problemTypeColor(report.problemType);
+    final visiblePhotos = report.photos
+        .where((photo) => photo.imageUrl.trim().isNotEmpty)
+        .toList();
 
     return Opacity(
       opacity: isResolved ? 0.55 : 1.0,
@@ -87,9 +91,7 @@ class ReportCard extends StatelessWidget {
                       children: [
                         Text(
                           report.problemType.label,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleSmall
+                          style: Theme.of(context).textTheme.titleSmall
                               ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 2),
@@ -145,18 +147,17 @@ class ReportCard extends StatelessWidget {
                           report.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                       ),
                     Text(
                       report.description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            height: 1.4,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(height: 1.4),
                     ),
                     const SizedBox(height: 10),
                     _InfoRow(
@@ -170,6 +171,10 @@ class ReportCard extends StatelessWidget {
                           ? authorName
                           : report.user.username,
                     ),
+                    if (visiblePhotos.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      _ReportPhotoPreview(photos: visiblePhotos),
+                    ],
                     const Spacer(),
                   ],
                 ),
@@ -202,7 +207,9 @@ class ReportCard extends StatelessWidget {
                             icon: Icons.edit_outlined,
                             label: AppTextsGeneral.edit,
                             color: AppColors.primary,
-                            onTap: onEdit != null ? () => onEdit!(report) : null,
+                            onTap: onEdit != null
+                                ? () => onEdit!(report)
+                                : null,
                           ),
                         ),
                         const SizedBox(width: 4),
@@ -211,8 +218,9 @@ class ReportCard extends StatelessWidget {
                             icon: Icons.delete_outline_rounded,
                             label: AppTextsGeneral.delete,
                             color: AppColors.error,
-                            onTap:
-                                onDelete != null ? () => onDelete!(report) : null,
+                            onTap: onDelete != null
+                                ? () => onDelete!(report)
+                                : null,
                           ),
                         ),
                       ],
@@ -255,6 +263,320 @@ class ReportCard extends StatelessWidget {
   }
 }
 
+class _ReportPhotoPreview extends StatefulWidget {
+  const _ReportPhotoPreview({required this.photos});
+
+  final List<ReportPhoto> photos;
+
+  @override
+  State<_ReportPhotoPreview> createState() => _ReportPhotoPreviewState();
+}
+
+class _ReportPhotoPreviewState extends State<_ReportPhotoPreview> {
+  int _currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final currentPhoto = widget.photos[_currentIndex];
+    final imageUrl = _resolveImageUrl(currentPhoto);
+    final hasSeveralPhotos = widget.photos.length > 1;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: () => _openPhoto(context, _currentIndex),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: SizedBox(
+          height: 104,
+          width: double.infinity,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const _PhotoPlaceholder();
+                },
+              ),
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0x00000000), Color(0x33000000)],
+                  ),
+                ),
+              ),
+              if (hasSeveralPhotos) ...[
+                Positioned(
+                  left: 8,
+                  top: 0,
+                  bottom: 0,
+                  child: _PhotoArrowButton(
+                    icon: Icons.chevron_left,
+                    onPressed: _showPreviousPhoto,
+                  ),
+                ),
+                Positioned(
+                  right: 8,
+                  top: 0,
+                  bottom: 0,
+                  child: _PhotoArrowButton(
+                    icon: Icons.chevron_right,
+                    onPressed: _showNextPhoto,
+                  ),
+                ),
+              ],
+              Positioned(
+                right: 8,
+                bottom: 8,
+                child: _PhotoCountBadge(
+                  current: _currentIndex + 1,
+                  total: widget.photos.length,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showPreviousPhoto() {
+    setState(() {
+      _currentIndex =
+          (_currentIndex - 1 + widget.photos.length) % widget.photos.length;
+    });
+  }
+
+  void _showNextPhoto() {
+    setState(() {
+      _currentIndex = (_currentIndex + 1) % widget.photos.length;
+    });
+  }
+
+  void _openPhoto(BuildContext context, int initialIndex) {
+    var currentIndex = initialIndex;
+
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.82),
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final imageUrl = _resolveImageUrl(widget.photos[currentIndex]);
+            final hasSeveralPhotos = widget.photos.length > 1;
+
+            void showPreviousPhoto() {
+              setDialogState(() {
+                currentIndex =
+                    (currentIndex - 1 + widget.photos.length) %
+                    widget.photos.length;
+              });
+              setState(() {
+                _currentIndex = currentIndex;
+              });
+            }
+
+            void showNextPhoto() {
+              setDialogState(() {
+                currentIndex = (currentIndex + 1) % widget.photos.length;
+              });
+              setState(() {
+                _currentIndex = currentIndex;
+              });
+            }
+
+            return Dialog.fullscreen(
+              backgroundColor: Colors.transparent,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Center(
+                        child: InteractiveViewer(
+                          minScale: 0.8,
+                          maxScale: 4,
+                          child: Image.network(
+                            imageUrl,
+                            width: MediaQuery.sizeOf(dialogContext).width,
+                            height: MediaQuery.sizeOf(dialogContext).height,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const _PhotoPlaceholder();
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (hasSeveralPhotos) ...[
+                    Positioned(
+                      left: 18,
+                      top: 0,
+                      bottom: 0,
+                      child: _FullscreenPhotoArrowButton(
+                        icon: Icons.chevron_left,
+                        onPressed: showPreviousPhoto,
+                      ),
+                    ),
+                    Positioned(
+                      right: 18,
+                      top: 0,
+                      bottom: 0,
+                      child: _FullscreenPhotoArrowButton(
+                        icon: Icons.chevron_right,
+                        onPressed: showNextPhoto,
+                      ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 24,
+                      child: Center(
+                        child: _PhotoCountBadge(
+                          current: currentIndex + 1,
+                          total: widget.photos.length,
+                        ),
+                      ),
+                    ),
+                  ],
+                  Positioned(
+                    top: 18,
+                    right: 18,
+                    child: IconButton.filled(
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.white,
+                        foregroundColor: AppColors.primaryText,
+                      ),
+                      onPressed: () => Navigator.pop(dialogContext),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  String _resolveImageUrl(ReportPhoto photo) {
+    final apiPath =
+        '${photo.imageUrl}'
+        '?v=${photo.uploadedAt.millisecondsSinceEpoch}';
+    return Uri.parse(apiBaseUrl).resolve(apiPath).toString();
+  }
+}
+
+class _PhotoArrowButton extends StatelessWidget {
+  const _PhotoArrowButton({required this.icon, required this.onPressed});
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: IconButton.filled(
+        constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+        padding: EdgeInsets.zero,
+        style: IconButton.styleFrom(
+          backgroundColor: Colors.black.withValues(alpha: 0.42),
+          foregroundColor: AppColors.white,
+        ),
+        onPressed: onPressed,
+        icon: Icon(icon, size: 24),
+      ),
+    );
+  }
+}
+
+class _FullscreenPhotoArrowButton extends StatelessWidget {
+  const _FullscreenPhotoArrowButton({
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: IconButton.filled(
+        constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+        padding: EdgeInsets.zero,
+        style: IconButton.styleFrom(
+          backgroundColor: AppColors.white.withValues(alpha: 0.9),
+          foregroundColor: AppColors.primaryText,
+        ),
+        onPressed: onPressed,
+        icon: Icon(icon, size: 34),
+      ),
+    );
+  }
+}
+
+class _PhotoPlaceholder extends StatelessWidget {
+  const _PhotoPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 320,
+      height: 220,
+      color: AppColors.subtleSurface,
+      alignment: Alignment.center,
+      child: const Icon(
+        Icons.broken_image_outlined,
+        size: 20,
+        color: AppColors.secondaryText,
+      ),
+    );
+  }
+}
+
+class _PhotoCountBadge extends StatelessWidget {
+  const _PhotoCountBadge({required this.current, required this.total});
+
+  final int current;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.photo_library_outlined,
+            size: 14,
+            color: AppColors.white,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '$current / $total',
+            style: const TextStyle(
+              color: AppColors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// A single info row with a leading icon and text.
 class _InfoRow extends StatelessWidget {
   const _InfoRow({required this.icon, required this.text});
@@ -274,9 +596,9 @@ class _InfoRow extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.primaryText,
-                  height: 1.3,
-                ),
+              color: AppColors.primaryText,
+              height: 1.3,
+            ),
           ),
         ),
       ],

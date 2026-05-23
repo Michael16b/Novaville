@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from core.db.models import Survey, SurveyOption, Vote
+from api.v1.serializers.neighborhood_serializer import NeighborhoodSerializer
 from api.v1.serializers.user_serializer import UserPublicSerializer
 
 
@@ -20,34 +21,45 @@ class SurveyOptionSerializer(serializers.ModelSerializer):
 class SurveySerializer(serializers.ModelSerializer):
     """Serializer for Survey model"""
     created_by = UserPublicSerializer(read_only=True)
+    neighborhood_detail = NeighborhoodSerializer(source='neighborhood', read_only=True)
     options = SurveyOptionSerializer(many=True, read_only=True)
     is_active = serializers.BooleanField(read_only=True)
     total_votes = serializers.SerializerMethodField()
     current_user_vote_id = serializers.SerializerMethodField()
     current_user_vote_option_id = serializers.SerializerMethodField()
+    current_user_vote_ids = serializers.SerializerMethodField()
+    current_user_vote_option_ids = serializers.SerializerMethodField()
 
     class Meta:
         model = Survey
         fields = [
-            'id', 'title', 'description', 'address', 'created_at', 'start_date',
-            'end_date', 'citizen_target', 'created_by', 'options',
+            'id', 'title', 'description', 'address', 'neighborhood',
+            'neighborhood_detail', 'created_at', 'start_date',
+            'end_date', 'citizen_target', 'multiple_answers', 'created_by', 'options',
             'is_active', 'total_votes', 'current_user_vote_id',
-            'current_user_vote_option_id',
+            'current_user_vote_option_id', 'current_user_vote_ids',
+            'current_user_vote_option_ids',
         ]
         read_only_fields = ['id', 'created_at', 'created_by']
+        extra_kwargs = {
+            'address': {'required': False, 'allow_blank': True},
+            'neighborhood': {'required': False, 'allow_null': True},
+            'citizen_target': {'required': False, 'allow_null': True},
+            'multiple_answers': {'required': False},
+        }
     
     def get_total_votes(self, obj):
         """Get the total number of votes for this survey"""
         return obj.votes.count()
 
-    def _get_current_user_vote(self, obj):
-        """Return the current authenticated user's vote for this survey, using prefetched data when available."""
+    def _get_current_user_votes(self, obj):
+        """Return the current authenticated user's votes for this survey."""
         request = self.context.get('request')
         if not request or not request.user.is_authenticated:
-            return None
+            return []
 
-        cache_attr = '_current_user_vote_cache'
-        cached_user_id_attr = '_current_user_vote_cache_user_id'
+        cache_attr = '_current_user_votes_cache'
+        cached_user_id_attr = '_current_user_votes_cache_user_id'
         user_id = request.user.id
 
         if (
@@ -58,13 +70,18 @@ class SurveySerializer(serializers.ModelSerializer):
 
         prefetched_votes = getattr(obj, '_prefetched_objects_cache', {}).get('votes')
         if prefetched_votes is not None:
-            vote = next((v for v in prefetched_votes if v.user_id == user_id), None)
+            votes = [v for v in prefetched_votes if v.user_id == user_id]
         else:
-            vote = Vote.objects.filter(user=request.user, survey=obj).first()
+            votes = list(Vote.objects.filter(user=request.user, survey=obj))
 
-        setattr(obj, cache_attr, vote)
+        setattr(obj, cache_attr, votes)
         setattr(obj, cached_user_id_attr, user_id)
-        return vote
+        return votes
+
+    def _get_current_user_vote(self, obj):
+        """Return the first current authenticated user's vote for compatibility."""
+        votes = self._get_current_user_votes(obj)
+        return votes[0] if votes else None
 
     def get_current_user_vote_id(self, obj):
         """Get current user vote id for this survey."""
@@ -75,6 +92,14 @@ class SurveySerializer(serializers.ModelSerializer):
         """Get current user selected option id for this survey."""
         vote = self._get_current_user_vote(obj)
         return vote.option_id if vote else None
+
+    def get_current_user_vote_ids(self, obj):
+        """Get current user vote ids for this survey."""
+        return [vote.id for vote in self._get_current_user_votes(obj)]
+
+    def get_current_user_vote_option_ids(self, obj):
+        """Get current user selected option ids for this survey."""
+        return [vote.option_id for vote in self._get_current_user_votes(obj)]
 
 
 class SurveyCreateSerializer(serializers.ModelSerializer):
@@ -88,10 +113,17 @@ class SurveyCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Survey
         fields = [
-            'id', 'title', 'description', 'address', 'start_date', 'end_date',
-            'citizen_target', 'options',
+            'id', 'title', 'description', 'address', 'neighborhood',
+            'start_date', 'end_date', 'citizen_target', 'multiple_answers',
+            'options',
         ]
         read_only_fields = ['id']
+        extra_kwargs = {
+            'address': {'required': False, 'allow_blank': True},
+            'neighborhood': {'required': False, 'allow_null': True},
+            'citizen_target': {'required': False, 'allow_null': True},
+            'multiple_answers': {'required': False},
+        }
     
     def validate_options(self, value):
         """Ensure at least two options are provided"""

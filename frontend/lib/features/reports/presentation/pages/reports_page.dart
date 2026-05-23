@@ -17,8 +17,8 @@ import 'package:frontend/features/reports/presentation/widgets/report_card.dart'
 import 'package:frontend/features/reports/presentation/widgets/report_form_dialog.dart';
 import 'package:frontend/features/reports/presentation/widgets/report_status_dialog.dart';
 import 'package:frontend/ui/widgets/breadcrumb.dart';
-import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 import 'package:frontend/ui/widgets/collapsible_filter_section.dart';
+import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
 
@@ -691,10 +691,10 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
 
     final cardWidth = (width - (spacing * (chosenCount - 1))) / chosenCount;
     final estimatedCardHeight = chosenCount == 1
-        ? 285.0
+        ? 390.0
         : chosenCount == 2
-        ? 255.0
-        : 275.0;
+        ? 360.0
+        : 380.0;
 
     final childAspectRatio = (cardWidth / estimatedCardHeight).clamp(0.9, 2.2);
 
@@ -875,6 +875,8 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
           description: result['description'] as String,
           address: result['address'] as String,
           neighborhood: result['neighborhood'] as int?,
+          photos:
+              (result['photos'] as List<ReportPhotoAttachment>?) ?? const [],
         ),
       );
     }
@@ -896,6 +898,10 @@ class _ReportsPageContentState extends State<_ReportsPageContent> {
           description: result['description'] as String?,
           address: result['address'] as String?,
           neighborhood: result['neighborhood'] as int?,
+          photos:
+              (result['photos'] as List<ReportPhotoAttachment>?) ?? const [],
+          deletedPhotoIds:
+              (result['deleted_photo_ids'] as List<int>?) ?? const [],
         ),
       );
     }

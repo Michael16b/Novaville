@@ -14,7 +14,17 @@ class Survey(models.Model):
     description = models.TextField(help_text="Survey description")
     address = models.CharField(
         max_length=255,
-        help_text="Exact address targeted by the survey"
+        blank=True,
+        default="",
+        help_text="Legacy exact address targeted by the survey"
+    )
+    neighborhood = models.ForeignKey(
+        'Neighborhood',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='surveys',
+        help_text="Neighborhood targeted by the survey. Empty means all neighborhoods."
     )
     created_at = models.DateTimeField(auto_now_add=True, help_text="Survey creation date")
     start_date = models.DateTimeField(help_text="Survey start date")
@@ -25,6 +35,10 @@ class Survey(models.Model):
         blank=True,
         null=True,
         help_text="Target role for this survey"
+    )
+    multiple_answers = models.BooleanField(
+        default=False,
+        help_text="Whether users can select several options for this survey"
     )
     # Foreign keys
     created_by = models.ForeignKey(
@@ -97,8 +111,12 @@ class Vote(models.Model):
         ordering = ['-created_at']
         verbose_name = 'Vote'
         verbose_name_plural = 'Votes'
-        # Ensure a user can only vote once per survey
-        unique_together = [['user', 'survey']]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'survey', 'option'],
+                name='unique_vote_per_user_survey_option',
+            ),
+        ]
     
     def __str__(self):
         return f"{self.user.username} voted on {self.survey.title}"

@@ -24,8 +24,8 @@ class SurveysTexts {
   static const loadError = 'Impossible de charger les sondages.';
   static const genericError = 'Une erreur est survenue avec les sondages.';
 
-  static const searchAddress = 'Filtrer par adresse exacte';
-  static const searchAddressHint = 'Ex: 12 Rue de la Paix, Novaville';
+  static const searchAddress = 'Filtrer par quartier';
+  static const searchAddressHint = 'Nom du quartier';
   static const applyFilters = 'Filtrer';
   static const clearFilters = 'Réinitialiser les filtres';
   static const advancedFilters = 'Filtres avancés';
@@ -43,8 +43,10 @@ class SurveysTexts {
   static const questionHint =
       'Ex: Souhaitez-vous plus de bancs dans ce quartier ?';
 
-  static const addressLabel = 'Adresse exacte';
-  static const addressRequired = "L'adresse est obligatoire.";
+  static const neighborhoodLabel = 'Quartier';
+  static const neighborhoodRequired = 'Le quartier est obligatoire.';
+  static const allNeighborhoods = 'Tous les quartiers';
+  static const neighborhoodsLoadError = 'Impossible de charger les quartiers.';
 
   static const targetLabel = 'Type de citoyen cible';
   static const targetAll = 'Tous les citoyens';
@@ -54,12 +56,17 @@ class SurveysTexts {
   static const optionRequired = 'La réponse ne peut pas être vide.';
   static const minOptions = 'Ajoutez au moins 2 réponses.';
   static const addOption = 'Ajouter une réponse';
+  static const multipleAnswersLabel = 'Autoriser plusieurs réponses';
+  static const multipleAnswersHint =
+      'Les participants pourront choisir plusieurs réponses.';
 
   static const descriptionLabel = 'Description';
+  static const seeMore = 'Voir plus';
 
   /// Validation message for the survey description field.
   static const descriptionRequired = 'La description est obligatoire.';
   static const vote = 'Voter';
+  static const multipleAnswersBadge = 'Plusieurs réponses possibles';
   static const totalVotes = 'votes';
   static const targetedAudience = 'Cible';
   static const createdBy = 'Créé par';

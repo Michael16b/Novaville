@@ -93,6 +93,7 @@ class ReportCreateRequested extends ReportsEvent {
     required this.description,
     required this.address,
     this.neighborhood,
+    this.photos = const [],
   });
 
   /// Title of the report.
@@ -110,6 +111,9 @@ class ReportCreateRequested extends ReportsEvent {
   /// Neighborhood ID.
   final int? neighborhood;
 
+  /// Photos selected for upload.
+  final List<ReportPhotoAttachment> photos;
+
   @override
   List<Object?> get props => [
     title,
@@ -117,6 +121,7 @@ class ReportCreateRequested extends ReportsEvent {
     description,
     address,
     neighborhood,
+    photos,
   ];
 }
 
@@ -160,6 +165,8 @@ class ReportUpdateRequested extends ReportsEvent {
     this.address,
     this.neighborhood,
     this.problemType,
+    this.photos = const [],
+    this.deletedPhotoIds = const [],
   });
 
   /// ID of the report to update.
@@ -180,6 +187,12 @@ class ReportUpdateRequested extends ReportsEvent {
   /// Updated problem type.
   final String? problemType;
 
+  /// New photos selected for upload.
+  final List<ReportPhotoAttachment> photos;
+
+  /// Existing photo IDs to remove.
+  final List<int> deletedPhotoIds;
+
   @override
   List<Object?> get props => [
     reportId,
@@ -188,6 +201,8 @@ class ReportUpdateRequested extends ReportsEvent {
     address,
     neighborhood,
     problemType,
+    photos,
+    deletedPhotoIds,
   ];
 }
 

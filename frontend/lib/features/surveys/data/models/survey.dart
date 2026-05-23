@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 
@@ -46,10 +47,15 @@ class Survey extends Equatable {
     required this.createdAt,
     required this.totalVotes,
     required this.options,
+    required this.multipleAnswers,
+    this.neighborhoodId,
+    this.neighborhood,
     this.citizenTarget,
     this.createdBy,
     this.currentUserVoteId,
     this.currentUserVoteOptionId,
+    this.currentUserVoteIds = const <int>[],
+    this.currentUserVoteOptionIds = const <int>[],
   });
 
   /// Creates a [Survey] from JSON.
@@ -59,10 +65,17 @@ class Survey extends Equatable {
       title: (json['title'] as String?) ?? '',
       description: (json['description'] as String?) ?? '',
       address: (json['address'] as String?) ?? '',
+      neighborhoodId: json['neighborhood'] as int?,
+      neighborhood: json['neighborhood_detail'] is Map<String, dynamic>
+          ? Neighborhood.fromJson(
+              json['neighborhood_detail'] as Map<String, dynamic>,
+            )
+          : null,
       startDate: DateTime.parse(json['start_date'] as String),
       endDate: DateTime.parse(json['end_date'] as String),
       createdAt: DateTime.parse(json['created_at'] as String),
       citizenTarget: _roleFromJson(json['citizen_target'] as String?),
+      multipleAnswers: (json['multiple_answers'] as bool?) ?? false,
       createdBy: json['created_by'] is Map<String, dynamic>
           ? User.fromJson(json['created_by'] as Map<String, dynamic>)
           : null,
@@ -72,6 +85,15 @@ class Survey extends Equatable {
           .toList(),
       currentUserVoteId: json['current_user_vote_id'] as int?,
       currentUserVoteOptionId: json['current_user_vote_option_id'] as int?,
+      currentUserVoteIds:
+          (json['current_user_vote_ids'] as List<dynamic>? ?? const <dynamic>[])
+              .whereType<int>()
+              .toList(),
+      currentUserVoteOptionIds:
+          (json['current_user_vote_option_ids'] as List<dynamic>? ??
+                  const <dynamic>[])
+              .whereType<int>()
+              .toList(),
     );
   }
 
@@ -87,6 +109,12 @@ class Survey extends Equatable {
   /// Exact target address.
   final String address;
 
+  /// Target neighborhood id. Null means all neighborhoods.
+  final int? neighborhoodId;
+
+  /// Target neighborhood detail when provided by the API.
+  final Neighborhood? neighborhood;
+
   /// Start date.
   final DateTime startDate;
 
@@ -98,6 +126,9 @@ class Survey extends Equatable {
 
   /// Optional target audience role.
   final UserRole? citizenTarget;
+
+  /// Whether users can select several options.
+  final bool multipleAnswers;
 
   /// Survey author.
   final User? createdBy;
@@ -114,22 +145,33 @@ class Survey extends Equatable {
   /// Current user selected option id.
   final int? currentUserVoteOptionId;
 
+  /// Current user vote identifiers.
+  final List<int> currentUserVoteIds;
+
+  /// Current user selected option ids.
+  final List<int> currentUserVoteOptionIds;
+
   @override
   List<Object?> get props => [
-        id,
-        title,
-        description,
-        address,
-        startDate,
-        endDate,
-        createdAt,
-        citizenTarget,
-        createdBy,
-        totalVotes,
-        options,
-        currentUserVoteId,
-        currentUserVoteOptionId,
-      ];
+    id,
+    title,
+    description,
+    address,
+    neighborhoodId,
+    neighborhood,
+    startDate,
+    endDate,
+    createdAt,
+    citizenTarget,
+    multipleAnswers,
+    createdBy,
+    totalVotes,
+    options,
+    currentUserVoteId,
+    currentUserVoteOptionId,
+    currentUserVoteIds,
+    currentUserVoteOptionIds,
+  ];
 
   static UserRole? _roleFromJson(String? value) {
     if (value == null || value.isEmpty) return null;
@@ -140,4 +182,3 @@ class Survey extends Equatable {
     }
   }
 }
-

@@ -16,10 +16,10 @@ class Report extends Equatable {
     required this.createdAt,
     required this.status,
     required this.user,
+    this.photos = const [],
     this.neighborhoodId,
     this.neighborhoodDetail,
   });
-
 
   /// Creates a [Report] from a JSON map.
   factory Report.fromJson(Map<String, dynamic> json) {
@@ -32,6 +32,9 @@ class Report extends Equatable {
       createdAt: DateTime.parse(json['created_at'] as String),
       status: ReportStatus.fromString(json['status'] as String),
       user: User.fromJson(json['user'] as Map<String, dynamic>),
+      photos: ((json['photos'] as List<dynamic>?) ?? [])
+          .map((p) => ReportPhoto.fromJson(p as Map<String, dynamic>))
+          .toList(),
       neighborhoodId: json['neighborhood'] as int?,
       neighborhoodDetail: json['neighborhood_detail'] != null
           ? Neighborhood.fromJson(
@@ -65,12 +68,14 @@ class Report extends Equatable {
   /// User who created the report.
   final User user;
 
+  /// Photos attached to the report.
+  final List<ReportPhoto> photos;
+
   /// Neighborhood ID.
   final int? neighborhoodId;
 
   /// Neighborhood details.
   final Neighborhood? neighborhoodDetail;
-
 
   /// Converts this [Report] to a JSON map.
   Map<String, dynamic> toJson() {
@@ -82,6 +87,7 @@ class Report extends Equatable {
       'address': address,
       'created_at': createdAt.toIso8601String(),
       'status': status.toJson(),
+      'photos': photos.map((photo) => photo.toJson()).toList(),
       if (neighborhoodId != null) 'neighborhood': neighborhoodId,
     };
   }
@@ -96,6 +102,7 @@ class Report extends Equatable {
     DateTime? createdAt,
     ReportStatus? status,
     User? user,
+    List<ReportPhoto>? photos,
     int? neighborhoodId,
     Neighborhood? neighborhoodDetail,
   }) {
@@ -108,6 +115,7 @@ class Report extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       status: status ?? this.status,
       user: user ?? this.user,
+      photos: photos ?? this.photos,
       neighborhoodId: neighborhoodId ?? this.neighborhoodId,
       neighborhoodDetail: neighborhoodDetail ?? this.neighborhoodDetail,
     );
@@ -115,15 +123,56 @@ class Report extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        problemType,
-        description,
-        address,
-        createdAt,
-        status,
-        user,
-        neighborhoodId,
-        neighborhoodDetail,
-      ];
+    id,
+    title,
+    problemType,
+    description,
+    address,
+    createdAt,
+    status,
+    user,
+    photos,
+    neighborhoodId,
+    neighborhoodDetail,
+  ];
+}
+
+/// Photo attached to a citizen report.
+class ReportPhoto extends Equatable {
+  /// Creates a [ReportPhoto].
+  const ReportPhoto({
+    required this.id,
+    required this.imageUrl,
+    required this.uploadedAt,
+  });
+
+  /// Creates a [ReportPhoto] from JSON.
+  factory ReportPhoto.fromJson(Map<String, dynamic> json) {
+    return ReportPhoto(
+      id: json['id'] as int,
+      imageUrl: (json['image_url'] as String?) ?? '',
+      uploadedAt: DateTime.parse(json['uploaded_at'] as String),
+    );
+  }
+
+  /// Unique identifier.
+  final int id;
+
+  /// Public URL of the photo.
+  final String imageUrl;
+
+  /// Upload date.
+  final DateTime uploadedAt;
+
+  /// Converts this [ReportPhoto] to JSON.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'image_url': imageUrl,
+      'uploaded_at': uploadedAt.toIso8601String(),
+    };
+  }
+
+  @override
+  List<Object?> get props => [id, imageUrl, uploadedAt];
 }

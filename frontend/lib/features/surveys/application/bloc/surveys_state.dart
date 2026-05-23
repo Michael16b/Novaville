@@ -58,17 +58,17 @@ class SurveysState extends Equatable {
 
   /// Initial state.
   const SurveysState.initial()
-      : status = SurveysStatus.initial,
-        surveys = const <Survey>[],
-        error = null,
-        count = 0,
-        page = 1,
-        next = null,
-        previous = null,
-        pageSize = 20,
-        exactAddress = '',
-        citizenTarget = null,
-        ordering = '-created_at';
+    : status = SurveysStatus.initial,
+      surveys = const <Survey>[],
+      error = null,
+      count = 0,
+      page = 1,
+      next = null,
+      previous = null,
+      pageSize = 20,
+      exactAddress = '',
+      citizenTarget = null,
+      ordering = '-created_at';
 
   /// Current page status.
   final SurveysStatus status;
@@ -128,24 +128,25 @@ class SurveysState extends Equatable {
       previous: previous ?? this.previous,
       pageSize: pageSize ?? this.pageSize,
       exactAddress: exactAddress ?? this.exactAddress,
-      citizenTarget: clearCitizenTarget ? null : (citizenTarget ?? this.citizenTarget),
+      citizenTarget: clearCitizenTarget
+          ? null
+          : (citizenTarget ?? this.citizenTarget),
       ordering: ordering ?? this.ordering,
     );
   }
 
   @override
   List<Object?> get props => [
-        status,
-        surveys,
-        error,
-        count,
-        page,
-        next,
-        previous,
-        pageSize,
-        exactAddress,
-        citizenTarget,
-        ordering,
-      ];
+    status,
+    surveys,
+    error,
+    count,
+    page,
+    next,
+    previous,
+    pageSize,
+    exactAddress,
+    citizenTarget,
+    ordering,
+  ];
 }
-

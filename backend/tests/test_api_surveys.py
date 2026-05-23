@@ -192,11 +192,29 @@ class TestSurveysAPI:
         assert response.data["title"] == "New Survey"
         assert response.data["address"] == "12 Rue de la Paix, Novaville"
         assert response.data["citizen_target"] is None
+        assert response.data["multiple_answers"] is False
 
         # Get the survey to check options
         survey_id = response.data["id"]
         survey_response = elected_client.get(f"/api/v1/surveys/{survey_id}/")
         assert len(survey_response.data["options"]) == 3
+
+    def test_create_survey_with_multiple_answers(self, elected_client):
+        """Test elected official can create survey allowing multiple answers."""
+        data = {
+            "title": "Multiple answers survey",
+            "description": "Survey description",
+            "address": "12 Rue de la Paix, Novaville",
+            "start_date": timezone.now().isoformat(),
+            "end_date": (timezone.now() + timedelta(days=7)).isoformat(),
+            "multiple_answers": True,
+            "options": ["Option A", "Option B", "Option C"],
+        }
+
+        response = elected_client.post("/api/v1/surveys/", data, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["multiple_answers"] is True
     
     def test_create_survey_without_options(self, elected_client):
         """Test creating a survey with no options returns validation error"""
@@ -552,6 +570,50 @@ class TestVotesAPI:
         from core.db.models import Vote
         votes = Vote.objects.filter(survey=survey_with_options, user_id=response2.data["user"])
         assert votes.count() == 1
+
+    def test_multiple_answer_survey_accepts_several_votes(
+        self, authenticated_client, survey_with_options
+    ):
+        """Test users can select several options when the survey allows it."""
+        survey_with_options.multiple_answers = True
+        survey_with_options.save(update_fields=["multiple_answers"])
+        option1 = survey_with_options.options.first()
+        option2 = survey_with_options.options.last()
+
+        response = authenticated_client.post(
+            "/api/v1/votes/",
+            {"survey": survey_with_options.id, "options": [option1.id, option2.id]},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 2
+
+        from core.db.models import Vote
+        votes = Vote.objects.filter(survey=survey_with_options)
+        assert votes.count() == 2
+
+        survey_response = authenticated_client.get(
+            f"/api/v1/surveys/{survey_with_options.id}/"
+        )
+        assert sorted(survey_response.data["current_user_vote_option_ids"]) == sorted(
+            [option1.id, option2.id]
+        )
+
+    def test_single_answer_survey_rejects_several_options(
+        self, authenticated_client, survey_with_options
+    ):
+        """Test regular surveys still accept only one selected option."""
+        option1 = survey_with_options.options.first()
+        option2 = survey_with_options.options.last()
+
+        response = authenticated_client.post(
+            "/api/v1/votes/",
+            {"survey": survey_with_options.id, "options": [option1.id, option2.id]},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_vote_option_mismatch(self, authenticated_client, survey_with_options, elected_user):
         """Test voting with option from different survey"""

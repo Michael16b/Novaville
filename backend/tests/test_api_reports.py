@@ -1,8 +1,9 @@
 """Tests for Reports API endpoints"""
 import datetime
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
-from core.db.models import Report, ProblemTypeEnum, ReportStatusEnum
+from core.db.models import Report, ReportPhoto, ProblemTypeEnum, ReportStatusEnum
 
 pytestmark = pytest.mark.django_db
 
@@ -62,6 +63,102 @@ class TestReportsAPI:
         assert response.data["problem_type"] == "CLEANLINESS"
         assert response.data["address"] == "15 avenue Victor Hugo"
 
+    def test_create_report_with_photos(self, authenticated_client, neighborhood):
+        """Test creating a report with attached photos."""
+        photo = SimpleUploadedFile(
+            "issue.jpg",
+            b"fake-image-bytes",
+            content_type="image/jpeg",
+        )
+        data = {
+            "title": "Street cleanliness issue",
+            "problem_type": "CLEANLINESS",
+            "description": "Trash on the street",
+            "address": "15 avenue Victor Hugo",
+            "neighborhood": neighborhood.id,
+            "photos": [photo],
+        }
+
+        response = authenticated_client.post(
+            "/api/v1/reports/",
+            data,
+            format="multipart",
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert len(response.data["photos"]) == 1
+        assert response.data["photos"][0]["image_url"].endswith("/image/")
+
+        saved_photo = ReportPhoto.objects.get(report_id=response.data["id"])
+        assert bytes(saved_photo.image_data) == b"fake-image-bytes"
+        assert saved_photo.filename == "issue.jpg"
+        assert saved_photo.content_type == "image/jpeg"
+
+        image_response = authenticated_client.get(
+            response.data["photos"][0]["image_url"],
+        )
+        assert image_response.status_code == status.HTTP_200_OK
+        assert image_response.content == b"fake-image-bytes"
+        assert image_response["Content-Type"] == "image/jpeg"
+
+    def test_retrieve_report_includes_photos(
+        self,
+        authenticated_client,
+        report,
+    ):
+        """Test retrieving a report includes its attached photos."""
+        ReportPhoto.objects.create(
+            report=report,
+            filename="issue.png",
+            content_type="image/png",
+            image_data=b"fake-image-bytes",
+        )
+
+        response = authenticated_client.get(f"/api/v1/reports/{report.id}/")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["photos"]) == 1
+
+    def test_update_report_can_add_and_delete_photos(
+        self,
+        authenticated_client,
+        report,
+    ):
+        """Test updating a report can remove existing photos and add new ones."""
+        old_photo = ReportPhoto.objects.create(
+            report=report,
+            filename="old.png",
+            content_type="image/png",
+            image_data=b"old-image-bytes",
+        )
+        new_photo = SimpleUploadedFile(
+            "new.jpg",
+            b"new-image-bytes",
+            content_type="image/jpeg",
+        )
+
+        response = authenticated_client.patch(
+            f"/api/v1/reports/{report.id}/",
+            {
+                "title": report.title,
+                "description": "Updated with photo changes",
+                "address": report.address,
+                "problem_type": report.problem_type,
+                "deleted_photo_ids": str(old_photo.id),
+                "photos": [new_photo],
+            },
+            format="multipart",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert not ReportPhoto.objects.filter(id=old_photo.id).exists()
+
+        saved_photo = ReportPhoto.objects.get(report=report)
+        assert saved_photo.filename == "new.jpg"
+        assert saved_photo.content_type == "image/jpeg"
+        assert bytes(saved_photo.image_data) == b"new-image-bytes"
+        assert len(response.data["photos"]) == 1
+
     def test_create_report_with_neighborhood_only(
         self,
         authenticated_client,
@@ -105,7 +202,7 @@ class TestReportsAPI:
             "title": "Street cleanliness issue",
             "problem_type": "CLEANLINESS",
             "description": "Trash on the street",
-            "address": "avenue Victor Hugo",
+            "address": "Victor Hugo",
             "neighborhood": neighborhood.id,
         }
 
