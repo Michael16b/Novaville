@@ -1,3 +1,5 @@
+import re
+
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from core.db.models import Report, ReportPhoto
@@ -22,9 +24,10 @@ class _ReportValidationMixin:
         normalized_value = " ".join(value.strip().split())
         RegexValidator(
             regex=REPORT_ADDRESS_PATTERN,
+            flags=re.IGNORECASE,
             message=(
-                "Enter an exact address like '12 rue de la Paix'. "
-                "A street-type address must start with a number."
+                "Enter an address like '12 rue de la Paix' or "
+                "'rue de la Paix'."
             ),
         )(normalized_value)
         return normalized_value

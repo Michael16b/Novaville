@@ -8,6 +8,7 @@ import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
 import 'package:frontend/features/reports/data/report_repository.dart';
+import 'package:frontend/ui/widgets/interactive_address_map.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
 
 /// Dialog for creating or editing a report.
@@ -197,6 +198,15 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                   return ReportTexts.addressInvalid;
                 }
                 return null;
+              },
+            ),
+            InteractiveAddressMap(
+              height: 180,
+              onAddressSelected: (address) {
+                setState(() {
+                  _addressController.text = address;
+                });
+                _formKey.currentState?.validate();
               },
             ),
             const SizedBox(height: 14),

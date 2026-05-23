@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_home.dart';
 import 'package:frontend/features/home/domain/dashboard_stats.dart';
-import 'package:frontend/ui/assets.dart';
+import 'package:frontend/ui/widgets/interactive_address_map.dart';
 
 // --- WIDGET : RECENT ACTIVITY ---
 class RecentActivityPanel extends StatelessWidget {
@@ -229,17 +229,9 @@ class UsefulInfoPanel extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                height: 160,
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  image: const DecorationImage(
-                    image: AssetImage(AppAssets.map),
-                    fit: BoxFit.cover,
-                  ),
-                ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: InteractiveAddressMap(height: 160),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),

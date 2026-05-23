@@ -150,7 +150,7 @@ class ReportTexts {
 
   /// Address format validation message.
   static const addressInvalid =
-      "Utilisez une adresse comme '12 rue de la Paix'";
+      "Utilisez une adresse comme '12 rue de la Paix' ou 'rue de la Paix'";
 
   /// Status required validation message.
   static const statusRequired = 'Le statut est obligatoire';

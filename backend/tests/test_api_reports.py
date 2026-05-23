@@ -202,7 +202,7 @@ class TestReportsAPI:
             "title": "Street cleanliness issue",
             "problem_type": "CLEANLINESS",
             "description": "Trash on the street",
-            "address": "avenue Victor Hugo",
+            "address": "Victor Hugo",
             "neighborhood": neighborhood.id,
         }
 
