@@ -139,26 +139,6 @@ class _NewsPageState extends State<NewsPage> {
                         );
                       }
 
-                      if (!isStaff) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(flex: 6, child: _buildSocialFeed()),
-                                const SizedBox(width: 16),
-                                Expanded(flex: 4, child: _buildPhotoGallery()),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            _buildQuestionPanel(isStaff: false),
-                            const SizedBox(height: 16),
-                            _buildInboxPanel(isStaff: false),
-                          ],
-                        );
-                      }
-
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
