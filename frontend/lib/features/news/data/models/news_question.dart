@@ -45,6 +45,7 @@ class NewsQuestion extends Equatable {
     required this.status,
     required this.createdAt,
     this.answeredAt,
+    this.citizenSeenAt,
     required this.citizen,
     this.answeredBy,
   });
@@ -56,6 +57,7 @@ class NewsQuestion extends Equatable {
   final String status;
   final DateTime createdAt;
   final DateTime? answeredAt;
+  final DateTime? citizenSeenAt;
   final NewsQuestionAuthor citizen;
   final NewsQuestionAuthor? answeredBy;
 
@@ -70,6 +72,9 @@ class NewsQuestion extends Equatable {
       answeredAt: json['answered_at'] != null
           ? DateTime.parse(json['answered_at'] as String)
           : null,
+      citizenSeenAt: json['citizen_seen_at'] != null
+          ? DateTime.parse(json['citizen_seen_at'] as String)
+          : null,
       citizen: NewsQuestionAuthor.fromJson(
         json['citizen'] as Map<String, dynamic>,
       ),
@@ -83,6 +88,8 @@ class NewsQuestion extends Equatable {
 
   bool get isAnswered => status == 'ANSWERED';
 
+  bool get hasUnreadResponse => isAnswered && citizenSeenAt == null;
+
   @override
   List<Object?> get props => [
     id,
@@ -92,6 +99,7 @@ class NewsQuestion extends Equatable {
     status,
     createdAt,
     answeredAt,
+    citizenSeenAt,
     citizen,
     answeredBy,
   ];

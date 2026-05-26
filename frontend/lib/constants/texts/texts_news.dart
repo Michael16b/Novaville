@@ -34,9 +34,12 @@ class AppTextsNews {
   static const String inboxSubtitleCitizen =
       'Suivi des messages envoyés et des réponses reçues.';
   static const String pendingTab = 'En attente';
+  static const String responsesToReadTab = 'Réponses à consulter';
   static const String historyTab = 'Historique';
   static const String emptyPendingInbox =
       'Aucune demande en attente de réponse pour le moment.';
+  static const String emptyResponsesToReadInbox =
+      'Aucune réponse à consulter pour le moment.';
   static const String emptyHistoryInbox =
       "Aucune demande traitée dans l'historique pour le moment.";
   static const String pageLabel = 'Page';
@@ -50,6 +53,8 @@ class AppTextsNews {
       'Impossible d envoyer votre question';
   static const String replyQuestionError =
       'Impossible d envoyer la reponse mairie';
+  static const String markResponseSeenError =
+      'Impossible de marquer la réponse comme consultée';
 
   static const String replyDialogTitlePrefix = 'Répondre à';
   static const String replyLabel = 'Réponse mairie';
@@ -59,6 +64,9 @@ class AppTextsNews {
   static const String replySentSuccess =
       'La réponse a bien été envoyée au citoyen.';
   static const String replyButton = 'Répondre au citoyen';
+  static const String consultResponseButton = 'Consulter la réponse';
+  static const String responseSeenButton = "J'ai consulté";
+  static const String responseSeenSuccess = 'Réponse consultée.';
 
   static const String answered = 'Répondu';
   static const String pending = 'En attente';

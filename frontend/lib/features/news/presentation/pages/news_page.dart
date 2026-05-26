@@ -41,6 +41,7 @@ class _NewsPageState extends State<NewsPage> {
   int? _pendingPage = 1;
   int? _historyPage = 1;
   int? _citizenPendingPage = 1;
+  int? _citizenResponsesPage = 1;
   int? _citizenHistoryPage = 1;
 
   final List<_SocialPost> _posts = const [
@@ -334,13 +335,20 @@ class _NewsPageState extends State<NewsPage> {
     final pendingQuestions = questions
         .where((question) => !question.isAnswered)
         .toList();
+    final responsesToReadQuestions = questions
+        .where((question) => question.hasUnreadResponse)
+        .toList();
     final historyQuestions = questions
-        .where((question) => question.isAnswered)
+        .where((question) => question.isAnswered && !question.hasUnreadResponse)
         .toList();
 
     _citizenPendingPage = _normalizedPage(
       _citizenPendingPage ?? 1,
       pendingQuestions.length,
+    );
+    _citizenResponsesPage = _normalizedPage(
+      _citizenResponsesPage ?? 1,
+      responsesToReadQuestions.length,
     );
     _citizenHistoryPage = _normalizedPage(
       _citizenHistoryPage ?? 1,
@@ -348,10 +356,17 @@ class _NewsPageState extends State<NewsPage> {
     );
 
     final isPendingTab = selectedTab == _CitizenInboxTab.pending;
-    final visibleQuestions = isPendingTab ? pendingQuestions : historyQuestions;
-    final currentPage = isPendingTab
-        ? (_citizenPendingPage ?? 1)
-        : (_citizenHistoryPage ?? 1);
+    final isResponsesTab = selectedTab == _CitizenInboxTab.responsesToRead;
+    final visibleQuestions = switch (selectedTab) {
+      _CitizenInboxTab.pending => pendingQuestions,
+      _CitizenInboxTab.responsesToRead => responsesToReadQuestions,
+      _CitizenInboxTab.history => historyQuestions,
+    };
+    final currentPage = switch (selectedTab) {
+      _CitizenInboxTab.pending => _citizenPendingPage ?? 1,
+      _CitizenInboxTab.responsesToRead => _citizenResponsesPage ?? 1,
+      _CitizenInboxTab.history => _citizenHistoryPage ?? 1,
+    };
     final totalPages = _pageCountFor(visibleQuestions.length);
     final paginatedQuestions = _pageItems(visibleQuestions, currentPage);
 
@@ -372,8 +387,18 @@ class _NewsPageState extends State<NewsPage> {
               },
             ),
             _buildStaffTabButton(
+              label:
+                  '${AppTextsNews.responsesToReadTab} (${responsesToReadQuestions.length})',
+              isSelected: isResponsesTab,
+              onTap: () {
+                setState(() {
+                  _selectedCitizenTab = _CitizenInboxTab.responsesToRead;
+                });
+              },
+            ),
+            _buildStaffTabButton(
               label: '${AppTextsNews.historyTab} (${historyQuestions.length})',
-              isSelected: !isPendingTab,
+              isSelected: selectedTab == _CitizenInboxTab.history,
               onTap: () {
                 setState(() {
                   _selectedCitizenTab = _CitizenInboxTab.history;
@@ -384,11 +409,7 @@ class _NewsPageState extends State<NewsPage> {
         ),
         const SizedBox(height: 16),
         if (paginatedQuestions.isEmpty)
-          _buildEmptyInboxMessage(
-            isPendingTab
-                ? AppTextsNews.emptyPendingInbox
-                : AppTextsNews.emptyHistoryInbox,
-          )
+          _buildEmptyInboxMessage(_citizenEmptyMessage(selectedTab))
         else ...[
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -396,7 +417,13 @@ class _NewsPageState extends State<NewsPage> {
                 .map(
                   (question) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: _QuestionCard(question: question, isStaff: false),
+                    child: _QuestionCard(
+                      question: question,
+                      isStaff: false,
+                      onConsultResponse: question.hasUnreadResponse
+                          ? () => _consultCitizenResponse(question)
+                          : null,
+                    ),
                   ),
                 )
                 .toList(),
@@ -408,6 +435,8 @@ class _NewsPageState extends State<NewsPage> {
                 ? () => setState(() {
                     if (isPendingTab) {
                       _citizenPendingPage = (_citizenPendingPage ?? 1) - 1;
+                    } else if (isResponsesTab) {
+                      _citizenResponsesPage = (_citizenResponsesPage ?? 1) - 1;
                     } else {
                       _citizenHistoryPage = (_citizenHistoryPage ?? 1) - 1;
                     }
@@ -417,6 +446,8 @@ class _NewsPageState extends State<NewsPage> {
                 ? () => setState(() {
                     if (isPendingTab) {
                       _citizenPendingPage = (_citizenPendingPage ?? 1) + 1;
+                    } else if (isResponsesTab) {
+                      _citizenResponsesPage = (_citizenResponsesPage ?? 1) + 1;
                     } else {
                       _citizenHistoryPage = (_citizenHistoryPage ?? 1) + 1;
                     }
@@ -426,6 +457,15 @@ class _NewsPageState extends State<NewsPage> {
         ],
       ],
     );
+  }
+
+  String _citizenEmptyMessage(_CitizenInboxTab tab) {
+    return switch (tab) {
+      _CitizenInboxTab.pending => AppTextsNews.emptyPendingInbox,
+      _CitizenInboxTab.responsesToRead =>
+        AppTextsNews.emptyResponsesToReadInbox,
+      _CitizenInboxTab.history => AppTextsNews.emptyHistoryInbox,
+    };
   }
 
   Widget _buildStaffInboxContent(List<NewsQuestion> questions) {
@@ -664,9 +704,59 @@ class _NewsPageState extends State<NewsPage> {
       _pendingPage = 1;
       _historyPage = 1;
       _citizenPendingPage = 1;
+      _citizenResponsesPage = 1;
       _citizenHistoryPage = 1;
     });
     await future;
+  }
+
+  Future<void> _consultCitizenResponse(NewsQuestion question) async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(question.subject),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  AppTextsNews.cityHallReply,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(question.response, style: const TextStyle(height: 1.45)),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text(AppTextsNews.responseSeenButton),
+          ),
+        ],
+      ),
+    );
+
+    try {
+      await _newsRepository.markResponseSeen(questionId: question.id);
+      await _refreshQuestions();
+      if (!mounted) return;
+      setState(() {
+        _selectedCitizenTab = _CitizenInboxTab.history;
+      });
+      CustomSnackBar.showSuccess(context, AppTextsNews.responseSeenSuccess);
+    } catch (error) {
+      if (!mounted) return;
+      CustomSnackBar.showError(context, error.toString());
+    }
   }
 
   Future<void> _openReplyDialog(NewsQuestion question) async {
@@ -754,7 +844,7 @@ class _NewsPageState extends State<NewsPage> {
 
 enum _StaffInboxTab { pending, history }
 
-enum _CitizenInboxTab { pending, history }
+enum _CitizenInboxTab { pending, responsesToRead, history }
 
 class _SectionCard extends StatelessWidget {
   const _SectionCard({
@@ -981,11 +1071,13 @@ class _QuestionCard extends StatelessWidget {
     required this.question,
     required this.isStaff,
     this.onReply,
+    this.onConsultResponse,
   });
 
   final NewsQuestion question;
   final bool isStaff;
   final VoidCallback? onReply;
+  final VoidCallback? onConsultResponse;
 
   @override
   Widget build(BuildContext context) {
@@ -1064,6 +1156,17 @@ class _QuestionCard extends StatelessWidget {
                 ],
               ),
             ),
+            if (!isStaff && onConsultResponse != null) ...[
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
+                  onPressed: onConsultResponse,
+                  icon: const Icon(Icons.mark_chat_read_outlined),
+                  label: const Text(AppTextsNews.consultResponseButton),
+                ),
+              ),
+            ],
           ] else if (isStaff && onReply != null) ...[
             const SizedBox(height: 14),
             Align(
