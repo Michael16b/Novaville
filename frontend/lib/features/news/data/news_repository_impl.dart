@@ -74,4 +74,22 @@ class NewsRepositoryImpl implements NewsRepository {
       jsonDecode(httpResponse.body) as Map<String, dynamic>,
     );
   }
+
+  @override
+  Future<NewsQuestion> markResponseSeen({required int questionId}) async {
+    final response = await _apiClient.post(
+      '/api/v1/news-questions/$questionId/mark_seen/',
+      body: const {},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        '${AppTextsNews.markResponseSeenError}: ${response.statusCode}',
+      );
+    }
+
+    return NewsQuestion.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
 }

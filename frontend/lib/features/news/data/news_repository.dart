@@ -14,4 +14,6 @@ abstract class NewsRepository {
     required int questionId,
     required String response,
   });
+
+  Future<NewsQuestion> markResponseSeen({required int questionId});
 }

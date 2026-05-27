@@ -1,3 +1,4 @@
+from django.utils import timezone
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -99,6 +100,33 @@ class NewsQuestionViewSet(viewsets.ModelViewSet):
 
         question.hidden_by_staff = True
         question.save(update_fields=["hidden_by_staff"])
+        return Response(NewsQuestionSerializer(question).data)
+
+    @extend_schema(
+        summary="Mark a municipal response as read",
+        description="The citizen marks an answered discussion as consulted.",
+        tags=["News"],
+        responses={200: NewsQuestionSerializer},
+    )
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    def mark_seen(self, request, pk=None):
+        question = self.get_object()
+        if question.citizen_id != request.user.id or (
+            getattr(request.user, "is_staff_member", False) or request.user.is_staff
+        ):
+            return Response(
+                {"error": "Only the citizen who asked the question can mark it as read."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if question.status != NewsQuestionStatus.ANSWERED:
+            return Response(
+                {"error": "Only answered discussions can be marked as read."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if question.citizen_seen_at is None:
+            question.citizen_seen_at = timezone.now()
+            question.save(update_fields=["citizen_seen_at"])
         return Response(NewsQuestionSerializer(question).data)
 
     def destroy(self, request, *args, **kwargs):

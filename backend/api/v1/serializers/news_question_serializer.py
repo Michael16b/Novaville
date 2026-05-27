@@ -21,10 +21,19 @@ class NewsQuestionSerializer(serializers.ModelSerializer):
             "status",
             "created_at",
             "answered_at",
+            "citizen_seen_at",
             "citizen",
             "answered_by",
         ]
-        read_only_fields = ["id", "status", "created_at", "answered_at", "citizen", "answered_by"]
+        read_only_fields = [
+            "id",
+            "status",
+            "created_at",
+            "answered_at",
+            "citizen_seen_at",
+            "citizen",
+            "answered_by",
+        ]
 
 
 class NewsQuestionCreateSerializer(serializers.ModelSerializer):
@@ -47,8 +56,15 @@ class NewsQuestionReplySerializer(serializers.Serializer):
         question.response = self.validated_data["response"].strip()
         question.status = NewsQuestionStatus.ANSWERED
         question.answered_at = timezone.now()
+        question.citizen_seen_at = None
         question.answered_by = request.user
         question.save(
-            update_fields=["response", "status", "answered_at", "answered_by"]
+            update_fields=[
+                "response",
+                "status",
+                "answered_at",
+                "citizen_seen_at",
+                "answered_by",
+            ]
         )
         return question
