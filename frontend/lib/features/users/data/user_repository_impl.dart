@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/constants/texts/texts_my_account.dart';
+import 'package:frontend/constants/texts/texts_password_validation.dart';
 import 'package:frontend/constants/texts/texts_user_repository_errors.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
@@ -30,6 +31,13 @@ class UserRepositoryImpl implements IUserRepository {
         final detail = decoded['detail'];
         if (detail is String && detail.isNotEmpty) {
           return _localizeErrorMessage(detail);
+        }
+
+        final details = decoded['details'];
+        if (details is List && details.isNotEmpty) {
+          return details
+              .map((error) => _localizeErrorMessage(error.toString()))
+              .join('\n');
         }
 
         for (final value in decoded.values) {
@@ -62,7 +70,7 @@ class UserRepositoryImpl implements IUserRepository {
       return AppTextsAuth.accountDisabled;
     }
 
-    return message;
+    return AppTextsPasswordValidation.localize(message);
   }
 
   @override
@@ -180,17 +188,53 @@ class UserRepositoryImpl implements IUserRepository {
     if (response.statusCode == 400 || response.statusCode == 403) {
       final errorBody = jsonDecode(response.body) as Map<String, dynamic>;
 
+      final details = errorBody['details'];
+      if (details is List && details.isNotEmpty) {
+        throw Exception(
+          details
+              .map(
+                (error) =>
+                    AppTextsPasswordValidation.localize(error.toString()),
+              )
+              .join('\n'),
+        );
+      }
+
       if (errorBody.containsKey('code')) {
-        throw Exception(errorBody['code']);
+        throw Exception(
+          AppTextsPasswordValidation.localize(errorBody['code'].toString()),
+        );
       }
-      if (errorBody.containsKey('current_password')) {
-        throw Exception(errorBody['current_password'][0]);
+      final currentPasswordErrors = errorBody['current_password'];
+      if (currentPasswordErrors is List && currentPasswordErrors.isNotEmpty) {
+        throw Exception(
+          AppTextsPasswordValidation.localize(
+            currentPasswordErrors.first.toString(),
+          ),
+        );
       }
-      if (errorBody.containsKey('new_password')) {
-        throw Exception(errorBody['new_password'][0]);
+      if (currentPasswordErrors is String && currentPasswordErrors.isNotEmpty) {
+        throw Exception(
+          AppTextsPasswordValidation.localize(currentPasswordErrors),
+        );
       }
+
+      final newPasswordErrors = errorBody['new_password'];
+      if (newPasswordErrors is List && newPasswordErrors.isNotEmpty) {
+        throw Exception(
+          AppTextsPasswordValidation.localize(
+            newPasswordErrors.first.toString(),
+          ),
+        );
+      }
+      if (newPasswordErrors is String && newPasswordErrors.isNotEmpty) {
+        throw Exception(AppTextsPasswordValidation.localize(newPasswordErrors));
+      }
+
       if (errorBody.containsKey('detail')) {
-        throw Exception(errorBody['detail']);
+        throw Exception(
+          AppTextsPasswordValidation.localize(errorBody['detail'].toString()),
+        );
       }
 
       throw Exception(AppTextsProfile.updatePasswordError);

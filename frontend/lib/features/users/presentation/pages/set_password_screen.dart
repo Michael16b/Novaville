@@ -1,10 +1,12 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
+import 'package:frontend/constants/texts/texts_password_validation.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:go_router/go_router.dart';
-import 'package:frontend/constants/texts/texts_auth.dart';
+import 'package:http/http.dart' as http;
 
 class SetPasswordScreen extends StatefulWidget {
   final String username;
@@ -101,27 +103,10 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
 
       if (updateResponse.statusCode != 200 &&
           updateResponse.statusCode != 204) {
-        String errorMessage = AppTextsAuth.passwordChangeError(
-          updateResponse.statusCode,
+        final errorMessage = AppTextsPasswordValidation.fromResponseBody(
+          updateResponse.body,
+          AppTextsAuth.passwordChangeError(updateResponse.statusCode),
         );
-        try {
-          final errorData = jsonDecode(updateResponse.body);
-          if (errorData is Map) {
-            if (errorData.containsKey('password')) {
-              final pwdErrors = errorData['password'];
-              if (pwdErrors is List && pwdErrors.isNotEmpty) {
-                errorMessage = pwdErrors.first.toString();
-              }
-            } else if (errorData.containsKey('detail')) {
-              errorMessage = errorData['detail'].toString();
-            } else if (errorData.isNotEmpty) {
-              final firstError = errorData.values.first;
-              if (firstError is List && firstError.isNotEmpty) {
-                errorMessage = firstError.first.toString();
-              }
-            }
-          }
-        } catch (_) {}
         throw Exception(errorMessage);
       }
 
@@ -135,6 +120,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
         if (errMsg.startsWith('Exception: ')) {
           errMsg = errMsg.substring(11);
         }
+        errMsg = AppTextsPasswordValidation.localize(errMsg);
         CustomSnackBar.showError(context, AppTextsAuth.errorPrefix(errMsg));
       }
     } finally {
