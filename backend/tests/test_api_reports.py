@@ -192,24 +192,24 @@ class TestReportsAPI:
         assert "address" in response.data
         assert "neighborhood" in response.data
 
-    def test_create_report_rejects_malformed_exact_address(
+    def test_create_report_accepts_free_form_exact_address(
         self,
         authenticated_client,
         neighborhood,
     ):
-        """Test malformed exact addresses are still rejected when provided."""
+        """Test exact addresses are accepted without street format rules."""
         data = {
             "title": "Street cleanliness issue",
             "problem_type": "CLEANLINESS",
             "description": "Trash on the street",
-            "address": "Victor Hugo",
+            "address": "8b Grande Avenue de la Villa de la Réunion",
             "neighborhood": neighborhood.id,
         }
 
         response = authenticated_client.post("/api/v1/reports/", data, format="json")
 
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert "address" in response.data
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["address"] == "8b Grande Avenue de la Villa de la Réunion"
     
     def test_retrieve_report(self, authenticated_client, report):
         """Test retrieving a specific report"""

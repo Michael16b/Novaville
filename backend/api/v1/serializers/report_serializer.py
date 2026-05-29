@@ -1,9 +1,5 @@
-import re
-
-from django.core.validators import RegexValidator
 from rest_framework import serializers
 from core.db.models import Report, ReportPhoto
-from api.v1.patterns import REPORT_ADDRESS_PATTERN
 from api.v1.serializers.user_serializer import UserPublicSerializer
 from api.v1.serializers.neighborhood_serializer import NeighborhoodSerializer
 
@@ -18,19 +14,10 @@ class _ReportValidationMixin:
         return value.strip()
 
     def validate_address(self, value):
-        """Normalize exact addresses and reject malformed non-empty values."""
+        """Normalize exact addresses without enforcing a street format."""
         if not value or not value.strip():
             return ""
-        normalized_value = " ".join(value.strip().split())
-        RegexValidator(
-            regex=REPORT_ADDRESS_PATTERN,
-            flags=re.IGNORECASE,
-            message=(
-                "Enter an address like '12 rue de la Paix' or "
-                "'rue de la Paix'."
-            ),
-        )(normalized_value)
-        return normalized_value
+        return " ".join(value.strip().split())
 
     def validate(self, attrs):
         """Require either an exact address or a neighborhood."""

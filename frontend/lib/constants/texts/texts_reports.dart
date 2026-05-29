@@ -148,10 +148,6 @@ class ReportTexts {
   /// Address required validation message.
   static const addressRequired = "L'adresse exacte est obligatoire";
 
-  /// Address format validation message.
-  static const addressInvalid =
-      "Utilisez une adresse comme '12 rue de la Paix' ou 'rue de la Paix'";
-
   /// Status required validation message.
   static const statusRequired = 'Le statut est obligatoire';
 

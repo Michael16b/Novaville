@@ -4,7 +4,6 @@ import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_reports.dart';
 import 'package:frontend/core/api_config.dart';
-import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
 import 'package:frontend/features/reports/data/report_repository.dart';
@@ -193,9 +192,6 @@ class _ReportFormDialogState extends State<ReportFormDialog> {
                 final trimmed = value?.trim() ?? '';
                 if (trimmed.isEmpty) {
                   return ReportTexts.addressRequired;
-                }
-                if (!ValidationPatterns.exactAddress.hasMatch(trimmed)) {
-                  return ReportTexts.addressInvalid;
                 }
                 return null;
               },
