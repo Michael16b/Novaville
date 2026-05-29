@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:frontend/config/app_config.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
@@ -12,20 +13,20 @@ class InteractiveAddressMap extends StatefulWidget {
   /// Creates an interactive map.
   const InteractiveAddressMap({
     this.height = 220,
-    this.initialCenter = _defaultCenter,
+    this.initialCenter,
     this.initialZoom = 13,
     this.markers = const [],
     this.onAddressSelected,
     super.key,
   });
 
-  static const LatLng _defaultCenter = LatLng(48.8566, 2.3522);
+  static const LatLng _parisCenter = LatLng(48.8566, 2.3522);
 
   /// Fixed map height.
   final double height;
 
-  /// Initial map center.
-  final LatLng initialCenter;
+  /// Initial map center. Defaults to the city postal code, then Paris.
+  final LatLng? initialCenter;
 
   /// Initial zoom level.
   final double initialZoom;
@@ -43,9 +44,11 @@ class InteractiveAddressMap extends StatefulWidget {
 class _InteractiveAddressMapState extends State<InteractiveAddressMap> {
   static const double _minZoom = 5;
   static const double _maxZoom = 19;
+  static final Map<String, LatLng?> _postalCodeCenterCache = {};
 
   late final MapController _mapController;
   late double _zoom;
+  LatLng? _resolvedDefaultCenter;
   LatLng? _selectedPoint;
   bool _isResolvingAddress = false;
 
@@ -56,10 +59,24 @@ class _InteractiveAddressMapState extends State<InteractiveAddressMap> {
     super.initState();
     _mapController = MapController();
     _zoom = widget.initialZoom;
+    _loadConfiguredDefaultCenter();
+  }
+
+  @override
+  void didUpdateWidget(covariant InteractiveAddressMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialCenter != oldWidget.initialCenter) {
+      _moveToDefaultCenter();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final mapCenter =
+        widget.initialCenter ??
+        _resolvedDefaultCenter ??
+        InteractiveAddressMap._parisCenter;
+
     return SizedBox(
       height: widget.height,
       width: double.infinity,
@@ -72,7 +89,7 @@ class _InteractiveAddressMapState extends State<InteractiveAddressMap> {
               FlutterMap(
                 mapController: _mapController,
                 options: MapOptions(
-                  initialCenter: widget.initialCenter,
+                  initialCenter: mapCenter,
                   initialZoom: widget.initialZoom,
                   minZoom: _minZoom,
                   maxZoom: _maxZoom,
@@ -154,6 +171,119 @@ class _InteractiveAddressMapState extends State<InteractiveAddressMap> {
     );
   }
 
+  bool get _usesDefaultCenter =>
+      widget.initialCenter == null && widget.markers.isEmpty;
+
+  Future<void> _loadConfiguredDefaultCenter() async {
+    if (!_usesDefaultCenter) return;
+
+    final center = await _fetchCityCenter();
+    if (!mounted || center == null) return;
+
+    _resolvedDefaultCenter = center;
+    _moveToDefaultCenter();
+  }
+
+  void _moveToDefaultCenter() {
+    final center =
+        widget.initialCenter ??
+        _resolvedDefaultCenter ??
+        InteractiveAddressMap._parisCenter;
+    _mapController.move(center, _zoom);
+  }
+
+  Future<LatLng?> _fetchCityCenter() async {
+    try {
+      final usefulInfo = await _fetchUsefulInfo();
+      final postalCode = usefulInfo['postal_code']?.toString().trim() ?? '';
+      if (postalCode.isEmpty) return null;
+
+      final city = usefulInfo['city']?.toString().trim() ?? '';
+      final cacheKey = '$postalCode|$city'.toLowerCase();
+      if (_postalCodeCenterCache.containsKey(cacheKey)) {
+        return _postalCodeCenterCache[cacheKey];
+      }
+
+      final center = await _geocodePostalCode(
+        postalCode: postalCode,
+        city: city,
+      );
+      _postalCodeCenterCache[cacheKey] = center;
+      return center;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> _fetchUsefulInfo() async {
+    final response = await http.get(
+      Uri.parse('${AppConfig.apiBaseUrl}/api/v1/useful-info/'),
+      headers: {'Accept': 'application/json'},
+    );
+    if (response.statusCode != 200) return const {};
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<LatLng?> _geocodePostalCode({
+    required String postalCode,
+    required String city,
+  }) async {
+    final byPostalCode = await _searchPostalCode(postalCode: postalCode);
+    if (byPostalCode != null || city.isEmpty) return byPostalCode;
+
+    return _searchPostalCode(postalCode: postalCode, city: city);
+  }
+
+  Future<LatLng?> _searchPostalCode({
+    required String postalCode,
+    String? city,
+  }) async {
+    final structuredUri = Uri.https('nominatim.openstreetmap.org', '/search', {
+      'format': 'jsonv2',
+      'postalcode': postalCode,
+      if (city != null && city.isNotEmpty) 'city': city,
+      'countrycodes': 'fr',
+      'limit': '1',
+      'accept-language': 'fr',
+    });
+
+    final structuredResult = await _searchPosition(structuredUri);
+    if (structuredResult != null) return structuredResult;
+
+    final queryParts = [
+      postalCode,
+      if (city != null && city.isNotEmpty) city,
+      'France',
+    ];
+    final queryUri = Uri.https('nominatim.openstreetmap.org', '/search', {
+      'format': 'jsonv2',
+      'q': queryParts.join(', '),
+      'countrycodes': 'fr',
+      'limit': '1',
+      'accept-language': 'fr',
+    });
+
+    return _searchPosition(queryUri);
+  }
+
+  Future<LatLng?> _searchPosition(Uri uri) async {
+    final response = await http.get(
+      uri,
+      headers: {'Accept': 'application/json'},
+    );
+    if (response.statusCode != 200) return null;
+
+    final decoded = jsonDecode(response.body) as List<dynamic>;
+    if (decoded.isEmpty) return null;
+
+    final firstResult = decoded.first as Map<String, dynamic>;
+    final latitude = double.tryParse(firstResult['lat']?.toString() ?? '');
+    final longitude = double.tryParse(firstResult['lon']?.toString() ?? '');
+    if (latitude == null || longitude == null) return null;
+
+    return LatLng(latitude, longitude);
+  }
+
   void _handlePointerSignal(PointerSignalEvent event) {
     if (event is! PointerScrollEvent) return;
 
@@ -167,6 +297,7 @@ class _InteractiveAddressMapState extends State<InteractiveAddressMap> {
   }
 
   CameraFit? _initialCameraFit() {
+    if (widget.initialCenter != null) return null;
     if (widget.markers.isEmpty) return null;
     if (widget.markers.length == 1) {
       return CameraFit.coordinates(

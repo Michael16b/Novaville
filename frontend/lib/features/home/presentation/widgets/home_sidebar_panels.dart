@@ -8,6 +8,8 @@ import 'package:frontend/features/home/domain/dashboard_stats.dart';
 import 'package:frontend/features/reports/data/models/problem_type.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
 import 'package:frontend/features/reports/data/report_repository_factory.dart';
+import 'package:frontend/features/useful_info/data/useful_info_repository_factory.dart';
+import 'package:frontend/features/useful_info/domain/useful_info.dart';
 import 'package:frontend/ui/widgets/interactive_address_map.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
 import 'package:go_router/go_router.dart';
@@ -381,25 +383,27 @@ class _RecentReportsMap extends StatefulWidget {
 
 class _RecentReportsMapState extends State<_RecentReportsMap> {
   static final Map<String, LatLng?> _geocodeCache = {};
+  static final Map<String, LatLng?> _postalCodeCenterCache = {};
 
-  late final Future<List<_ReportMapPoint>> _pointsFuture;
+  late final Future<_RecentReportsMapData> _mapDataFuture;
 
   @override
   void initState() {
     super.initState();
-    _pointsFuture = _loadRecentReportPoints();
+    _mapDataFuture = _loadMapData();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<_ReportMapPoint>>(
-      future: _pointsFuture,
+    return FutureBuilder<_RecentReportsMapData>(
+      future: _mapDataFuture,
       builder: (context, snapshot) {
-        final points = snapshot.data ?? const <_ReportMapPoint>[];
+        final data = snapshot.data ?? const _RecentReportsMapData();
 
         return InteractiveAddressMap(
           height: 160,
-          markers: points
+          initialCenter: data.center,
+          markers: data.points
               .map(
                 (point) => InteractiveAddressMapMarker(
                   point: point.position,
@@ -414,7 +418,24 @@ class _RecentReportsMapState extends State<_RecentReportsMap> {
     );
   }
 
-  Future<List<_ReportMapPoint>> _loadRecentReportPoints() async {
+  Future<_RecentReportsMapData> _loadMapData() async {
+    final usefulInfo = await _loadUsefulInfo();
+    final center = await _mapCenterFromUsefulInfo(usefulInfo);
+    final points = await _loadRecentReportPoints(usefulInfo);
+    return _RecentReportsMapData(center: center, points: points);
+  }
+
+  Future<UsefulInfo?> _loadUsefulInfo() async {
+    try {
+      return await createUsefulInfoRepository().getUsefulInfo();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<List<_ReportMapPoint>> _loadRecentReportPoints(
+    UsefulInfo? usefulInfo,
+  ) async {
     final reportsPage = await createReportRepository().listReports(
       ordering: '-created_at',
     );
@@ -425,7 +446,7 @@ class _RecentReportsMapState extends State<_RecentReportsMap> {
     final points = <_ReportMapPoint>[];
 
     for (final report in reports) {
-      final position = await _geocodeAddress(report.address);
+      final position = await _geocodeAddress(report.address, usefulInfo);
       if (position == null) continue;
       points.add(_ReportMapPoint(report: report, position: position));
     }
@@ -433,46 +454,105 @@ class _RecentReportsMapState extends State<_RecentReportsMap> {
     return points;
   }
 
-  Future<LatLng?> _geocodeAddress(String address) async {
-    final normalizedAddress = address.trim();
-    if (normalizedAddress.isEmpty) return null;
-    if (_geocodeCache.containsKey(normalizedAddress)) {
-      return _geocodeCache[normalizedAddress];
+  Future<LatLng?> _mapCenterFromUsefulInfo(UsefulInfo? usefulInfo) async {
+    final postalCode = usefulInfo?.postalCode.trim() ?? '';
+    if (postalCode.isEmpty) return null;
+
+    final city = usefulInfo?.city.trim() ?? '';
+    final cacheKey = '$postalCode|$city'.toLowerCase();
+    if (_postalCodeCenterCache.containsKey(cacheKey)) {
+      return _postalCodeCenterCache[cacheKey];
     }
 
-    final uri = Uri.https('nominatim.openstreetmap.org', '/search', {
+    final center = await _geocodePostalCode(postalCode, city);
+    _postalCodeCenterCache[cacheKey] = center;
+    return center;
+  }
+
+  Future<LatLng?> _geocodePostalCode(String postalCode, String city) async {
+    final byPostalCode = await _searchPostalCode(postalCode);
+    if (byPostalCode != null || city.isEmpty) return byPostalCode;
+    return _searchPostalCode(postalCode, city: city);
+  }
+
+  Future<LatLng?> _searchPostalCode(String postalCode, {String? city}) async {
+    final structuredUri = Uri.https('nominatim.openstreetmap.org', '/search', {
       'format': 'jsonv2',
-      'q': '$normalizedAddress, France',
+      'postalcode': postalCode,
+      if (city != null && city.isNotEmpty) 'city': city,
+      'countrycodes': 'fr',
       'limit': '1',
       'accept-language': 'fr',
     });
 
+    final structuredResult = await _searchPosition(structuredUri);
+    if (structuredResult != null) return structuredResult;
+
+    final queryParts = [
+      postalCode,
+      if (city != null && city.isNotEmpty) city,
+      'France',
+    ];
+    final queryUri = Uri.https('nominatim.openstreetmap.org', '/search', {
+      'format': 'jsonv2',
+      'q': queryParts.join(', '),
+      'countrycodes': 'fr',
+      'limit': '1',
+      'accept-language': 'fr',
+    });
+
+    return _searchPosition(queryUri);
+  }
+
+  Future<LatLng?> _geocodeAddress(
+    String address,
+    UsefulInfo? usefulInfo,
+  ) async {
+    final normalizedAddress = address.trim();
+    if (normalizedAddress.isEmpty) return null;
+    final searchAddress = _addressWithCityContext(
+      normalizedAddress,
+      usefulInfo,
+    );
+    if (_geocodeCache.containsKey(searchAddress)) {
+      return _geocodeCache[searchAddress];
+    }
+
+    final uri = Uri.https('nominatim.openstreetmap.org', '/search', {
+      'format': 'jsonv2',
+      'q': searchAddress,
+      'limit': '1',
+      'accept-language': 'fr',
+    });
+
+    final position = await _searchPosition(uri);
+    _geocodeCache[searchAddress] = position;
+    return position;
+  }
+
+  String _addressWithCityContext(String address, UsefulInfo? usefulInfo) {
+    final postalCode = usefulInfo?.postalCode.trim() ?? '';
+    if (postalCode.isEmpty) return '$address, France';
+
+    return '$address, $postalCode, France';
+  }
+
+  Future<LatLng?> _searchPosition(Uri uri) async {
     final response = await http.get(
       uri,
       headers: {'Accept': 'application/json'},
     );
-    if (response.statusCode != 200) {
-      _geocodeCache[normalizedAddress] = null;
-      return null;
-    }
+    if (response.statusCode != 200) return null;
 
     final decoded = jsonDecode(response.body) as List<dynamic>;
-    if (decoded.isEmpty) {
-      _geocodeCache[normalizedAddress] = null;
-      return null;
-    }
+    if (decoded.isEmpty) return null;
 
     final result = decoded.first as Map<String, dynamic>;
     final latitude = double.tryParse(result['lat']?.toString() ?? '');
     final longitude = double.tryParse(result['lon']?.toString() ?? '');
-    if (latitude == null || longitude == null) {
-      _geocodeCache[normalizedAddress] = null;
-      return null;
-    }
+    if (latitude == null || longitude == null) return null;
 
-    final position = LatLng(latitude, longitude);
-    _geocodeCache[normalizedAddress] = position;
-    return position;
+    return LatLng(latitude, longitude);
   }
 
   void _showReportDetails(BuildContext context, Report report) {
@@ -565,6 +645,16 @@ class _ReportMapPoint {
 
   final Report report;
   final LatLng position;
+}
+
+class _RecentReportsMapData {
+  const _RecentReportsMapData({
+    this.center,
+    this.points = const <_ReportMapPoint>[],
+  });
+
+  final LatLng? center;
+  final List<_ReportMapPoint> points;
 }
 
 class _ReportDetailLine extends StatelessWidget {
