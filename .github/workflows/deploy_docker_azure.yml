@@ -123,11 +123,7 @@ jobs:
 
       - name: Configure Azure App Service settings
         run: |
-          if [[ "${{ secrets.DB_USER }}" == *"@"* ]]; then
-            DB_USER_COMPUTED="${{ secrets.DB_USER }}"
-          else
-            DB_USER_COMPUTED="${{ secrets.DB_USER }}@${{ secrets.AZURE_POSTGRES_SERVER_NAME }}"
-          fi
+          DB_USER_COMPUTED="${{ secrets.DB_USER }}"
           DB_HOST_COMPUTED="${{ secrets.AZURE_POSTGRES_SERVER_NAME }}.postgres.database.azure.com"
           az webapp config appsettings set \
             --name "${{ secrets.AZURE_APP_NAME }}" \
@@ -149,11 +145,7 @@ jobs:
 
       - name: Deploy Docker Compose
         run: |
-          if [[ "${{ secrets.DB_USER }}" == *"@"* ]]; then
-            DB_USER_COMPUTED="${{ secrets.DB_USER }}"
-          else
-            DB_USER_COMPUTED="${{ secrets.DB_USER }}@${{ secrets.AZURE_POSTGRES_SERVER_NAME }}"
-          fi
+          DB_USER_COMPUTED="${{ secrets.DB_USER }}"
           DB_HOST_COMPUTED="${{ secrets.AZURE_POSTGRES_SERVER_NAME }}.postgres.database.azure.com"
           export GITHUB_SHA="${{ github.sha }}"
           export AZURE_ACR_NAME="${{ secrets.AZURE_ACR_NAME }}"
@@ -190,17 +182,10 @@ jobs:
             --query "[?name=='DB_USER'].value | [0]" -o tsv)
 
           EXPECTED_HOST_SUFFIX=".postgres.database.azure.com"
-          EXPECTED_USER_SUFFIX="@${{ secrets.AZURE_POSTGRES_SERVER_NAME }}"
 
           if [[ -z "$DB_HOST_ACTUAL" || "$DB_HOST_ACTUAL" != *"$EXPECTED_HOST_SUFFIX" ]]; then
             echo "ERROR: DB_HOST is not an Azure PostgreSQL host."
             echo "       DB_HOST=$DB_HOST_ACTUAL"
-            exit 1
-          fi
-
-          if [[ -z "$DB_USER_ACTUAL" || "$DB_USER_ACTUAL" != *"$EXPECTED_USER_SUFFIX" ]]; then
-            echo "ERROR: DB_USER is not in the expected Azure format."
-            echo "       DB_USER=$DB_USER_ACTUAL"
             exit 1
           fi
 
