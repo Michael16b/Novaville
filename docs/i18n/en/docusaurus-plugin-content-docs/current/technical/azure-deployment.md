@@ -17,9 +17,27 @@ The CI/CD workflow (`.github/workflows/deploy_docker_azure.yml`):
 
 Deployment triggers **automatically** on every push to `main` once all GitHub Actions secrets are configured.
 
----
 
-## GitHub Actions secrets required
+## What is automated vs manual
+
+**Automated (CI)**
+- build and push images (backend, frontend)
+- configure App Settings
+- deploy App Service via `docker-compose-azure.yml`
+
+**Optional (CI, manual workflows)**
+- workflow "Create Azure Infra (manual)"
+- workflow "Create Azure PostgreSQL (manual)"
+
+**Manual (one-time)**
+- create and update GitHub secrets
+- choose Azure resource names (RG, Postgres server, storage)
+
+**Checklist before redeploy**
+- `AZURE_POSTGRES_SERVER_NAME` set
+- `DB_NAME`, `DB_USER`, `DB_PASSWORD` set
+- deploy workflow rerun after DB creation
+
 
 Secrets must be configured in **Settings > Environments > Azure Cloud** on your GitHub repository.
 
@@ -44,6 +62,26 @@ Secrets must be configured in **Settings > Environments > Azure Cloud** on your 
 | `DB_NAME` | PostgreSQL database name | `novaville_db` |
 | `DB_USER` | PostgreSQL user | `novaville_user` |
 | `DB_PASSWORD` | PostgreSQL password (generate secure) | *(auto-generated)* |
+
+**Azure PostgreSQL note**: `DB_USER` can be provided in short format (`novaville_user`).
+The workflow appends `@server` automatically.
+`DB_HOST` is computed from `AZURE_POSTGRES_SERVER_NAME`.
+
+### Infrastructure secrets (PostgreSQL script)
+
+| Secret | Description | Example |
+|--------|-------------|---------|
+| `AZURE_POSTGRES_SERVER_NAME` | Flexible PostgreSQL server name | `novaville-db` |
+| `AZURE_APP_NAME` | App Service name | `NovavilleApp` |
+| `AZURE_RESOURCE_GROUP` | Target Resource Group | `Novaville` |
+| `AZURE_LOCATION` | Azure region | `francecentral` |
+
+### Infrastructure secrets (Azure infra script)
+
+| Secret | Description | Example |
+|--------|-------------|---------|
+| `AZURE_APP_SERVICE_PLAN_NAME` | App Service plan name | `NovavillePlan` |
+| `AZURE_STORAGE_ACCOUNT_NAME` | Storage account name (unique) | `novavillestorage` |
 
 ### Django secrets
 
@@ -110,26 +148,90 @@ Configure:
 
 **Option A: Azure Database for PostgreSQL (recommended for production)**
 
-```bash
-# Create PostgreSQL server
-az postgres flexible-server create \
-  --name novaville-db \
-  --resource-group Novaville \
-  --admin-user novaville_admin \
-  --admin-password "{SECURE_PASSWORD}" \
-  --database-name novaville_db \
-  --sku-name Standard_B1ms \
-  --tier Burstable \
-  --storage-size 32 \
-  --version 15 \
-  --public-access Enabled
+Use the repo Azure CLI script (no hardcoded values, everything comes from secrets):
 
-# Configure secrets from the output
-# DB_HOST: <server-name>.postgres.database.azure.com
-# DB_USER: novaville_admin@novaville-db
-# DB_NAME: novaville_db
-# DB_PASSWORD: the password set above
+```bash
+bash scripts/create-azure-postgres.sh
 ```
+
+On Windows (PowerShell):
+
+```powershell
+./scripts/create-azure-postgres.ps1
+```
+
+GitHub Actions example (run once):
+
+```yaml
+- name: Create Azure PostgreSQL (once)
+  run: bash scripts/create-azure-postgres.sh
+  env:
+    AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+    AZURE_LOCATION: ${{ secrets.AZURE_LOCATION }}
+    AZURE_APP_NAME: ${{ secrets.AZURE_APP_NAME }}
+    AZURE_POSTGRES_SERVER_NAME: ${{ secrets.AZURE_POSTGRES_SERVER_NAME }}
+    DB_NAME: ${{ secrets.DB_NAME }}
+    DB_USER: ${{ secrets.DB_USER }}
+    DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+```
+
+Required variables (GitHub secrets or local export):
+
+```
+AZURE_RESOURCE_GROUP
+AZURE_LOCATION
+AZURE_APP_NAME
+AZURE_POSTGRES_SERVER_NAME
+DB_NAME
+DB_USER
+DB_PASSWORD
+```
+
+The script:
+- creates the server with the minimum SKU (`Standard_B1ms`)
+- enables public access
+- opens the firewall for App Service outbound IPs
+- prints `DB_HOST` and the expected `DB_USER` format
+
+Clean GitHub Actions run (recommended):
+1) Go to GitHub > Actions > workflow "Create Azure PostgreSQL (manual)".
+2) Click "Run workflow".
+
+After execution, update the `DB_USER` secret if needed (short format is OK).
+`DB_HOST` is computed automatically by the deploy workflow.
+
+Once the Azure database is created, remove the Postgres service from the Azure compose and provide `DB_HOST`.
+
+### 4b. Create Azure infrastructure (optional)
+
+Use the Azure CLI script to create if missing:
+- Resource Group
+- App Service Plan
+- App Service
+- Container Registry (ACR)
+- Storage Account
+
+GitHub Actions run (recommended):
+1) Go to GitHub > Actions > workflow "Create Azure Infra (manual)".
+2) Click "Run workflow".
+
+Local script:
+
+```bash
+bash scripts/create-azure-infra.sh
+```
+
+On Windows (PowerShell):
+
+```powershell
+./scripts/create-azure-infra.ps1
+```
+
+Configure secrets from the output:
+- `DB_HOST`: `<server-name>.postgres.database.azure.com`
+- `DB_USER`: `<user>@<server-name>`
+- `DB_NAME`: your database name
+- `DB_PASSWORD`: the admin password
 
 **Option B: Container PostgreSQL (used in docker-compose-azure.yml)**
 
@@ -250,7 +352,29 @@ az webapp config appsettings set \
     ALLOWED_HOSTS="novavilleapp.azurewebsites.net,yourdomain.com" \
     MIGRATE="1" \
     COLLECTSTATIC="1"
+
+  # Simple alternative (recommended): DATABASE_URL with SSL required
+  # DATABASE_URL="postgres://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}?sslmode=require"
+
+---
+
+## Post-deployment verification (Azure PostgreSQL)
+
+The deploy workflow validates that the App Service points to Azure Database for PostgreSQL.
+If the validation fails, the `deploy` job fails.
+
+Manual verification:
+
+```bash
+az webapp config appsettings list \
+  --name NovavilleApp \
+  --resource-group Novaville \
+  --query "[?name=='DB_HOST'||name=='DB_USER'||name=='DB_NAME']"
 ```
+
+Expected:
+- `DB_HOST` ends with `.postgres.database.azure.com`
+- `DB_USER` contains `@<server>`
 
 ### Via Azure Portal
 
