@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+import 'package:frontend/config/router.dart';
+import 'package:go_router/go_router.dart';
 
 /// Binary file attached to a multipart API request.
 class MultipartApiFile {
@@ -67,15 +69,25 @@ class ApiClient {
     'Accept': 'application/json',
   };
 
+  /// Checks if the server is in maintenance (502 or 503)
+  /// and redirects to the maintenance screen if needed.
+  void _checkMaintenance(int statusCode) {
+    if (statusCode == 502 || statusCode == 503) {
+      rootNavigatorKey.currentContext?.go('/maintenance');
+    }
+  }
+
   /// Performs a GET request.
   Future<http.Response> get(
     String path, {
     Map<String, String?>? queryParameters,
     Map<String, String>? headers,
-  }) {
+  }) async {
     final uri = buildUri(path, queryParameters);
     final mergedHeaders = {...defaultHeaders, ...?headers};
-    return client.get(uri, headers: mergedHeaders);
+    final response = await client.get(uri, headers: mergedHeaders);
+    _checkMaintenance(response.statusCode);
+    return response;
   }
 
   /// Performs a POST request.
@@ -84,10 +96,16 @@ class ApiClient {
     required Map<String, dynamic> body,
     Map<String, String?>? queryParameters,
     Map<String, String>? headers,
-  }) {
+  }) async {
     final uri = buildUri(path, queryParameters);
     final mergedHeaders = {...defaultHeaders, ...?headers};
-    return client.post(uri, headers: mergedHeaders, body: jsonEncode(body));
+    final response = await client.post(
+      uri,
+      headers: mergedHeaders,
+      body: jsonEncode(body),
+    );
+    _checkMaintenance(response.statusCode);
+    return response;
   }
 
   /// Performs a multipart POST request.
@@ -97,7 +115,7 @@ class ApiClient {
     required List<MultipartApiFile> files,
     Map<String, String?>? queryParameters,
     Map<String, String>? headers,
-  }) {
+  }) async {
     final uri = buildUri(path, queryParameters);
     final request = http.MultipartRequest('POST', uri)
       ..headers.addAll({'Accept': 'application/json', ...?headers})
@@ -112,7 +130,9 @@ class ApiClient {
         ),
       );
 
-    return client.send(request);
+    final response = await client.send(request);
+    _checkMaintenance(response.statusCode);
+    return response;
   }
 
   /// Performs a multipart PATCH request.
@@ -122,7 +142,7 @@ class ApiClient {
     required List<MultipartApiFile> files,
     Map<String, String?>? queryParameters,
     Map<String, String>? headers,
-  }) {
+  }) async {
     final uri = buildUri(path, queryParameters);
     final request = http.MultipartRequest('PATCH', uri)
       ..headers.addAll({'Accept': 'application/json', ...?headers})
@@ -137,7 +157,9 @@ class ApiClient {
         ),
       );
 
-    return client.send(request);
+    final response = await client.send(request);
+    _checkMaintenance(response.statusCode);
+    return response;
   }
 
   /// Performs a PUT request.
@@ -146,10 +168,16 @@ class ApiClient {
     required Map<String, dynamic> body,
     Map<String, String?>? queryParameters,
     Map<String, String>? headers,
-  }) {
+  }) async {
     final uri = buildUri(path, queryParameters);
     final mergedHeaders = {...defaultHeaders, ...?headers};
-    return client.put(uri, headers: mergedHeaders, body: jsonEncode(body));
+    final response = await client.put(
+      uri,
+      headers: mergedHeaders,
+      body: jsonEncode(body),
+    );
+    _checkMaintenance(response.statusCode);
+    return response;
   }
 
   /// Performs a DELETE request.
@@ -157,10 +185,12 @@ class ApiClient {
     String path, {
     Map<String, String?>? queryParameters,
     Map<String, String>? headers,
-  }) {
+  }) async {
     final uri = buildUri(path, queryParameters);
     final mergedHeaders = {...defaultHeaders, ...?headers};
-    return client.delete(uri, headers: mergedHeaders);
+    final response = await client.delete(uri, headers: mergedHeaders);
+    _checkMaintenance(response.statusCode);
+    return response;
   }
 
   /// Performs a PATCH request.
@@ -169,10 +199,16 @@ class ApiClient {
     required Map<String, dynamic> body,
     Map<String, String?>? queryParameters,
     Map<String, String>? headers,
-  }) {
+  }) async {
     final uri = buildUri(path, queryParameters);
     final mergedHeaders = {...defaultHeaders, ...?headers};
-    return client.patch(uri, headers: mergedHeaders, body: jsonEncode(body));
+    final response = await client.patch(
+      uri,
+      headers: mergedHeaders,
+      body: jsonEncode(body),
+    );
+    _checkMaintenance(response.statusCode);
+    return response;
   }
 
   /// Closes the HTTP client.
