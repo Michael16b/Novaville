@@ -47,13 +47,18 @@ if ($serverExists) {
     --location $env:AZURE_LOCATION `
     --admin-user $env:DB_USER `
     --admin-password $env:DB_PASSWORD `
-    --database-name $env:DB_NAME `
     --sku-name $sku `
     --tier Burstable `
     --storage-size $storageGb `
     --version $version `
     --public-access Enabled | Out-Null
 }
+
+az postgres flexible-server db create `
+  --resource-group $env:AZURE_RESOURCE_GROUP `
+  --server-name $env:AZURE_POSTGRES_SERVER_NAME `
+  --database-name $env:DB_NAME `
+  --output none | Out-Null
 
 $outboundIps = az webapp show `
   --name $env:AZURE_APP_NAME `

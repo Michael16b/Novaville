@@ -39,13 +39,18 @@ else
     --location "$AZURE_LOCATION" \
     --admin-user "$DB_USER" \
     --admin-password "$DB_PASSWORD" \
-    --database-name "$DB_NAME" \
     --sku-name "$AZURE_POSTGRES_SKU" \
     --tier Burstable \
     --storage-size "$AZURE_POSTGRES_STORAGE_GB" \
     --version "$AZURE_POSTGRES_VERSION" \
     --public-access Enabled
 fi
+
+az postgres flexible-server db create \
+  --resource-group "$AZURE_RESOURCE_GROUP" \
+  --server-name "$AZURE_POSTGRES_SERVER_NAME" \
+  --database-name "$DB_NAME" \
+  --output none
 
 outbound_ips=$(az webapp show \
   --name "$AZURE_APP_NAME" \
