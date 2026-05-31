@@ -60,7 +60,6 @@ class AgendaSortRequested extends AgendaEvent {
   List<Object?> get props => [column, ascending, search];
 }
 
-
 /// Event to refresh the events list.
 class AgendaRefreshRequested extends AgendaEvent {
   /// Creates an [AgendaRefreshRequested].
@@ -104,6 +103,7 @@ class AgendaEventCreateRequested extends AgendaEvent {
     required this.startDate,
     required this.endDate,
     this.theme,
+    this.themeKey,
   });
 
   /// Event title.
@@ -121,8 +121,18 @@ class AgendaEventCreateRequested extends AgendaEvent {
   /// Theme ID.
   final int? theme;
 
+  /// Stable theme key (e.g. SPORT, CULTURE).
+  final String? themeKey;
+
   @override
-  List<Object?> get props => [title, description, startDate, endDate, theme];
+  List<Object?> get props => [
+    title,
+    description,
+    startDate,
+    endDate,
+    theme,
+    themeKey,
+  ];
 }
 
 /// Event to delete a community event.
@@ -147,6 +157,7 @@ class AgendaEventUpdateRequested extends AgendaEvent {
     this.startDate,
     this.endDate,
     this.theme,
+    this.themeKey,
   });
 
   /// Event ID.
@@ -167,8 +178,17 @@ class AgendaEventUpdateRequested extends AgendaEvent {
   /// New theme.
   final int? theme;
 
-  @override
-  List<Object?> get props =>
-      [eventId, title, description, startDate, endDate, theme];
-}
+  /// Stable theme key (e.g. SPORT, CULTURE).
+  final String? themeKey;
 
+  @override
+  List<Object?> get props => [
+    eventId,
+    title,
+    description,
+    startDate,
+    endDate,
+    theme,
+    themeKey,
+  ];
+}

@@ -36,6 +36,21 @@ class TestEventsAPI:
         response = elected_client.post("/api/v1/events/", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["title"] == "New Event"
+
+    def test_create_event_with_stable_theme_key(self, elected_client):
+        """Test creating an event resolves a stable theme key in any database."""
+        data = {
+            "title": "Environment Event",
+            "description": "Event description",
+            "start_date": (timezone.now() + timedelta(days=1)).isoformat(),
+            "end_date": (timezone.now() + timedelta(days=1, hours=3)).isoformat(),
+            "theme_key": "ENVIRONMENT",
+        }
+
+        response = elected_client.post("/api/v1/events/", data, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["theme_detail"]["title"] == "Environnement"
     
     def test_create_event_by_citizen_forbidden(self, authenticated_client, theme):
         """Test citizen cannot create events"""
@@ -172,6 +187,15 @@ class TestEventThemesAPI:
         assert response.status_code == status.HTTP_200_OK
         results = response.data.get('results', response.data)
         assert len(results) >= 1
+
+    def test_list_themes_creates_canonical_themes(self, api_client):
+        """Test listing themes backfills expected themes when missing."""
+        response = api_client.get("/api/v1/event-themes/")
+
+        assert response.status_code == status.HTTP_200_OK
+        results = response.data.get('results', response.data)
+        titles = {theme["title"] for theme in results}
+        assert {"Sport", "Culture", "Citoyenneté", "Environnement", "Autre"} <= titles
     
     def test_list_themes(self, authenticated_client, theme):
         """Test listing event themes"""

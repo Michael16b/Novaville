@@ -6,7 +6,8 @@ from core.db.models import Event, ThemeEvent, RoleEnum
 from api.v1.serializers.event_serializer import (
     EventSerializer,
     EventCreateSerializer,
-    ThemeEventSerializer
+    ThemeEventSerializer,
+    ensure_canonical_event_themes,
 )
 from api.v1.permissions import IsStaffOrReadOnly, IsAdminOrReadOnly
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
@@ -132,6 +133,11 @@ class ThemeEventViewSet(viewsets.ModelViewSet):
     queryset = ThemeEvent.objects.all()
     serializer_class = ThemeEventSerializer
     filterset_fields = '__all__'
+
+    def get_queryset(self):
+        """Ensure default themes exist even when production data was not seeded."""
+        ensure_canonical_event_themes()
+        return super().get_queryset()
     
     def get_permissions(self):
         """Allow public read access and keep write access restricted to admin."""
