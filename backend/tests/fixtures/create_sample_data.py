@@ -18,7 +18,9 @@ print('🚀 Creating sample data for Novaville...\n')
 
 RESET_PASSWORDS = os.getenv('RESET_FIXTURE_PASSWORDS', '1') == '1'
 TARGET_COUNT = 25
-RESET_FIXTURE_TABLES = os.getenv('RESET_FIXTURE_TABLES', '1') == '1'
+# Destructive reset is opt-in to avoid wiping real data when this script is
+# accidentally run after a deployment.
+RESET_FIXTURE_TABLES = os.getenv('RESET_FIXTURE_TABLES', '0') == '1'
 
 
 def upsert_user(username, defaults, password, label):
