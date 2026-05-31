@@ -1,0 +1,31 @@
+name: Create Azure Infra (manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-infra:
+    name: Create Azure infra
+    runs-on: ubuntu-latest
+    environment: Azure Cloud
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Create Azure infra
+        run: bash scripts/create-azure-infra.sh
+        env:
+          AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          AZURE_LOCATION: ${{ secrets.AZURE_LOCATION }}
+          AZURE_APP_NAME: ${{ secrets.AZURE_APP_NAME }}
+          AZURE_APP_SERVICE_PLAN_NAME: ${{ secrets.AZURE_APP_SERVICE_PLAN_NAME }}
+          AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+          AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}

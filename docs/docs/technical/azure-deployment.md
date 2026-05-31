@@ -26,9 +26,9 @@ Le déploiement se déclenche **automatiquement** lors d'un push sur `main` dès
 - configuration des App Settings
 - deploiement App Service via `docker-compose-azure.yml`
 
-**Optionnel (CI, declenchement manuel)**
-- creation infra Azure (RG, ACR, Storage, App Service, plan) via `create_infra`
-- creation PostgreSQL Flexible Server + firewall + base via `create_postgres`
+**Optionnel (CI, workflows manuels)**
+- workflow "Create Azure Infra (manual)"
+- workflow "Create Azure PostgreSQL (manual)"
 
 **Manuel (a faire une seule fois)**
 - creation et mise a jour des secrets GitHub
@@ -197,9 +197,8 @@ Le script :
 - affiche `DB_HOST` et le format `DB_USER` attendu
 
 Execution propre via GitHub Actions (recommande) :
-1) Aller sur GitHub > Actions > workflow "Build and Deploy Novaville - Multi-Container".
-2) Cliquer "Run workflow" et activer l'option `create_postgres`.
-3) Le job cree la base, puis le reste du workflow continue normalement.
+1) Aller sur GitHub > Actions > workflow "Create Azure PostgreSQL (manual)".
+2) Cliquer "Run workflow".
 
 Apres execution, mettez a jour les secrets `DB_HOST` et `DB_USER` avec la sortie du script.
 
@@ -215,8 +214,8 @@ Utilisez le script Azure CLI pour creer si absent :
 - Storage Account
 
 Execution via GitHub Actions (recommande) :
-1) Aller sur GitHub > Actions > workflow "Build and Deploy Novaville - Multi-Container".
-2) Cliquer "Run workflow" et activer l'option `create_infra`.
+1) Aller sur GitHub > Actions > workflow "Create Azure Infra (manual)".
+2) Cliquer "Run workflow".
 
 Script local :
 

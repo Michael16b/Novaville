@@ -25,9 +25,9 @@ Deployment triggers **automatically** on every push to `main` once all GitHub Ac
 - configure App Settings
 - deploy App Service via `docker-compose-azure.yml`
 
-**Optional (CI, manual trigger)**
-- create Azure infra (RG, ACR, Storage, App Service, plan) via `create_infra`
-- create PostgreSQL Flexible Server + firewall + database via `create_postgres`
+**Optional (CI, manual workflows)**
+- workflow "Create Azure Infra (manual)"
+- workflow "Create Azure PostgreSQL (manual)"
 
 **Manual (one-time)**
 - create and update GitHub secrets
@@ -193,9 +193,8 @@ The script:
 - prints `DB_HOST` and the expected `DB_USER` format
 
 Clean GitHub Actions run (recommended):
-1) Go to GitHub > Actions > workflow "Build and Deploy Novaville - Multi-Container".
-2) Click "Run workflow" and enable the `create_postgres` option.
-3) The job creates the database, then the rest of the workflow proceeds.
+1) Go to GitHub > Actions > workflow "Create Azure PostgreSQL (manual)".
+2) Click "Run workflow".
 
 After execution, update the `DB_HOST` and `DB_USER` secrets with the script output.
 
@@ -211,8 +210,8 @@ Use the Azure CLI script to create if missing:
 - Storage Account
 
 GitHub Actions run (recommended):
-1) Go to GitHub > Actions > workflow "Build and Deploy Novaville - Multi-Container".
-2) Click "Run workflow" and enable the `create_infra` option.
+1) Go to GitHub > Actions > workflow "Create Azure Infra (manual)".
+2) Click "Run workflow".
 
 Local script:
 

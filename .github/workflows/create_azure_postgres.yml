@@ -1,0 +1,32 @@
+name: Create Azure PostgreSQL (manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-postgres:
+    name: Create Azure PostgreSQL
+    runs-on: ubuntu-latest
+    environment: Azure Cloud
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Create Azure PostgreSQL server
+        run: bash scripts/create-azure-postgres.sh
+        env:
+          AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          AZURE_LOCATION: ${{ secrets.AZURE_LOCATION }}
+          AZURE_APP_NAME: ${{ secrets.AZURE_APP_NAME }}
+          AZURE_POSTGRES_SERVER_NAME: ${{ secrets.AZURE_POSTGRES_SERVER_NAME }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
