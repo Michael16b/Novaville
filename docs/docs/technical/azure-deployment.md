@@ -19,6 +19,28 @@ Le déploiement se déclenche **automatiquement** lors d'un push sur `main` dès
 
 ---
 
+## Ce qui est automatise vs manuel
+
+**Automatise (CI)**
+- build et push des images (backend, frontend)
+- configuration des App Settings
+- deploiement App Service via `docker-compose-azure.yml`
+
+**Optionnel (CI, declenchement manuel)**
+- creation infra Azure (RG, ACR, Storage, App Service, plan) via `create_infra`
+- creation PostgreSQL Flexible Server + firewall + base via `create_postgres`
+
+**Manuel (a faire une seule fois)**
+- creation et mise a jour des secrets GitHub
+- choix des noms de ressources Azure (RG, serveur Postgres, storage)
+
+**Checklist avant relance du deploy**
+- `AZURE_POSTGRES_SERVER_NAME` defini
+- `DB_NAME`, `DB_USER`, `DB_PASSWORD` definis
+- workflow deploy relance apres creation de la base
+
+---
+
 ## Secrets GitHub Actions requis
 
 Les secrets doivent être configurés dans **Settings > Environments > Azure Cloud** sur votre dépôt GitHub.

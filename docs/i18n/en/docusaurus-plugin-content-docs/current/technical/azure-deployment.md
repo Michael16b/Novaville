@@ -17,9 +17,27 @@ The CI/CD workflow (`.github/workflows/deploy_docker_azure.yml`):
 
 Deployment triggers **automatically** on every push to `main` once all GitHub Actions secrets are configured.
 
----
 
-## GitHub Actions secrets required
+## What is automated vs manual
+
+**Automated (CI)**
+- build and push images (backend, frontend)
+- configure App Settings
+- deploy App Service via `docker-compose-azure.yml`
+
+**Optional (CI, manual trigger)**
+- create Azure infra (RG, ACR, Storage, App Service, plan) via `create_infra`
+- create PostgreSQL Flexible Server + firewall + database via `create_postgres`
+
+**Manual (one-time)**
+- create and update GitHub secrets
+- choose Azure resource names (RG, Postgres server, storage)
+
+**Checklist before redeploy**
+- `AZURE_POSTGRES_SERVER_NAME` set
+- `DB_NAME`, `DB_USER`, `DB_PASSWORD` set
+- deploy workflow rerun after DB creation
+
 
 Secrets must be configured in **Settings > Environments > Azure Cloud** on your GitHub repository.
 
