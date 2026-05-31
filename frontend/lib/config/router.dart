@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/config/app_routes.dart';
-import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/agenda/presentation/pages/agenda_page.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/presentation/pages/login_page.dart';
@@ -12,8 +12,8 @@ import 'package:frontend/features/home/presentation/pages/home_page.dart';
 import 'package:frontend/features/news/presentation/pages/news_page.dart';
 import 'package:frontend/features/reports/presentation/pages/reports_page.dart';
 import 'package:frontend/features/surveys/presentation/pages/surveys_page.dart';
-import 'package:frontend/features/useful_info/presentation/pages/useful_info_page_provider.dart';
 import 'package:frontend/features/town_hall/presentation/pages/town_hall_page.dart';
+import 'package:frontend/features/useful_info/presentation/pages/useful_info_page_provider.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/presentation/pages/bulk_user_creation_page.dart';
 import 'package:frontend/features/users/presentation/pages/credentials_share_page.dart';
@@ -33,7 +33,8 @@ Page<T> _buildPage<T>({required GoRouterState state, required Widget child}) {
   return MaterialPage<T>(key: state.pageKey, child: child);
 }
 
-/// Global key for navigation without BuildContext (e.g. from API Client interceptors)
+/// Global key for navigation without BuildContext
+/// (e.g. from API Client interceptors)
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Pure function containing the authentication redirect logic.
@@ -172,7 +173,7 @@ String? anyRoleRedirect({
 /// Builds and returns the application [GoRouter].
 ///
 /// Receives the [AuthBloc] directly so the router can be created once in
-/// [State.didChangeDependencies] without needing a [BuildContext] at build time.
+/// [State.didChangeDependencies] without needing a [BuildContext].
 GoRouter buildRouter(AuthBloc authBloc) {
   // Attach the global maintenance callback to the API client
   ApiClient.onMaintenanceMode = () {
