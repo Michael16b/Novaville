@@ -45,6 +45,15 @@ Secrets must be configured in **Settings > Environments > Azure Cloud** on your 
 | `DB_USER` | PostgreSQL user | `novaville_user` |
 | `DB_PASSWORD` | PostgreSQL password (generate secure) | *(auto-generated)* |
 
+### Infrastructure secrets (PostgreSQL script)
+
+| Secret | Description | Example |
+|--------|-------------|---------|
+| `AZURE_POSTGRES_SERVER_NAME` | Flexible PostgreSQL server name | `novaville-db` |
+| `AZURE_APP_NAME` | App Service name | `NovavilleApp` |
+| `AZURE_RESOURCE_GROUP` | Target Resource Group | `Novaville` |
+| `AZURE_LOCATION` | Azure region | `francecentral` |
+
 ### Django secrets
 
 | Secret | Description | Example |
@@ -110,26 +119,56 @@ Configure:
 
 **Option A: Azure Database for PostgreSQL (recommended for production)**
 
-```bash
-# Create PostgreSQL server
-az postgres flexible-server create \
-  --name novaville-db \
-  --resource-group Novaville \
-  --admin-user novaville_admin \
-  --admin-password "{SECURE_PASSWORD}" \
-  --database-name novaville_db \
-  --sku-name Standard_B1ms \
-  --tier Burstable \
-  --storage-size 32 \
-  --version 15 \
-  --public-access Enabled
+Use the repo Azure CLI script (no hardcoded values, everything comes from secrets):
 
-# Configure secrets from the output
-# DB_HOST: <server-name>.postgres.database.azure.com
-# DB_USER: novaville_admin@novaville-db
-# DB_NAME: novaville_db
-# DB_PASSWORD: the password set above
+```bash
+bash scripts/create-azure-postgres.sh
 ```
+
+On Windows (PowerShell):
+
+```powershell
+./scripts/create-azure-postgres.ps1
+```
+
+GitHub Actions example (run once):
+
+```yaml
+- name: Create Azure PostgreSQL (once)
+  run: bash scripts/create-azure-postgres.sh
+  env:
+    AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+    AZURE_LOCATION: ${{ secrets.AZURE_LOCATION }}
+    AZURE_APP_NAME: ${{ secrets.AZURE_APP_NAME }}
+    AZURE_POSTGRES_SERVER_NAME: ${{ secrets.AZURE_POSTGRES_SERVER_NAME }}
+    DB_NAME: ${{ secrets.DB_NAME }}
+    DB_USER: ${{ secrets.DB_USER }}
+    DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+```
+
+Required variables (GitHub secrets or local export):
+
+```
+AZURE_RESOURCE_GROUP
+AZURE_LOCATION
+AZURE_APP_NAME
+AZURE_POSTGRES_SERVER_NAME
+DB_NAME
+DB_USER
+DB_PASSWORD
+```
+
+The script:
+- creates the server with the minimum SKU (`Standard_B1ms`)
+- enables public access
+- opens the firewall for App Service outbound IPs
+- prints `DB_HOST` and the expected `DB_USER` format
+
+Configure secrets from the output:
+- `DB_HOST`: `<server-name>.postgres.database.azure.com`
+- `DB_USER`: `<user>@<server-name>`
+- `DB_NAME`: your database name
+- `DB_PASSWORD`: the admin password
 
 **Option B: Container PostgreSQL (used in docker-compose-azure.yml)**
 
@@ -250,6 +289,9 @@ az webapp config appsettings set \
     ALLOWED_HOSTS="novavilleapp.azurewebsites.net,yourdomain.com" \
     MIGRATE="1" \
     COLLECTSTATIC="1"
+
+  # Simple alternative (recommended): DATABASE_URL with SSL required
+  # DATABASE_URL="postgres://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}?sslmode=require"
 ```
 
 ### Via Azure Portal

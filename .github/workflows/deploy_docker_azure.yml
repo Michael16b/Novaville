@@ -4,8 +4,41 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
+    inputs:
+      create_postgres:
+        description: "Create or update Azure PostgreSQL (run once)"
+        required: false
+        default: "false"
+        type: boolean
 
 jobs:
+  create-postgres:
+    name: Create PostgreSQL (optional)
+    runs-on: ubuntu-latest
+    environment: Azure Cloud
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.create_postgres == true }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Create Azure PostgreSQL server
+        run: bash scripts/create-azure-postgres.sh
+        env:
+          AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          AZURE_LOCATION: ${{ secrets.AZURE_LOCATION }}
+          AZURE_APP_NAME: ${{ secrets.AZURE_APP_NAME }}
+          AZURE_POSTGRES_SERVER_NAME: ${{ secrets.AZURE_POSTGRES_SERVER_NAME }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
   # ─────────────────────────────────────────────────────────────────────────
   # 0. PRE-DEPLOY TESTS — must pass before any image is built or deployed
   # ─────────────────────────────────────────────────────────────────────────
@@ -58,7 +91,9 @@ jobs:
 
   build-and-push:
     runs-on: ubuntu-latest
-    needs: pre-deploy-tests
+    needs:
+      - pre-deploy-tests
+      - create-postgres
     environment: Azure Cloud
     steps:
       - name: Checkout code
