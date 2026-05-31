@@ -130,8 +130,8 @@ jobs:
           fi
           DB_HOST_COMPUTED="${{ secrets.AZURE_POSTGRES_SERVER_NAME }}.postgres.database.azure.com"
           az webapp config appsettings set \
-            --name NovavilleApp \
-            --resource-group Novaville \
+            --name "${{ secrets.AZURE_APP_NAME }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
             --output none \
             --settings \
               DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" \
@@ -170,10 +170,38 @@ jobs:
           # Substitute all ${VAR} references in the compose file with their values
           envsubst < docker-compose-azure.yml > /tmp/docker-compose-resolved.yml
           az webapp config container set \
-            --name NovavilleApp \
-            --resource-group Novaville \
+            --name "${{ secrets.AZURE_APP_NAME }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
             --multicontainer-config-type COMPOSE \
             --multicontainer-config-file /tmp/docker-compose-resolved.yml \
             --container-registry-url https://${{ secrets.AZURE_ACR_NAME }}.azurecr.io \
             --container-registry-user ${{ secrets.AZURE_ACR_USERNAME }} \
             --container-registry-password ${{ secrets.AZURE_ACR_PASSWORD }}
+
+      - name: Post-deploy check - Azure PostgreSQL settings
+        run: |
+          DB_HOST_ACTUAL=$(az webapp config appsettings list \
+            --name "${{ secrets.AZURE_APP_NAME }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --query "[?name=='DB_HOST'].value | [0]" -o tsv)
+          DB_USER_ACTUAL=$(az webapp config appsettings list \
+            --name "${{ secrets.AZURE_APP_NAME }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --query "[?name=='DB_USER'].value | [0]" -o tsv)
+
+          EXPECTED_HOST_SUFFIX=".postgres.database.azure.com"
+          EXPECTED_USER_SUFFIX="@${{ secrets.AZURE_POSTGRES_SERVER_NAME }}"
+
+          if [[ -z "$DB_HOST_ACTUAL" || "$DB_HOST_ACTUAL" != *"$EXPECTED_HOST_SUFFIX" ]]; then
+            echo "ERROR: DB_HOST is not an Azure PostgreSQL host."
+            echo "       DB_HOST=$DB_HOST_ACTUAL"
+            exit 1
+          fi
+
+          if [[ -z "$DB_USER_ACTUAL" || "$DB_USER_ACTUAL" != *"$EXPECTED_USER_SUFFIX" ]]; then
+            echo "ERROR: DB_USER is not in the expected Azure format."
+            echo "       DB_USER=$DB_USER_ACTUAL"
+            exit 1
+          fi
+
+          echo "OK: DB_HOST and DB_USER point to Azure PostgreSQL."

@@ -67,8 +67,9 @@ Les secrets doivent être configurés dans **Settings > Environments > Azure Clo
 | `DB_USER` | Utilisateur PostgreSQL | `novaville_user` |
 | `DB_PASSWORD` | Mot de passe PostgreSQL (généré sécurisé) | *(généré automatiquement)* |
 
-**Nuance Azure PostgreSQL** : `DB_USER` doit etre au format `user@server` (ex: `novaville_user@novaville-db-prod`).
-`DB_HOST` vaut `novaville-db-prod.postgres.database.azure.com`.
+**Nuance Azure PostgreSQL** : `DB_USER` peut etre fourni en format court (`novaville_user`).
+Le workflow complete automatiquement en `user@server`.
+`DB_HOST` est calcule automatiquement via `AZURE_POSTGRES_SERVER_NAME`.
 
 ### Secrets Infrastructure (script PostgreSQL)
 
@@ -200,7 +201,8 @@ Execution propre via GitHub Actions (recommande) :
 1) Aller sur GitHub > Actions > workflow "Create Azure PostgreSQL (manual)".
 2) Cliquer "Run workflow".
 
-Apres execution, mettez a jour les secrets `DB_HOST` et `DB_USER` avec la sortie du script.
+Apres execution, mettez a jour le secret `DB_USER` si besoin (format court OK).
+`DB_HOST` est calcule automatiquement par le workflow de deploy.
 
 Une fois la base Azure creee, retirez le service Postgres du compose Azure et fournissez `DB_HOST`.
 
@@ -357,7 +359,26 @@ az webapp config appsettings set \
 
   # Option alternative simple (recommandee) : DATABASE_URL avec SSL obligatoire
   # DATABASE_URL="postgres://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}?sslmode=require"
+
+---
+
+## Verification post-deploiement (Azure PostgreSQL)
+
+Le workflow de deploy valide automatiquement que l'App Service pointe bien vers
+Azure Database for PostgreSQL. En cas d'echec, le job `deploy` echoue.
+
+Verification manuelle :
+
+```bash
+az webapp config appsettings list \
+  --name NovavilleApp \
+  --resource-group Novaville \
+  --query "[?name=='DB_HOST'||name=='DB_USER'||name=='DB_NAME']"
 ```
+
+Attendu :
+- `DB_HOST` se termine par `.postgres.database.azure.com`
+- `DB_USER` contient `@<server>`
 
 ### Via Azure Portal
 
