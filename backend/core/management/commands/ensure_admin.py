@@ -27,6 +27,7 @@ import os
 import secrets
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from django.core.management.base import BaseCommand
 
 from core.db.enums import RoleEnum
@@ -83,6 +84,7 @@ class Command(BaseCommand):
                 admin_user.role = RoleEnum.GLOBAL_ADMIN
                 admin_user.is_staff = True
                 admin_user.is_superuser = True
+                validate_password(password, user=admin_user)
                 admin_user.set_password(password)
                 admin_user.save()
                 self.stdout.write(
