@@ -141,7 +141,7 @@ jobs:
               DJANGO_SUPERUSER_USERNAME="${{ secrets.DJANGO_SUPERUSER_USERNAME }}" \
               DJANGO_SUPERUSER_EMAIL="${{ secrets.DJANGO_SUPERUSER_EMAIL }}" \
               DJANGO_SUPERUSER_PASSWORD="${{ secrets.DJANGO_SUPERUSER_PASSWORD }}" \
-              DJANGO_RESET_ADMIN_ON_DEPLOY="${{ secrets.DJANGO_RESET_ADMIN_ON_DEPLOY }}"
+              DJANGO_RESET_ADMIN_ON_DEPLOY="0"
 
       - name: Deploy Docker Compose
         run: |
@@ -158,7 +158,7 @@ jobs:
           export DJANGO_SUPERUSER_USERNAME="${{ secrets.DJANGO_SUPERUSER_USERNAME }}"
           export DJANGO_SUPERUSER_EMAIL="${{ secrets.DJANGO_SUPERUSER_EMAIL }}"
           export DJANGO_SUPERUSER_PASSWORD="${{ secrets.DJANGO_SUPERUSER_PASSWORD }}"
-          export DJANGO_RESET_ADMIN_ON_DEPLOY="${{ secrets.DJANGO_RESET_ADMIN_ON_DEPLOY }}"
+          export DJANGO_RESET_ADMIN_ON_DEPLOY="0"
           # Substitute all ${VAR} references in the compose file with their values
           envsubst < docker-compose-azure.yml > /tmp/docker-compose-resolved.yml
           az webapp config container set \

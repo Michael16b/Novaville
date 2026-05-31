@@ -2,9 +2,11 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
+from django.utils import timezone
 from io import StringIO
 
-from core.db.enums import RoleEnum
+from core.db.enums import ProblemTypeEnum, RoleEnum
+from core.db.models import Event, Neighborhood, Report, Survey
 
 User = get_user_model()
 
@@ -151,3 +153,51 @@ class TestEnsureAdminCommand:
         assert user.check_password("StrongProdPass123!"), (
             "Superuser password must match the value provided in DJANGO_SUPERUSER_PASSWORD."
         )
+
+    def test_reset_admin_updates_in_place_without_deleting_related_data(self, monkeypatch):
+        """Resetting admin credentials must not delete data linked to the admin user."""
+        admin = User.objects.create_superuser(
+            username="admin",
+            email="old-admin@example.com",
+            password="OldAdminPass123!",
+            role=RoleEnum.GLOBAL_ADMIN,
+        )
+        neighborhood = Neighborhood.objects.create(name="Centre", postal_code="75000")
+        report = Report.objects.create(
+            user=admin,
+            title="Signalement conserve",
+            problem_type=ProblemTypeEnum.ROADS,
+            description="Doit survivre au reset admin.",
+            neighborhood=neighborhood,
+        )
+        survey = Survey.objects.create(
+            title="Sondage conserve",
+            description="Doit survivre au reset admin.",
+            created_by=admin,
+            start_date=timezone.now(),
+            end_date=timezone.now() + timezone.timedelta(days=7),
+        )
+        event = Event.objects.create(
+            title="Evenement conserve",
+            description="Doit survivre au reset admin.",
+            created_by=admin,
+            start_date=timezone.now() + timezone.timedelta(days=1),
+            end_date=timezone.now() + timezone.timedelta(days=1, hours=2),
+        )
+
+        monkeypatch.setenv("DJANGO_RESET_ADMIN_ON_DEPLOY", "1")
+        monkeypatch.setenv("DJANGO_SUPERUSER_USERNAME", "admin")
+        monkeypatch.setenv("DJANGO_SUPERUSER_EMAIL", "new-admin@example.com")
+        monkeypatch.setenv("DJANGO_SUPERUSER_PASSWORD", "NewAdminPass123!")
+
+        stdout = StringIO()
+        call_command("ensure_admin", stdout=stdout)
+
+        admin.refresh_from_db()
+        assert admin.email == "new-admin@example.com"
+        assert admin.check_password("NewAdminPass123!")
+        assert User.objects.filter(id=admin.id).exists()
+        assert Report.objects.filter(id=report.id, user=admin).exists()
+        assert Survey.objects.filter(id=survey.id, created_by=admin).exists()
+        assert Event.objects.filter(id=event.id, created_by=admin).exists()
+        assert "No users deleted" in stdout.getvalue()
