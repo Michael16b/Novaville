@@ -45,6 +45,9 @@ Secrets must be configured in **Settings > Environments > Azure Cloud** on your 
 | `DB_USER` | PostgreSQL user | `novaville_user` |
 | `DB_PASSWORD` | PostgreSQL password (generate secure) | *(auto-generated)* |
 
+**Azure PostgreSQL note**: `DB_USER` must be in the `user@server` format (e.g. `novaville_user@novaville-db-prod`).
+`DB_HOST` should be `novaville-db-prod.postgres.database.azure.com`.
+
 ### Infrastructure secrets (PostgreSQL script)
 
 | Secret | Description | Example |
@@ -177,6 +180,8 @@ Clean GitHub Actions run (recommended):
 3) The job creates the database, then the rest of the workflow proceeds.
 
 After execution, update the `DB_HOST` and `DB_USER` secrets with the script output.
+
+Once the Azure database is created, remove the Postgres service from the Azure compose and provide `DB_HOST`.
 
 ### 4b. Create Azure infrastructure (optional)
 

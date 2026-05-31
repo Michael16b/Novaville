@@ -45,6 +45,9 @@ Les secrets doivent être configurés dans **Settings > Environments > Azure Clo
 | `DB_USER` | Utilisateur PostgreSQL | `novaville_user` |
 | `DB_PASSWORD` | Mot de passe PostgreSQL (généré sécurisé) | *(généré automatiquement)* |
 
+**Nuance Azure PostgreSQL** : `DB_USER` doit etre au format `user@server` (ex: `novaville_user@novaville-db-prod`).
+`DB_HOST` vaut `novaville-db-prod.postgres.database.azure.com`.
+
 ### Secrets Infrastructure (script PostgreSQL)
 
 | Secret | Description | Exemple |
@@ -177,6 +180,8 @@ Execution propre via GitHub Actions (recommande) :
 3) Le job cree la base, puis le reste du workflow continue normalement.
 
 Apres execution, mettez a jour les secrets `DB_HOST` et `DB_USER` avec la sortie du script.
+
+Une fois la base Azure creee, retirez le service Postgres du compose Azure et fournissez `DB_HOST`.
 
 ### 4b. Creer l'infrastructure Azure (optionnel)
 

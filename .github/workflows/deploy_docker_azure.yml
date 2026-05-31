@@ -34,6 +34,15 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Compute DB_HOST and DB_USER
+        run: |
+          if [[ "${{ secrets.DB_USER }}" == *"@"* ]]; then
+            echo "DB_USER_COMPUTED=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+          else
+            echo "DB_USER_COMPUTED=${{ secrets.DB_USER }}@${{ secrets.AZURE_POSTGRES_SERVER_NAME }}" >> $GITHUB_ENV
+          fi
+          echo "DB_HOST_COMPUTED=${{ secrets.AZURE_POSTGRES_SERVER_NAME }}.postgres.database.azure.com" >> $GITHUB_ENV
+
       - name: Create Azure infra
         run: bash scripts/create-azure-infra.sh
         env:
@@ -48,14 +57,7 @@ jobs:
     name: Create PostgreSQL (optional)
     runs-on: ubuntu-latest
     environment: Azure Cloud
-    needs:
-      - create-infra
-    if: >-
-      ${{
-        github.event_name == 'workflow_dispatch' &&
-        inputs.create_postgres == true &&
-        (needs.create-infra.result == 'success' || needs.create-infra.result == 'skipped')
-      }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.create_postgres == true }}
     permissions:
       contents: read
       id-token: write
@@ -210,8 +212,11 @@ jobs:
             --settings \
               DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" \
               JWT_SIGNING_KEY="${{ secrets.JWT_SIGNING_KEY }}" \
+              DB_ENGINE="django.db.backends.postgresql" \
+              DB_HOST="$DB_HOST_COMPUTED" \
+              DB_PORT="5432" \
               DB_NAME="${{ secrets.DB_NAME }}" \
-              DB_USER="${{ secrets.DB_USER }}" \
+              DB_USER="$DB_USER_COMPUTED" \
               DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
               DJANGO_SUPERUSER_USERNAME="${{ secrets.DJANGO_SUPERUSER_USERNAME }}" \
               DJANGO_SUPERUSER_EMAIL="${{ secrets.DJANGO_SUPERUSER_EMAIL }}" \
@@ -222,8 +227,9 @@ jobs:
         env:
           GITHUB_SHA: ${{ github.sha }}
           AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+          DB_HOST: ${{ env.DB_HOST_COMPUTED }}
           DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
+          DB_USER: ${{ env.DB_USER_COMPUTED }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
