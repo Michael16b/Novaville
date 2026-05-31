@@ -34,6 +34,21 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Validate Azure Postgres configuration
+        run: |
+          if [[ -z "${{ secrets.AZURE_POSTGRES_SERVER_NAME }}" ]]; then
+            echo "ERROR: AZURE_POSTGRES_SERVER_NAME is not set."
+            exit 1
+          fi
+          if [[ -z "${{ secrets.DB_USER }}" ]]; then
+            echo "ERROR: DB_USER is not set."
+            exit 1
+          fi
+          if [[ -z "${{ secrets.DB_NAME }}" ]]; then
+            echo "ERROR: DB_NAME is not set."
+            exit 1
+          fi
+
       - name: Compute DB_HOST and DB_USER
         run: |
           if [[ "${{ secrets.DB_USER }}" == *"@"* ]]; then
