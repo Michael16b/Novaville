@@ -164,6 +164,13 @@ Le script :
 - ouvre le firewall sur les IP sortantes de l'App Service
 - affiche `DB_HOST` et le format `DB_USER` attendu
 
+Execution propre via GitHub Actions (recommande) :
+1) Aller sur GitHub > Actions > workflow "Build and Deploy Novaville - Multi-Container".
+2) Cliquer "Run workflow" et activer l'option `create_postgres`.
+3) Le job cree la base, puis le reste du workflow continue normalement.
+
+Apres execution, mettez a jour les secrets `DB_HOST` et `DB_USER` avec la sortie du script.
+
 Configuration des secrets a partir de la sortie :
 - `DB_HOST` : `<server-name>.postgres.database.azure.com`
 - `DB_USER` : `<user>@<server-name>`
