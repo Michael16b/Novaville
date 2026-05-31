@@ -46,11 +46,19 @@ else
     --public-access Enabled
 fi
 
-az postgres flexible-server db create \
+if az postgres flexible-server db show \
   --resource-group "$AZURE_RESOURCE_GROUP" \
   --server-name "$AZURE_POSTGRES_SERVER_NAME" \
   --database-name "$DB_NAME" \
-  --output none
+  --output none 2>/dev/null; then
+  echo "Database already exists: $DB_NAME"
+else
+  az postgres flexible-server db create \
+    --resource-group "$AZURE_RESOURCE_GROUP" \
+    --server-name "$AZURE_POSTGRES_SERVER_NAME" \
+    --database-name "$DB_NAME" \
+    --output none
+fi
 
 outbound_ips=$(az webapp show \
   --name "$AZURE_APP_NAME" \

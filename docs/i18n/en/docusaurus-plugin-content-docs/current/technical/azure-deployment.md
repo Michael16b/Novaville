@@ -54,6 +54,13 @@ Secrets must be configured in **Settings > Environments > Azure Cloud** on your 
 | `AZURE_RESOURCE_GROUP` | Target Resource Group | `Novaville` |
 | `AZURE_LOCATION` | Azure region | `francecentral` |
 
+### Infrastructure secrets (Azure infra script)
+
+| Secret | Description | Example |
+|--------|-------------|---------|
+| `AZURE_APP_SERVICE_PLAN_NAME` | App Service plan name | `NovavillePlan` |
+| `AZURE_STORAGE_ACCOUNT_NAME` | Storage account name (unique) | `novavillestorage` |
+
 ### Django secrets
 
 | Secret | Description | Example |
@@ -170,6 +177,31 @@ Clean GitHub Actions run (recommended):
 3) The job creates the database, then the rest of the workflow proceeds.
 
 After execution, update the `DB_HOST` and `DB_USER` secrets with the script output.
+
+### 4b. Create Azure infrastructure (optional)
+
+Use the Azure CLI script to create if missing:
+- Resource Group
+- App Service Plan
+- App Service
+- Container Registry (ACR)
+- Storage Account
+
+GitHub Actions run (recommended):
+1) Go to GitHub > Actions > workflow "Build and Deploy Novaville - Multi-Container".
+2) Click "Run workflow" and enable the `create_infra` option.
+
+Local script:
+
+```bash
+bash scripts/create-azure-infra.sh
+```
+
+On Windows (PowerShell):
+
+```powershell
+./scripts/create-azure-infra.ps1
+```
 
 Configure secrets from the output:
 - `DB_HOST`: `<server-name>.postgres.database.azure.com`

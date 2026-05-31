@@ -5,6 +5,11 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
     inputs:
+      create_infra:
+        description: "Create Azure infra (RG, ACR, Storage, App Service)"
+        required: false
+        default: "false"
+        type: boolean
       create_postgres:
         description: "Create or update Azure PostgreSQL (run once)"
         required: false
@@ -12,11 +17,45 @@ on:
         type: boolean
 
 jobs:
+  create-infra:
+    name: Create Azure infra (optional)
+    runs-on: ubuntu-latest
+    environment: Azure Cloud
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.create_infra == true }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Create Azure infra
+        run: bash scripts/create-azure-infra.sh
+        env:
+          AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          AZURE_LOCATION: ${{ secrets.AZURE_LOCATION }}
+          AZURE_APP_NAME: ${{ secrets.AZURE_APP_NAME }}
+          AZURE_APP_SERVICE_PLAN_NAME: ${{ secrets.AZURE_APP_SERVICE_PLAN_NAME }}
+          AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+          AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
+
   create-postgres:
     name: Create PostgreSQL (optional)
     runs-on: ubuntu-latest
     environment: Azure Cloud
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.create_postgres == true }}
+    needs:
+      - create-infra
+    if: >-
+      ${{
+        github.event_name == 'workflow_dispatch' &&
+        inputs.create_postgres == true &&
+        (needs.create-infra.result == 'success' || needs.create-infra.result == 'skipped')
+      }}
     permissions:
       contents: read
       id-token: write
@@ -93,7 +132,14 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - pre-deploy-tests
+      - create-infra
       - create-postgres
+    if: >-
+      ${{
+        !cancelled() &&
+        (needs.create-infra.result == 'success' || needs.create-infra.result == 'skipped') &&
+        (needs.create-postgres.result == 'success' || needs.create-postgres.result == 'skipped')
+      }}
     environment: Azure Cloud
     steps:
       - name: Checkout code

@@ -54,11 +54,27 @@ if ($serverExists) {
     --public-access Enabled | Out-Null
 }
 
-az postgres flexible-server db create `
-  --resource-group $env:AZURE_RESOURCE_GROUP `
-  --server-name $env:AZURE_POSTGRES_SERVER_NAME `
-  --database-name $env:DB_NAME `
-  --output none | Out-Null
+$dbExists = $false
+try {
+  az postgres flexible-server db show `
+    --resource-group $env:AZURE_RESOURCE_GROUP `
+    --server-name $env:AZURE_POSTGRES_SERVER_NAME `
+    --database-name $env:DB_NAME `
+    --output none | Out-Null
+  $dbExists = $true
+} catch {
+  $dbExists = $false
+}
+
+if ($dbExists) {
+  Write-Host "Database already exists: $($env:DB_NAME)"
+} else {
+  az postgres flexible-server db create `
+    --resource-group $env:AZURE_RESOURCE_GROUP `
+    --server-name $env:AZURE_POSTGRES_SERVER_NAME `
+    --database-name $env:DB_NAME `
+    --output none | Out-Null
+}
 
 $outboundIps = az webapp show `
   --name $env:AZURE_APP_NAME `
