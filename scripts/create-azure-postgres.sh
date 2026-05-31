@@ -46,18 +46,37 @@ else
     --public-access Enabled
 fi
 
+db_exists=false
 if az postgres flexible-server db show \
+  --resource-group "$AZURE_RESOURCE_GROUP" \
+  --server-name "$AZURE_POSTGRES_SERVER_NAME" \
+  --name "$DB_NAME" \
+  --output none 2>/dev/null; then
+  db_exists=true
+elif az postgres flexible-server db show \
   --resource-group "$AZURE_RESOURCE_GROUP" \
   --server-name "$AZURE_POSTGRES_SERVER_NAME" \
   --database-name "$DB_NAME" \
   --output none 2>/dev/null; then
+  db_exists=true
+fi
+
+if $db_exists; then
   echo "Database already exists: $DB_NAME"
 else
-  az postgres flexible-server db create \
+  if az postgres flexible-server db create \
     --resource-group "$AZURE_RESOURCE_GROUP" \
     --server-name "$AZURE_POSTGRES_SERVER_NAME" \
-    --database-name "$DB_NAME" \
-    --output none
+    --name "$DB_NAME" \
+    --output none 2>/dev/null; then
+    :
+  else
+    az postgres flexible-server db create \
+      --resource-group "$AZURE_RESOURCE_GROUP" \
+      --server-name "$AZURE_POSTGRES_SERVER_NAME" \
+      --database-name "$DB_NAME" \
+      --output none
+  fi
 fi
 
 outbound_ips=$(az webapp show \
@@ -69,13 +88,23 @@ outbound_ips=$(az webapp show \
 IFS=',' read -ra ip_list <<< "$outbound_ips"
 for ip in "${ip_list[@]}"; do
   rule_name="appservice-${ip//./-}"
-  az postgres flexible-server firewall-rule create \
+  if az postgres flexible-server firewall-rule create \
     --resource-group "$AZURE_RESOURCE_GROUP" \
-    --name "$AZURE_POSTGRES_SERVER_NAME" \
-    --rule-name "$rule_name" \
+    --server-name "$AZURE_POSTGRES_SERVER_NAME" \
+    --name "$rule_name" \
     --start-ip-address "$ip" \
     --end-ip-address "$ip" \
-    --output none
+    --output none 2>/dev/null; then
+    :
+  else
+    az postgres flexible-server firewall-rule create \
+      --resource-group "$AZURE_RESOURCE_GROUP" \
+      --name "$AZURE_POSTGRES_SERVER_NAME" \
+      --rule-name "$rule_name" \
+      --start-ip-address "$ip" \
+      --end-ip-address "$ip" \
+      --output none
+  fi
   echo "Firewall rule added for $ip"
 done
 

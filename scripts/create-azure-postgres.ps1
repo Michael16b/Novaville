@@ -59,21 +59,44 @@ try {
   az postgres flexible-server db show `
     --resource-group $env:AZURE_RESOURCE_GROUP `
     --server-name $env:AZURE_POSTGRES_SERVER_NAME `
-    --database-name $env:DB_NAME `
+    --name $env:DB_NAME `
     --output none | Out-Null
   $dbExists = $true
 } catch {
-  $dbExists = $false
+  try {
+    az postgres flexible-server db show `
+      --resource-group $env:AZURE_RESOURCE_GROUP `
+      --server-name $env:AZURE_POSTGRES_SERVER_NAME `
+      --database-name $env:DB_NAME `
+      --output none | Out-Null
+    $dbExists = $true
+  } catch {
+    $dbExists = $false
+  }
 }
 
 if ($dbExists) {
   Write-Host "Database already exists: $($env:DB_NAME)"
 } else {
-  az postgres flexible-server db create `
-    --resource-group $env:AZURE_RESOURCE_GROUP `
-    --server-name $env:AZURE_POSTGRES_SERVER_NAME `
-    --database-name $env:DB_NAME `
-    --output none | Out-Null
+  $dbCreated = $false
+  try {
+    az postgres flexible-server db create `
+      --resource-group $env:AZURE_RESOURCE_GROUP `
+      --server-name $env:AZURE_POSTGRES_SERVER_NAME `
+      --name $env:DB_NAME `
+      --output none | Out-Null
+    $dbCreated = $true
+  } catch {
+    $dbCreated = $false
+  }
+
+  if (-not $dbCreated) {
+    az postgres flexible-server db create `
+      --resource-group $env:AZURE_RESOURCE_GROUP `
+      --server-name $env:AZURE_POSTGRES_SERVER_NAME `
+      --database-name $env:DB_NAME `
+      --output none | Out-Null
+  }
 }
 
 $outboundIps = az webapp show `
@@ -85,13 +108,29 @@ $outboundIps = az webapp show `
 $ipList = $outboundIps -split ","
 foreach ($ip in $ipList) {
   $ruleName = "appservice-" + ($ip -replace "\.", "-")
-  az postgres flexible-server firewall-rule create `
-    --resource-group $env:AZURE_RESOURCE_GROUP `
-    --name $env:AZURE_POSTGRES_SERVER_NAME `
-    --rule-name $ruleName `
-    --start-ip-address $ip `
-    --end-ip-address $ip `
-    --output none | Out-Null
+  $ruleCreated = $false
+  try {
+    az postgres flexible-server firewall-rule create `
+      --resource-group $env:AZURE_RESOURCE_GROUP `
+      --server-name $env:AZURE_POSTGRES_SERVER_NAME `
+      --name $ruleName `
+      --start-ip-address $ip `
+      --end-ip-address $ip `
+      --output none | Out-Null
+    $ruleCreated = $true
+  } catch {
+    $ruleCreated = $false
+  }
+
+  if (-not $ruleCreated) {
+    az postgres flexible-server firewall-rule create `
+      --resource-group $env:AZURE_RESOURCE_GROUP `
+      --name $env:AZURE_POSTGRES_SERVER_NAME `
+      --rule-name $ruleName `
+      --start-ip-address $ip `
+      --end-ip-address $ip `
+      --output none | Out-Null
+  }
   Write-Host "Firewall rule added for $ip"
 }
 
