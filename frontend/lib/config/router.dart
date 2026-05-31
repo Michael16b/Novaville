@@ -20,7 +20,7 @@ import 'package:frontend/features/users/presentation/pages/credentials_share_pag
 import 'package:frontend/features/users/presentation/pages/my_account_page.dart';
 import 'package:frontend/features/users/presentation/pages/set_password_screen.dart';
 import 'package:frontend/features/users/presentation/pages/user_accounts_page.dart';
-import 'package:frontend/screens/maintenance_screen.dart';
+import 'package:frontend/config/maintenance_screen.dart';
 import 'package:frontend/ui/layouts/secured_layout.dart';
 import 'package:go_router/go_router.dart';
 

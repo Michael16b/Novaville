@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 
+/// Screen displayed when the backend is restarting or unavailable.
 class MaintenanceScreen extends StatelessWidget {
-  final VoidCallback onRetry;
+  /// Creates a maintenance screen.
+  const MaintenanceScreen({required this.onRetry, super.key});
 
-  const MaintenanceScreen({Key? key, required this.onRetry}) : super(key: key);
+  /// Callback when the user clicks the retry button.
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +16,7 @@ class MaintenanceScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(32.0),
+            padding: const EdgeInsets.all(32),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -24,7 +27,7 @@ class MaintenanceScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 32),
                 Text(
-                  "Mise à jour en cours",
+                  'Mise à jour en cours',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
@@ -33,7 +36,9 @@ class MaintenanceScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  "Nos serveurs redémarrent pour vous apporter de nouvelles fonctionnalités.\n\nL'application sera disponible d'ici quelques secondes.",
+                  'Nos serveurs redémarrent pour vous apporter de nouvelles '
+                  'fonctionnalités.\n\n'
+                  "L'application sera disponible d'ici quelques minutes.",
                   textAlign: TextAlign.center,
                   style: Theme.of(
                     context,
@@ -43,7 +48,7 @@ class MaintenanceScreen extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: onRetry,
                   icon: const Icon(Icons.refresh),
-                  label: const Text("Réessayer la connexion"),
+                  label: const Text('Réessayer la connexion'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
