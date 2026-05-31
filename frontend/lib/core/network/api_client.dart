@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
-import 'package:frontend/config/router.dart';
-import 'package:go_router/go_router.dart';
 
 /// Binary file attached to a multipart API request.
 class MultipartApiFile {
@@ -36,6 +34,10 @@ class ApiClient {
 
   /// HTTP client used to perform requests.
   final http.Client client;
+
+  /// Global callback triggered when a 502 or 503 status code is intercepted.
+  /// This allows the UI layer to handle redirection without circular dependencies.
+  static void Function()? onMaintenanceMode;
 
   /// Builds a full URI from [baseUrl] and a [path].
   /// Automatically handles trailing/leading slashes and query parameters.
@@ -73,7 +75,7 @@ class ApiClient {
   /// and redirects to the maintenance screen if needed.
   void _checkMaintenance(int statusCode) {
     if (statusCode == 502 || statusCode == 503) {
-      rootNavigatorKey.currentContext?.go('/maintenance');
+      onMaintenanceMode?.call();
     }
   }
 

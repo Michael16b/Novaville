@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/config/app_routes.dart';
+import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/features/agenda/presentation/pages/agenda_page.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
@@ -19,6 +20,7 @@ import 'package:frontend/features/users/presentation/pages/credentials_share_pag
 import 'package:frontend/features/users/presentation/pages/my_account_page.dart';
 import 'package:frontend/features/users/presentation/pages/set_password_screen.dart';
 import 'package:frontend/features/users/presentation/pages/user_accounts_page.dart';
+import 'package:frontend/screens/maintenance_screen.dart';
 import 'package:frontend/ui/layouts/secured_layout.dart';
 import 'package:go_router/go_router.dart';
 
@@ -30,6 +32,9 @@ Page<T> _buildPage<T>({required GoRouterState state, required Widget child}) {
   }
   return MaterialPage<T>(key: state.pageKey, child: child);
 }
+
+/// Global key for navigation without BuildContext (e.g. from API Client interceptors)
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Pure function containing the authentication redirect logic.
 ///
@@ -58,6 +63,7 @@ String? authRedirect({
     AppRoutes.bulkUserCreation,
     AppRoutes.credentialsShare,
     '/set-password',
+    '/maintenance',
   };
   const publicRoutes = <String>{
     AppRoutes.home,
@@ -66,6 +72,7 @@ String? authRedirect({
     AppRoutes.agenda,
     AppRoutes.usefulInfo,
     '/set-password',
+    '/maintenance',
   };
   final normalizedLocation =
       currentLocation.endsWith('/') && currentLocation.length > 1
@@ -167,7 +174,13 @@ String? anyRoleRedirect({
 /// Receives the [AuthBloc] directly so the router can be created once in
 /// [State.didChangeDependencies] without needing a [BuildContext] at build time.
 GoRouter buildRouter(AuthBloc authBloc) {
+  // Attach the global maintenance callback to the API client
+  ApiClient.onMaintenanceMode = () {
+    rootNavigatorKey.currentContext?.go('/maintenance');
+  };
+
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.home,
     refreshListenable: _AuthBlocListenable(authBloc),
     redirect: (context, state) => authRedirect(
@@ -186,6 +199,14 @@ GoRouter buildRouter(AuthBloc authBloc) {
               child: CircularProgressIndicator(color: AppColors.primary),
             ),
           ),
+        ),
+      ),
+      // ── Maintenance route ───────────────────────────────────────────────────
+      GoRoute(
+        path: '/maintenance',
+        pageBuilder: (context, state) => _buildPage(
+          state: state,
+          child: MaintenanceScreen(onRetry: () => context.go(AppRoutes.home)),
         ),
       ),
       // ── Public route ──────────────────────────────────────────────────────
