@@ -161,14 +161,14 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
     final effectiveDecoration = decoration == null
         ? eventDecoration
         : hasEvents
-            ? decoration.copyWith(
-                border: Border.all(
-                  color: AppColors.calendarEventBorder,
-                  width: 1.5,
-                ),
-                color: decoration.color ?? AppColors.calendarEventBackground,
-              )
-            : decoration;
+        ? decoration.copyWith(
+            border: Border.all(
+              color: AppColors.calendarEventBorder,
+              width: 1.5,
+            ),
+            color: decoration.color ?? AppColors.calendarEventBackground,
+          )
+        : decoration;
 
     return Padding(
       padding: const EdgeInsets.all(4),
@@ -1313,8 +1313,9 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
           description: result['description'] as String,
           startDate: result['start_date'] as DateTime,
           endDate: result['end_date'] as DateTime,
+          themeKey: selectedTheme?.value,
           theme: selectedTheme != null
-              ? bloc.resolveThemeId(selectedTheme.label)
+              ? bloc.resolveThemeId(selectedTheme.value)
               : null,
         ),
       );
@@ -1340,8 +1341,9 @@ class _AgendaPageContentState extends State<_AgendaPageContent> {
           description: result['description'] as String?,
           startDate: result['start_date'] as DateTime?,
           endDate: result['end_date'] as DateTime?,
+          themeKey: selectedTheme?.value,
           theme: selectedTheme != null
-              ? bloc.resolveThemeId(selectedTheme.label)
+              ? bloc.resolveThemeId(selectedTheme.value)
               : null,
         ),
       );

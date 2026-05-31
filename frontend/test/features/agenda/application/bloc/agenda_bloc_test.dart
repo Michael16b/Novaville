@@ -103,6 +103,7 @@ class _FakeEventRepository implements IEventRepository {
     required DateTime startDate,
     required DateTime endDate,
     int? theme,
+    String? themeKey,
   }) async {
     if (shouldThrowOnCreate) throw Exception(errorMessage);
   }
@@ -115,6 +116,7 @@ class _FakeEventRepository implements IEventRepository {
     DateTime? startDate,
     DateTime? endDate,
     int? theme,
+    String? themeKey,
   }) async {
     if (shouldThrowOnUpdate) throw Exception(errorMessage);
     return _event1.copyWith(id: eventId, title: title ?? _event1.title);
@@ -155,8 +157,11 @@ void main() {
       final expectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loading),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loading,
+          ),
           isA<AgendaState>()
               .having((s) => s.status, 'status', AgendaStatus.loaded)
               .having((s) => s.events, 'events', [_event1])
@@ -183,8 +188,11 @@ void main() {
       final expectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loading),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loading,
+          ),
           isA<AgendaState>()
               .having((s) => s.status, 'status', AgendaStatus.loaded)
               .having((s) => s.events, 'events', [_event1, _event2])
@@ -212,8 +220,11 @@ void main() {
       final expectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loading),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loading,
+          ),
           isA<AgendaState>()
               .having((s) => s.status, 'status', AgendaStatus.failure)
               .having((s) => s.error, 'error', contains('Server error')),
@@ -241,9 +252,7 @@ void main() {
 
     test('resolveThemeId matches French label case-insensitively', () async {
       final repo = _FakeEventRepository(
-        themes: [
-          const ThemeItem(id: 3, title: 'Citoyenneté'),
-        ],
+        themes: [const ThemeItem(id: 3, title: 'Citoyenneté')],
         pages: [
           [_event1],
         ],
@@ -254,10 +263,16 @@ void main() {
       final expectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loading),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loaded),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loading,
+          ),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const AgendaLoadRequested());
@@ -267,6 +282,8 @@ void main() {
       expect(bloc.resolveThemeId('Citoyenneté'), 3);
       // Case-insensitive match
       expect(bloc.resolveThemeId('citoyenneté'), 3);
+      // Stable backend key match
+      expect(bloc.resolveThemeId('CITIZENSHIP'), 3);
       // No match
       expect(bloc.resolveThemeId('Environnement'), isNull);
 
@@ -287,10 +304,16 @@ void main() {
       final loadExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loading),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loaded),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loading,
+          ),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const AgendaLoadRequested());
@@ -300,10 +323,16 @@ void main() {
       final filterExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loading),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loaded),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loading,
+          ),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const AgendaFilterRequested(themeTitle: 'Sport'));
@@ -315,51 +344,67 @@ void main() {
     // ── Create ─────────────────────────────────────────────────────────────
 
     test(
-        'AgendaEventCreateRequested emits creating, created, then reloads',
-        () async {
-      final repo = _FakeEventRepository(
-        pages: [
-          [_event1],
-        ],
-      );
-      final bloc = AgendaBloc(repository: repo);
+      'AgendaEventCreateRequested emits creating, created, then reloads',
+      () async {
+        final repo = _FakeEventRepository(
+          pages: [
+            [_event1],
+          ],
+        );
+        final bloc = AgendaBloc(repository: repo);
 
-      // Initial load
-      final loadExpectation = expectLater(
-        bloc.stream,
-        emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loading),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loaded),
-        ]),
-      );
-      bloc.add(const AgendaLoadRequested());
-      await loadExpectation;
+        // Initial load
+        final loadExpectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            isA<AgendaState>().having(
+              (s) => s.status,
+              'status',
+              AgendaStatus.loading,
+            ),
+            isA<AgendaState>().having(
+              (s) => s.status,
+              'status',
+              AgendaStatus.loaded,
+            ),
+          ]),
+        );
+        bloc.add(const AgendaLoadRequested());
+        await loadExpectation;
 
-      // Create
-      final createExpectation = expectLater(
-        bloc.stream,
-        emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.creating),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.created),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loaded),
-        ]),
-      );
-      bloc.add(
-        AgendaEventCreateRequested(
-          title: 'Nouvel événement',
-          description: 'Description',
-          startDate: DateTime(2025, 7, 1),
-          endDate: DateTime(2025, 7, 1, 2),
-        ),
-      );
-      await createExpectation;
-      await bloc.close();
-    });
+        // Create
+        final createExpectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            isA<AgendaState>().having(
+              (s) => s.status,
+              'status',
+              AgendaStatus.creating,
+            ),
+            isA<AgendaState>().having(
+              (s) => s.status,
+              'status',
+              AgendaStatus.created,
+            ),
+            isA<AgendaState>().having(
+              (s) => s.status,
+              'status',
+              AgendaStatus.loaded,
+            ),
+          ]),
+        );
+        bloc.add(
+          AgendaEventCreateRequested(
+            title: 'Nouvel événement',
+            description: 'Description',
+            startDate: DateTime(2025, 7, 1),
+            endDate: DateTime(2025, 7, 1, 2),
+          ),
+        );
+        await createExpectation;
+        await bloc.close();
+      },
+    );
 
     test('AgendaEventCreateRequested emits failure on error', () async {
       final repo = _FakeEventRepository(
@@ -375,10 +420,16 @@ void main() {
       final loadExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loading),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loaded),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loading,
+          ),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const AgendaLoadRequested());
@@ -387,8 +438,11 @@ void main() {
       final createExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.creating),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.creating,
+          ),
           isA<AgendaState>()
               .having((s) => s.status, 'status', AgendaStatus.failure)
               .having((s) => s.error, 'error', contains('Create failed')),
@@ -408,49 +462,60 @@ void main() {
 
     // ── Delete ─────────────────────────────────────────────────────────────
 
-    test('AgendaEventDeleteRequested emits deleting, deleted, then reloads',
-        () async {
-      final repo = _FakeEventRepository(
-        pages: [
-          [_event1, _event2],
-        ],
-      );
-      final bloc = AgendaBloc(repository: repo);
+    test(
+      'AgendaEventDeleteRequested emits deleting, deleted, then reloads',
+      () async {
+        final repo = _FakeEventRepository(
+          pages: [
+            [_event1, _event2],
+          ],
+        );
+        final bloc = AgendaBloc(repository: repo);
 
-      // Initial load
-      final loadExpectation = expectLater(
-        bloc.stream,
-        emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loading),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loaded)
-              .having((s) => s.events.length, 'count', 2),
-        ]),
-      );
-      bloc.add(const AgendaLoadRequested());
-      await loadExpectation;
+        // Initial load
+        final loadExpectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            isA<AgendaState>().having(
+              (s) => s.status,
+              'status',
+              AgendaStatus.loading,
+            ),
+            isA<AgendaState>()
+                .having((s) => s.status, 'status', AgendaStatus.loaded)
+                .having((s) => s.events.length, 'count', 2),
+          ]),
+        );
+        bloc.add(const AgendaLoadRequested());
+        await loadExpectation;
 
-      final deleteExpectation = expectLater(
-        bloc.stream,
-        emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.deleting),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.deleted)
-              .having(
-                (s) => s.events.any((e) => e.id == _event1.id),
-                'event1 removed',
-                isFalse,
-              ),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loaded),
-        ]),
-      );
-      bloc.add(AgendaEventDeleteRequested(eventId: _event1.id));
-      await deleteExpectation;
-      await bloc.close();
-    });
+        final deleteExpectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            isA<AgendaState>().having(
+              (s) => s.status,
+              'status',
+              AgendaStatus.deleting,
+            ),
+            isA<AgendaState>()
+                .having((s) => s.status, 'status', AgendaStatus.deleted)
+                .having(
+                  (s) => s.events.any((e) => e.id == _event1.id),
+                  'event1 removed',
+                  isFalse,
+                ),
+            isA<AgendaState>().having(
+              (s) => s.status,
+              'status',
+              AgendaStatus.loaded,
+            ),
+          ]),
+        );
+        bloc.add(AgendaEventDeleteRequested(eventId: _event1.id));
+        await deleteExpectation;
+        await bloc.close();
+      },
+    );
 
     test('AgendaEventDeleteRequested emits failure on error', () async {
       final repo = _FakeEventRepository(
@@ -465,10 +530,16 @@ void main() {
       final loadExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loading),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loaded),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loading,
+          ),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const AgendaLoadRequested());
@@ -477,8 +548,11 @@ void main() {
       final deleteExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.deleting),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.deleting,
+          ),
           isA<AgendaState>()
               .having((s) => s.status, 'status', AgendaStatus.failure)
               .having((s) => s.error, 'error', contains('Delete failed')),
@@ -491,47 +565,64 @@ void main() {
 
     // ── Update ─────────────────────────────────────────────────────────────
 
-    test('AgendaEventUpdateRequested emits updating, updated, then reloads',
-        () async {
-      final repo = _FakeEventRepository(
-        pages: [
-          [_event1],
-        ],
-      );
-      final bloc = AgendaBloc(repository: repo);
+    test(
+      'AgendaEventUpdateRequested emits updating, updated, then reloads',
+      () async {
+        final repo = _FakeEventRepository(
+          pages: [
+            [_event1],
+          ],
+        );
+        final bloc = AgendaBloc(repository: repo);
 
-      final loadExpectation = expectLater(
-        bloc.stream,
-        emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loading),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loaded),
-        ]),
-      );
-      bloc.add(const AgendaLoadRequested());
-      await loadExpectation;
+        final loadExpectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            isA<AgendaState>().having(
+              (s) => s.status,
+              'status',
+              AgendaStatus.loading,
+            ),
+            isA<AgendaState>().having(
+              (s) => s.status,
+              'status',
+              AgendaStatus.loaded,
+            ),
+          ]),
+        );
+        bloc.add(const AgendaLoadRequested());
+        await loadExpectation;
 
-      final updateExpectation = expectLater(
-        bloc.stream,
-        emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.updating),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.updated),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loaded),
-        ]),
-      );
-      bloc.add(
-        AgendaEventUpdateRequested(
-          eventId: _event1.id,
-          title: 'Titre modifié',
-        ),
-      );
-      await updateExpectation;
-      await bloc.close();
-    });
+        final updateExpectation = expectLater(
+          bloc.stream,
+          emitsInOrder([
+            isA<AgendaState>().having(
+              (s) => s.status,
+              'status',
+              AgendaStatus.updating,
+            ),
+            isA<AgendaState>().having(
+              (s) => s.status,
+              'status',
+              AgendaStatus.updated,
+            ),
+            isA<AgendaState>().having(
+              (s) => s.status,
+              'status',
+              AgendaStatus.loaded,
+            ),
+          ]),
+        );
+        bloc.add(
+          AgendaEventUpdateRequested(
+            eventId: _event1.id,
+            title: 'Titre modifié',
+          ),
+        );
+        await updateExpectation;
+        await bloc.close();
+      },
+    );
 
     test('AgendaEventUpdateRequested emits failure on error', () async {
       final repo = _FakeEventRepository(
@@ -546,10 +637,16 @@ void main() {
       final loadExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loading),
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.loaded),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loading,
+          ),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.loaded,
+          ),
         ]),
       );
       bloc.add(const AgendaLoadRequested());
@@ -558,18 +655,18 @@ void main() {
       final updateExpectation = expectLater(
         bloc.stream,
         emitsInOrder([
-          isA<AgendaState>()
-              .having((s) => s.status, 'status', AgendaStatus.updating),
+          isA<AgendaState>().having(
+            (s) => s.status,
+            'status',
+            AgendaStatus.updating,
+          ),
           isA<AgendaState>()
               .having((s) => s.status, 'status', AgendaStatus.failure)
               .having((s) => s.error, 'error', contains('Update failed')),
         ]),
       );
       bloc.add(
-        AgendaEventUpdateRequested(
-          eventId: _event1.id,
-          title: 'Titre modifié',
-        ),
+        AgendaEventUpdateRequested(eventId: _event1.id, title: 'Titre modifié'),
       );
       await updateExpectation;
       await bloc.close();

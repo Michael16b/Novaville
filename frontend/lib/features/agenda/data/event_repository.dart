@@ -1,4 +1,5 @@
 import 'package:frontend/features/agenda/data/models/community_event.dart';
+import 'package:frontend/features/agenda/data/models/event_theme.dart';
 
 /// A theme item returned by the backend.
 class ThemeItem {
@@ -7,10 +8,7 @@ class ThemeItem {
 
   /// Creates a [ThemeItem] from a JSON map.
   factory ThemeItem.fromJson(Map<String, dynamic> json) {
-    return ThemeItem(
-      id: json['id'] as int,
-      title: json['title'] as String,
-    );
+    return ThemeItem(id: json['id'] as int, title: json['title'] as String);
   }
 
   /// Backend primary key.
@@ -18,6 +16,9 @@ class ThemeItem {
 
   /// Theme title as stored in the database.
   final String title;
+
+  /// Stable theme represented by [title], when it matches a known theme.
+  EventTheme? get theme => EventTheme.tryParse(title);
 }
 
 /// Paginated response for events.
@@ -80,6 +81,7 @@ abstract class IEventRepository {
     required DateTime startDate,
     required DateTime endDate,
     int? theme,
+    String? themeKey,
   });
 
   /// Updates an existing event.
@@ -90,6 +92,7 @@ abstract class IEventRepository {
     DateTime? startDate,
     DateTime? endDate,
     int? theme,
+    String? themeKey,
   });
 
   /// Deletes an event.

@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/features/agenda/data/event_repository.dart';
 import 'package:frontend/features/agenda/data/models/community_event.dart';
+import 'package:frontend/features/agenda/data/models/event_theme.dart';
 
 part 'agenda_event.dart';
 part 'agenda_state.dart';
@@ -9,8 +10,8 @@ part 'agenda_state.dart';
 class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
   /// Creates an [AgendaBloc].
   AgendaBloc({required IEventRepository repository})
-      : _repository = repository,
-        super(const AgendaState.initial()) {
+    : _repository = repository,
+      super(const AgendaState.initial()) {
     on<AgendaLoadRequested>(_onLoadRequested);
     on<AgendaSearchRequested>(_onSearchRequested);
     on<AgendaSortRequested>(_onSortRequested);
@@ -33,8 +34,7 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
   // Cached theme items from the backend (id ↔ title mapping).
   List<ThemeItem> _cachedThemes = [];
 
-  static const Duration _minimumSkeletonDuration =
-      Duration(milliseconds: 300);
+  static const Duration _minimumSkeletonDuration = Duration(milliseconds: 300);
 
   /// Resolves a theme display title to its backend ID.
   ///
@@ -44,8 +44,12 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
   int? resolveThemeId(String? title) {
     if (title == null) return null;
     final normalized = title.trim().toLowerCase();
+    final requestedTheme = EventTheme.tryParse(title);
     for (final t in _cachedThemes) {
       if (t.title.trim().toLowerCase() == normalized) {
+        return t.id;
+      }
+      if (requestedTheme != null && t.theme == requestedTheme) {
         return t.id;
       }
     }
@@ -93,8 +97,7 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
     AgendaSortRequested event,
     Emitter<AgendaState> emit,
   ) async {
-    final ordering =
-        event.ascending ? event.column : '-${event.column}';
+    final ordering = event.ascending ? event.column : '-${event.column}';
     emit(state.copyWith(status: AgendaStatus.loading));
     _lastOrdering = ordering;
     await _loadAllEvents(
@@ -145,6 +148,7 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
         startDate: event.startDate,
         endDate: event.endDate,
         theme: event.theme,
+        themeKey: event.themeKey,
       );
       emit(state.copyWith(status: AgendaStatus.created));
       // Reload all events
@@ -154,12 +158,7 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
         search: state.search,
       );
     } catch (e) {
-      emit(
-        state.copyWith(
-          status: AgendaStatus.failure,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(status: AgendaStatus.failure, error: e.toString()));
     }
   }
 
@@ -187,12 +186,7 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
         search: state.search,
       );
     } catch (e) {
-      emit(
-        state.copyWith(
-          status: AgendaStatus.failure,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(status: AgendaStatus.failure, error: e.toString()));
     }
   }
 
@@ -209,6 +203,7 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
         startDate: event.startDate,
         endDate: event.endDate,
         theme: event.theme,
+        themeKey: event.themeKey,
       );
       emit(state.copyWith(status: AgendaStatus.updated));
       await _loadAllEvents(
@@ -217,12 +212,7 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
         search: state.search,
       );
     } catch (e) {
-      emit(
-        state.copyWith(
-          status: AgendaStatus.failure,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(status: AgendaStatus.failure, error: e.toString()));
     }
   }
 
@@ -265,20 +255,10 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
       }
 
       emit(
-        AgendaState.loaded(
-          allEvents,
-          count: allEvents.length,
-          search: search,
-        ),
+        AgendaState.loaded(allEvents, count: allEvents.length, search: search),
       );
     } catch (e) {
-      emit(
-        state.copyWith(
-          status: AgendaStatus.failure,
-          error: e.toString(),
-        ),
-      );
+      emit(state.copyWith(status: AgendaStatus.failure, error: e.toString()));
     }
   }
 }
-

@@ -11,8 +11,8 @@ class EventRepositoryImpl implements IEventRepository {
   EventRepositoryImpl({
     required ApiClient publicApiClient,
     required ApiClient authenticatedApiClient,
-  })  : _publicApiClient = publicApiClient,
-        _authenticatedApiClient = authenticatedApiClient;
+  }) : _publicApiClient = publicApiClient,
+       _authenticatedApiClient = authenticatedApiClient;
 
   final ApiClient _publicApiClient;
   final ApiClient _authenticatedApiClient;
@@ -85,10 +85,7 @@ class EventRepositoryImpl implements IEventRepository {
         return EventPage(
           count: decoded.length,
           results: decoded
-              .map(
-                (r) =>
-                    CommunityEvent.fromJson(r as Map<String, dynamic>),
-              )
+              .map((r) => CommunityEvent.fromJson(r as Map<String, dynamic>))
               .toList(),
         );
       }
@@ -108,9 +105,7 @@ class EventRepositoryImpl implements IEventRepository {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       return CommunityEvent.fromJson(json);
     } else {
-      throw Exception(
-        '${AgendaTexts.fetchEventError}: ${response.statusCode}',
-      );
+      throw Exception('${AgendaTexts.fetchEventError}: ${response.statusCode}');
     }
   }
 
@@ -121,6 +116,7 @@ class EventRepositoryImpl implements IEventRepository {
     required DateTime startDate,
     required DateTime endDate,
     int? theme,
+    String? themeKey,
   }) async {
     final body = <String, dynamic>{
       'title': title,
@@ -128,7 +124,12 @@ class EventRepositoryImpl implements IEventRepository {
       'start_date': startDate.toUtc().toIso8601String(),
       'end_date': endDate.toUtc().toIso8601String(),
     };
-    if (theme != null) body['theme'] = theme;
+    if (theme != null) {
+      body['theme'] = theme;
+    }
+    if (themeKey != null) {
+      body['theme_key'] = themeKey;
+    }
 
     final response = await _authenticatedApiClient.post(
       '/api/v1/events/',
@@ -150,6 +151,7 @@ class EventRepositoryImpl implements IEventRepository {
     DateTime? startDate,
     DateTime? endDate,
     int? theme,
+    String? themeKey,
   }) async {
     final body = <String, dynamic>{};
     if (title != null) body['title'] = title;
@@ -160,7 +162,12 @@ class EventRepositoryImpl implements IEventRepository {
     if (endDate != null) {
       body['end_date'] = endDate.toUtc().toIso8601String();
     }
-    if (theme != null) body['theme'] = theme;
+    if (theme != null) {
+      body['theme'] = theme;
+    }
+    if (themeKey != null) {
+      body['theme_key'] = themeKey;
+    }
 
     final response = await _authenticatedApiClient.patch(
       '/api/v1/events/$eventId/',
