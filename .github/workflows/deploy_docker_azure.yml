@@ -123,6 +123,12 @@ jobs:
 
       - name: Configure Azure App Service settings
         run: |
+          if [[ "${{ secrets.DB_USER }}" == *"@"* ]]; then
+            DB_USER_COMPUTED="${{ secrets.DB_USER }}"
+          else
+            DB_USER_COMPUTED="${{ secrets.DB_USER }}@${{ secrets.AZURE_POSTGRES_SERVER_NAME }}"
+          fi
+          DB_HOST_COMPUTED="${{ secrets.AZURE_POSTGRES_SERVER_NAME }}.postgres.database.azure.com"
           az webapp config appsettings set \
             --name NovavilleApp \
             --resource-group Novaville \
@@ -142,20 +148,25 @@ jobs:
               DJANGO_RESET_ADMIN_ON_DEPLOY="${{ secrets.DJANGO_RESET_ADMIN_ON_DEPLOY }}"
 
       - name: Deploy Docker Compose
-        env:
-          GITHUB_SHA: ${{ github.sha }}
-          AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-          DB_HOST: ${{ env.DB_HOST_COMPUTED }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ env.DB_USER_COMPUTED }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
-          DJANGO_SUPERUSER_USERNAME: ${{ secrets.DJANGO_SUPERUSER_USERNAME }}
-          DJANGO_SUPERUSER_EMAIL: ${{ secrets.DJANGO_SUPERUSER_EMAIL }}
-          DJANGO_SUPERUSER_PASSWORD: ${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
-          DJANGO_RESET_ADMIN_ON_DEPLOY: ${{ secrets.DJANGO_RESET_ADMIN_ON_DEPLOY }}
         run: |
+          if [[ "${{ secrets.DB_USER }}" == *"@"* ]]; then
+            DB_USER_COMPUTED="${{ secrets.DB_USER }}"
+          else
+            DB_USER_COMPUTED="${{ secrets.DB_USER }}@${{ secrets.AZURE_POSTGRES_SERVER_NAME }}"
+          fi
+          DB_HOST_COMPUTED="${{ secrets.AZURE_POSTGRES_SERVER_NAME }}.postgres.database.azure.com"
+          export GITHUB_SHA="${{ github.sha }}"
+          export AZURE_ACR_NAME="${{ secrets.AZURE_ACR_NAME }}"
+          export DB_HOST="$DB_HOST_COMPUTED"
+          export DB_NAME="${{ secrets.DB_NAME }}"
+          export DB_USER="$DB_USER_COMPUTED"
+          export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+          export DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}"
+          export JWT_SIGNING_KEY="${{ secrets.JWT_SIGNING_KEY }}"
+          export DJANGO_SUPERUSER_USERNAME="${{ secrets.DJANGO_SUPERUSER_USERNAME }}"
+          export DJANGO_SUPERUSER_EMAIL="${{ secrets.DJANGO_SUPERUSER_EMAIL }}"
+          export DJANGO_SUPERUSER_PASSWORD="${{ secrets.DJANGO_SUPERUSER_PASSWORD }}"
+          export DJANGO_RESET_ADMIN_ON_DEPLOY="${{ secrets.DJANGO_RESET_ADMIN_ON_DEPLOY }}"
           # Substitute all ${VAR} references in the compose file with their values
           envsubst < docker-compose-azure.yml > /tmp/docker-compose-resolved.yml
           az webapp config container set \
