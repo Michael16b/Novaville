@@ -82,10 +82,6 @@ const config = {
         addDownloadButton: true,
         autoBuildPdfs: true,
         downloadButtonText: 'Télécharger le PDF',
-        outputFileNames: {
-          tutorialSidebar: 'Documentation-Technique-Novaville.pdf',
-          apiSidebar: 'Documentation-API-Novaville.pdf',
-        },
       },
     ],
   ],
