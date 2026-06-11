@@ -78,18 +78,134 @@ const config = {
     [
       'docusaurus-plugin-papersaurus',
       {
-        addDownloadButton: false, // On ne garde que le lien PDF global dans la navbar
+        addDownloadButton: false,
         autoBuildPdfs: true,
         keepDebugHtmls: true,
-        getPdfPageFooter: (_siteConfig, _pluginConfig, pageTitle) => {
+
+        // ── Page de couverture professionnelle ──────────────────────────
+        getPdfCoverPage: (siteConfig, _pluginConfig, pageTitle, version) => {
+          const authors = siteConfig.customFields?.authors || '';
+          const today = new Date().toLocaleDateString('fr-FR', {
+            year: 'numeric', month: 'long', day: 'numeric',
+          });
           return `
-            <div style="height:1cm;display:flex;margin:0 1.5cm;color:#555;
-                        font-size:9px;font-family:Arial,sans-serif;width:100%;">
-              <span style="flex-grow:1;">Novaville</span>
-              <span style="flex-grow:1;text-align:center;">${pageTitle}</span>
-              <span style="flex-grow:1;text-align:right;">Page <span class='pageNumber'></span> / <span class='totalPages'></span></span>
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="utf-8"></head>
+            <body style="margin:0;padding:0;font-family:'Segoe UI',Arial,Helvetica,sans-serif;">
+              <div style="
+                height:100vh;
+                display:flex;
+                flex-direction:column;
+                justify-content:center;
+                align-items:center;
+                text-align:center;
+                background:linear-gradient(160deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+                color:#fff;
+                padding:3cm;
+                box-sizing:border-box;
+              ">
+                <!-- Logo -->
+                <img src="${siteConfig.customFields?.appLogoUrl || ''}"
+                     alt="Novaville"
+                     style="width:120px;height:120px;border-radius:24px;
+                            margin-bottom:2cm;
+                            box-shadow:0 8px 32px rgba(0,0,0,0.3);" />
+
+                <!-- Titre du projet -->
+                <h1 style="
+                  font-size:42px;font-weight:700;margin:0 0 0.3cm 0;
+                  letter-spacing:-0.5px;
+                  background:linear-gradient(135deg,#e2e2e2,#ffffff);
+                  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                ">NOVAVILLE</h1>
+
+                <!-- Sous-titre -->
+                <p style="
+                  font-size:18px;color:#94a3b8;margin:0 0 1.5cm 0;
+                  max-width:16cm;line-height:1.5;
+                ">Documentation technique et guide pour reprise par une équipe de développement</p>
+
+                <!-- Barre décorative -->
+                <div style="width:6cm;height:3px;background:linear-gradient(90deg,#2e8555,#25c2a0);
+                            border-radius:2px;margin-bottom:1.5cm;"></div>
+
+                <!-- Titre de la section PDF -->
+                <h2 style="font-size:22px;font-weight:400;margin:0 0 0.8cm 0;color:#cbd5e1;">
+                  ${pageTitle}
+                </h2>
+
+                ${version ? `<p style="font-size:13px;color:#64748b;margin:0 0 0.5cm 0;">Version ${version}</p>` : ''}
+
+                <!-- Auteurs -->
+                <p style="font-size:12px;color:#64748b;margin:0 0 0.3cm 0;">
+                  ${authors}
+                </p>
+
+                <!-- Date -->
+                <p style="font-size:12px;color:#475569;margin:0;">
+                  Généré le ${today}
+                </p>
+              </div>
+            </body>
+            </html>`;
+        },
+
+        // ── En-tête de page ────────────────────────────────────────────
+        getPdfPageHeader: (siteConfig, _pluginConfig, pageTitle) => {
+          return `
+            <div style="
+              height:1.2cm;
+              display:flex;
+              align-items:center;
+              margin:0 1.5cm;
+              padding-top:0.3cm;
+              border-top:2px solid #2e8555;
+              font-family:'Segoe UI',Arial,Helvetica,sans-serif;
+              font-size:8px;
+              color:#94a3b8;
+            ">
+              <span style="flex:1;font-weight:600;color:#2e8555;text-transform:uppercase;letter-spacing:1px;">
+                Novaville
+              </span>
+              <span style="flex:2;text-align:center;color:#64748b;">
+                ${pageTitle}
+              </span>
+              <span style="flex:1;text-align:right;color:#94a3b8;font-size:7px;">
+                Documentation technique
+              </span>
             </div>`;
         },
+
+        // ── Pied de page ───────────────────────────────────────────────
+        getPdfPageFooter: (_siteConfig, _pluginConfig, pageTitle) => {
+          return `
+            <div style="
+              height:1cm;
+              display:flex;
+              align-items:center;
+              margin:0 1.5cm;
+              border-top:1px solid #e2e8f0;
+              font-family:'Segoe UI',Arial,Helvetica,sans-serif;
+              font-size:8px;
+              color:#94a3b8;
+              width:100%;
+            ">
+              <span style="flex:1;">© Novaville</span>
+              <span style="flex:1;text-align:center;color:#cbd5e1;">${pageTitle}</span>
+              <span style="flex:1;text-align:right;">
+                Page <span class='pageNumber'></span> / <span class='totalPages'></span>
+              </span>
+            </div>`;
+        },
+
+        // Marges zéro pour la couverture (le layout est intégralement dans le HTML)
+        coverMargins: { top: '0', right: '0', bottom: '0', left: '0' },
+        // Marges des pages de contenu
+        margins: { top: '2.5cm', right: '2cm', bottom: '2.3cm', left: '2cm' },
+        // Timeout Puppeteer plus large pour les machines lentes
+        puppeteerTimeout: 60000,
+
         // Matcher "Page X / Y" SANS groupe capturant pour que split() consomme le séparateur
         footerParser: /Page \d+ \/ \d+/g,
       },
@@ -126,7 +242,7 @@ const config = {
             position: 'left',
             label: "Onboarding Devs",
           },
-          {to: '/blog', label: 'Notes de version', position: 'left'},
+          { to: '/blog', label: 'Notes de version', position: 'left' },
           {
             type: 'localeDropdown',
             position: 'right',
@@ -186,7 +302,7 @@ const config = {
             ],
           },
         ],
-    copyright: `Copyright © ${new Date().getFullYear()} Novaville. Auteurs : BESILY Michaël, CRONIER Romain, JAN Charlène. Documentation construite avec Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Novaville. Auteurs : BESILY Michaël, CRONIER Romain, JAN Charlène. Documentation construite avec Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,

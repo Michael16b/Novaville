@@ -29,20 +29,180 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
-/* Optimisations pour la génération du PDF (Papersaurus / Impression) */
+/* =====================================================================
+   Optimisations pour la génération du PDF (Papersaurus / Impression)
+   ===================================================================== */
 @media print {
-body, article, .markdown, h1, h2, h3, h4, p, li, td {
-    font-family: Arial, Helvetica, sans-serif !important;
+
+  /* ── Typographie de base ──────────────────────────────────────────── */
+  body, article, .markdown, h1, h2, h3, h4, h5, h6, p, li, td, th {
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
     font-variant-ligatures: none !important;
     text-rendering: geometricPrecision !important;
-
     -webkit-font-smoothing: none !important;
     -moz-osx-font-smoothing: grayscale !important;
-    color: black !important;
+    color: #1e293b !important;
     text-shadow: none !important;
   }
 
-    .hash-link {
+  body {
+    font-size: 10pt !important;
+    line-height: 1.6 !important;
+  }
+
+  /* ── Titres ────────────────────────────────────────────────────────── */
+  h1 {
+    font-size: 22pt !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    border-bottom: 2px solid #2e8555 !important;
+    padding-bottom: 6pt !important;
+    margin-top: 20pt !important;
+    margin-bottom: 12pt !important;
+    page-break-before: always;
+    break-before: page;
+  }
+
+  /* Ne pas casser avant le tout premier h1 de la page */
+  .markdown > h1:first-child {
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+
+  h2 {
+    font-size: 16pt !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding-bottom: 4pt !important;
+    margin-top: 16pt !important;
+    margin-bottom: 8pt !important;
+  }
+
+  h3 {
+    font-size: 13pt !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    margin-top: 12pt !important;
+    margin-bottom: 6pt !important;
+  }
+
+  h4, h5, h6 {
+    font-size: 11pt !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    margin-top: 10pt !important;
+    margin-bottom: 4pt !important;
+  }
+
+  /* Empêcher un titre orphelin en bas de page */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* ── Liens ─────────────────────────────────────────────────────────── */
+  a {
+    color: #2e8555 !important;
+    text-decoration: none !important;
+  }
+
+  /* ── Blocs de code ─────────────────────────────────────────────────── */
+  pre, code {
+    font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace !important;
+    font-size: 8.5pt !important;
+  }
+
+  pre {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 3px solid #2e8555 !important;
+    border-radius: 4px !important;
+    padding: 10pt 12pt !important;
+    margin: 8pt 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow-wrap: break-word !important;
+    white-space: pre-wrap !important;
+  }
+
+  code {
+    background: #f1f5f9 !important;
+    padding: 1pt 3pt !important;
+    border-radius: 3px !important;
+    color: #be185d !important;
+  }
+
+  pre code {
+    background: transparent !important;
+    padding: 0 !important;
+    color: #1e293b !important;
+  }
+
+  /* ── Tableaux ──────────────────────────────────────────────────────── */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 10pt 0 !important;
+    font-size: 9pt !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  th {
+    background: #f1f5f9 !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+    text-align: left !important;
+    padding: 6pt 8pt !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+
+  td {
+    padding: 5pt 8pt !important;
+    border: 1px solid #e2e8f0 !important;
+    vertical-align: top !important;
+  }
+
+  tr:nth-child(even) td {
+    background: #f8fafc !important;
+  }
+
+  /* ── Listes ────────────────────────────────────────────────────────── */
+  ul, ol {
+    padding-left: 18pt !important;
+    margin: 4pt 0 !important;
+  }
+
+  li {
+    margin-bottom: 3pt !important;
+  }
+
+  li > p {
+    margin: 2pt 0 !important;
+  }
+
+  /* ── Citations / Admonitions ───────────────────────────────────────── */
+  blockquote {
+    border-left: 3px solid #2e8555 !important;
+    background: #f0fdf4 !important;
+    margin: 8pt 0 !important;
+    padding: 8pt 12pt !important;
+    color: #334155 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* ── Images ────────────────────────────────────────────────────────── */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* ── Masquer l'interface web ────────────────────────────────────────── */
+  .hash-link {
     display: none !important;
     visibility: hidden !important;
     width: 0 !important;
@@ -51,21 +211,30 @@ body, article, .markdown, h1, h2, h3, h4, p, li, td {
     position: absolute !important;
   }
 
-  /* Masque l'interface web et les éléments qui dupliquent les titres (fil d'Ariane, boutons Suivant/Précédent).
-     C'est CRUCIAL pour que Papersaurus ne se trompe pas de numéro de page en lisant le PDF ! */
+  /* Masque l'interface web et les éléments qui dupliquent les titres
+     (fil d'Ariane, boutons Suivant/Précédent).
+     C'est CRUCIAL pour que Papersaurus ne se trompe pas de numéro de page ! */
   .theme-doc-toc-desktop,
   .theme-doc-toc-mobile,
   .theme-doc-breadcrumbs,
   .pagination-nav,
   .theme-doc-footer,
   nav.navbar,
-  footer.footer {
+  footer.footer,
+  .theme-doc-sidebar-container,
+  .theme-doc-version-banner {
     display: none !important;
   }
 
-  /* Force chaque nouvelle partie (titre H1) à démarrer sur une nouvelle page */
-  h1 {
-    page-break-before: always;
-    break-before: page;
+  /* ── Règles de coupure ─────────────────────────────────────────────── */
+  p {
+    orphans: 3;
+    widows: 3;
   }
-}
+
+  /* Empêche les figures de se couper au milieu */
+  figure, .markdown > div {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
