@@ -88,6 +88,9 @@ const config = {
           const today = new Date().toLocaleDateString('fr-FR', {
             year: 'numeric', month: 'long', day: 'numeric',
           });
+          const displayVersion = (version === 'Next' || !version) ? '3.0' : version;
+          const showTitle = pageTitle && pageTitle.toLowerCase() !== 'novaville';
+          
           return `
             <!DOCTYPE html>
             <html>
@@ -100,7 +103,7 @@ const config = {
                 justify-content:center;
                 align-items:center;
                 text-align:center;
-                background:linear-gradient(160deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+                background:linear-gradient(135deg, #0e291e 0%, #1c4d39 50%, #081a13 100%);
                 color:#fff;
                 padding:3cm;
                 box-sizing:border-box;
@@ -110,40 +113,43 @@ const config = {
                      alt="Novaville"
                      style="width:120px;height:120px;border-radius:24px;
                             margin-bottom:2cm;
-                            box-shadow:0 8px 32px rgba(0,0,0,0.3);" />
+                            border:3px solid #F9C846;
+                            box-shadow:0 8px 32px rgba(0,0,0,0.4);" />
 
                 <!-- Titre du projet -->
                 <h1 style="
                   font-size:42px;font-weight:700;margin:0 0 0.3cm 0;
-                  letter-spacing:-0.5px;
-                  background:linear-gradient(135deg,#e2e2e2,#ffffff);
+                  letter-spacing:1px;
+                  background:linear-gradient(135deg,#ffffff,#f1f5f9);
                   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
                 ">NOVAVILLE</h1>
 
                 <!-- Sous-titre -->
                 <p style="
-                  font-size:18px;color:#94a3b8;margin:0 0 1.5cm 0;
+                  font-size:18px;color:#cbd5e1;margin:0 0 1.5cm 0;
                   max-width:16cm;line-height:1.5;
                 ">Documentation technique et guide pour reprise par une équipe de développement</p>
 
-                <!-- Barre décorative -->
-                <div style="width:6cm;height:3px;background:linear-gradient(90deg,#2e8555,#25c2a0);
+                <!-- Barre décorative aux couleurs de l'application (Vert et Or) -->
+                <div style="width:6cm;height:3px;background:linear-gradient(90deg,#F9C846,#2e8555);
                             border-radius:2px;margin-bottom:1.5cm;"></div>
 
                 <!-- Titre de la section PDF -->
+                ${showTitle ? `
                 <h2 style="font-size:22px;font-weight:400;margin:0 0 0.8cm 0;color:#cbd5e1;">
                   ${pageTitle}
                 </h2>
+                ` : ''}
 
-                ${version ? `<p style="font-size:13px;color:#64748b;margin:0 0 0.5cm 0;">Version ${version}</p>` : ''}
+                <p style="font-size:13px;color:#a3a3a3;margin:0 0 0.5cm 0;">Version ${displayVersion}</p>
 
                 <!-- Auteurs -->
-                <p style="font-size:12px;color:#64748b;margin:0 0 0.3cm 0;">
+                <p style="font-size:12px;color:#a3a3a3;margin:0 0 0.3cm 0;">
                   ${authors}
                 </p>
 
                 <!-- Date -->
-                <p style="font-size:12px;color:#475569;margin:0;">
+                <p style="font-size:12px;color:#737373;margin:0;">
                   Généré le ${today}
                 </p>
               </div>
@@ -153,6 +159,8 @@ const config = {
 
         // ── En-tête de page ────────────────────────────────────────────
         getPdfPageHeader: (siteConfig, _pluginConfig, pageTitle) => {
+          const isMain = pageTitle.toLowerCase() === 'novaville';
+          const centerTitle = isMain ? 'Documentation technique' : pageTitle;
           return `
             <div style="
               height:1.2cm;
@@ -166,19 +174,20 @@ const config = {
               color:#94a3b8;
             ">
               <span style="flex:1;font-weight:600;color:#2e8555;text-transform:uppercase;letter-spacing:1px;">
-                Novaville
+                ${isMain ? '' : 'Novaville'}
               </span>
-              <span style="flex:2;text-align:center;color:#64748b;">
-                ${pageTitle}
+              <span style="flex:2;text-align:center;color:#64748b;font-weight:600;">
+                ${centerTitle}
               </span>
               <span style="flex:1;text-align:right;color:#94a3b8;font-size:7px;">
-                Documentation technique
+                ${isMain ? 'Novaville' : 'Documentation technique'}
               </span>
             </div>`;
         },
 
         // ── Pied de page ───────────────────────────────────────────────
         getPdfPageFooter: (_siteConfig, _pluginConfig, pageTitle) => {
+          const isMain = pageTitle.toLowerCase() === 'novaville';
           return `
             <div style="
               height:1cm;
@@ -192,7 +201,7 @@ const config = {
               width:100%;
             ">
               <span style="flex:1;">© Novaville</span>
-              <span style="flex:1;text-align:center;color:#cbd5e1;">${pageTitle}</span>
+              <span style="flex:1;text-align:center;color:#cbd5e1;">${isMain ? '' : pageTitle}</span>
               <span style="flex:1;text-align:right;">
                 Page <span class='pageNumber'></span> / <span class='totalPages'></span>
               </span>
@@ -232,7 +241,7 @@ const config = {
           },
           {
             type: 'doc',
-            docId: 'api/overview',
+            docId: 'api/index',
             position: 'left',
             label: 'API',
           },
@@ -275,7 +284,7 @@ const config = {
               },
               {
                 label: 'Documentation API',
-                to: '/docs/api/overview',
+                to: '/docs/api/',
               },
             ],
           },

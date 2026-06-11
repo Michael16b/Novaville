@@ -16,7 +16,7 @@ Cette documentation a été réorganisée pour faciliter la reprise du projet pa
 - [Onboarding Développeurs](dev-onboarding) : guide pas-à-pas pour setup et prise en main
 - [Guide de démarrage](getting-started/introduction) : installation et configuration locale
 - [Documentation technique](technical/architecture) : architecture et choix techniques
-- [Documentation API](api/overview) : endpoints et exemples d'utilisation
+- [Documentation API](api/) : endpoints et exemples d'utilisation
 
 ## Objectif principal
 

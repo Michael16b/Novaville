@@ -127,7 +127,7 @@ docker compose exec backend pytest
 ## Où chercher plus d'information
 
 - Architecture détaillée : [Documentation technique](../docs/technical/architecture)
-- API : [Documentation API](../docs/api/overview)
+- API : [Documentation API](api/)
 - CI/CD et déploiement : voir les workflows GitHub Actions et `docs/DOCUMENTATION_README.md`
 
 ---

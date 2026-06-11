@@ -16,7 +16,7 @@ This documentation has been reorganized to help a new development team take over
 - [Developer Onboarding](dev-onboarding): step-by-step setup and handover guide
 - [Getting started](getting-started/introduction): installation and local configuration
 - [Technical documentation](technical/architecture): architecture and technical choices
-- [API documentation](api/overview): endpoints and usage examples
+- [API documentation](api/): endpoints and usage examples
 
 ## Main objective
 

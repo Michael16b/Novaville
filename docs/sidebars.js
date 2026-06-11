@@ -19,6 +19,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Prise en main',
+      link: { type: 'doc', id: 'getting-started/index' },
       items: [
         'getting-started/introduction',
         'getting-started/installation',
@@ -30,6 +31,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Documentation technique',
+      link: { type: 'doc', id: 'technical/index' },
       items: [
         'technical/architecture',
         'technical/backend',
@@ -42,11 +44,12 @@ const sidebars = {
     {
       type: 'category',
       label: 'Documentation API',
+      link: { type: 'doc', id: 'api/index' },
       items: [
-        'api/overview',
         {
           type: 'category',
           label: 'Authentification',
+          link: { type: 'doc', id: 'api/auth/index' },
           items: [
             'api/auth/login',
             'api/auth/refresh-token',
@@ -55,6 +58,7 @@ const sidebars = {
         {
           type: 'category',
           label: 'Utilisateurs',
+          link: { type: 'doc', id: 'api/users/index' },
           items: [
             'api/users/list',
             'api/users/create',
@@ -65,6 +69,7 @@ const sidebars = {
         {
           type: 'category',
           label: 'Événements',
+          link: { type: 'doc', id: 'api/events/index' },
           items: [
             'api/events/list',
             'api/events/create',
@@ -75,6 +80,7 @@ const sidebars = {
         {
           type: 'category',
           label: 'Rapports',
+          link: { type: 'doc', id: 'api/reports/index' },
           items: [
             'api/reports/list',
             'api/reports/create',
