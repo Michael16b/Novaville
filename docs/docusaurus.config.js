@@ -78,8 +78,16 @@ const config = {
     [
       'docusaurus-plugin-papersaurus',
       {
-        addDownloadButton: true,
+        addDownloadButton: false, // On ne garde que le lien PDF global dans la navbar
         autoBuildPdfs: true,
+        puppeteerOptions: {
+          args: [
+            // Force un mode de rendu de police plus simple.
+            // C'est la dernière solution pour que le robot puisse lire le texte
+            // dans le PDF et enfin trouver les bons numéros de page.
+            '--font-render-hinting=none',
+          ],
+        },
       },
     ],
   ],
