@@ -67,6 +67,17 @@ const config = {
     ],
   ],
 
+  plugins: [
+    [
+      'docusaurus-plugin-papersaurus',
+      {
+        addDownloadButton: true,
+        autoBuildPdfs: true,
+        downloadButtonText: 'Télécharger le PDF',
+      },
+    ],
+  ],
+
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
