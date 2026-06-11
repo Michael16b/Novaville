@@ -63,10 +63,10 @@
     break-before: page;
   }
 
-  /* Ne pas casser avant le tout premier h1 de la page */
+  /* Permettre le saut de page pour le premier h1 afin de séparer la TOC de la première page */
   .markdown > h1:first-child {
-    page-break-before: avoid !important;
-    break-before: avoid !important;
+    page-break-before: always !important;
+    break-before: page !important;
   }
 
   h2 {

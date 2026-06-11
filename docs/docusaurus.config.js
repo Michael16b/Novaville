@@ -78,19 +78,29 @@ const config = {
     [
       'docusaurus-plugin-papersaurus',
       {
-        addDownloadButton: false,
+        addDownloadButton: true,
         autoBuildPdfs: true,
         keepDebugHtmls: true,
 
         // ── Page de couverture professionnelle ──────────────────────────
         getPdfCoverPage: (siteConfig, _pluginConfig, pageTitle, version) => {
           const authors = siteConfig.customFields?.authors || '';
-          const today = new Date().toLocaleDateString('fr-FR', {
+          const isEn = process.env.DOCUSAURUS_CURRENT_LOCALE === 'en';
+          
+          const today = new Date().toLocaleDateString(isEn ? 'en-US' : 'fr-FR', {
             year: 'numeric', month: 'long', day: 'numeric',
           });
           const displayVersion = (version === 'Next' || !version) ? '3.0' : version;
-          const showTitle = pageTitle && pageTitle.toLowerCase() !== 'novaville';
+          const showTitle = pageTitle && 
+                            pageTitle.toLowerCase() !== 'novaville' && 
+                            !pageTitle.toLowerCase().includes('reprise par') && 
+                            !pageTitle.toLowerCase().includes('handover');
           
+          const subtitle = isEn 
+            ? 'Technical documentation and developer handover guide' 
+            : 'Documentation technique et guide pour reprise par une équipe de développement';
+          const generatedText = isEn ? 'Generated on' : 'Généré le';
+
           return `
             <!DOCTYPE html>
             <html>
@@ -128,7 +138,7 @@ const config = {
                 <p style="
                   font-size:18px;color:#cbd5e1;margin:0 0 1.5cm 0;
                   max-width:16cm;line-height:1.5;
-                ">Documentation technique et guide pour reprise par une équipe de développement</p>
+                ">${subtitle}</p>
 
                 <!-- Barre décorative aux couleurs de l'application (Vert et Or) -->
                 <div style="width:6cm;height:3px;background:linear-gradient(90deg,#F9C846,#2e8555);
@@ -150,7 +160,7 @@ const config = {
 
                 <!-- Date -->
                 <p style="font-size:12px;color:#737373;margin:0;">
-                  Généré le ${today}
+                  ${generatedText} ${today}
                 </p>
               </div>
             </body>
@@ -160,28 +170,25 @@ const config = {
         // ── En-tête de page ────────────────────────────────────────────
         getPdfPageHeader: (siteConfig, _pluginConfig, pageTitle) => {
           const isMain = pageTitle.toLowerCase() === 'novaville';
-          const centerTitle = isMain ? 'Documentation technique' : pageTitle;
+          const isEn = process.env.DOCUSAURUS_CURRENT_LOCALE === 'en';
+          const displayTitle = isMain 
+            ? (isEn ? 'Technical Documentation' : 'Documentation technique') 
+            : pageTitle;
           return `
             <div style="
               height:1.2cm;
               display:flex;
+              justify-content:center;
               align-items:center;
               margin:0 1.5cm;
               padding-top:0.3cm;
               border-top:2px solid #2e8555;
               font-family:'Segoe UI',Arial,Helvetica,sans-serif;
               font-size:8px;
-              color:#94a3b8;
+              color:#64748b;
+              font-weight:600;
             ">
-              <span style="flex:1;font-weight:600;color:#2e8555;text-transform:uppercase;letter-spacing:1px;">
-                ${isMain ? '' : 'Novaville'}
-              </span>
-              <span style="flex:2;text-align:center;color:#64748b;font-weight:600;">
-                ${centerTitle}
-              </span>
-              <span style="flex:1;text-align:right;color:#94a3b8;font-size:7px;">
-                ${isMain ? 'Novaville' : 'Documentation technique'}
-              </span>
+              <span>${displayTitle}</span>
             </div>`;
         },
 
@@ -206,6 +213,15 @@ const config = {
                 Page <span class='pageNumber'></span> / <span class='totalPages'></span>
               </span>
             </div>`;
+        },
+
+        // Noms personnalisés pour les fichiers PDF générés
+        getPdfFileName: (siteConfig, pluginConfig, pageTitle, pageId, parentTitles, parentIds, version, versionPath) => {
+          const isEn = versionPath === 'en' || process.env.DOCUSAURUS_CURRENT_LOCALE === 'en';
+          if (pageId && pageId.toLowerCase() === 'novaville') {
+            return isEn ? 'Novaville Technical Documentation' : 'Documentation technique de Novaville';
+          }
+          return (parentIds.length ? parentIds.join('-') + '-' : '') + pageId;
         },
 
         // Marges zéro pour la couverture (le layout est intégralement dans le HTML)
@@ -258,7 +274,9 @@ const config = {
           },
           {
             label: 'PDF Global',
-            href: 'https://michael16b.github.io/Novaville/pdfs/docs/novaville.pdf',
+            to: (process.env.DOCUSAURUS_CURRENT_LOCALE === 'en')
+              ? 'pathname:///pdfs/docs/novaville-technical-documentation.pdf'
+              : 'pathname:///pdfs/docs/documentation-technique-de-novaville.pdf',
             position: 'right',
           },
           {

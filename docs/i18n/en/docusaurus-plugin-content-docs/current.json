@@ -1,0 +1,34 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.tutorialSidebar.category.Prise en main": {
+    "message": "Prise en main",
+    "description": "The label for category Prise en main in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Documentation technique": {
+    "message": "Documentation technique",
+    "description": "The label for category Documentation technique in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Documentation API": {
+    "message": "Documentation API",
+    "description": "The label for category Documentation API in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Authentification": {
+    "message": "Authentification",
+    "description": "The label for category Authentification in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Utilisateurs": {
+    "message": "Utilisateurs",
+    "description": "The label for category Utilisateurs in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Événements": {
+    "message": "Événements",
+    "description": "The label for category Événements in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Rapports": {
+    "message": "Rapports",
+    "description": "The label for category Rapports in sidebar tutorialSidebar"
+  }
+}
