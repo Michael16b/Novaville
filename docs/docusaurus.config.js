@@ -82,6 +82,10 @@ const config = {
         addDownloadButton: true,
         autoBuildPdfs: true,
         downloadButtonText: 'Télécharger le PDF',
+        outputFileNames: {
+          tutorialSidebar: 'Documentation-Technique-Novaville.pdf',
+          apiSidebar: 'Documentation-API-Novaville.pdf',
+        },
       },
     ],
   ],
@@ -120,20 +124,6 @@ const config = {
           {
             type: 'localeDropdown',
             position: 'right',
-          },
-          {
-            label: 'PDF',
-            position: 'right',
-            items: [
-              {
-                label: 'Documentation Technique',
-                href: '/Novaville/tutorialSidebar.pdf',
-              },
-              {
-                label: 'Documentation API',
-                href: '/Novaville/apiSidebar.pdf',
-              },
-            ],
           },
           {
             href: 'https://github.com/Michael16b/Novaville',
