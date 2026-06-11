@@ -28,3 +28,25 @@
   --ifm-color-primary-lightest: #4fddbf;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+/* Optimisations pour la génération du PDF (Papersaurus / Impression) */
+@media print {
+  /* Masque les symboles "#" d'ancrage. 
+     Permet d'afficher correctement les numéros de page dans le sommaire. */
+  .hash-link {
+    display: none !important;
+  }
+
+  /* Masque l'interface web inutile sur le document final */
+  .theme-doc-toc-desktop,
+  nav.navbar,
+  footer.footer {
+    display: none !important;
+  }
+
+  /* Force chaque nouvelle partie (titre H1) à démarrer sur une nouvelle page */
+  h1 {
+    page-break-before: always;
+    break-before: page;
+  }
+}

@@ -81,6 +81,7 @@ const config = {
         addDownloadButton: true,
         autoBuildPdfs: true,
         downloadButtonText: 'Télécharger le PDF',
+        author: 'BESILY Michaël, CRONIER Romain, JAN Charlène',
       },
     ],
   ],
