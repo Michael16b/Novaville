@@ -1,0 +1,236 @@
+diff --git a/node_modules/docusaurus-plugin-papersaurus/lib/generate.js b/node_modules/docusaurus-plugin-papersaurus/lib/generate.js
+index dece83e..2b1cd0c 100644
+--- a/node_modules/docusaurus-plugin-papersaurus/lib/generate.js
++++ b/node_modules/docusaurus-plugin-papersaurus/lib/generate.js
+@@ -585,12 +585,15 @@ const getPageWithFixedToc = (footerRegEx, tocList, pdfContent, htmlContent) => {
+     }
+     let pageIndex = 0;
+     tocList.forEach(e => {
++        const lastPart = e.text.includes(' / ') ? e.text.split(' / ').pop().trim() : null;
+         for (; pageIndex < pdfPages.length; pageIndex++) {
+             let page = pdfPages[pageIndex];
+             let found = false;
+             for (let i = 0; i < pdfHeaderRegex.length; ++i) {
+-                if (pdfHeaderRegex[i](decodeHtml(e.text)).test(page)) {
+-                    htmlContent = htmlContent.replace('<span class="pageNumber">_</span>', `<span class="pageNumber">${pageIndex}</span>`);
++                const fullMatch = pdfHeaderRegex[i](decodeHtml(e.text)).test(page);
++                const partialMatch = lastPart && pdfHeaderRegex[i](decodeHtml(lastPart)).test(page);
++                if (fullMatch || partialMatch) {
++                    htmlContent = htmlContent.replace('<span class="pageNumber">_</span>', `<span class="pageNumber">${pageIndex + 1}</span>`);
+                     found = true;
+                     break;
+                 }
+diff --git a/node_modules/docusaurus-plugin-papersaurus/lib/index.js b/node_modules/docusaurus-plugin-papersaurus/lib/index.js
+index 69e3cca..4dc309e 100644
+--- a/node_modules/docusaurus-plugin-papersaurus/lib/index.js
++++ b/node_modules/docusaurus-plugin-papersaurus/lib/index.js
+@@ -158,15 +158,80 @@ function default_1(_context, options) {
+               });
+               $('.navbar__toggle').click(fillDownloadSidebarMenu);
+             }
++
++            // Page-specific download link below H1
++            var activePdfData = pdfData[stripTrailingSlash(document.location.pathname)] || [];
++            var bestPdf = null;
++            for (var j = 0; j < activePdfData.length; j++) {
++              if (activePdfData[j].type === 'chapter') { bestPdf = activePdfData[j]; break; }
++            }
++            if (!bestPdf) {
++              for (var j = 0; j < activePdfData.length; j++) {
++                if (activePdfData[j].type === 'section') { bestPdf = activePdfData[j]; break; }
++              }
++            }
++            if (!bestPdf) {
++              for (var j = 0; j < activePdfData.length; j++) {
++                if (activePdfData[j].type === 'root') { bestPdf = activePdfData[j]; break; }
++              }
++            }
++            if (bestPdf) {
++              var pdfUrl = getBaseUrl() + bestPdf.file;
++              var isEn = document.location.pathname.includes('/en/');
++              var linkText = isEn ? 'Download PDF' : 'Télécharger le PDF';
++              var h1 = $("article h1").first();
++              if (h1.length) {
++                var existingLink = $("#pagePdfDownloadLink");
++                if (existingLink.length) {
++                  if (existingLink.attr("href") !== pdfUrl) {
++                    existingLink.attr("href", pdfUrl);
++                  }
++                } else {
++                  var linkHtml = '<div id="pagePdfDownloadLinkWrapper" style="margin-top: 10px; margin-bottom: 20px;">' +
++                    '<a id="pagePdfDownloadLink" href="' + pdfUrl + '" download style="' +
++                    'display: inline-flex; align-items: center; ' +
++                    'font-size: 13px; font-weight: 600; color: #2e8555; text-decoration: none; ' +
++                    'padding: 6px 12px; border: 1.5px solid #2e8555; border-radius: 6px; background-color: transparent; ' +
++                    'transition: all 0.2s ease;' +
++                    '" onmouseover="this.style.backgroundColor=\'#2e8555\'; this.style.color=\'#fff\'" ' +
++                    'onmouseout="this.style.backgroundColor=\'transparent\'; this.style.color=\'#2e8555\'">' +
++                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>' +
++                    linkText + '</a></div>';
++                  h1.after(linkHtml);
++                }
++              }
++            }
+           };
+ 
++          // Fix for React Hydration / Routing crashes
++          // Docusaurus uses SPA navigation. If we inject a DOM node and don't remove it before React
++          // tries to unmount the parent, React crashes with "props.content.metadata is undefined" or "Node not found".
++          $(document).on('click', 'a', function() {
++            var href = $(this).attr('href');
++            if (href && !href.startsWith('http') && !href.startsWith('#') && !href.endsWith('.pdf')) {
++              $('#pagePdfDownloadLinkWrapper').remove();
++            }
++          });
++          
+           $(window).on('load', function () {
+             fetch(getBaseUrl() + 'pdfs.json')
+-              .then((response) => response.json())
++              .then((response) => {
++                if (!response.ok) {
++                  throw new Error("HTTP error " + response.status);
++                }
++                const contentType = response.headers.get("content-type");
++                if (!contentType || !contentType.includes("application/json")) {
++                  throw new TypeError("Response is not JSON");
++                }
++                return response.json();
++              })
+               .then(function (json) {
+                 pdfData = json;
+                 checkAndInsertPdfButtons();
+                 setInterval(checkAndInsertPdfButtons, 1000);
++              })
++              .catch(err => {
++                console.warn("Could not load pdfs.json:", err);
+               });
+           });
+         </script>`
+@@ -177,6 +242,20 @@ function default_1(_context, options) {
+             let forceBuild = process.env.BUILD_PDF || "";
+             if ((pluginOptions.autoBuildPdfs && !forceBuild.startsWith("0")) || forceBuild.startsWith("1")) {
+                 await (0, generate_1.generatePdfFiles)(_context.outDir, pluginOptions, props);
++                const path = require('path');
++                const fsExtra = require('fs-extra');
++                const CWD = process.cwd();
++                const buildPdfDir = path.join(_context.outDir, 'pdfs');
++                const staticPdfDir = path.join(CWD, 'static', 'pdfs');
++                if (fsExtra.existsSync(buildPdfDir)) {
++                    fsExtra.ensureDirSync(staticPdfDir);
++                    fsExtra.copySync(buildPdfDir, staticPdfDir);
++                }
++                const buildJsonFile = path.join(_context.outDir, 'pdfs.json');
++                const staticJsonFile = path.join(CWD, 'static', 'pdfs.json');
++                if (fsExtra.existsSync(buildJsonFile)) {
++                    fsExtra.copyFileSync(buildJsonFile, staticJsonFile);
++                }
+             }
+         },
+     };
+diff --git a/node_modules/docusaurus-plugin-papersaurus/src/index.ts b/node_modules/docusaurus-plugin-papersaurus/src/index.ts
+index 92d997d..ff7a25d 100644
+--- a/node_modules/docusaurus-plugin-papersaurus/src/index.ts
++++ b/node_modules/docusaurus-plugin-papersaurus/src/index.ts
+@@ -147,15 +147,80 @@ export default function (
+               });
+               $('.navbar__toggle').click(fillDownloadSidebarMenu);
+             }
++
++            // Page-specific download link below H1
++            var activePdfData = pdfData[stripTrailingSlash(document.location.pathname)] || [];
++            var bestPdf = null;
++            for (var j = 0; j < activePdfData.length; j++) {
++              if (activePdfData[j].type === 'chapter') { bestPdf = activePdfData[j]; break; }
++            }
++            if (!bestPdf) {
++              for (var j = 0; j < activePdfData.length; j++) {
++                if (activePdfData[j].type === 'section') { bestPdf = activePdfData[j]; break; }
++              }
++            }
++            if (!bestPdf) {
++              for (var j = 0; j < activePdfData.length; j++) {
++                if (activePdfData[j].type === 'root') { bestPdf = activePdfData[j]; break; }
++              }
++            }
++            if (bestPdf) {
++              var pdfUrl = getBaseUrl() + bestPdf.file;
++              var isEn = document.location.pathname.includes('/en/');
++              var linkText = isEn ? 'Download PDF' : 'Télécharger le PDF';
++              var h1 = $("article h1").first();
++              if (h1.length) {
++                var existingLink = $("#pagePdfDownloadLink");
++                if (existingLink.length) {
++                  if (existingLink.attr("href") !== pdfUrl) {
++                    existingLink.attr("href", pdfUrl);
++                  }
++                } else {
++                  var linkHtml = '<div id="pagePdfDownloadLinkWrapper" style="margin-top: 10px; margin-bottom: 20px;">' +
++                    '<a id="pagePdfDownloadLink" href="' + pdfUrl + '" download style="' +
++                    'display: inline-flex; align-items: center; ' +
++                    'font-size: 13px; font-weight: 600; color: #2e8555; text-decoration: none; ' +
++                    'padding: 6px 12px; border: 1.5px solid #2e8555; border-radius: 6px; background-color: transparent; ' +
++                    'transition: all 0.2s ease;' +
++                    '" onmouseover="this.style.backgroundColor=\'#2e8555\'; this.style.color=\'#fff\'" ' +
++                    'onmouseout="this.style.backgroundColor=\'transparent\'; this.style.color=\'#2e8555\'">' +
++                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>' +
++                    linkText + '</a></div>';
++                  h1.after(linkHtml);
++                }
++              }
++            }
+           };
+ 
++          // Fix for React Hydration / Routing crashes
++          // Docusaurus uses SPA navigation. If we inject a DOM node and don't remove it before React
++          // tries to unmount the parent, React crashes with "props.content.metadata is undefined" or "Node not found".
++          $(document).on('click', 'a', function() {
++            var href = $(this).attr('href');
++            if (href && !href.startsWith('http') && !href.startsWith('#') && !href.endsWith('.pdf')) {
++              $('#pagePdfDownloadLinkWrapper').remove();
++            }
++          });
++          
+           $(window).on('load', function () {
+             fetch(getBaseUrl() + 'pdfs.json')
+-              .then((response) => response.json())
++              .then((response) => {
++                if (!response.ok) {
++                  throw new Error("HTTP error " + response.status);
++                }
++                const contentType = response.headers.get("content-type");
++                if (!contentType || !contentType.includes("application/json")) {
++                  throw new TypeError("Response is not JSON");
++                }
++                return response.json();
++              })
+               .then(function (json) {
+                 pdfData = json;
+                 checkAndInsertPdfButtons();
+                 setInterval(checkAndInsertPdfButtons, 1000);
++              })
++              .catch(err => {
++                console.warn("Could not load pdfs.json:", err);
+               });
+           });
+         </script>`
+@@ -167,6 +232,20 @@ export default function (
+       let forceBuild = process.env.BUILD_PDF || "";
+       if ((pluginOptions.autoBuildPdfs && !forceBuild.startsWith("0")) || forceBuild.startsWith("1")) {
+         await generatePdfFiles(_context.outDir, pluginOptions, props);
++        const path = require('path');
++        const fsExtra = require('fs-extra');
++        const CWD = process.cwd();
++        const buildPdfDir = path.join(_context.outDir, 'pdfs');
++        const staticPdfDir = path.join(CWD, 'static', 'pdfs');
++        if (fsExtra.existsSync(buildPdfDir)) {
++          fsExtra.ensureDirSync(staticPdfDir);
++          fsExtra.copySync(buildPdfDir, staticPdfDir);
++        }
++        const buildJsonFile = path.join(_context.outDir, 'pdfs.json');
++        const staticJsonFile = path.join(CWD, 'static', 'pdfs.json');
++        if (fsExtra.existsSync(buildJsonFile)) {
++          fsExtra.copyFileSync(buildJsonFile, staticJsonFile);
++        }
+       }
+     },
+ 
