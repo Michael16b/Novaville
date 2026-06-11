@@ -20,7 +20,6 @@ const config = {
     releaseBaseUrl: 'https://github.com/Michael16b/Novaville/releases/latest/download',
     releasePageUrl: 'https://github.com/Michael16b/Novaville/releases/latest',
     authors: 'BESILY Michaël, CRONIER Romain, JAN Charlène',
-    author: 'BESILY Michaël, CRONIER Romain, JAN Charlène',
   },
 
   // GitHub pages deployment config.
@@ -79,7 +78,7 @@ const config = {
     [
       'docusaurus-plugin-papersaurus',
       {
-        addDownloadButton: false,
+        addDownloadButton: true,
         autoBuildPdfs: true,
       },
     ],

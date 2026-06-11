@@ -37,8 +37,13 @@
     display: none !important;
   }
 
-  /* Masque l'interface web inutile sur le document final */
+  /* Masque l'interface web et les éléments qui dupliquent les titres (fil d'Ariane, boutons Suivant/Précédent).
+     C'est CRUCIAL pour que Papersaurus ne se trompe pas de numéro de page en lisant le PDF ! */
   .theme-doc-toc-desktop,
+  .theme-doc-toc-mobile,
+  .theme-doc-breadcrumbs,
+  .pagination-nav,
+  .theme-doc-footer,
   nav.navbar,
   footer.footer {
     display: none !important;
