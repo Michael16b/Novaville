@@ -19,6 +19,7 @@ const config = {
     appLogoUrl: 'https://raw.githubusercontent.com/Michael16b/Novaville/main/frontend/assets/images/logo.png',
     releaseBaseUrl: 'https://github.com/Michael16b/Novaville/releases/latest/download',
     releasePageUrl: 'https://github.com/Michael16b/Novaville/releases/latest',
+    authors: 'BESILY Michaël, CRONIER Romain, JAN Charlène',
   },
 
   // GitHub pages deployment config.
@@ -183,7 +184,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Novaville. Documentation construite avec Docusaurus.`,
+    copyright: `Copyright © ${new Date().getFullYear()} Novaville. Auteurs : BESILY Michaël, CRONIER Romain, JAN Charlène. Documentation construite avec Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,
