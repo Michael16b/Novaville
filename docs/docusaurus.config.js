@@ -80,14 +80,17 @@ const config = {
       {
         addDownloadButton: false, // On ne garde que le lien PDF global dans la navbar
         autoBuildPdfs: true,
-        puppeteerOptions: {
-          args: [
-            // Force un mode de rendu de police plus simple.
-            // C'est la dernière solution pour que le robot puisse lire le texte
-            // dans le PDF et enfin trouver les bons numéros de page.
-            '--font-render-hinting=none',
-          ],
-        },
+      getPdfPageFooter: (siteConfig, pluginConfig, pageTitle) => {
+        return `<div style="width:100%;font-size:9px;font-family:Arial,sans-serif;
+                            display:flex;justify-content:space-between;
+                            margin:0 1.5cm;color:#555;">
+          <span>${pageTitle}</span>
+          <span class="pageNumber"></span>
+        </div>`;
+      },
+      // Cette regex parse le texte brut extrait du PDF
+      // Le format doit correspondre exactement au texte final rendu
+      footerParser: /^(\d+)$/m,
       },
     ],
   ],

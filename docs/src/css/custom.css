@@ -31,16 +31,15 @@
 
 /* Optimisations pour la génération du PDF (Papersaurus / Impression) */
 @media print {
-  /* Désactive les ligatures de police (fusion des lettres "fi", "ff", etc.).
-     C'est la cause N°1 des numéros de page manquants (0) ! 
-     Si le PDF fusionne "f" et "i" dans le mot "Authentification", le robot
-     qui lit le PDF cherche "fi" séparément et ne le trouve pas. */
-  * {
-    /* Force une police standard. Les polices web ou système complexes 
-       empêchent très souvent le robot d'extraire et de lire le texte du PDF. */
+body, article, .markdown, h1, h2, h3, h4, p, li, td {
     font-family: Arial, Helvetica, sans-serif !important;
     font-variant-ligatures: none !important;
-    -webkit-font-variant-ligatures: none !important;
+    text-rendering: geometricPrecision !important;
+
+    -webkit-font-smoothing: none !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    color: black !important;
+    text-shadow: none !important;
   }
 
   /* Masque les symboles "#" d'ancrage. 
