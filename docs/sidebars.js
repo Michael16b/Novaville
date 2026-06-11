@@ -12,7 +12,6 @@
 // @ts-check
 
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
-/** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   // Main documentation
   tutorialSidebar: [
@@ -40,54 +39,52 @@ const sidebars = {
         'technical/docs-deployment',
       ],
     },
+    {
+      type: 'category',
+      label: 'Documentation API',
+      items: [
+        'api/overview',
+        {
+          type: 'category',
+          label: 'Authentification',
+          items: [
+            'api/auth/login',
+            'api/auth/refresh-token',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Utilisateurs',
+          items: [
+            'api/users/list',
+            'api/users/create',
+            'api/users/update',
+            'api/users/delete',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Événements',
+          items: [
+            'api/events/list',
+            'api/events/create',
+            'api/events/update',
+            'api/events/delete',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Rapports',
+          items: [
+            'api/reports/list',
+            'api/reports/create',
+            'api/reports/update',
+            'api/reports/delete',
+          ],
+        },
+      ],
+    },
   ],
-
-  // API Documentation
-  apiSidebar: [
-    'api/overview',
-    {
-      type: 'category',
-      label: 'Authentification',
-      items: [
-        'api/auth/login',
-        'api/auth/refresh-token',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Utilisateurs',
-      items: [
-        'api/users/list',
-        'api/users/create',
-        'api/users/update',
-        'api/users/delete',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Événements',
-      items: [
-        'api/events/list',
-        'api/events/create',
-        'api/events/update',
-        'api/events/delete',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Rapports',
-      items: [
-        'api/reports/list',
-        'api/reports/create',
-        'api/reports/update',
-        'api/reports/delete',
-      ],
-    },
-  ],
-
-  
 };
 
 module.exports = sidebars;
-
-

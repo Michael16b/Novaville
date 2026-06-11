@@ -104,8 +104,8 @@ const config = {
             label: 'Documentation',
           },
           {
-            type: 'docSidebar',
-            sidebarId: 'apiSidebar',
+            type: 'doc',
+            docId: 'api/overview',
             position: 'left',
             label: 'API',
           },
@@ -121,18 +121,9 @@ const config = {
             position: 'right',
           },
           {
-            label: 'PDF Complet',
+            label: 'PDF Global',
+            href: 'https://michael16b.github.io/Novaville/pdfs/docs/novaville.pdf',
             position: 'right',
-            items: [
-              {
-                label: 'PDF Documentation',
-                href: 'pathname:///Novaville/tutorialSidebar.pdf',
-              },
-              {
-                label: 'PDF API',
-                href: 'pathname:///Novaville/apiSidebar.pdf',
-              },
-            ],
           },
           {
             href: 'https://github.com/Michael16b/Novaville',
