@@ -21,73 +21,10 @@ index dece83e..2b1cd0c 100644
                      break;
                  }
 diff --git a/node_modules/docusaurus-plugin-papersaurus/lib/index.js b/node_modules/docusaurus-plugin-papersaurus/lib/index.js
-index 69e3cca..db0774f 100644
+index 69e3cca..4dc309e 100644
 --- a/node_modules/docusaurus-plugin-papersaurus/lib/index.js
 +++ b/node_modules/docusaurus-plugin-papersaurus/lib/index.js
-@@ -71,28 +71,37 @@ function default_1(_context, options) {
-             var downloadItems = [];
-             var activePdfData = pdfData[stripTrailingSlash(document.location.pathname)] || [];
-             
-+            var isEn = document.location.pathname.includes('/en/');
-+            var textComplete = isEn ? 'Download complete version:' : 'Version complète :';
-+            var textSection = isEn ? 'Download section:' : 'Chapitre :';
-+            var textPage = isEn ? 'Download page:' : 'Page actuelle :';
-+          
-             for (var i = 0, il = activePdfData.length; i < il; i++) {
--              if (activePdfData[i].type === 'root') {
-+              var cleanName = activePdfData[i].label.replace(/[^a-zA-Z0-9À-ÿ\\s-]/g, '').trim() + '.pdf';
- 
-+              if (activePdfData[i].type === 'root') {
-                 downloadItems.push({
--                  title: 'Download complete version: <br/> <strong style=font-size:16px>' + activePdfData[i].label + '</strong>',
--                  path: getBaseUrl() + activePdfData[i].file
-+                  title: textComplete + ' <br/> <strong style=font-size:16px>' + activePdfData[i].label + '</strong>',
-+                  path: getBaseUrl() + activePdfData[i].file,
-+                  filename: cleanName
-                 });
-                 continue;
-               }
-           
-               if (activePdfData[i].type === 'section') {
-                 downloadItems.push({
--                  title: 'Download section: <br/> <strong style=font-size:16px>' + activePdfData[i].label + '</strong>',
--                  path: getBaseUrl() + activePdfData[i].file
-+                  title: textSection + ' <br/> <strong style=font-size:16px>' + activePdfData[i].label + '</strong>',
-+                  path: getBaseUrl() + activePdfData[i].file,
-+                  filename: cleanName
-                 });
-                 continue;
-               }
-           
-               if (activePdfData[i].type === 'chapter') {
-                 downloadItems.push({
--                  title: 'Download page: <br/> <strong style=font-size:16px>' + activePdfData[i].label + '</strong>',
--                  path: getBaseUrl() + activePdfData[i].file
-+                  title: textPage + ' <br/> <strong style=font-size:16px>' + activePdfData[i].label + '</strong>',
-+                  path: getBaseUrl() + activePdfData[i].file,
-+                  filename: cleanName
-                 });
-               }
-             }
-@@ -108,7 +117,7 @@ function default_1(_context, options) {
-             var printPopupContent = '';
-             downloadItems.forEach(function (downloadItem) {
-               printPopupContent += '<li>';
--              printPopupContent += '<a class="dropdown__link" href="' + downloadItem.path + '" download>' + downloadItem.title + '</a>';
-+              printPopupContent += '<a class="dropdown__link" href="' + downloadItem.path + '" download="' + downloadItem.filename + '">' + downloadItem.title + '</a>';
-               printPopupContent += '</li>';
-             });
-             if (printPopupContent.length === 0) {
-@@ -126,7 +135,7 @@ function default_1(_context, options) {
-             var printMenuContent = '';
-             downloadItems.forEach(function (downloadItem) {
-               printMenuContent += '<li class="menu__list-item">';
--              printMenuContent += '<a class="menu__link" href="' + downloadItem.path + '" download>' + downloadItem.title + '</a>';
-+              printMenuContent += '<a class="menu__link" href="' + downloadItem.path + '" download="' + downloadItem.filename + '">' + downloadItem.title + '</a>';
-               printMenuContent += '</li>';
-             });
-             if (printMenuContent.length === 0) {
-@@ -158,15 +167,80 @@ function default_1(_context, options) {
+@@ -158,15 +158,80 @@ function default_1(_context, options) {
                });
                $('.navbar__toggle').click(fillDownloadSidebarMenu);
              }
@@ -121,7 +58,7 @@ index 69e3cca..db0774f 100644
 +                  }
 +                } else {
 +                  var linkHtml = '<div id="pagePdfDownloadLinkWrapper" style="margin-top: 10px; margin-bottom: 20px;">' +
-+                    '<a id="pagePdfDownloadLink" href="' + pdfUrl + '" download="' + bestPdf.label.replace(/[^a-zA-Z0-9À-ÿ\\s-]/g, '').trim() + '.pdf" style="' +
++                    '<a id="pagePdfDownloadLink" href="' + pdfUrl + '" download style="' +
 +                    'display: inline-flex; align-items: center; ' +
 +                    'font-size: 13px; font-weight: 600; color: #2e8555; text-decoration: none; ' +
 +                    'padding: 6px 12px; border: 1.5px solid #2e8555; border-radius: 6px; background-color: transparent; ' +
@@ -169,7 +106,7 @@ index 69e3cca..db0774f 100644
                });
            });
          </script>`
-@@ -177,6 +251,20 @@ function default_1(_context, options) {
+@@ -177,6 +242,20 @@ function default_1(_context, options) {
              let forceBuild = process.env.BUILD_PDF || "";
              if ((pluginOptions.autoBuildPdfs && !forceBuild.startsWith("0")) || forceBuild.startsWith("1")) {
                  await (0, generate_1.generatePdfFiles)(_context.outDir, pluginOptions, props);
@@ -191,73 +128,10 @@ index 69e3cca..db0774f 100644
          },
      };
 diff --git a/node_modules/docusaurus-plugin-papersaurus/src/index.ts b/node_modules/docusaurus-plugin-papersaurus/src/index.ts
-index 92d997d..af764af 100644
+index 92d997d..ff7a25d 100644
 --- a/node_modules/docusaurus-plugin-papersaurus/src/index.ts
 +++ b/node_modules/docusaurus-plugin-papersaurus/src/index.ts
-@@ -60,28 +60,37 @@ export default function (
-             var downloadItems = [];
-             var activePdfData = pdfData[stripTrailingSlash(document.location.pathname)] || [];
-             
-+            var isEn = document.location.pathname.includes('/en/');
-+            var textComplete = isEn ? 'Download complete version:' : 'Version complète :';
-+            var textSection = isEn ? 'Download section:' : 'Chapitre :';
-+            var textPage = isEn ? 'Download page:' : 'Page actuelle :';
-+          
-             for (var i = 0, il = activePdfData.length; i < il; i++) {
--              if (activePdfData[i].type === 'root') {
-+              var cleanName = activePdfData[i].label.replace(/[^a-zA-Z0-9À-ÿ\\s-]/g, '').trim() + '.pdf';
- 
-+              if (activePdfData[i].type === 'root') {
-                 downloadItems.push({
--                  title: 'Download complete version: <br/> <strong style=font-size:16px>' + activePdfData[i].label + '</strong>',
--                  path: getBaseUrl() + activePdfData[i].file
-+                  title: textComplete + ' <br/> <strong style=font-size:16px>' + activePdfData[i].label + '</strong>',
-+                  path: getBaseUrl() + activePdfData[i].file,
-+                  filename: cleanName
-                 });
-                 continue;
-               }
-           
-               if (activePdfData[i].type === 'section') {
-                 downloadItems.push({
--                  title: 'Download section: <br/> <strong style=font-size:16px>' + activePdfData[i].label + '</strong>',
--                  path: getBaseUrl() + activePdfData[i].file
-+                  title: textSection + ' <br/> <strong style=font-size:16px>' + activePdfData[i].label + '</strong>',
-+                  path: getBaseUrl() + activePdfData[i].file,
-+                  filename: cleanName
-                 });
-                 continue;
-               }
-           
-               if (activePdfData[i].type === 'chapter') {
-                 downloadItems.push({
--                  title: 'Download page: <br/> <strong style=font-size:16px>' + activePdfData[i].label + '</strong>',
--                  path: getBaseUrl() + activePdfData[i].file
-+                  title: textPage + ' <br/> <strong style=font-size:16px>' + activePdfData[i].label + '</strong>',
-+                  path: getBaseUrl() + activePdfData[i].file,
-+                  filename: cleanName
-                 });
-               }
-             }
-@@ -97,7 +106,7 @@ export default function (
-             var printPopupContent = '';
-             downloadItems.forEach(function (downloadItem) {
-               printPopupContent += '<li>';
--              printPopupContent += '<a class="dropdown__link" href="' + downloadItem.path + '" download>' + downloadItem.title + '</a>';
-+              printPopupContent += '<a class="dropdown__link" href="' + downloadItem.path + '" download="' + downloadItem.filename + '">' + downloadItem.title + '</a>';
-               printPopupContent += '</li>';
-             });
-             if (printPopupContent.length === 0) {
-@@ -115,7 +124,7 @@ export default function (
-             var printMenuContent = '';
-             downloadItems.forEach(function (downloadItem) {
-               printMenuContent += '<li class="menu__list-item">';
--              printMenuContent += '<a class="menu__link" href="' + downloadItem.path + '" download>' + downloadItem.title + '</a>';
-+              printMenuContent += '<a class="menu__link" href="' + downloadItem.path + '" download="' + downloadItem.filename + '">' + downloadItem.title + '</a>';
-               printMenuContent += '</li>';
-             });
-             if (printMenuContent.length === 0) {
-@@ -147,15 +156,80 @@ export default function (
+@@ -147,15 +147,80 @@ export default function (
                });
                $('.navbar__toggle').click(fillDownloadSidebarMenu);
              }
@@ -291,7 +165,7 @@ index 92d997d..af764af 100644
 +                  }
 +                } else {
 +                  var linkHtml = '<div id="pagePdfDownloadLinkWrapper" style="margin-top: 10px; margin-bottom: 20px;">' +
-+                    '<a id="pagePdfDownloadLink" href="' + pdfUrl + '" download="' + bestPdf.label.replace(/[^a-zA-Z0-9À-ÿ\\s-]/g, '').trim() + '.pdf" style="' +
++                    '<a id="pagePdfDownloadLink" href="' + pdfUrl + '" download style="' +
 +                    'display: inline-flex; align-items: center; ' +
 +                    'font-size: 13px; font-weight: 600; color: #2e8555; text-decoration: none; ' +
 +                    'padding: 6px 12px; border: 1.5px solid #2e8555; border-radius: 6px; background-color: transparent; ' +
@@ -339,7 +213,7 @@ index 92d997d..af764af 100644
                });
            });
          </script>`
-@@ -167,6 +241,20 @@ export default function (
+@@ -167,6 +232,20 @@ export default function (
        let forceBuild = process.env.BUILD_PDF || "";
        if ((pluginOptions.autoBuildPdfs && !forceBuild.startsWith("0")) || forceBuild.startsWith("1")) {
          await generatePdfFiles(_context.outDir, pluginOptions, props);
