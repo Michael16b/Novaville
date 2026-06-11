@@ -11,6 +11,7 @@ import 'package:frontend/features/useful_info/application/bloc/useful_info_event
 import 'package:frontend/features/useful_info/application/bloc/useful_info_state.dart';
 import 'package:frontend/features/useful_info/domain/useful_info.dart';
 
+import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
 import 'package:go_router/go_router.dart';
 
@@ -20,10 +21,7 @@ import '../widgets/social_network_actions.dart';
 import 'package:frontend/ui/widgets/breadcrumb.dart';
 
 class UsefulInfoPage extends StatefulWidget {
-  const UsefulInfoPage({
-    this.startInEditMode = false,
-    super.key,
-  });
+  const UsefulInfoPage({this.startInEditMode = false, super.key});
 
   final bool startInEditMode;
 
@@ -48,14 +46,15 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
       floatingActionButton: isAdmin
           ? FloatingActionButton(
               heroTag: 'useful-info-fab',
-              tooltip: isEditing
-                  ? AppTextsGeneral.close
-                  : AppTextsGeneral.edit,
+              tooltip: isEditing ? AppTextsGeneral.close : AppTextsGeneral.edit,
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.white,
               onPressed: () {
                 final blocState = context.read<UsefulInfoBloc>().state;
-                if (blocState is! UsefulInfoLoaded) return;
+                if (blocState is! UsefulInfoLoaded &&
+                    blocState is! UsefulInfoSaveFailure) {
+                  return;
+                }
                 context.go(
                   isEditing ? AppRoutes.usefulInfo : AppRoutes.usefulInfoEdit,
                 );
@@ -72,9 +71,12 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
 
           if (state is UsefulInfoFailure) {
             _redirectToReadAfterSave = false;
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            CustomSnackBar.showError(context, state.message);
+          }
+
+          if (state is UsefulInfoSaveFailure) {
+            _redirectToReadAfterSave = false;
+            CustomSnackBar.showError(context, state.message);
           }
         },
         child: BlocBuilder<UsefulInfoBloc, UsefulInfoState>(
@@ -91,11 +93,15 @@ class _UsefulInfoPageState extends State<UsefulInfoPage> {
               return Center(child: Text(state.message));
             }
 
-            if (state is! UsefulInfoLoaded) {
+            final info = switch (state) {
+              UsefulInfoLoaded s => s.info,
+              UsefulInfoSaveFailure s => s.info,
+              _ => null,
+            };
+
+            if (info == null) {
               return const SizedBox.shrink();
             }
-
-            final info = state.info;
 
             if (isEditing && isAdmin) {
               return _UsefulInfoEditView(
@@ -492,7 +498,7 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
                                       child: Text(
                                         slot.start != null
                                             ? '${slot.start!.hour.toString().padLeft(2, '0')}:${slot.start!.minute.toString().padLeft(2, '0')}'
-                                            : 'Début',
+                                            : 'Début *',
                                       ),
                                     ),
                                   ),
@@ -512,7 +518,7 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
                                       child: Text(
                                         slot.end != null
                                             ? '${slot.end!.hour.toString().padLeft(2, '0')}:${slot.end!.minute.toString().padLeft(2, '0')}'
-                                            : 'Fin',
+                                            : 'Fin *',
                                       ),
                                     ),
                                   ),
@@ -551,33 +557,30 @@ class _UsefulInfoEditViewState extends State<_UsefulInfoEditView> {
                   TextFormField(
                     controller: _phoneController,
                     decoration: InputDecoration(
-                      labelText: UsefulInfoTexts.phoneLabel.replaceAll(
-                        ' :',
-                        '',
-                      ),
+                      labelText:
+                          '${UsefulInfoTexts.phoneLabel.replaceAll(' :', '')} *',
                     ),
+                    validator: _requiredValidator,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _emailController,
                     decoration: InputDecoration(
-                      labelText: UsefulInfoTexts.emailLabel.replaceAll(
-                        ' :',
-                        '',
-                      ),
+                      labelText:
+                          '${UsefulInfoTexts.emailLabel.replaceAll(' :', '')} *',
                     ),
                     keyboardType: TextInputType.emailAddress,
+                    validator: _requiredValidator,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _websiteController,
                     decoration: InputDecoration(
-                      labelText: UsefulInfoTexts.websiteLabel.replaceAll(
-                        ' :',
-                        '',
-                      ),
+                      labelText:
+                          '${UsefulInfoTexts.websiteLabel.replaceAll(' :', '')} *',
                     ),
                     keyboardType: TextInputType.url,
+                    validator: _requiredValidator,
                   ),
                 ],
               ),

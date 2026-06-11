@@ -26,6 +26,19 @@ class TestAuthentication:
         assert "user" in response.data
         assert response.data["user"]["username"] == "testcitizen"
         assert response.data["user"]["role"] == "CITIZEN"
+
+    def test_login_success_with_email(self, api_client, citizen_user):
+        """Test successful login using email instead of username"""
+        response = api_client.post(
+            "/api/v1/auth/token/",
+            {
+                "username": citizen_user.email,
+                "password": "TestPass123"
+            },
+            format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["user"]["username"] == "testcitizen"
     
     def test_login_invalid_credentials(self, api_client, citizen_user):
         """Test login with invalid credentials fails"""

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_surveys.dart';
+import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/surveys/data/models/survey.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
@@ -9,10 +10,13 @@ import 'package:frontend/ui/widgets/styled_dialog.dart';
 /// Dialog used by staff to create surveys.
 class SurveyFormDialog extends StatefulWidget {
   /// Creates a [SurveyFormDialog].
-  const SurveyFormDialog({this.survey, super.key});
+  const SurveyFormDialog({required this.neighborhoods, this.survey, super.key});
 
   /// Existing survey when editing.
   final Survey? survey;
+
+  /// Available neighborhoods.
+  final List<Neighborhood> neighborhoods;
 
   @override
   State<SurveyFormDialog> createState() => _SurveyFormDialogState();
@@ -22,11 +26,19 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
   final _formKey = GlobalKey<FormState>();
   final _questionController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _addressController = TextEditingController();
   late final List<TextEditingController> _optionControllers;
 
   UserRole? _targetRole;
+  int? _selectedNeighborhoodId;
+  bool _multipleAnswers = false;
   bool get _isEditing => widget.survey != null;
+  int? get _availableSelectedNeighborhoodId {
+    final selectedId = _selectedNeighborhoodId;
+    if (selectedId == null) return null;
+    return widget.neighborhoods.any((n) => n.id == selectedId)
+        ? selectedId
+        : null;
+  }
 
   @override
   void initState() {
@@ -34,32 +46,29 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
     final survey = widget.survey;
     _questionController.text = survey?.title ?? '';
     _descriptionController.text = survey?.description ?? '';
-    _addressController.text = survey?.address ?? '';
+    _selectedNeighborhoodId = survey?.neighborhoodId;
+    if (_availableSelectedNeighborhoodId == null) {
+      _selectedNeighborhoodId = null;
+    }
     _targetRole = survey?.citizenTarget;
+    _multipleAnswers = survey?.multipleAnswers ?? false;
 
     if (survey == null) {
-      _optionControllers = [
-        TextEditingController(),
-        TextEditingController(),
-      ];
+      _optionControllers = [TextEditingController(), TextEditingController()];
       return;
     }
 
     _optionControllers = survey.options.isNotEmpty
         ? survey.options
-            .map((option) => TextEditingController(text: option.text))
-            .toList()
-        : [
-            TextEditingController(),
-            TextEditingController(),
-          ];
+              .map((option) => TextEditingController(text: option.text))
+              .toList()
+        : [TextEditingController(), TextEditingController()];
   }
 
   @override
   void dispose() {
     _questionController.dispose();
     _descriptionController.dispose();
-    _addressController.dispose();
     for (final controller in _optionControllers) {
       controller.dispose();
     }
@@ -107,21 +116,33 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
               },
             ),
             const SizedBox(height: 14),
-            _buildFieldLabel('${SurveysTexts.addressLabel} *'),
-            TextFormField(
-              controller: _addressController,
-              maxLength: 255,
+            _buildFieldLabel('${SurveysTexts.neighborhoodLabel} *'),
+            DropdownButtonFormField<int?>(
+              initialValue: _availableSelectedNeighborhoodId,
+              isExpanded: true,
+              menuMaxHeight: 300,
+              borderRadius: BorderRadius.circular(12),
               decoration: InputDecoration(
-                hintText: SurveysTexts.searchAddressHint,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return SurveysTexts.addressRequired;
-                }
-                return null;
+              items: [
+                const DropdownMenuItem<int?>(
+                  value: null,
+                  child: Text(SurveysTexts.allNeighborhoods),
+                ),
+                ...widget.neighborhoods.map(
+                  (neighborhood) => DropdownMenuItem<int?>(
+                    value: neighborhood.id,
+                    child: Text(neighborhood.name),
+                  ),
+                ),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  _selectedNeighborhoodId = value;
+                });
               },
             ),
             const SizedBox(height: 14),
@@ -150,7 +171,7 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
               onChanged: (value) => setState(() => _targetRole = value),
             ),
             const SizedBox(height: 14),
-            _buildFieldLabel(SurveysTexts.descriptionLabel),
+            _buildFieldLabel('${SurveysTexts.descriptionLabel} *'),
             TextFormField(
               controller: _descriptionController,
               maxLines: 3,
@@ -159,11 +180,34 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return SurveysTexts.descriptionRequired;
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 14),
+            CheckboxListTile(
+              value: _multipleAnswers,
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              title: const Text(SurveysTexts.multipleAnswersLabel),
+              subtitle: const Text(SurveysTexts.multipleAnswersHint),
+              onChanged: (value) {
+                setState(() {
+                  _multipleAnswers = value ?? false;
+                });
+              },
             ),
             const SizedBox(height: 14),
             if (!_isEditing) ...[
               _buildFieldLabel('${SurveysTexts.optionsLabel} *'),
-              for (var index = 0; index < _optionControllers.length; index++) ...[
+              for (
+                var index = 0;
+                index < _optionControllers.length;
+                index++
+              ) ...[
                 Row(
                   children: [
                     Expanded(
@@ -188,7 +232,9 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
                       onPressed: _optionControllers.length > 2
                           ? () {
                               setState(() {
-                                final controller = _optionControllers.removeAt(index);
+                                final controller = _optionControllers.removeAt(
+                                  index,
+                                );
                                 controller.dispose();
                               });
                             }
@@ -213,9 +259,9 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
             Text(
               AppTextsGeneral.requiredFieldsHint,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.secondaryText,
-                    fontStyle: FontStyle.italic,
-                  ),
+                color: AppColors.secondaryText,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
         ),
@@ -229,9 +275,9 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.secondaryText,
-              fontWeight: FontWeight.w600,
-            ),
+          color: AppColors.secondaryText,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -248,23 +294,20 @@ class _SurveyFormDialogState extends State<SurveyFormDialog> {
         .toList();
 
     if (!_isEditing && options.length < 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(SurveysTexts.minOptions)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(SurveysTexts.minOptions)));
       return;
     }
 
-    Navigator.pop<Map<String, dynamic>>(
-      context,
-      {
-        if (_isEditing) 'survey_id': widget.survey!.id,
-        'question': _questionController.text.trim(),
-        'description': _descriptionController.text.trim(),
-        'address': _addressController.text.trim(),
-        'citizen_target': _targetRole,
-        if (!_isEditing) 'options': options,
-      },
-    );
+    Navigator.pop<Map<String, dynamic>>(context, {
+      if (_isEditing) 'survey_id': widget.survey!.id,
+      'question': _questionController.text.trim(),
+      'description': _descriptionController.text.trim(),
+      'neighborhood_id': _selectedNeighborhoodId,
+      'citizen_target': _targetRole,
+      'multiple_answers': _multipleAnswers,
+      if (!_isEditing) 'options': options,
+    });
   }
 }
-

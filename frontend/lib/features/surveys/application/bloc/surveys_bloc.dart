@@ -11,8 +11,8 @@ part 'surveys_state.dart';
 class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
   /// Creates a [SurveysBloc].
   SurveysBloc({required ISurveyRepository repository})
-      : _repository = repository,
-        super(const SurveysState.initial()) {
+    : _repository = repository,
+      super(const SurveysState.initial()) {
     on<SurveysLoadRequested>(_onLoadRequested);
     on<SurveysFilterChanged>(_onFilterChanged);
     on<SurveysPageRequested>(_onPageRequested);
@@ -127,8 +127,9 @@ class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
       await _repository.createSurvey(
         question: event.question,
         description: event.description,
-        address: event.address,
+        neighborhoodId: event.neighborhoodId,
         options: event.options,
+        multipleAnswers: event.multipleAnswers,
         citizenTarget: event.citizenTarget,
       );
 
@@ -177,7 +178,8 @@ class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
         surveyId: event.surveyId,
         question: event.question,
         description: event.description,
-        address: event.address,
+        neighborhoodId: event.neighborhoodId,
+        multipleAnswers: event.multipleAnswers,
         citizenTarget: event.citizenTarget,
       );
       emit(state.copyWith(status: SurveysStatus.updated, error: null));
@@ -200,7 +202,10 @@ class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
   ) async {
     emit(state.copyWith(status: SurveysStatus.voting));
     try {
-      await _repository.vote(surveyId: event.surveyId, optionId: event.optionId);
+      await _repository.vote(
+        surveyId: event.surveyId,
+        optionIds: event.optionIds,
+      );
       emit(state.copyWith(status: SurveysStatus.voted, error: null));
       add(
         SurveysLoadRequested(
@@ -215,4 +220,3 @@ class SurveysBloc extends Bloc<SurveysEvent, SurveysState> {
     }
   }
 }
-

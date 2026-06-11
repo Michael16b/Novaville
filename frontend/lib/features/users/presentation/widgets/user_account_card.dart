@@ -10,6 +10,7 @@ class UserAccountCard extends StatelessWidget {
     required this.isCurrentUser,
     required this.onEdit,
     required this.onDelete,
+    this.onResetPassword,
     required this.getRoleColor,
     this.neighborhoodName,
     super.key,
@@ -19,6 +20,7 @@ class UserAccountCard extends StatelessWidget {
   final bool isCurrentUser;
   final ValueChanged<User> onEdit;
   final ValueChanged<User> onDelete;
+  final ValueChanged<User>? onResetPassword;
   final Color Function(UserRole? role) getRoleColor;
 
   /// The resolved neighborhood name for this user, if available.
@@ -167,18 +169,20 @@ class UserAccountCard extends StatelessWidget {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      actions.first,
-                      const SizedBox(height: 4),
-                      actions.last,
+                      for (var i = 0; i < actions.length; i++) ...[
+                        actions[i],
+                        if (i < actions.length - 1) const SizedBox(height: 4),
+                      ],
                     ],
                   );
                 }
 
                 return Row(
                   children: [
-                    Expanded(child: actions.first),
-                    const SizedBox(width: 4),
-                    Expanded(child: actions.last),
+                    for (var i = 0; i < actions.length; i++) ...[
+                      Expanded(child: actions[i]),
+                      if (i < actions.length - 1) const SizedBox(width: 4),
+                    ],
                   ],
                 );
               },

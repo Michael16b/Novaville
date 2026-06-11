@@ -2,14 +2,18 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
 import 'package:frontend/constants/texts/texts_credentials_share.dart';
+import 'package:frontend/constants/texts/texts_user_accounts.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
+/// Displays one-time account credentials from a share link.
 class CredentialsSharePage extends StatefulWidget {
+  /// Creates the credentials share page.
   const CredentialsSharePage({super.key});
 
   @override
@@ -38,8 +42,7 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
         return;
       }
       try {
-        final parsed = Uri.splitQueryString(query);
-        parsed.forEach((key, value) {
+        Uri.splitQueryString(query).forEach((key, value) {
           final existing = collected[key];
           if (existing == null || existing.trim().isEmpty) {
             collected[key] = value;
@@ -75,10 +78,20 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
     }
 
     try {
+      // Step 1: Normalize base64 padding
       final normalized = base64Url.normalize(shareRef.trim());
-      final decodedJson = utf8.decode(base64Url.decode(normalized));
+
+      // Step 2: Decode from base64
+      final decodedBytes = base64Url.decode(normalized);
+
+      // Step 3: Convert bytes to UTF-8 string
+      final decodedJson = utf8.decode(decodedBytes);
+
+      // Step 4: Parse JSON
       final decoded = jsonDecode(decodedJson);
+
       if (decoded is! Map<String, dynamic>) {
+        // Invalid JSON structure
         return null;
       }
 
@@ -88,14 +101,15 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
       final lastName = safeString(decoded['last_name']);
       final username = safeString(decoded['username']);
       final email = safeString(decoded['email']);
-      final password = safeString(decoded['password']);
+      final password = safeString(
+        decoded['temp_password'] ?? decoded['password'],
+      );
 
       final hasAtLeastOneValue =
           firstName.isNotEmpty ||
           lastName.isNotEmpty ||
           username.isNotEmpty ||
-          email.isNotEmpty ||
-          password.isNotEmpty;
+          email.isNotEmpty;
 
       if (!hasAtLeastOneValue) {
         return null;
@@ -108,14 +122,54 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
         email: email,
         password: password,
       );
-    } catch (_) {
+    } on FormatException catch (e) {
+      debugPrint('[CredentialsShare] Decode error: $e');
+      return null;
+    } catch (e) {
+      debugPrint('[CredentialsShare] Decode error: $e');
       return null;
     }
   }
 
+  Uri _buildRegisterUri(_ShareCredentialData data) {
+    final queryParams = <String, String>{};
+    if (data.firstName.isNotEmpty) queryParams['first_name'] = data.firstName;
+    if (data.lastName.isNotEmpty) queryParams['last_name'] = data.lastName;
+    if (data.username.isNotEmpty) queryParams['username'] = data.username;
+    if (data.email.isNotEmpty) queryParams['email'] = data.email;
+    if (data.password.isNotEmpty) queryParams['temp_password'] = data.password;
+
+    return Uri(
+      path: '/set-password',
+      queryParameters: queryParams.isNotEmpty ? queryParams : null,
+    );
+  }
+
   Future<_ShareCredentialData?> _loadShareData() async {
     final params = _collectShareParams();
+
+    if (params.isEmpty) {
+      debugPrint('[CredentialsShare] No parameters found in URL');
+    } else {
+      debugPrint(
+        '[CredentialsShare] Parameters collected: ${params.keys.toList()}',
+      );
+    }
+
     final shareRef = params[BulkUserCreationTexts.shareReferenceKey];
+
+    if (shareRef == null) {
+      debugPrint(
+        '[CredentialsShare] No share_ref parameter found '
+        '(looking for: ${BulkUserCreationTexts.shareReferenceKey})',
+      );
+      debugPrint('[CredentialsShare] Available keys: ${params.keys.toList()}');
+    } else {
+      debugPrint(
+        '[CredentialsShare] Found share_ref (length: ${shareRef.length})',
+      );
+    }
+
     return _decodeShareRef(shareRef);
   }
 
@@ -165,162 +219,248 @@ class _CredentialsSharePageState extends State<CredentialsSharePage> {
 
         final fullName = '${data.firstName} ${data.lastName}'.trim();
 
+        final path = _buildRegisterUri(data).toString();
+        final currentUri = Uri.base;
+        final usesHashRouting = currentUri.fragment.startsWith('/');
+        final fullUrl = usesHashRouting
+            ? '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#$path'
+            : currentUri.resolve(path).toString();
+
         return Scaffold(
           backgroundColor: AppColors.white,
-          body: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 28,
-                    vertical: 32,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.10),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.all(10),
-                            child: const Icon(
-                              Icons.lock_person_rounded,
-                              color: AppColors.primary,
-                              size: 32,
-                            ),
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact =
+                  constraints.maxWidth < 380 || constraints.maxHeight < 760;
+              final outerPadding = EdgeInsets.symmetric(
+                horizontal: isCompact ? 12 : 20,
+                vertical: isCompact ? 12 : 24,
+              );
+              final cardPadding = EdgeInsets.symmetric(
+                horizontal: isCompact ? 18 : 28,
+                vertical: isCompact ? 22 : 32,
+              );
+              final qrSize = constraints.maxHeight < 720 ? 132.0 : 160.0;
+              final sectionGap = isCompact ? 16.0 : 24.0;
+              final minContentHeight =
+                  constraints.maxHeight - outerPadding.vertical;
+
+              return SafeArea(
+                child: SingleChildScrollView(
+                  padding: outerPadding,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: minContentHeight > 0 ? minContentHeight : 0,
+                    ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        child: Card(
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              CredentialsShareTexts.pageTitle,
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w700,
+                          child: Padding(
+                            padding: cardPadding,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withValues(
+                                          alpha: 0.10,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      padding: const EdgeInsets.all(10),
+                                      child: const Icon(
+                                        Icons.lock_person_rounded,
+                                        color: AppColors.primary,
+                                        size: 32,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Text(
+                                        CredentialsShareTexts.pageTitle,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge
+                                            ?.copyWith(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 18),
+                                if (fullName.isNotEmpty)
+                                  Text(
+                                    fullName,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall
+                                        ?.copyWith(fontWeight: FontWeight.w600),
                                   ),
+                                if (fullName.isNotEmpty)
+                                  const SizedBox(height: 6),
+                                Text(
+                                  CredentialsShareTexts.subtitle,
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: AppColors.secondaryText,
+                                      ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  CredentialsShareTexts.registerHint,
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: AppColors.secondaryText,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                ),
+                                const SizedBox(height: 18),
+                                _CredentialRow(
+                                  label: CredentialsShareTexts.usernameLabel,
+                                  value: data.username,
+                                  onCopy: () async {
+                                    await Clipboard.setData(
+                                      ClipboardData(text: data.username),
+                                    );
+                                    if (!context.mounted) return;
+                                    CustomSnackBar.showSuccess(
+                                      context,
+                                      CredentialsShareTexts.usernameCopied,
+                                    );
+                                  },
+                                ),
+                                if (data.email.isNotEmpty) ...[
+                                  const SizedBox(height: 10),
+                                  _CredentialRow(
+                                    label: CredentialsShareTexts.emailLabel,
+                                    value: data.email,
+                                    onCopy: () async {
+                                      await Clipboard.setData(
+                                        ClipboardData(text: data.email),
+                                      );
+                                      if (!context.mounted) return;
+                                      CustomSnackBar.showSuccess(
+                                        context,
+                                        CredentialsShareTexts.emailCopied,
+                                      );
+                                    },
+                                  ),
+                                ],
+                                if (data.password.isNotEmpty) ...[
+                                  const SizedBox(height: 10),
+                                  _CredentialRow(
+                                    label: UserTexts.activationCode,
+                                    value: data.password,
+                                    onCopy: () async {
+                                      await Clipboard.setData(
+                                        ClipboardData(text: data.password),
+                                      );
+                                      if (!context.mounted) return;
+                                      CustomSnackBar.showSuccess(
+                                        context,
+                                        UserTexts.activationCodeCopied,
+                                      );
+                                    },
+                                  ),
+                                ],
+                                SizedBox(height: sectionGap),
+                                Center(
+                                  child: QrImageView(
+                                    data: fullUrl,
+                                    size: qrSize,
+                                    eyeStyle: const QrEyeStyle(
+                                      eyeShape: QrEyeShape.square,
+                                      color: AppColors.primary,
+                                    ),
+                                    dataModuleStyle: const QrDataModuleStyle(
+                                      dataModuleShape: QrDataModuleShape.square,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: sectionGap),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: FilledButton.icon(
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor: AppColors.primary,
+                                          foregroundColor: AppColors.white,
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: isCompact ? 12 : 20,
+                                            vertical: 12,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                        ),
+                                        onPressed: () => context.go(
+                                          _buildRegisterUri(data).toString(),
+                                        ),
+                                        icon: const Icon(Icons.lock_reset),
+                                        label: const Text(
+                                          CredentialsShareTexts.registerCta,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Tooltip(
+                                      message: CredentialsShareTexts
+                                          .openInNewTabTooltip,
+                                      child: IconButton(
+                                        style: IconButton.styleFrom(
+                                          backgroundColor: AppColors.primary
+                                              .withValues(alpha: 0.1),
+                                          foregroundColor: AppColors.primary,
+                                          padding: const EdgeInsets.all(12),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                        ),
+                                        onPressed: () async {
+                                          final uri = Uri.parse(fullUrl);
+                                          if (await url_launcher.canLaunchUrl(
+                                            uri,
+                                          )) {
+                                            await url_launcher.launchUrl(
+                                              uri,
+                                              mode: url_launcher
+                                                  .LaunchMode
+                                                  .externalApplication,
+                                            );
+                                          }
+                                        },
+                                        icon: const Icon(Icons.open_in_new),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-                      if (fullName.isNotEmpty)
-                        Text(
-                          fullName,
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                      if (fullName.isNotEmpty) const SizedBox(height: 6),
-                      Text(
-                        CredentialsShareTexts.subtitle,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.secondaryText,
                         ),
                       ),
-                      if (data.password.isEmpty) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          CredentialsShareTexts.noSensitiveData,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: AppColors.secondaryText),
-                        ),
-                      ],
-                      const SizedBox(height: 18),
-                      _CredentialRow(
-                        label: CredentialsShareTexts.usernameLabel,
-                        value: data.username,
-                        onCopy: () async {
-                          await Clipboard.setData(
-                            ClipboardData(text: data.username),
-                          );
-                          if (!context.mounted) return;
-                          CustomSnackBar.showSuccess(
-                            context,
-                            CredentialsShareTexts.usernameCopied,
-                          );
-                        },
-                      ),
-                      if (data.email.isNotEmpty) ...[
-                        const SizedBox(height: 10),
-                        _CredentialRow(
-                          label: CredentialsShareTexts.emailLabel,
-                          value: data.email,
-                          onCopy: () async {
-                            await Clipboard.setData(
-                              ClipboardData(text: data.email),
-                            );
-                            if (!context.mounted) return;
-                            CustomSnackBar.showSuccess(
-                              context,
-                              CredentialsShareTexts.emailCopied,
-                            );
-                          },
-                        ),
-                      ],
-                      if (data.password.isNotEmpty) ...[
-                        const SizedBox(height: 10),
-                        _CredentialRow(
-                          label: CredentialsShareTexts.passwordLabel,
-                          value: data.password,
-                          onCopy: () async {
-                            await Clipboard.setData(
-                              ClipboardData(text: data.password),
-                            );
-                            if (!context.mounted) return;
-                            CustomSnackBar.showSuccess(
-                              context,
-                              CredentialsShareTexts.passwordCopied,
-                            );
-                          },
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      Center(
-                        child: FilledButton.icon(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: AppColors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: () async {
-                            const url = CredentialsShareTexts.novavilleUrl;
-                            final uri = Uri.parse(url);
-                            if (await url_launcher.canLaunchUrl(uri)) {
-                              await url_launcher.launchUrl(
-                                uri,
-                                mode:
-                                    url_launcher.LaunchMode.externalApplication,
-                              );
-                            } else {
-                              CustomSnackBar.showError(
-                                context,
-                                CredentialsShareTexts.openSiteError,
-                              );
-                            }
-                          },
-                          icon: const Icon(Icons.open_in_new),
-                          label: const Text(CredentialsShareTexts.openSiteLabel),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         );
       },
@@ -336,18 +476,6 @@ class _ShareCredentialData {
     required this.email,
     required this.password,
   });
-
-  factory _ShareCredentialData.fromMap(Map<String, dynamic> map) {
-    String safeString(dynamic value) => value is String ? value : '';
-
-    return _ShareCredentialData(
-      firstName: safeString(map['first_name']),
-      lastName: safeString(map['last_name']),
-      username: safeString(map['username']),
-      email: safeString(map['email']),
-      password: safeString(map['password']),
-    );
-  }
 
   final String firstName;
   final String lastName;

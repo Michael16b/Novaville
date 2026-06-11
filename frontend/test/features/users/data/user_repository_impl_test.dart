@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend/constants/texts/texts_password_validation.dart';
 import 'package:frontend/constants/texts/texts_user_repository_errors.dart';
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/users/data/user_repository_impl.dart';
@@ -48,23 +51,22 @@ void main() {
         apiClient: ApiClient(baseUrl: baseUrl, client: mockClient),
       );
 
-      expect(
-        () => repo.getCurrentUser(),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => repo.getCurrentUser(), throwsA(isA<Exception>()));
     });
 
-    test('updateUser sends PATCH with the correct fields and returns the updated user', () async {
-      final mockClient = MockClient((request) async {
-        expect(request.method, 'PATCH');
-        expect(request.url.path, '/api/v1/users/1/');
-        expect(request.headers['Content-Type'], contains('application/json'));
+    test(
+      'updateUser sends PATCH with the correct fields and returns the updated user',
+      () async {
+        final mockClient = MockClient((request) async {
+          expect(request.method, 'PATCH');
+          expect(request.url.path, '/api/v1/users/1/');
+          expect(request.headers['Content-Type'], contains('application/json'));
 
-        // Verify the body contains the correct fields
-        expect(request.body, contains('"first_name":"Jane"'));
-        expect(request.body, contains('"email":"jane.doe@example.com"'));
+          // Verify the body contains the correct fields
+          expect(request.body, contains('"first_name":"Jane"'));
+          expect(request.body, contains('"email":"jane.doe@example.com"'));
 
-        const updatedJson = '''
+          const updatedJson = '''
 {
   "id": 1,
   "username": "jdoe",
@@ -73,23 +75,24 @@ void main() {
   "last_name": "Doe"
 }
 ''';
-        return http.Response(updatedJson, 200);
-      });
+          return http.Response(updatedJson, 200);
+        });
 
-      final repo = UserRepositoryImpl(
-        apiClient: ApiClient(baseUrl: baseUrl, client: mockClient),
-      );
+        final repo = UserRepositoryImpl(
+          apiClient: ApiClient(baseUrl: baseUrl, client: mockClient),
+        );
 
-      final user = await repo.updateUser(
-        userId: 1,
-        firstName: 'Jane',
-        email: 'jane.doe@example.com',
-      );
+        final user = await repo.updateUser(
+          userId: 1,
+          firstName: 'Jane',
+          email: 'jane.doe@example.com',
+        );
 
-      expect(user.id, 1);
-      expect(user.firstName, 'Jane');
-      expect(user.email, 'jane.doe@example.com');
-    });
+        expect(user.id, 1);
+        expect(user.firstName, 'Jane');
+        expect(user.email, 'jane.doe@example.com');
+      },
+    );
 
     test('updateUser only sends non-null fields', () async {
       final mockClient = MockClient((request) async {
@@ -124,45 +127,88 @@ void main() {
       );
     });
 
-    test('updatePassword envoie les bons paramètres et réussit (200)', () async {
-      final mockClient = MockClient((request) async {
-        expect(request.method, anyOf(['POST', 'PATCH', 'PUT']));
-        expect(request.url.path, '/api/v1/users/1/change_password/');
-        expect(request.headers['Content-Type'], contains('application/json'));
-        expect(request.body, contains('"current_password":"oldpass"'));
-        expect(request.body, contains('"new_password":"newpass"'));
-        return http.Response('{}', 200);
-      });
+    test(
+      'updatePassword envoie les bons paramètres et réussit (200)',
+      () async {
+        final mockClient = MockClient((request) async {
+          expect(request.method, anyOf(['POST', 'PATCH', 'PUT']));
+          expect(request.url.path, '/api/v1/users/1/change_password/');
+          expect(request.headers['Content-Type'], contains('application/json'));
+          expect(request.body, contains('"current_password":"oldpass"'));
+          expect(request.body, contains('"new_password":"newpass"'));
+          return http.Response('{}', 200);
+        });
 
-      final repo = UserRepositoryImpl(
-        apiClient: ApiClient(baseUrl: baseUrl, client: mockClient),
-      );
+        final repo = UserRepositoryImpl(
+          apiClient: ApiClient(baseUrl: baseUrl, client: mockClient),
+        );
 
-      await repo.updatePassword(
-        userId: 1,
-        currentPassword: 'oldpass',
-        newPassword: 'newpass',
-      );
-    });
-
-    test('updatePassword échoue si le mot de passe actuel est incorrect (400)', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response('{"current_password":["Incorrect password."]}', 400);
-      });
-
-      final repo = UserRepositoryImpl(
-        apiClient: ApiClient(baseUrl: baseUrl, client: mockClient),
-      );
-
-      expect(
-        () => repo.updatePassword(
+        await repo.updatePassword(
           userId: 1,
-          currentPassword: 'wrongpass',
+          currentPassword: 'oldpass',
           newPassword: 'newpass',
-        ),
-        throwsA(isA<Exception>()),
-      );
-    });
+        );
+      },
+    );
+
+    test(
+      'updatePassword échoue si le mot de passe actuel est incorrect (400)',
+      () async {
+        final mockClient = MockClient((request) async {
+          return http.Response(
+            '{"current_password":["Incorrect password."]}',
+            400,
+          );
+        });
+
+        final repo = UserRepositoryImpl(
+          apiClient: ApiClient(baseUrl: baseUrl, client: mockClient),
+        );
+
+        expect(
+          () => repo.updatePassword(
+            userId: 1,
+            currentPassword: 'wrongpass',
+            newPassword: 'newpass',
+          ),
+          throwsA(isA<Exception>()),
+        );
+      },
+    );
+
+    test(
+      'updatePassword traduit les détails de validation du mot de passe',
+      () async {
+        final mockClient = MockClient((request) async {
+          return http.Response(
+            jsonEncode({
+              'code': 'password_invalid',
+              'details': ['The password is too similar to the first name.'],
+            }),
+            400,
+          );
+        });
+
+        final repo = UserRepositoryImpl(
+          apiClient: ApiClient(baseUrl: baseUrl, client: mockClient),
+        );
+
+        expect(
+          () => repo.updatePassword(
+            userId: 1,
+            currentPassword: 'oldpass',
+            newPassword: 'John1234',
+          ),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains(AppTextsPasswordValidation.passwordTooSimilar),
+            ),
+          ),
+        );
+      },
+    );
 
     test('createUser returns a user on success', () async {
       final mockClient = MockClient((request) async {
@@ -171,8 +217,7 @@ void main() {
         expect(request.body, contains('"username":"newuser"'));
         expect(request.body, contains('"address":"1 Main Street"'));
 
-        return http.Response(
-          '''
+        return http.Response('''
 {
   "id": 2,
   "username": "newuser",
@@ -181,9 +226,7 @@ void main() {
   "last_name": "User",
   "address": "1 Main Street"
 }
-''',
-          201,
-        );
+''', 201);
       });
 
       final repo = UserRepositoryImpl(
@@ -205,10 +248,7 @@ void main() {
 
     test('createUser localizes username already exists errors', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(
-          '{"username":["username_already_exists"]}',
-          400,
-        );
+        return http.Response('{"username":["username_already_exists"]}', 400);
       });
 
       final repo = UserRepositoryImpl(
@@ -227,6 +267,35 @@ void main() {
             (e) => e.toString(),
             'message',
             contains(AppTextsUserRepositoryErrors.usernameAlreadyExists),
+          ),
+        ),
+      );
+    });
+
+    test('createUser traduit les erreurs de mot de passe Django', () async {
+      final mockClient = MockClient((request) async {
+        return http.Response(
+          '{"password":["The password is too similar to the first name."]}',
+          400,
+        );
+      });
+
+      final repo = UserRepositoryImpl(
+        apiClient: ApiClient(baseUrl: baseUrl, client: mockClient),
+      );
+
+      expect(
+        () => repo.createUser(
+          username: 'jane',
+          firstName: 'Jane',
+          lastName: 'Doe',
+          password: 'Jane1234',
+        ),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains(AppTextsPasswordValidation.passwordTooSimilar),
           ),
         ),
       );

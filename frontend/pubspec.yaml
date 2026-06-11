@@ -51,7 +51,10 @@ dependencies:
   table_calendar: ^3.2.0
   intl: ^0.20.0
   omni_datetime_picker: ^2.0.5
-  font_awesome_flutter: ^10.7.0
+  qr_flutter: ^4.1.0
+  flutter_map: ^8.3.0
+  latlong2: ^0.9.1
+
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1
@@ -110,6 +113,12 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
+  windows:
+    generate: true
+    image_path: "assets/images/logo.png"
+  macos:
+    generate: true
+    image_path: "assets/images/logo.png"
   web:
     generate: true
     image_path: "assets/images/logo.png"

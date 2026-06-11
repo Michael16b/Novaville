@@ -1,4 +1,7 @@
+import string
+import secrets
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -78,14 +81,14 @@ class UserViewSet(viewsets.ModelViewSet):
         elif self.action in ['list', 'retrieve', 'me']:
             # Authenticated users can view users
             permission_classes = [IsAuthenticated]
-        elif self.action in ['update', 'partial_update']:
+        elif self.action in ['update', 'partial_update', 'change_password', 'set_initial_password']:
             # Users can update their own profile, admins can update anyone
             permission_classes = [IsAuthenticated]
-        elif self.action == 'reset_password':
-            # Only admins can reset passwords
+        elif self.action in ['reset_password', 'approve', 'reject', 'pending', 'destroy']:
+            # Only admins can do this
             permission_classes = [IsAdminUser]
         else:
-            # Delete: admin only
+            # Fallback
             permission_classes = [IsAdminUser]
         return [permission() for permission in permission_classes]
     
@@ -197,9 +200,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
         try:
             validate_password(new_password, user)
-        except serializers.ValidationError:
+        except DjangoValidationError as e:
             return Response(
-                {"code": "password_invalid"},
+                {"code": "password_invalid", "details": list(e.messages)},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -213,16 +216,80 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Reset user password",
-        description="Reset a user's password (admin only)",
+        description="Reset a user's password and return a temporary password (admin only)",
         tags=["Users"],
-        request=serializers.Serializer,  # You might want to define a specific serializer for documentation
+        request=None,
         responses={200: None}
     )
     @action(detail=True, methods=['post'], url_path='reset_password', permission_classes=[IsAdminUser])
     def reset_password(self, request, pk=None):
-        """Allow an admin to reset a user's password"""
+        """Allow an admin to reset a user's password and get a temporary password"""
         user = self.get_object()
-        new_password = request.data.get('new_password')
+        alphabet = string.ascii_letters + string.digits
+        
+        valid_temp_password = None
+        for _ in range(10):
+            candidate = str(''.join(secrets.choice(alphabet) for i in range(12)))
+            try:
+                validate_password(candidate, user=user)
+                valid_temp_password = candidate
+                break
+            except DjangoValidationError:
+                continue
+
+        if not valid_temp_password:
+            return Response(
+                {"code": "password_generation_failed"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        try:
+            validate_password(valid_temp_password, user=user)
+            user.set_password(valid_temp_password)
+            user.save()
+        except DjangoValidationError as e:
+            return Response(
+                {"code": "password_validation_failed", "details": list(e.messages)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {"code": "password_reset_error", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response(
+            {"detail": "password_reset_success", "temp_password": valid_temp_password}, 
+            status=status.HTTP_200_OK
+        )
+
+    @extend_schema(
+        summary="Set initial password (first login)",
+        description="Allows a newly created user to set their initial password without knowing the old one",
+        tags=["Users"],
+        request=serializers.Serializer,
+        responses={200: None}
+    )
+    @action(detail=True, methods=['post'], url_path='set_initial_password', permission_classes=[IsAuthenticated])
+    def set_initial_password(self, request, pk=None):
+        """Allow a user to set their password on first login"""
+        user = self.get_object()
+
+        # Only allow users to set their own initial password
+        if user != request.user:
+            return Response(
+                {"code": "forbidden"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Only allow if first login not yet completed
+        if user.first_login_completed:
+            return Response(
+                {"code": "already_initialized"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        new_password = request.data.get('password')
 
         if not new_password:
             return Response(
@@ -232,16 +299,17 @@ class UserViewSet(viewsets.ModelViewSet):
 
         try:
             validate_password(new_password, user)
-        except serializers.ValidationError as e:
+        except DjangoValidationError as e:
             return Response(
-                {"code": "password_invalid", "details": e.messages},
+                {"code": "password_invalid", "details": list(e.messages)},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         user.set_password(new_password)
-        user.save()
+        user.first_login_completed = True
+        user.save(update_fields=['password', 'first_login_completed'])
 
         return Response(
-            {"detail": "password_reset_success"},
+            {"detail": "initial_password_set_success"},
             status=status.HTTP_200_OK
         )

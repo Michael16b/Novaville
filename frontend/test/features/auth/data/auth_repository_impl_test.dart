@@ -92,12 +92,9 @@ class _StubUserRepository implements IUserRepository {
   }
 
   @override
-  Future<void> resetPassword({
-    required int userId,
-    required String newPassword,
-  }) async {
-    // Stub: ne fait rien
-    return;
+  Future<String> resetPassword({required int userId}) async {
+    // Stub: return a dummy temp password
+    return 'TempPass123!';
   }
 
   @override
@@ -333,12 +330,9 @@ class _SequentialUserRepository implements IUserRepository {
   }
 
   @override
-  Future<void> resetPassword({
-    required int userId,
-    required String newPassword,
-  }) async {
-    // Stub: ne fait rien
-    return;
+  Future<String> resetPassword({required int userId}) async {
+    // Stub: return a dummy temp password
+    return 'TempPass123!';
   }
 
   @override

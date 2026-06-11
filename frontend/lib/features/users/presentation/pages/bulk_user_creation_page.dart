@@ -8,10 +8,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/core/validation_patterns.dart';
 import 'package:frontend/features/users/application/services/user_csv_compiler.dart';
+import 'package:frontend/features/users/presentation/pages/pdf_generation_util.dart';
 import 'package:frontend/features/users/presentation/pages/web_drop_handler.dart';
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
@@ -552,9 +554,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       context: context,
       builder: (dialogContext) {
         return StyledDialog(
-          title: BulkUserCreationTexts.csvCompilationDialogTitle(
-            errors.length,
-          ),
+          title: BulkUserCreationTexts.csvCompilationDialogTitle(errors.length),
           icon: Icons.error_outline,
           accentColor: AppColors.error,
           maxWidth: 720,
@@ -584,9 +584,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      for (var index = 0;
-                          index < errors.length;
-                          index++) ...[
+                      for (var index = 0; index < errors.length; index++) ...[
                         Builder(
                           builder: (context) {
                             final error = errors[index];
@@ -594,18 +592,13 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                               dense: true,
                               leading: CircleAvatar(
                                 radius: 14,
-                                backgroundColor:
-                                    AppColors.error.withValues(
+                                backgroundColor: AppColors.error.withValues(
                                   alpha: 0.15,
                                 ),
                                 child: Text(
                                   '${error.line}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(fontWeight: FontWeight.w700),
                                 ),
                               ),
                               title: Text(error.message),
@@ -618,8 +611,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                             );
                           },
                         ),
-                        if (index < errors.length - 1)
-                          const Divider(height: 1),
+                        if (index < errors.length - 1) const Divider(height: 1),
                       ],
                     ],
                   ),
@@ -777,23 +769,15 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     return chars.join();
   }
 
-  String _buildPdfDateSuffix() {
-    final now = DateTime.now();
-    final day = now.day.toString().padLeft(2, '0');
-    final month = now.month.toString().padLeft(2, '0');
-    final year = now.year.toString();
-    return '$day$month$year';
-  }
-
   String _buildPdfFileName(String? suffix) {
-    final datePart = _buildPdfDateSuffix();
+    final datePart = PdfGenerationUtil.buildPdfDateSuffix();
     final suffixPart = (suffix == null || suffix.isEmpty) ? '' : suffix;
     return '${BulkUserCreationTexts.pdfFileBaseName}${datePart}$suffixPart.pdf';
   }
 
   _GridConfig _resolveAutoGridConfig(int itemCount) {
     if (itemCount <= 2) {
-      return const _GridConfig(columns: 1, rows: 2);
+      return const _GridConfig(columns: 2, rows: 1);
     }
     if (itemCount <= 4) {
       return const _GridConfig(columns: 2, rows: 2);
@@ -801,16 +785,7 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     if (itemCount <= 6) {
       return const _GridConfig(columns: 2, rows: 3);
     }
-    if (itemCount <= 9) {
-      return const _GridConfig(columns: 3, rows: 3);
-    }
-    if (itemCount <= 12) {
-      return const _GridConfig(columns: 3, rows: 4);
-    }
-    if (itemCount <= 16) {
-      return const _GridConfig(columns: 4, rows: 4);
-    }
-    return const _GridConfig(columns: 5, rows: 5);
+    return const _GridConfig(columns: 2, rows: 4);
   }
 
   String _createCredentialShareLink(_CreatedCredential credential) {
@@ -822,10 +797,13 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
       'email': credential.email ?? '',
       'password': credential.password,
     });
+
+    // Encode to base64url (standard allows padding removal, but we keep consistency)
     final encodedShareRef = base64Url
         .encode(utf8.encode(payload))
         .replaceAll('=', '');
 
+    // Build route with query parameters
     final routeUri = Uri(
       path: AppRoutes.credentialsShare,
       queryParameters: {
@@ -836,10 +814,14 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final currentUri = Uri.base;
     final usesHashRouting = currentUri.fragment.startsWith('/');
 
+    // Generate share link - ensure proper URL construction
     if (usesHashRouting) {
-      return '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#${routeUri.toString()}';
+      // Hash routing: https://example.com/#/credentials-share?share_ref=xyz
+      final fullPath = routeUri.toString();
+      return '${currentUri.scheme}://${currentUri.authority}${currentUri.path}#$fullPath';
     }
 
+    // Path routing: https://example.com/credentials-share?share_ref=xyz
     return currentUri.resolveUri(routeUri).toString();
   }
 
@@ -885,127 +867,6 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     }
   }
 
-  Future<pw.MemoryImage?> _loadPdfLogo() async {
-    try {
-      final logoBytes = await rootBundle.load('assets/images/logo.png');
-      return pw.MemoryImage(logoBytes.buffer.asUint8List());
-    } catch (_) {
-      return null;
-    }
-  }
-
-  Future<_PdfFontPack?> _loadPdfFonts() async {
-    try {
-      final regular = pw.Font.ttf(
-        await rootBundle.load('assets/fonts/Montserrat-Regular.ttf'),
-      );
-      final bold = pw.Font.ttf(
-        await rootBundle.load('assets/fonts/Montserrat-Bold.ttf'),
-      );
-      return _PdfFontPack(base: regular, bold: bold);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  pw.Widget _buildCredentialPdfCard(
-    _CreatedCredential credential, {
-    required PdfColor primary,
-    required PdfColor accent,
-    required PdfColor background,
-    pw.MemoryImage? logo,
-    bool compact = false,
-  }) {
-    final titleSize = compact ? 11.0 : 15.0;
-    final valueSize = compact ? 9.5 : 11.5;
-    final nameSize = compact ? 12.0 : 17.0;
-
-    pw.Widget lineItem(String label, String value) {
-      return pw.Container(
-        margin: pw.EdgeInsets.only(bottom: compact ? 5 : 8),
-        padding: pw.EdgeInsets.symmetric(
-          horizontal: compact ? 8 : 10,
-          vertical: compact ? 6 : 8,
-        ),
-        decoration: pw.BoxDecoration(
-          color: PdfColors.white,
-          borderRadius: pw.BorderRadius.circular(8),
-          border: pw.Border.all(color: PdfColors.grey300),
-        ),
-        child: pw.Row(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.SizedBox(
-              width: compact ? 54 : 76,
-              child: pw.Text(
-                label,
-                style: pw.TextStyle(
-                  fontSize: compact ? 8.5 : 9.5,
-                  color: PdfColors.grey700,
-                ),
-              ),
-            ),
-            pw.Expanded(
-              child: pw.Text(
-                value,
-                style: pw.TextStyle(
-                  fontSize: valueSize,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return pw.Container(
-      padding: pw.EdgeInsets.all(compact ? 10 : 14),
-      decoration: pw.BoxDecoration(
-        color: background,
-        borderRadius: pw.BorderRadius.circular(compact ? 10 : 14),
-        border: pw.Border.all(color: accent, width: 1.2),
-      ),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Row(
-            children: [
-              if (logo != null)
-                pw.Container(
-                  width: compact ? 20 : 30,
-                  height: compact ? 20 : 30,
-                  margin: pw.EdgeInsets.only(right: compact ? 6 : 10),
-                  child: pw.Image(logo),
-                ),
-              pw.Text(
-                BulkUserCreationTexts.pdfBrand,
-                style: pw.TextStyle(
-                  color: primary,
-                  fontWeight: pw.FontWeight.bold,
-                  fontSize: titleSize,
-                ),
-              ),
-            ],
-          ),
-          pw.SizedBox(height: compact ? 6 : 10),
-          pw.Text(
-            '${credential.firstName} ${credential.lastName}',
-            style: pw.TextStyle(
-              fontSize: nameSize,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColors.black,
-            ),
-          ),
-          pw.SizedBox(height: compact ? 6 : 10),
-          lineItem(BulkUserCreationTexts.pdfEmailLabel, credential.email ?? ''),
-          lineItem(BulkUserCreationTexts.pdfUsernameLabel, credential.username),
-          lineItem(BulkUserCreationTexts.pdfPasswordLabel, credential.password),
-        ],
-      ),
-    );
-  }
-
   Future<void> _generateSchoolGridPdf() async {
     if (_createdCredentials.isEmpty) {
       CustomSnackBar.showError(
@@ -1033,17 +894,26 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final primary = PdfColor.fromInt(AppColors.primary.toARGB32());
     final accent = PdfColor.fromInt(AppColors.secondary.toARGB32());
     final background = PdfColors.white;
-    final logo = await _loadPdfLogo();
-    final fontPack = await _loadPdfFonts();
+    final logo = await PdfGenerationUtil.loadPdfLogo();
+    final fontPack = await PdfGenerationUtil.loadPdfFonts();
     final theme = fontPack == null
         ? null
         : pw.ThemeData.withFont(base: fontPack.base, bold: fontPack.bold);
 
+    final margin = 20.0;
     final horizontalSpacing = 10.0;
+    final verticalSpacing = 10.0;
+
+    final actualAvailableWidth = PdfPageFormat.a4.width - (margin * 2);
     final cardWidth =
-        (PdfPageFormat.a4.availableWidth -
-            (horizontalSpacing * (safeColumns - 1))) /
+        (actualAvailableWidth - (horizontalSpacing * (safeColumns - 1))) /
         safeColumns;
+
+    final headerHeight = 55.0; // Approximation de la hauteur de l'en-tête
+    final actualAvailableHeight =
+        PdfPageFormat.a4.height - (margin * 2) - headerHeight - 5.0;
+    final cardHeight =
+        (actualAvailableHeight - (verticalSpacing * (safeRows - 1))) / safeRows;
 
     for (
       var start = 0;
@@ -1056,10 +926,10 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
           .toList();
 
       document.addPage(
-        pw.Page(
-          margin: const pw.EdgeInsets.all(20),
+        pw.MultiPage(
+          margin: pw.EdgeInsets.all(margin),
           theme: theme,
-          build: (context) {
+          header: (context) {
             return pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
@@ -1077,26 +947,36 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                   style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
                 ),
                 pw.SizedBox(height: 12),
-                pw.Wrap(
-                  spacing: horizontalSpacing,
-                  runSpacing: 10,
-                  children: [
-                    for (final item in pageItems)
-                      pw.SizedBox(
-                        width: cardWidth,
-                        child: _buildCredentialPdfCard(
-                          item,
-                          primary: primary,
-                          accent: accent,
-                          background: background,
-                          logo: logo,
-                          compact: pageItems.length > 4,
-                        ),
-                      ),
-                  ],
-                ),
               ],
             );
+          },
+          build: (context) {
+            return [
+              pw.Wrap(
+                spacing: horizontalSpacing,
+                runSpacing: verticalSpacing,
+                children: [
+                  for (final item in pageItems)
+                    pw.SizedBox(
+                      width: cardWidth,
+                      height: cardHeight,
+                      child: PdfGenerationUtil.buildCredentialPdfCard(
+                        firstName: item.firstName,
+                        lastName: item.lastName,
+                        username: item.username,
+                        email: item.email ?? '',
+                        password: item.password,
+                        primary: primary,
+                        accent: accent,
+                        background: background,
+                        logo: logo,
+                        compact: slotsPerPage > 4,
+                        shareUrl: _createCredentialShareLink(item),
+                      ),
+                    ),
+                ],
+              ),
+            ];
           },
         ),
       );
@@ -1125,8 +1005,8 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     final primary = PdfColor.fromInt(AppColors.primary.toARGB32());
     final accent = PdfColor.fromInt(AppColors.secondary.toARGB32());
     final background = PdfColors.white;
-    final logo = await _loadPdfLogo();
-    final fontPack = await _loadPdfFonts();
+    final logo = await PdfGenerationUtil.loadPdfLogo();
+    final fontPack = await PdfGenerationUtil.loadPdfFonts();
     final theme = fontPack == null
         ? null
         : pw.ThemeData.withFont(base: fontPack.base, bold: fontPack.bold);
@@ -1140,12 +1020,17 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
             return pw.Center(
               child: pw.SizedBox(
                 width: PdfPageFormat.a4.availableWidth,
-                child: _buildCredentialPdfCard(
-                  credential,
+                child: PdfGenerationUtil.buildCredentialPdfCard(
+                  firstName: credential.firstName,
+                  lastName: credential.lastName,
+                  username: credential.username,
+                  email: credential.email ?? '',
+                  password: credential.password,
                   primary: primary,
                   accent: accent,
                   background: background,
                   logo: logo,
+                  shareUrl: _createCredentialShareLink(credential),
                 ),
               ),
             );
@@ -1157,45 +1042,6 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
     await _downloadPdfFile(
       bytes: await document.save(),
       fileName: _buildPdfFileName(BulkUserCreationTexts.individualPdfSuffix),
-    );
-  }
-
-  Future<void> _generateSingleUserPdf(_CreatedCredential credential) async {
-    final document = pw.Document();
-    final primary = PdfColor.fromInt(AppColors.primary.toARGB32());
-    final accent = PdfColor.fromInt(AppColors.secondary.toARGB32());
-    final background = PdfColors.white;
-    final logo = await _loadPdfLogo();
-    final fontPack = await _loadPdfFonts();
-    final theme = fontPack == null
-        ? null
-        : pw.ThemeData.withFont(base: fontPack.base, bold: fontPack.bold);
-
-    document.addPage(
-      pw.Page(
-        margin: const pw.EdgeInsets.all(28),
-        theme: theme,
-        build: (context) {
-          return pw.Center(
-            child: pw.SizedBox(
-              width: 460,
-              child: _buildCredentialPdfCard(
-                credential,
-                primary: primary,
-                accent: accent,
-                background: background,
-                logo: logo,
-              ),
-            ),
-          );
-        },
-      ),
-    );
-
-    await _downloadPdfFile(
-      bytes: await document.save(),
-      fileName:
-          '${BulkUserCreationTexts.pdfFileBaseName}${_buildPdfDateSuffix()}${BulkUserCreationTexts.oneUserPdfSuffix}_${credential.username}.pdf',
     );
   }
 
@@ -1836,8 +1682,19 @@ class _BulkUserCreationPageState extends State<BulkUserCreationPage> {
                             IconButton(
                               tooltip:
                                   BulkUserCreationTexts.downloadUserPdfTooltip,
-                              onPressed: () =>
-                                  _generateSingleUserPdf(credential),
+                              onPressed: () async {
+                                await PdfGenerationUtil.generateAndDownloadSingleUserPdf(
+                                  context: context,
+                                  firstName: credential.firstName,
+                                  lastName: credential.lastName,
+                                  username: credential.username,
+                                  email: credential.email ?? '',
+                                  password: credential.password,
+                                  shareUrl: _createCredentialShareLink(
+                                    credential,
+                                  ),
+                                );
+                              },
                               icon: const Icon(Icons.picture_as_pdf),
                             ),
                           ],
@@ -1978,11 +1835,4 @@ class _CreatedCredential {
   final String? email;
   final String username;
   final String password;
-}
-
-class _PdfFontPack {
-  const _PdfFontPack({required this.base, required this.bold});
-
-  final pw.Font base;
-  final pw.Font bold;
 }

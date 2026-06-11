@@ -87,6 +87,50 @@ class TestNewsQuestionsAPI:
         assert question.answered_by == elected_user
         assert question.response == "Les travaux se terminent vendredi."
         assert question.answered_at is not None
+        assert question.citizen_seen_at is None
+
+    def test_citizen_can_mark_answered_question_as_seen(
+        self,
+        authenticated_client,
+        citizen_user,
+    ):
+        question = NewsQuestion.objects.create(
+            citizen=citizen_user,
+            subject="Question",
+            message="Message",
+            status=NewsQuestionStatus.ANSWERED,
+            response="Reponse",
+        )
+
+        response = authenticated_client.post(
+            f"/api/v1/news-questions/{question.id}/mark_seen/",
+            {},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        question.refresh_from_db()
+        assert question.citizen_seen_at is not None
+        assert response.data["citizen_seen_at"] is not None
+
+    def test_citizen_cannot_mark_pending_question_as_seen(
+        self,
+        authenticated_client,
+        citizen_user,
+    ):
+        question = NewsQuestion.objects.create(
+            citizen=citizen_user,
+            subject="Question",
+            message="Message",
+        )
+
+        response = authenticated_client.post(
+            f"/api/v1/news-questions/{question.id}/mark_seen/",
+            {},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_citizen_cannot_reply(self, authenticated_client, citizen_user):
         question = NewsQuestion.objects.create(

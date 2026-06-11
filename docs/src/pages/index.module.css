@@ -21,3 +21,100 @@
   align-items: center;
   justify-content: center;
 }
+
+.downloadsSection {
+  padding: 3rem 0 4rem;
+  background: linear-gradient(180deg, rgba(1, 117, 194, 0.06) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.downloadsHeader {
+  max-width: 56rem;
+  margin: 0 auto 1.5rem;
+  text-align: center;
+}
+
+.downloadsBrandRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.appLogo {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1rem;
+  object-fit: cover;
+  box-shadow: var(--ifm-global-shadow-md);
+}
+
+.downloadsTitle {
+  margin-bottom: 0.75rem;
+}
+
+.downloadsIntro {
+  margin-bottom: 0;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.downloadsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.downloadCard {
+  padding: 1.25rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 16px;
+  background: var(--ifm-card-background-color);
+  box-shadow: var(--ifm-global-shadow-lw);
+}
+
+.downloadCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.platformIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  color: white;
+  background: linear-gradient(135deg, #0f5c78 0%, #0175c2 100%);
+  box-shadow: var(--ifm-global-shadow-lw);
+}
+
+.platformIcon svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  fill: currentColor;
+}
+
+.inlineAppLogo {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.65rem;
+  object-fit: cover;
+}
+
+.downloadCardTitle {
+  margin-bottom: 0.5rem;
+}
+
+.downloadCardDescription {
+  min-height: 4.5rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.downloadsNote {
+  margin: 1.5rem auto 0;
+  max-width: 48rem;
+  text-align: center;
+  color: var(--ifm-color-emphasis-700);
+}

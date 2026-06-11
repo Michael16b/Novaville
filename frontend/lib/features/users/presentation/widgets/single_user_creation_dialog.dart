@@ -13,6 +13,7 @@ import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
+import 'package:frontend/features/users/presentation/pages/pdf_generation_util.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
 
 class SingleUserCreationDialog extends StatefulWidget {
@@ -176,16 +177,12 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
               isExpanded: true,
               menuMaxHeight: 300,
               borderRadius: BorderRadius.circular(12),
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
               items: UserRole.values
                   .where((role) => role != UserRole.globalAdmin)
                   .map(
-                    (role) => DropdownMenuItem(
-                      value: role,
-                      child: Text(role.label),
-                    ),
+                    (role) =>
+                        DropdownMenuItem(value: role, child: Text(role.label)),
                   )
                   .toList(),
               onChanged: (value) {
@@ -223,9 +220,9 @@ class _SingleUserCreationDialogState extends State<SingleUserCreationDialog> {
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.secondaryText,
-              fontWeight: FontWeight.w600,
-            ),
+          color: AppColors.secondaryText,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -382,10 +379,11 @@ class _CredentialsDialogState extends State<_CredentialsDialog> {
       'last_name': widget.lastName,
       'username': widget.username,
       'email': widget.email,
-      'password': widget.password,
+      'temp_password': widget.password,
     });
-    final encodedShareRef =
-        base64Url.encode(utf8.encode(payload)).replaceAll('=', '');
+    final encodedShareRef = base64Url
+        .encode(utf8.encode(payload))
+        .replaceAll('=', '');
 
     final routeUri = Uri(
       path: AppRoutes.credentialsShare,
@@ -456,6 +454,32 @@ class _CredentialsDialogState extends State<_CredentialsDialog> {
                 ),
                 icon: Icon(_isCopied ? Icons.check : Icons.copy, size: 20),
                 label: Text(_isCopied ? UserTexts.copied : UserTexts.copy),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await PdfGenerationUtil.generateAndDownloadSingleUserPdf(
+                      context: context,
+                      firstName: widget.firstName,
+                      lastName: widget.lastName,
+                      username: widget.username,
+                      email: widget.email,
+                      password: widget.password,
+                      shareUrl: _linkController.text,
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 56),
+                  ),
+                  icon: const Icon(Icons.picture_as_pdf, size: 20),
+                  label: const Text(UserTexts.downloadPdf),
+                ),
               ),
             ],
           ),
@@ -559,9 +583,7 @@ class _NeighborhoodAutocompleteFieldState
           validator: (_) => widget.validator?.call(_selectedId),
           decoration: InputDecoration(
             hintText: UserTexts.selectNeighborhood,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 12,
@@ -647,9 +669,9 @@ class _RequiredFieldsHint extends StatelessWidget {
         Text(
           AppTextsGeneral.requiredFieldsHint,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.secondaryText,
-                fontStyle: FontStyle.italic,
-              ),
+            color: AppColors.secondaryText,
+            fontStyle: FontStyle.italic,
+          ),
         ),
       ],
     );

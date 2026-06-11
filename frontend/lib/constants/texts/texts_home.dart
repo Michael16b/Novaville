@@ -17,8 +17,8 @@ class AppTextsHome {
   static const String surveysSubtitle = 'Gérer les sondages en cours';
   static const String agendaTitle = 'Agenda participatif';
   static const String agendaSubtitle = 'Consulter les événements locaux';
-  static const String newsTitle = 'Actualités';
-  static const String newsSubtitle = 'Voir les dernières actualités municipales';
+  static const String newsTitle = 'Discussions';
+  static const String newsSubtitle = 'Voir les dernières publications de la ville';
   static const String infoTitle = 'Infos utiles';
   static const String infoSubtitle = 'Adresse, horaires, réseaux sociaux, contacts, etc.';
   static const String platformUsagePrefix = 'Plateforme utilisée par ';

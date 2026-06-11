@@ -154,6 +154,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         description: event.description,
         address: event.address,
         neighborhood: event.neighborhood,
+        photos: event.photos,
       );
       _pageCache.clear();
       emit(state.copyWith(status: ReportsStatus.created));
@@ -247,6 +248,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     ReportUpdateRequested event,
     Emitter<ReportsState> emit,
   ) async {
+    final currentPage = state.page;
+    final currentSearch = state.search;
     emit(state.copyWith(status: ReportsStatus.updating));
     try {
       final updatedReport = await _repository.updateReport(
@@ -256,6 +259,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         address: event.address,
         neighborhood: event.neighborhood,
         problemType: event.problemType,
+        photos: event.photos,
+        deletedPhotoIds: event.deletedPhotoIds,
       );
       _pageCache.clear();
 
@@ -266,7 +271,15 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       emit(
         state.copyWith(status: ReportsStatus.updated, reports: updatedReports),
       );
-      emit(state.copyWith(status: ReportsStatus.loaded));
+      await _loadPageWithCache(
+        emit: emit,
+        page: currentPage,
+        ordering: null,
+        search: currentSearch,
+        forceRefresh: true,
+        useInitialLoading: false,
+        forceLoadingStateFirst: false,
+      );
     } catch (e) {
       emit(state.copyWith(status: ReportsStatus.failure, error: e.toString()));
       emit(state.copyWith(status: ReportsStatus.loaded));

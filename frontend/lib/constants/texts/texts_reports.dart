@@ -54,6 +54,21 @@ class ReportTexts {
   /// Hint for description field.
   static const descriptionHint = 'Décrivez le problème rencontré...';
 
+  /// Photos form label.
+  static const photosLabel = 'Photos';
+
+  /// Add photos button label.
+  static const addPhotos = 'Ajouter une photo';
+
+  /// Remove photo tooltip.
+  static const removePhoto = 'Retirer la photo';
+
+  /// No photos label.
+  static const noPhotos = 'Aucune photo';
+
+  /// Photos count label.
+  static const photosCount = 'photo(s)';
+
   /// Roads problem type label.
   static const roads = 'Voirie';
 
@@ -132,10 +147,6 @@ class ReportTexts {
 
   /// Address required validation message.
   static const addressRequired = "L'adresse exacte est obligatoire";
-
-  /// Address format validation message.
-  static const addressInvalid =
-      "Utilisez une adresse comme '12 rue de la Paix'";
 
   /// Status required validation message.
   static const statusRequired = 'Le statut est obligatoire';

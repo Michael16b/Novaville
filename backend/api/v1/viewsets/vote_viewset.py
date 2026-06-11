@@ -34,7 +34,7 @@ class VoteViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing votes.
     
-    Users can only vote once per survey.
+    Users can vote once per option on surveys with multiple answers enabled.
     Users can view and delete their own votes.
     """
     queryset = Vote.objects.select_related('user', 'survey', 'option').all()
@@ -63,13 +63,28 @@ class VoteViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         survey = serializer.validated_data['survey']
-        option = serializer.validated_data['option']
+        options = serializer.validated_data['options']
 
         with transaction.atomic():
+            if survey.multiple_answers:
+                Vote.objects.filter(user=request.user, survey=survey).exclude(
+                    option__in=options
+                ).delete()
+                votes = [
+                    Vote.objects.get_or_create(
+                        user=request.user,
+                        survey=survey,
+                        option=option,
+                    )[0]
+                    for option in options
+                ]
+                response_serializer = VoteSerializer(votes, many=True)
+                return Response(response_serializer.data, status=status.HTTP_200_OK)
+
             vote, created = Vote.objects.update_or_create(
                 user=request.user,
                 survey=survey,
-                defaults={'option': option},
+                defaults={'option': options[0]},
             )
 
         response_serializer = VoteSerializer(vote)

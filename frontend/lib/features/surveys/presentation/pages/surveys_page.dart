@@ -5,6 +5,9 @@ import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_surveys.dart';
 import 'package:frontend/design_systems/custom_snack_bar.dart';
 import 'package:frontend/features/auth/application/bloc/auth_bloc.dart';
+import 'package:frontend/features/neighborhood/data/neighborhood_repository.dart';
+import 'package:frontend/features/neighborhood/data/neighborhood_repository_factory.dart';
+import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/surveys/application/bloc/surveys_bloc.dart';
 import 'package:frontend/features/surveys/data/models/survey.dart';
 import 'package:frontend/features/surveys/data/survey_repository.dart';
@@ -13,6 +16,7 @@ import 'package:frontend/features/surveys/presentation/widgets/survey_card.dart'
 import 'package:frontend/features/surveys/presentation/widgets/survey_form_dialog.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/ui/widgets/breadcrumb.dart';
+import 'package:frontend/ui/widgets/collapsible_filter_section.dart';
 import 'package:frontend/ui/widgets/expandable_fab_menu.dart';
 import 'package:frontend/ui/widgets/page_header.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
@@ -46,7 +50,11 @@ class _SurveysPageContent extends StatefulWidget {
 
 class _SurveysPageContentState extends State<_SurveysPageContent> {
   final TextEditingController _addressController = TextEditingController();
+  final INeighborhoodRepository _neighborhoodRepository =
+      createNeighborhoodRepository();
   UserRole? _selectedTarget;
+  List<Neighborhood> _neighborhoods = const [];
+  bool _neighborhoodsLoading = false;
   int? _preferredCardsPerRow;
   String _sortColumnKey = 'created_at';
   bool _sortAscending = false;
@@ -58,6 +66,34 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
   void dispose() {
     _addressController.dispose();
     super.dispose();
+  }
+
+  Future<bool> _ensureNeighborhoodsLoaded() async {
+    if (_neighborhoods.isNotEmpty) return true;
+    if (_neighborhoodsLoading) return false;
+
+    setState(() {
+      _neighborhoodsLoading = true;
+    });
+
+    try {
+      final neighborhoods = await _neighborhoodRepository.listNeighborhoods();
+      if (!mounted) return false;
+      setState(() {
+        _neighborhoods = neighborhoods;
+      });
+      return true;
+    } catch (_) {
+      if (!mounted) return false;
+      CustomSnackBar.showError(context, SurveysTexts.neighborhoodsLoadError);
+      return false;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _neighborhoodsLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -126,10 +162,6 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
     SurveysState state, {
     required bool canFilterTarget,
   }) {
-    final hasActiveFilter =
-        _addressController.text.trim().isNotEmpty ||
-        (canFilterTarget && _selectedTarget != null);
-
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -144,68 +176,69 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
                     labelText: SurveysTexts.searchAddress,
                     hintText: SurveysTexts.searchAddressHint,
                     prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _addressController.text.isEmpty
+                        ? null
+                        : IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () {
+                              _addressController.clear();
+                              setState(() {});
+                              _applyFilters(context, page: 1);
+                            },
+                          ),
                   ),
                   onChanged: (_) => setState(() {}),
                   onSubmitted: (_) => _applyFilters(context, page: 1),
                 ),
                 const SizedBox(height: 10),
                 _buildSortControls(constraints.maxWidth),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.filter_list,
-                      size: 18,
-                      color: AppColors.secondaryText,
-                    ),
-                    Text(
-                      SurveysTexts.advancedFilters,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    TextButton.icon(
-                      onPressed: hasActiveFilter
-                          ? () {
-                              _addressController.clear();
-                              setState(() {
-                                if (canFilterTarget) {
-                                  _selectedTarget = null;
-                                }
-                              });
-                              _applyFilters(context, page: 1);
-                            }
-                          : null,
-                      icon: const Icon(Icons.clear_all, size: 16),
-                      label: const Text(AppTextsGeneral.resetFilters),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        visualDensity: VisualDensity.compact,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
                 if (canFilterTarget) ...[
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        SurveysTexts.filterByCitizenType,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.secondaryText,
-                          fontWeight: FontWeight.w600,
+                  const SizedBox(height: 10),
+                  CollapsibleFilterSection(
+                    title: SurveysTexts.advancedFilters,
+                    initiallyExpanded: _selectedTarget != null,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          SurveysTexts.filterByCitizenType,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: AppColors.secondaryText,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: _buildCitizenTargetChips(context),
-                      ),
-                    ],
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: _buildCitizenTargetChips(context),
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton.icon(
+                            onPressed: _selectedTarget != null
+                                ? () {
+                                    setState(() {
+                                      _selectedTarget = null;
+                                    });
+                                    _applyFilters(context, page: 1);
+                                  }
+                                : null,
+                            icon: const Icon(Icons.clear_all, size: 16),
+                            label: const Text(AppTextsGeneral.resetFilters),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -268,10 +301,10 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
               isAuthenticated: isAuthenticated,
               isStaff: canManageSurveys,
               canVote: _canVoteOnSurvey(currentUserRole, survey),
-              onVote: (optionId) => _onVoteTapped(
+              onVote: (optionIds) => _onVoteTapped(
                 context,
                 surveyId: survey.id,
-                optionId: optionId,
+                optionIds: optionIds,
                 isAuthenticated: isAuthenticated,
               ),
               onEdit: canManageSurveys
@@ -623,38 +656,49 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
   }
 
   Future<void> _showCreateDialog(BuildContext context) async {
+    final neighborhoodsLoaded = await _ensureNeighborhoodsLoaded();
+    if (!context.mounted) return;
+    if (!neighborhoodsLoaded) return;
+
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (_) => const SurveyFormDialog(),
+      builder: (_) => SurveyFormDialog(neighborhoods: _neighborhoods),
     );
 
-    if (result == null || !mounted) return;
+    if (result == null || !context.mounted) return;
 
     context.read<SurveysBloc>().add(
       SurveyCreateRequested(
         question: result['question'] as String,
         description: result['description'] as String,
-        address: result['address'] as String,
-        options: result['options'] as List<String>,
+        neighborhoodId: result['neighborhood_id'] as int?,
+        options: List<String>.from(result['options'] as List<dynamic>),
+        multipleAnswers: result['multiple_answers'] as bool,
         citizenTarget: result['citizen_target'] as UserRole?,
       ),
     );
   }
 
   Future<void> _showEditDialog(BuildContext context, Survey survey) async {
+    final neighborhoodsLoaded = await _ensureNeighborhoodsLoaded();
+    if (!context.mounted) return;
+    if (!neighborhoodsLoaded) return;
+
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (_) => SurveyFormDialog(survey: survey),
+      builder: (_) =>
+          SurveyFormDialog(survey: survey, neighborhoods: _neighborhoods),
     );
 
-    if (result == null || !mounted) return;
+    if (result == null || !context.mounted) return;
 
     context.read<SurveysBloc>().add(
       SurveyUpdateRequested(
         surveyId: survey.id,
         question: result['question'] as String,
         description: result['description'] as String,
-        address: result['address'] as String,
+        neighborhoodId: result['neighborhood_id'] as int?,
+        multipleAnswers: result['multiple_answers'] as bool,
         citizenTarget: result['citizen_target'] as UserRole?,
       ),
     );
@@ -691,7 +735,7 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
   void _onVoteTapped(
     BuildContext context, {
     required int surveyId,
-    required int optionId,
+    required List<int> optionIds,
     required bool isAuthenticated,
   }) {
     if (!isAuthenticated) {
@@ -699,7 +743,7 @@ class _SurveysPageContentState extends State<_SurveysPageContent> {
       return;
     }
     context.read<SurveysBloc>().add(
-      SurveyVoteRequested(surveyId: surveyId, optionId: optionId),
+      SurveyVoteRequested(surveyId: surveyId, optionIds: optionIds),
     );
   }
 

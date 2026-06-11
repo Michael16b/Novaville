@@ -127,4 +127,5 @@ Vérifier :
 
 - [Déploiement local](./local-deployment)
 - [Déploiement sur Azure](./azure-deployment)
+- [Distribution des applications](./app-distribution)
 - [Guides internes](./internal-guides)

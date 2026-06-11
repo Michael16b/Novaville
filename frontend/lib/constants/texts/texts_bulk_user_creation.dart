@@ -112,6 +112,8 @@ class BulkUserCreationTexts {
   static const pdfEmailLabel = 'Email';
   static const pdfUsernameLabel = 'Nom d\'utilisateur';
   static const pdfPasswordLabel = 'Mot de passe';
+  static const pdfPasswordNotice =
+      'Le mot de passe est a definir lors de la premiere connexion.';
 
   static const shareTokenPrefix = 'bulk_share_credential_';
 }

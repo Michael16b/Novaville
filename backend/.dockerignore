@@ -1,0 +1,48 @@
+# Don't copy .env into Docker image
+.env
+.env.*
+!.env.example
+
+# Git and VCS
+.git
+.gitignore
+.gitattributes
+.github
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.pytest_cache
+.coverage
+htmlcov
+dist
+build
+*.egg
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Tests and docs  
+# tests/  # Tests MUST be included for CI/CD to work
+README.md
+docs/
+*.md
+
+# Development
+.env.local
+.env.*.local

@@ -336,6 +336,23 @@ class TestUsersAPI:
         citizen_user.refresh_from_db()
         assert citizen_user.role == RoleEnum.AGENT
 
+    def test_admin_can_reset_user_password(self, admin_client, citizen_user):
+        """Test admin can reset a user's password and receive a temporary password"""
+        response = admin_client.post(f"/api/v1/users/{citizen_user.id}/reset_password/")
+        assert response.status_code == status.HTTP_200_OK
+        assert "temp_password" in response.data
+        assert "detail" in response.data
+        assert response.data["detail"] == "password_reset_success"
+        # Verify the temporary password was set
+        temp_password = response.data["temp_password"]
+        assert len(temp_password) == 12
+        assert temp_password.isalnum()
+
+    def test_non_admin_cannot_reset_password(self, authenticated_client, citizen_user):
+        """Test non-admin user cannot reset another user's password"""
+        response = authenticated_client.post(f"/api/v1/users/{citizen_user.id}/reset_password/")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
 
 class TestUserViewSetQueryset:
     """Tests for UserViewSet.get_queryset branches"""

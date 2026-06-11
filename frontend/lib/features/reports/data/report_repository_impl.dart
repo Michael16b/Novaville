@@ -6,6 +6,7 @@ import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/reports/data/models/report.dart';
 import 'package:frontend/features/reports/data/report_repository.dart';
+import 'package:http/http.dart' as http;
 
 /// HTTP-based implementation of [IReportRepository].
 class ReportRepositoryImpl implements IReportRepository {
@@ -90,6 +91,7 @@ class ReportRepositoryImpl implements IReportRepository {
     required String description,
     required String address,
     int? neighborhood,
+    List<ReportPhotoAttachment> photos = const [],
   }) async {
     final body = <String, dynamic>{
       'title': title,
@@ -99,14 +101,21 @@ class ReportRepositoryImpl implements IReportRepository {
     };
     if (neighborhood != null) body['neighborhood'] = neighborhood;
 
-    final response = await _authenticatedApiClient.post(
-      '/api/v1/reports/',
-      body: body,
-    );
+    final response = photos.isEmpty
+        ? await _authenticatedApiClient.post('/api/v1/reports/', body: body)
+        : await http.Response.fromStream(
+            await _authenticatedApiClient.postMultipart(
+              '/api/v1/reports/',
+              fields: body.map((key, value) => MapEntry(key, value.toString())),
+              files: photos,
+            ),
+          );
 
     if (response.statusCode != 201) {
+      final responseMessage = _extractErrorMessage(response.body);
       throw Exception(
-        '${ReportTextsErrors.createError}: ${response.statusCode}',
+        '${ReportTextsErrors.createError}: ${response.statusCode}'
+        '${responseMessage.isEmpty ? '' : ' - $responseMessage'}',
       );
     }
   }
@@ -119,6 +128,8 @@ class ReportRepositoryImpl implements IReportRepository {
     String? address,
     int? neighborhood,
     String? problemType,
+    List<ReportPhotoAttachment> photos = const [],
+    List<int> deletedPhotoIds = const [],
   }) async {
     final body = <String, dynamic>{};
     if (title != null) body['title'] = title;
@@ -126,18 +137,36 @@ class ReportRepositoryImpl implements IReportRepository {
     if (address != null) body['address'] = address;
     if (neighborhood != null) body['neighborhood'] = neighborhood;
     if (problemType != null) body['problem_type'] = problemType;
+    if (deletedPhotoIds.isNotEmpty) {
+      body['deleted_photo_ids'] = deletedPhotoIds;
+    }
 
-    final response = await _authenticatedApiClient.patch(
-      '/api/v1/reports/$reportId/',
-      body: body,
-    );
+    final response = photos.isEmpty
+        ? await _authenticatedApiClient.patch(
+            '/api/v1/reports/$reportId/',
+            body: body,
+          )
+        : await http.Response.fromStream(
+            await _authenticatedApiClient.patchMultipart(
+              '/api/v1/reports/$reportId/',
+              fields: body.map(
+                (key, value) => MapEntry(
+                  key,
+                  value is List ? value.join(',') : value.toString(),
+                ),
+              ),
+              files: photos,
+            ),
+          );
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       return Report.fromJson(json);
     } else {
+      final responseMessage = _extractErrorMessage(response.body);
       throw Exception(
-        '${ReportTextsErrors.updateError}: ${response.statusCode}',
+        '${ReportTextsErrors.updateError}: ${response.statusCode}'
+        '${responseMessage.isEmpty ? '' : ' - $responseMessage'}',
       );
     }
   }
@@ -197,6 +226,21 @@ class ReportRepositoryImpl implements IReportRepository {
       throw Exception(
         '${ReportTexts.fetchNeighborhoodsError}: ${response.statusCode}',
       );
+    }
+  }
+
+  String _extractErrorMessage(String responseBody) {
+    if (responseBody.trim().isEmpty) return '';
+    try {
+      final decoded = jsonDecode(responseBody);
+      if (decoded is Map<String, dynamic>) {
+        return decoded.entries
+            .map((entry) => '${entry.key}: ${entry.value}')
+            .join(', ');
+      }
+      return decoded.toString();
+    } catch (_) {
+      return responseBody;
     }
   }
 }

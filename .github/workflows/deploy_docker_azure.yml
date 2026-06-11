@@ -58,7 +58,8 @@ jobs:
 
   build-and-push:
     runs-on: ubuntu-latest
-    needs: pre-deploy-tests
+    needs:
+      - pre-deploy-tests
     environment: Azure Cloud
     steps:
       - name: Checkout code
@@ -122,42 +123,70 @@ jobs:
 
       - name: Configure Azure App Service settings
         run: |
+          DB_USER_COMPUTED="${{ secrets.DB_USER }}"
+          DB_HOST_COMPUTED="${{ secrets.AZURE_POSTGRES_SERVER_NAME }}.postgres.database.azure.com"
           az webapp config appsettings set \
-            --name NovavilleApp \
-            --resource-group Novaville \
+            --name "${{ secrets.AZURE_APP_NAME }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
             --output none \
             --settings \
               DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" \
               JWT_SIGNING_KEY="${{ secrets.JWT_SIGNING_KEY }}" \
+              DB_ENGINE="django.db.backends.postgresql" \
+              DB_HOST="$DB_HOST_COMPUTED" \
+              DB_PORT="5432" \
               DB_NAME="${{ secrets.DB_NAME }}" \
-              DB_USER="${{ secrets.DB_USER }}" \
+              DB_USER="$DB_USER_COMPUTED" \
               DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
               DJANGO_SUPERUSER_USERNAME="${{ secrets.DJANGO_SUPERUSER_USERNAME }}" \
               DJANGO_SUPERUSER_EMAIL="${{ secrets.DJANGO_SUPERUSER_EMAIL }}" \
               DJANGO_SUPERUSER_PASSWORD="${{ secrets.DJANGO_SUPERUSER_PASSWORD }}" \
-              DJANGO_RESET_ADMIN_ON_DEPLOY="${{ secrets.DJANGO_RESET_ADMIN_ON_DEPLOY }}"
+              DJANGO_RESET_ADMIN_ON_DEPLOY="0"
 
       - name: Deploy Docker Compose
-        env:
-          GITHUB_SHA: ${{ github.sha }}
-          AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
-          DJANGO_SUPERUSER_USERNAME: ${{ secrets.DJANGO_SUPERUSER_USERNAME }}
-          DJANGO_SUPERUSER_EMAIL: ${{ secrets.DJANGO_SUPERUSER_EMAIL }}
-          DJANGO_SUPERUSER_PASSWORD: ${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
-          DJANGO_RESET_ADMIN_ON_DEPLOY: ${{ secrets.DJANGO_RESET_ADMIN_ON_DEPLOY }}
         run: |
+          DB_USER_COMPUTED="${{ secrets.DB_USER }}"
+          DB_HOST_COMPUTED="${{ secrets.AZURE_POSTGRES_SERVER_NAME }}.postgres.database.azure.com"
+          export GITHUB_SHA="${{ github.sha }}"
+          export AZURE_ACR_NAME="${{ secrets.AZURE_ACR_NAME }}"
+          export DB_HOST="$DB_HOST_COMPUTED"
+          export DB_NAME="${{ secrets.DB_NAME }}"
+          export DB_USER="$DB_USER_COMPUTED"
+          export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+          export DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}"
+          export JWT_SIGNING_KEY="${{ secrets.JWT_SIGNING_KEY }}"
+          export DJANGO_SUPERUSER_USERNAME="${{ secrets.DJANGO_SUPERUSER_USERNAME }}"
+          export DJANGO_SUPERUSER_EMAIL="${{ secrets.DJANGO_SUPERUSER_EMAIL }}"
+          export DJANGO_SUPERUSER_PASSWORD="${{ secrets.DJANGO_SUPERUSER_PASSWORD }}"
+          export DJANGO_RESET_ADMIN_ON_DEPLOY="0"
           # Substitute all ${VAR} references in the compose file with their values
           envsubst < docker-compose-azure.yml > /tmp/docker-compose-resolved.yml
           az webapp config container set \
-            --name NovavilleApp \
-            --resource-group Novaville \
+            --name "${{ secrets.AZURE_APP_NAME }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
             --multicontainer-config-type COMPOSE \
             --multicontainer-config-file /tmp/docker-compose-resolved.yml \
             --container-registry-url https://${{ secrets.AZURE_ACR_NAME }}.azurecr.io \
             --container-registry-user ${{ secrets.AZURE_ACR_USERNAME }} \
             --container-registry-password ${{ secrets.AZURE_ACR_PASSWORD }}
+
+      - name: Post-deploy check - Azure PostgreSQL settings
+        run: |
+          DB_HOST_ACTUAL=$(az webapp config appsettings list \
+            --name "${{ secrets.AZURE_APP_NAME }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --query "[?name=='DB_HOST'].value | [0]" -o tsv)
+          DB_USER_ACTUAL=$(az webapp config appsettings list \
+            --name "${{ secrets.AZURE_APP_NAME }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --query "[?name=='DB_USER'].value | [0]" -o tsv)
+
+          EXPECTED_HOST_SUFFIX=".postgres.database.azure.com"
+
+          if [[ -z "$DB_HOST_ACTUAL" || "$DB_HOST_ACTUAL" != *"$EXPECTED_HOST_SUFFIX" ]]; then
+            echo "ERROR: DB_HOST is not an Azure PostgreSQL host."
+            echo "       DB_HOST=$DB_HOST_ACTUAL"
+            exit 1
+          fi
+
+          echo "OK: DB_HOST and DB_USER point to Azure PostgreSQL."

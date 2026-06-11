@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/constants/texts/texts_auth.dart';
 import 'package:frontend/constants/texts/texts_bulk_user_creation.dart';
 import 'package:frontend/constants/texts/texts_general.dart';
 import 'package:frontend/constants/texts/texts_user_accounts.dart';
@@ -14,6 +14,7 @@ import 'package:frontend/features/reports/data/models/neighborhood.dart';
 import 'package:frontend/features/users/data/models/user.dart';
 import 'package:frontend/features/users/data/models/user_role.dart';
 import 'package:frontend/features/users/data/user_repository.dart';
+import 'package:frontend/features/users/presentation/pages/pdf_generation_util.dart';
 import 'package:frontend/ui/widgets/styled_dialog.dart';
 
 class SingleUserEditDialog extends StatefulWidget {
@@ -176,16 +177,12 @@ class _SingleUserEditDialogState extends State<SingleUserEditDialog> {
               isExpanded: true,
               menuMaxHeight: 300,
               borderRadius: BorderRadius.circular(12),
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
               items: UserRole.values
                   .where((role) => role != UserRole.globalAdmin)
                   .map(
-                    (role) => DropdownMenuItem(
-                      value: role,
-                      child: Text(role.label),
-                    ),
+                    (role) =>
+                        DropdownMenuItem(value: role, child: Text(role.label)),
                   )
                   .toList(),
               onChanged: (value) {
@@ -236,37 +233,18 @@ class _SingleUserEditDialogState extends State<SingleUserEditDialog> {
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.secondaryText,
-              fontWeight: FontWeight.w600,
-            ),
+          color: AppColors.secondaryText,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
-  }
-
-  String _generatePassword() {
-    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-    const digits = '23456789';
-    const all = '$letters$digits';
-
-    final random = Random.secure();
-    final chars = <String>[
-      letters[random.nextInt(letters.length)],
-      digits[random.nextInt(digits.length)],
-    ];
-
-    while (chars.length < 8) {
-      chars.add(all[random.nextInt(all.length)]);
-    }
-
-    chars.shuffle(random);
-    return chars.join();
   }
 
   Future<void> _onResetPassword() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => StyledDialog(
-        title: UserTexts.resetPasswordTitle,
+        title: AppTextsAuth.adminResetPasswordTitle,
         icon: Icons.warning_amber_rounded,
         accentColor: AppColors.error,
         closeTooltip: AppTextsGeneral.cancel,
@@ -282,7 +260,7 @@ class _SingleUserEditDialogState extends State<SingleUserEditDialog> {
           ),
         ],
         body: Text(
-          UserTexts.resetPasswordWarning,
+          AppTextsAuth.adminResetPasswordConfirm,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       ),
@@ -292,12 +270,9 @@ class _SingleUserEditDialogState extends State<SingleUserEditDialog> {
 
     setState(() => _isSubmitting = true);
 
-    final newPassword = _generatePassword();
-
     try {
-      await widget.userRepository.resetPassword(
+      final tempPassword = await widget.userRepository.resetPassword(
         userId: widget.user.id,
-        newPassword: newPassword,
       );
 
       if (!mounted) return;
@@ -310,7 +285,7 @@ class _SingleUserEditDialogState extends State<SingleUserEditDialog> {
           firstName: _firstNameController.text.trim(),
           lastName: _lastNameController.text.trim(),
           username: _usernameController.text.trim(),
-          password: newPassword,
+          password: tempPassword,
           email: _emailController.text.trim(),
         ),
       );
@@ -394,10 +369,11 @@ class _CredentialsDialogState extends State<_CredentialsDialog> {
       'last_name': widget.lastName,
       'username': widget.username,
       'email': widget.email,
-      'password': widget.password,
+      'temp_password': widget.password,
     });
-    final encodedShareRef =
-        base64Url.encode(utf8.encode(payload)).replaceAll('=', '');
+    final encodedShareRef = base64Url
+        .encode(utf8.encode(payload))
+        .replaceAll('=', '');
 
     final routeUri = Uri(
       path: AppRoutes.credentialsShare,
@@ -468,6 +444,32 @@ class _CredentialsDialogState extends State<_CredentialsDialog> {
                 ),
                 icon: Icon(_isCopied ? Icons.check : Icons.copy, size: 20),
                 label: Text(_isCopied ? UserTexts.copied : UserTexts.copy),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await PdfGenerationUtil.generateAndDownloadSingleUserPdf(
+                      context: context,
+                      firstName: widget.firstName,
+                      lastName: widget.lastName,
+                      username: widget.username,
+                      email: widget.email,
+                      password: widget.password,
+                      shareUrl: _linkController.text,
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 56),
+                  ),
+                  icon: const Icon(Icons.picture_as_pdf, size: 20),
+                  label: const Text(UserTexts.downloadPdf),
+                ),
               ),
             ],
           ),
@@ -571,9 +573,7 @@ class _NeighborhoodAutocompleteFieldState
           validator: (_) => widget.validator?.call(_selectedId),
           decoration: InputDecoration(
             hintText: UserTexts.selectNeighborhood,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 12,
@@ -659,9 +659,9 @@ class _RequiredFieldsHint extends StatelessWidget {
         Text(
           AppTextsGeneral.requiredFieldsHint,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.secondaryText,
-                fontStyle: FontStyle.italic,
-              ),
+            color: AppColors.secondaryText,
+            fontStyle: FontStyle.italic,
+          ),
         ),
       ],
     );

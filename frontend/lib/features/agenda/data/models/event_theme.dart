@@ -41,6 +41,11 @@ enum EventTheme {
   /// and the display label ('Citoyenneté') — all case-insensitive.
   /// Falls back to [EventTheme.other] if no match is found.
   static EventTheme fromString(String value) {
+    return tryParse(value) ?? EventTheme.other;
+  }
+
+  /// Tries to create an [EventTheme] from a backend string value.
+  static EventTheme? tryParse(String value) {
     final normalized = value.trim().toLowerCase();
     for (final theme in EventTheme.values) {
       if (theme.value.toLowerCase() == normalized ||
@@ -49,10 +54,9 @@ enum EventTheme {
         return theme;
       }
     }
-    return EventTheme.other;
+    return null;
   }
 
   /// Converts the enum to a string for the backend.
   String toJson() => value;
 }
-

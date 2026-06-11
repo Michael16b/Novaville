@@ -34,6 +34,11 @@ class NewsQuestion(models.Model):
         blank=True,
         help_text="Date when the municipality answered",
     )
+    citizen_seen_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Date when the citizen read the municipal response",
+    )
     citizen_deleted = models.BooleanField(
         default=False,
         help_text="Whether the citizen removed the discussion from their inbox",
