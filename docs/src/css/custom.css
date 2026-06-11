@@ -31,6 +31,15 @@
 
 /* Optimisations pour la génération du PDF (Papersaurus / Impression) */
 @media print {
+  /* Désactive les ligatures de police (fusion des lettres "fi", "ff", etc.).
+     C'est la cause N°1 des numéros de page manquants (0) ! 
+     Si le PDF fusionne "f" et "i" dans le mot "Authentification", le robot
+     qui lit le PDF cherche "fi" séparément et ne le trouve pas. */
+  * {
+    font-variant-ligatures: none !important;
+    -webkit-font-variant-ligatures: none !important;
+  }
+
   /* Masque les symboles "#" d'ancrage. 
      Permet d'afficher correctement les numéros de page dans le sommaire. */
   .hash-link {
