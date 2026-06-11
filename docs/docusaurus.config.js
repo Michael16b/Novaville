@@ -79,6 +79,7 @@ const config = {
       'docusaurus-plugin-papersaurus',
       {
         addDownloadButton: true,
+        downloadButtonText: process.env.DOCUSAURUS_CURRENT_LOCALE === 'en' ? 'Download as PDF' : 'Télécharger en PDF',
         autoBuildPdfs: true,
         keepDebugHtmls: true,
 
@@ -256,14 +257,14 @@ const config = {
             label: 'Documentation',
           },
           {
-            type: 'doc',
-            docId: 'api/index',
+            type: 'docSidebar',
+            sidebarId: 'apiSidebar',
             position: 'left',
             label: 'API',
           },
           {
-            type: 'doc',
-            docId: 'dev-onboarding',
+            type: 'docSidebar',
+            sidebarId: 'onboardingSidebar',
             position: 'left',
             label: "Onboarding Devs",
           },
