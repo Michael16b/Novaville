@@ -126,11 +126,11 @@ const config = {
             items: [
               {
                 label: 'PDF Documentation',
-                href: '/Novaville/tutorialSidebar.pdf',
+                href: 'pathname:///Novaville/tutorialSidebar.pdf',
               },
               {
                 label: 'PDF API',
-                href: '/Novaville/apiSidebar.pdf',
+                href: 'pathname:///Novaville/apiSidebar.pdf',
               },
             ],
           },
