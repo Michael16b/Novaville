@@ -79,9 +79,8 @@ const config = {
     [
       'docusaurus-plugin-papersaurus',
       {
-        addDownloadButton: true,
+        addDownloadButton: false,
         autoBuildPdfs: true,
-        downloadButtonText: 'Télécharger le PDF',
       },
     ],
   ],
@@ -120,6 +119,20 @@ const config = {
           {
             type: 'localeDropdown',
             position: 'right',
+          },
+          {
+            label: 'PDF Complet',
+            position: 'right',
+            items: [
+              {
+                label: 'PDF Documentation',
+                href: '/Novaville/tutorialSidebar.pdf',
+              },
+              {
+                label: 'PDF API',
+                href: '/Novaville/apiSidebar.pdf',
+              },
+            ],
           },
           {
             href: 'https://github.com/Michael16b/Novaville',
