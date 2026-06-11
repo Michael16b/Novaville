@@ -120,6 +120,20 @@ const config = {
             position: 'right',
           },
           {
+            label: 'PDF',
+            position: 'right',
+            items: [
+              {
+                label: 'Documentation Technique',
+                href: '/Novaville/tutorialSidebar.pdf',
+              },
+              {
+                label: 'Documentation API',
+                href: '/Novaville/apiSidebar.pdf',
+              },
+            ],
+          },
+          {
             href: 'https://github.com/Michael16b/Novaville',
             label: 'GitHub',
             position: 'right',
