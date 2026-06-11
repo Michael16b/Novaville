@@ -26,6 +26,7 @@ const sidebars = {
         'getting-started/configuration',
       ],
     },
+    'dev-onboarding',
     'contributing',
     {
       type: 'category',
@@ -40,10 +41,6 @@ const sidebars = {
         'technical/docs-deployment',
       ],
     },
-  ],
-
-  // API documentation
-  apiSidebar: [
     {
       type: 'category',
       label: 'Documentation API',
@@ -93,11 +90,6 @@ const sidebars = {
         },
       ],
     },
-  ],
-
-  // Onboarding
-  onboardingSidebar: [
-    'dev-onboarding',
   ],
 };
 
