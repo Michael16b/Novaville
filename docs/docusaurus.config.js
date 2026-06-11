@@ -81,9 +81,17 @@ const config = {
         addDownloadButton: false, // On ne garde que le lien PDF global dans la navbar
         autoBuildPdfs: true,
         keepDebugHtmls: true,
-      // Cette regex parse le texte brut extrait du PDF
-      // Le format doit correspondre exactement au texte final rendu
-      footerParser: /^(\d+)$/m,
+        getPdfPageFooter: (_siteConfig, _pluginConfig, pageTitle) => {
+          return `
+            <div style="height:1cm;display:flex;margin:0 1.5cm;color:#555;
+                        font-size:9px;font-family:Arial,sans-serif;width:100%;">
+              <span style="flex-grow:1;">Novaville</span>
+              <span style="flex-grow:1;text-align:center;">${pageTitle}</span>
+              <span style="flex-grow:1;text-align:right;">Page <span class='pageNumber'></span> / <span class='totalPages'></span></span>
+            </div>`;
+        },
+        // Matcher "Page X / Y" SANS groupe capturant pour que split() consomme le séparateur
+        footerParser: /Page \d+ \/ \d+/g,
       },
     ],
   ],
